@@ -1,0 +1,68 @@
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts #-}
+
+-- | MPSImageFindKeypoints
+--
+-- The MPSImageFindKeypoints kernel is used to find a list of keypoints whose values are >= minimumPixelThresholdValue              in MPSImageKeypointRangeInfo. The keypoints are generated for a specified region in the image.                The pixel format of the source image must be MTLPixelFormatR8Unorm.
+--
+-- Generated bindings for @MPSImageFindKeypoints@.
+module ObjC.MetalPerformanceShaders.MPSImageFindKeypoints
+  ( MPSImageFindKeypoints
+  , IsMPSImageFindKeypoints(..)
+  , initWithDevice
+  , initWithCoder_device
+  , initWithDeviceSelector
+  , initWithCoder_deviceSelector
+
+
+  ) where
+
+import Foreign.Ptr (Ptr, nullPtr, castPtr)
+import Foreign.LibFFI
+import Foreign.C.Types
+import Data.Int (Int8, Int16)
+import Data.Word (Word16)
+import Data.Coerce (coerce)
+
+import ObjC.Runtime.Types
+import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Selector (mkSelector)
+import ObjC.Runtime.Class (getRequiredClass)
+
+import ObjC.MetalPerformanceShaders.Internal.Classes
+import ObjC.Foundation.Internal.Classes
+
+-- | @- initWithDevice:@
+initWithDevice :: IsMPSImageFindKeypoints mpsImageFindKeypoints => mpsImageFindKeypoints -> RawId -> IO (Id MPSImageFindKeypoints)
+initWithDevice mpsImageFindKeypoints  device =
+  sendMsg mpsImageFindKeypoints (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+
+-- | NSSecureCoding compatability
+--
+-- While the standard NSSecureCoding/NSCoding method              -initWithCoder: should work, since the file can't              know which device your data is allocated on, we              have to guess and may guess incorrectly.  To avoid              that problem, use initWithCoder:device instead.
+--
+-- @aDecoder@ — The NSCoder subclass with your serialized MPSKernel
+--
+-- @device@ — The MTLDevice on which to make the MPSKernel
+--
+-- Returns: A new MPSKernel object, or nil if failure.
+--
+-- ObjC selector: @- initWithCoder:device:@
+initWithCoder_device :: (IsMPSImageFindKeypoints mpsImageFindKeypoints, IsNSCoder aDecoder) => mpsImageFindKeypoints -> aDecoder -> RawId -> IO (Id MPSImageFindKeypoints)
+initWithCoder_device mpsImageFindKeypoints  aDecoder device =
+withObjCPtr aDecoder $ \raw_aDecoder ->
+    sendMsg mpsImageFindKeypoints (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+
+-- ---------------------------------------------------------------------------
+-- Selectors
+-- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @initWithDevice:@
+initWithDeviceSelector :: Selector
+initWithDeviceSelector = mkSelector "initWithDevice:"
+
+-- | @Selector@ for @initWithCoder:device:@
+initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
+

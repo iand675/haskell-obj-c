@@ -1,0 +1,66 @@
+name:                haskell-obj-c-codegen
+version:             0.1.0.0
+license:             BSD-3-Clause
+author:              "Author name here"
+maintainer:          "example@example.com"
+copyright:           "2026 Author name here"
+
+synopsis:            Code generator for type-safe Haskell bindings to Objective-C frameworks
+category:            Foreign
+
+dependencies:
+- base >= 4.7 && < 5
+- text
+- containers
+- aeson
+- bytestring
+- megaparsec
+- mtl
+- directory
+- process
+- filepath
+- vector
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.CodeGen.IR
+  - ObjC.CodeGen.QualType
+  - ObjC.CodeGen.ClangAST
+  - ObjC.CodeGen.Hierarchy
+  - ObjC.CodeGen.TypeMap
+  - ObjC.CodeGen.PrimitiveTypes
+  - ObjC.CodeGen.Monad
+  - ObjC.CodeGen.Generate
+  - ObjC.CodeGen.Generate.Types
+  - ObjC.CodeGen.Generate.Naming
+  - ObjC.CodeGen.Generate.Shared
+  - ObjC.CodeGen.Generate.Enums
+  - ObjC.CodeGen.Generate.Structs
+  - ObjC.CodeGen.Generate.InternalClasses
+  - ObjC.CodeGen.Generate.Method
+  - ObjC.CodeGen.Generate.ClassModule
+  - ObjC.CodeGen.Generate.Protocols
+  - ObjC.CodeGen.Generate.Package
+
+executables:
+  objc-codegen:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - haskell-obj-c-codegen
+    - optparse-applicative

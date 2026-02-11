@@ -1,0 +1,27 @@
+name:                objc-avrouting
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the AVRouting framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.AVRouting.AVCustomDeviceRoute
+  - ObjC.AVRouting.AVCustomRoutingActionItem
+  - ObjC.AVRouting.AVCustomRoutingController
+  - ObjC.AVRouting.AVCustomRoutingEvent
+  - ObjC.AVRouting.AVCustomRoutingPartialIP
+  - ObjC.AVRouting.AVRoutingPlaybackArbiter
+  - ObjC.AVRouting.Enums
+  - ObjC.AVRouting.Internal.Classes
+  - ObjC.AVRouting.Internal.Enums

@@ -1,0 +1,36 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.38.1.
+--
+-- see: https://github.com/sol/hpack
+
+name:           objc-quartzcore
+version:        0.1.0.0
+synopsis:       Generated Haskell bindings for the QuartzCore framework
+license:        BSD-3-Clause
+build-type:     Simple
+
+library
+  exposed-modules:
+      ObjC.QuartzCore.CALayer
+      ObjC.QuartzCore.CAOpenGLLayer
+      ObjC.QuartzCore.Enums
+      ObjC.QuartzCore.Internal.Classes
+      ObjC.QuartzCore.Internal.Enums
+      ObjC.QuartzCore.Internal.Structs
+      ObjC.QuartzCore.NSValue
+      ObjC.QuartzCore.Structs
+  other-modules:
+      Paths_objc_quartzcore
+  autogen-modules:
+      Paths_objc_quartzcore
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wno-orphans
+  build-depends:
+      base >=4.7 && <5
+    , haskell-obj-c
+    , libffi
+    , objc-corefoundation
+    , objc-foundation
+  default-language: Haskell2010

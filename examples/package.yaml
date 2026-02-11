@@ -1,0 +1,62 @@
+name:                haskell-obj-c-examples
+version:             0.1.0.0
+synopsis:            Example macOS GUI applications using Haskell Objective-C bindings
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+- template-haskell
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+executables:
+  hello-world:
+    main: Main.hs
+    source-dirs: hello-world
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -dynamic
+
+  counter:
+    main: Main.hs
+    source-dirs: counter
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -dynamic
+
+  temperature-converter:
+    main: Main.hs
+    source-dirs: temperature-converter
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -dynamic
+
+  controls-gallery:
+    main: Main.hs
+    source-dirs: controls-gallery
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -dynamic
+
+  color-mixer:
+    main: Main.hs
+    source-dirs: color-mixer
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -dynamic

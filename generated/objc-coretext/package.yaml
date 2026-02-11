@@ -1,0 +1,22 @@
+name:                objc-coretext
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the CoreText framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.CoreText
+  - ObjC.CoreText.Enums
+  - ObjC.CoreText.Internal.Enums
+  - ObjC.CoreText.Internal.Structs
+  - ObjC.CoreText.Structs

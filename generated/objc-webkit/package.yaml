@@ -1,0 +1,188 @@
+name:                objc-webkit
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the WebKit framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+- objc-javascriptcore
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.WebKit.DOMAbstractView
+  - ObjC.WebKit.DOMAttr
+  - ObjC.WebKit.DOMBlob
+  - ObjC.WebKit.DOMCDATASection
+  - ObjC.WebKit.DOMCSSCharsetRule
+  - ObjC.WebKit.DOMCSSFontFaceRule
+  - ObjC.WebKit.DOMCSSImportRule
+  - ObjC.WebKit.DOMCSSMediaRule
+  - ObjC.WebKit.DOMCSSPageRule
+  - ObjC.WebKit.DOMCSSPrimitiveValue
+  - ObjC.WebKit.DOMCSSRule
+  - ObjC.WebKit.DOMCSSRuleList
+  - ObjC.WebKit.DOMCSSStyleDeclaration
+  - ObjC.WebKit.DOMCSSStyleRule
+  - ObjC.WebKit.DOMCSSStyleSheet
+  - ObjC.WebKit.DOMCSSUnknownRule
+  - ObjC.WebKit.DOMCSSValue
+  - ObjC.WebKit.DOMCSSValueList
+  - ObjC.WebKit.DOMCharacterData
+  - ObjC.WebKit.DOMComment
+  - ObjC.WebKit.DOMCounter
+  - ObjC.WebKit.DOMDocument
+  - ObjC.WebKit.DOMDocumentFragment
+  - ObjC.WebKit.DOMDocumentType
+  - ObjC.WebKit.DOMElement
+  - ObjC.WebKit.DOMEntity
+  - ObjC.WebKit.DOMEntityReference
+  - ObjC.WebKit.DOMEvent
+  - ObjC.WebKit.DOMFile
+  - ObjC.WebKit.DOMFileList
+  - ObjC.WebKit.DOMHTMLAnchorElement
+  - ObjC.WebKit.DOMHTMLAppletElement
+  - ObjC.WebKit.DOMHTMLAreaElement
+  - ObjC.WebKit.DOMHTMLBRElement
+  - ObjC.WebKit.DOMHTMLBaseElement
+  - ObjC.WebKit.DOMHTMLBaseFontElement
+  - ObjC.WebKit.DOMHTMLBodyElement
+  - ObjC.WebKit.DOMHTMLButtonElement
+  - ObjC.WebKit.DOMHTMLCollection
+  - ObjC.WebKit.DOMHTMLDListElement
+  - ObjC.WebKit.DOMHTMLDirectoryElement
+  - ObjC.WebKit.DOMHTMLDivElement
+  - ObjC.WebKit.DOMHTMLDocument
+  - ObjC.WebKit.DOMHTMLElement
+  - ObjC.WebKit.DOMHTMLEmbedElement
+  - ObjC.WebKit.DOMHTMLFieldSetElement
+  - ObjC.WebKit.DOMHTMLFontElement
+  - ObjC.WebKit.DOMHTMLFormElement
+  - ObjC.WebKit.DOMHTMLFrameElement
+  - ObjC.WebKit.DOMHTMLFrameSetElement
+  - ObjC.WebKit.DOMHTMLHRElement
+  - ObjC.WebKit.DOMHTMLHeadElement
+  - ObjC.WebKit.DOMHTMLHeadingElement
+  - ObjC.WebKit.DOMHTMLHtmlElement
+  - ObjC.WebKit.DOMHTMLIFrameElement
+  - ObjC.WebKit.DOMHTMLImageElement
+  - ObjC.WebKit.DOMHTMLInputElement
+  - ObjC.WebKit.DOMHTMLLIElement
+  - ObjC.WebKit.DOMHTMLLabelElement
+  - ObjC.WebKit.DOMHTMLLegendElement
+  - ObjC.WebKit.DOMHTMLLinkElement
+  - ObjC.WebKit.DOMHTMLMapElement
+  - ObjC.WebKit.DOMHTMLMarqueeElement
+  - ObjC.WebKit.DOMHTMLMenuElement
+  - ObjC.WebKit.DOMHTMLMetaElement
+  - ObjC.WebKit.DOMHTMLModElement
+  - ObjC.WebKit.DOMHTMLOListElement
+  - ObjC.WebKit.DOMHTMLObjectElement
+  - ObjC.WebKit.DOMHTMLOptGroupElement
+  - ObjC.WebKit.DOMHTMLOptionElement
+  - ObjC.WebKit.DOMHTMLOptionsCollection
+  - ObjC.WebKit.DOMHTMLParagraphElement
+  - ObjC.WebKit.DOMHTMLParamElement
+  - ObjC.WebKit.DOMHTMLPreElement
+  - ObjC.WebKit.DOMHTMLQuoteElement
+  - ObjC.WebKit.DOMHTMLScriptElement
+  - ObjC.WebKit.DOMHTMLSelectElement
+  - ObjC.WebKit.DOMHTMLStyleElement
+  - ObjC.WebKit.DOMHTMLTableCaptionElement
+  - ObjC.WebKit.DOMHTMLTableCellElement
+  - ObjC.WebKit.DOMHTMLTableColElement
+  - ObjC.WebKit.DOMHTMLTableElement
+  - ObjC.WebKit.DOMHTMLTableRowElement
+  - ObjC.WebKit.DOMHTMLTableSectionElement
+  - ObjC.WebKit.DOMHTMLTextAreaElement
+  - ObjC.WebKit.DOMHTMLTitleElement
+  - ObjC.WebKit.DOMHTMLUListElement
+  - ObjC.WebKit.DOMImplementation
+  - ObjC.WebKit.DOMKeyboardEvent
+  - ObjC.WebKit.DOMMediaList
+  - ObjC.WebKit.DOMMouseEvent
+  - ObjC.WebKit.DOMMutationEvent
+  - ObjC.WebKit.DOMNamedNodeMap
+  - ObjC.WebKit.DOMNode
+  - ObjC.WebKit.DOMNodeIterator
+  - ObjC.WebKit.DOMNodeList
+  - ObjC.WebKit.DOMObject
+  - ObjC.WebKit.DOMOverflowEvent
+  - ObjC.WebKit.DOMProcessingInstruction
+  - ObjC.WebKit.DOMProgressEvent
+  - ObjC.WebKit.DOMRGBColor
+  - ObjC.WebKit.DOMRange
+  - ObjC.WebKit.DOMRect
+  - ObjC.WebKit.DOMStyleSheet
+  - ObjC.WebKit.DOMStyleSheetList
+  - ObjC.WebKit.DOMText
+  - ObjC.WebKit.DOMTreeWalker
+  - ObjC.WebKit.DOMUIEvent
+  - ObjC.WebKit.DOMWheelEvent
+  - ObjC.WebKit.DOMXPathExpression
+  - ObjC.WebKit.DOMXPathResult
+  - ObjC.WebKit.Enums
+  - ObjC.WebKit.Internal.Classes
+  - ObjC.WebKit.Internal.Enums
+  - ObjC.WebKit.NSAttributedString
+  - ObjC.WebKit.NSObject
+  - ObjC.WebKit.WKBackForwardList
+  - ObjC.WebKit.WKBackForwardListItem
+  - ObjC.WebKit.WKContentRuleList
+  - ObjC.WebKit.WKContentRuleListStore
+  - ObjC.WebKit.WKContentWorld
+  - ObjC.WebKit.WKDownload
+  - ObjC.WebKit.WKFindConfiguration
+  - ObjC.WebKit.WKFindResult
+  - ObjC.WebKit.WKFrameInfo
+  - ObjC.WebKit.WKHTTPCookieStore
+  - ObjC.WebKit.WKNavigation
+  - ObjC.WebKit.WKNavigationAction
+  - ObjC.WebKit.WKNavigationResponse
+  - ObjC.WebKit.WKOpenPanelParameters
+  - ObjC.WebKit.WKPDFConfiguration
+  - ObjC.WebKit.WKPreferences
+  - ObjC.WebKit.WKProcessPool
+  - ObjC.WebKit.WKScriptMessage
+  - ObjC.WebKit.WKSecurityOrigin
+  - ObjC.WebKit.WKSnapshotConfiguration
+  - ObjC.WebKit.WKUserContentController
+  - ObjC.WebKit.WKUserScript
+  - ObjC.WebKit.WKWebExtension
+  - ObjC.WebKit.WKWebExtensionAction
+  - ObjC.WebKit.WKWebExtensionCommand
+  - ObjC.WebKit.WKWebExtensionContext
+  - ObjC.WebKit.WKWebExtensionController
+  - ObjC.WebKit.WKWebExtensionControllerConfiguration
+  - ObjC.WebKit.WKWebExtensionDataRecord
+  - ObjC.WebKit.WKWebExtensionMatchPattern
+  - ObjC.WebKit.WKWebExtensionMessagePort
+  - ObjC.WebKit.WKWebExtensionTabConfiguration
+  - ObjC.WebKit.WKWebExtensionWindowConfiguration
+  - ObjC.WebKit.WKWebView
+  - ObjC.WebKit.WKWebViewConfiguration
+  - ObjC.WebKit.WKWebpagePreferences
+  - ObjC.WebKit.WKWebsiteDataRecord
+  - ObjC.WebKit.WKWebsiteDataStore
+  - ObjC.WebKit.WKWindowFeatures
+  - ObjC.WebKit.WebArchive
+  - ObjC.WebKit.WebBackForwardList
+  - ObjC.WebKit.WebDataSource
+  - ObjC.WebKit.WebDownload
+  - ObjC.WebKit.WebFrame
+  - ObjC.WebKit.WebFrameView
+  - ObjC.WebKit.WebHistory
+  - ObjC.WebKit.WebHistoryItem
+  - ObjC.WebKit.WebPreferences
+  - ObjC.WebKit.WebResource
+  - ObjC.WebKit.WebScriptObject
+  - ObjC.WebKit.WebUndefined
+  - ObjC.WebKit.WebView

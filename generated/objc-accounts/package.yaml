@@ -1,0 +1,25 @@
+name:                objc-accounts
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the Accounts framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.Accounts.ACAccount
+  - ObjC.Accounts.ACAccountCredential
+  - ObjC.Accounts.ACAccountStore
+  - ObjC.Accounts.ACAccountType
+  - ObjC.Accounts.Enums
+  - ObjC.Accounts.Internal.Classes
+  - ObjC.Accounts.Internal.Enums

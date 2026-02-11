@@ -1,0 +1,49 @@
+name:                objc-accessibility
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the Accessibility framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.Accessibility.AXBrailleMap
+  - ObjC.Accessibility.AXBrailleTable
+  - ObjC.Accessibility.AXBrailleTranslationResult
+  - ObjC.Accessibility.AXBrailleTranslator
+  - ObjC.Accessibility.AXCategoricalDataAxisDescriptor
+  - ObjC.Accessibility.AXChartDescriptor
+  - ObjC.Accessibility.AXCustomContent
+  - ObjC.Accessibility.AXDataPoint
+  - ObjC.Accessibility.AXDataPointValue
+  - ObjC.Accessibility.AXDataSeriesDescriptor
+  - ObjC.Accessibility.AXLiveAudioGraph
+  - ObjC.Accessibility.AXMathExpression
+  - ObjC.Accessibility.AXMathExpressionFenced
+  - ObjC.Accessibility.AXMathExpressionFraction
+  - ObjC.Accessibility.AXMathExpressionIdentifier
+  - ObjC.Accessibility.AXMathExpressionMultiscript
+  - ObjC.Accessibility.AXMathExpressionNumber
+  - ObjC.Accessibility.AXMathExpressionOperator
+  - ObjC.Accessibility.AXMathExpressionRoot
+  - ObjC.Accessibility.AXMathExpressionRow
+  - ObjC.Accessibility.AXMathExpressionSubSuperscript
+  - ObjC.Accessibility.AXMathExpressionTable
+  - ObjC.Accessibility.AXMathExpressionTableCell
+  - ObjC.Accessibility.AXMathExpressionTableRow
+  - ObjC.Accessibility.AXMathExpressionText
+  - ObjC.Accessibility.AXMathExpressionUnderOver
+  - ObjC.Accessibility.AXNumericDataAxisDescriptor
+  - ObjC.Accessibility.AXRequest
+  - ObjC.Accessibility.Enums
+  - ObjC.Accessibility.Internal.Classes
+  - ObjC.Accessibility.Internal.Enums

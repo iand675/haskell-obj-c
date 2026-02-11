@@ -1,0 +1,42 @@
+name:                objc-coremidi
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the CoreMIDI framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.CoreMIDI.Enums
+  - ObjC.CoreMIDI.Internal.Classes
+  - ObjC.CoreMIDI.Internal.Enums
+  - ObjC.CoreMIDI.Internal.Structs
+  - ObjC.CoreMIDI.MIDI2DeviceInfo
+  - ObjC.CoreMIDI.MIDICIDevice
+  - ObjC.CoreMIDI.MIDICIDeviceInfo
+  - ObjC.CoreMIDI.MIDICIDeviceManager
+  - ObjC.CoreMIDI.MIDICIDiscoveredNode
+  - ObjC.CoreMIDI.MIDICIDiscoveryManager
+  - ObjC.CoreMIDI.MIDICIProfile
+  - ObjC.CoreMIDI.MIDICIProfileState
+  - ObjC.CoreMIDI.MIDICIResponder
+  - ObjC.CoreMIDI.MIDICISession
+  - ObjC.CoreMIDI.MIDINetworkConnection
+  - ObjC.CoreMIDI.MIDINetworkHost
+  - ObjC.CoreMIDI.MIDINetworkSession
+  - ObjC.CoreMIDI.MIDIUMPCIProfile
+  - ObjC.CoreMIDI.MIDIUMPEndpoint
+  - ObjC.CoreMIDI.MIDIUMPEndpointManager
+  - ObjC.CoreMIDI.MIDIUMPFunctionBlock
+  - ObjC.CoreMIDI.MIDIUMPMutableEndpoint
+  - ObjC.CoreMIDI.MIDIUMPMutableFunctionBlock
+  - ObjC.CoreMIDI.Structs

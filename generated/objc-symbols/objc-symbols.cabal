@@ -1,0 +1,29 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.38.1.
+--
+-- see: https://github.com/sol/hpack
+
+name:           objc-symbols
+version:        0.1.0.0
+synopsis:       Generated Haskell bindings for the Symbols framework
+license:        BSD-3-Clause
+build-type:     Simple
+
+library
+  exposed-modules:
+      ObjC.Symbols.Internal.Classes
+      ObjC.Symbols.NSSymbolEffectOptionsRepeatBehavior
+  other-modules:
+      Paths_objc_symbols
+  autogen-modules:
+      Paths_objc_symbols
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wno-orphans
+  build-depends:
+      base >=4.7 && <5
+    , haskell-obj-c
+    , libffi
+    , objc-foundation
+  default-language: Haskell2010

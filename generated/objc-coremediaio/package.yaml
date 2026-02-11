@@ -1,0 +1,35 @@
+name:                objc-coremediaio
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the CoreMediaIO framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.CoreMediaIO.CMIOExtensionClient
+  - ObjC.CoreMediaIO.CMIOExtensionDevice
+  - ObjC.CoreMediaIO.CMIOExtensionDeviceProperties
+  - ObjC.CoreMediaIO.CMIOExtensionPropertyAttributes
+  - ObjC.CoreMediaIO.CMIOExtensionPropertyState
+  - ObjC.CoreMediaIO.CMIOExtensionProvider
+  - ObjC.CoreMediaIO.CMIOExtensionProviderProperties
+  - ObjC.CoreMediaIO.CMIOExtensionScheduledOutput
+  - ObjC.CoreMediaIO.CMIOExtensionStream
+  - ObjC.CoreMediaIO.CMIOExtensionStreamCustomClockConfiguration
+  - ObjC.CoreMediaIO.CMIOExtensionStreamFormat
+  - ObjC.CoreMediaIO.CMIOExtensionStreamProperties
+  - ObjC.CoreMediaIO.Enums
+  - ObjC.CoreMediaIO.Internal.Classes
+  - ObjC.CoreMediaIO.Internal.Enums
+  - ObjC.CoreMediaIO.Internal.Structs
+  - ObjC.CoreMediaIO.Structs

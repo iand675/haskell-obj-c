@@ -1,0 +1,22 @@
+name:                objc-coreaudiotypes
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the CoreAudioTypes framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.CoreAudioTypes
+  - ObjC.CoreAudioTypes.Enums
+  - ObjC.CoreAudioTypes.Internal.Enums
+  - ObjC.CoreAudioTypes.Internal.Structs
+  - ObjC.CoreAudioTypes.Structs

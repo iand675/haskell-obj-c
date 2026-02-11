@@ -1,0 +1,95 @@
+name:                objc-scenekit
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the SceneKit framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-avfaudio
+- objc-foundation
+- objc-metal
+- objc-quartzcore
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.SceneKit.CAAnimation
+  - ObjC.SceneKit.Enums
+  - ObjC.SceneKit.Internal.Classes
+  - ObjC.SceneKit.Internal.Enums
+  - ObjC.SceneKit.Internal.Structs
+  - ObjC.SceneKit.NSValue
+  - ObjC.SceneKit.SCNAccelerationConstraint
+  - ObjC.SceneKit.SCNAction
+  - ObjC.SceneKit.SCNAnimation
+  - ObjC.SceneKit.SCNAnimationEvent
+  - ObjC.SceneKit.SCNAnimationPlayer
+  - ObjC.SceneKit.SCNAudioPlayer
+  - ObjC.SceneKit.SCNAudioSource
+  - ObjC.SceneKit.SCNAvoidOccluderConstraint
+  - ObjC.SceneKit.SCNBillboardConstraint
+  - ObjC.SceneKit.SCNBox
+  - ObjC.SceneKit.SCNCamera
+  - ObjC.SceneKit.SCNCameraController
+  - ObjC.SceneKit.SCNCapsule
+  - ObjC.SceneKit.SCNCone
+  - ObjC.SceneKit.SCNConstraint
+  - ObjC.SceneKit.SCNCylinder
+  - ObjC.SceneKit.SCNDistanceConstraint
+  - ObjC.SceneKit.SCNFloor
+  - ObjC.SceneKit.SCNGeometry
+  - ObjC.SceneKit.SCNGeometryElement
+  - ObjC.SceneKit.SCNGeometrySource
+  - ObjC.SceneKit.SCNGeometryTessellator
+  - ObjC.SceneKit.SCNHitTestResult
+  - ObjC.SceneKit.SCNIKConstraint
+  - ObjC.SceneKit.SCNLayer
+  - ObjC.SceneKit.SCNLevelOfDetail
+  - ObjC.SceneKit.SCNLight
+  - ObjC.SceneKit.SCNLookAtConstraint
+  - ObjC.SceneKit.SCNMaterial
+  - ObjC.SceneKit.SCNMaterialProperty
+  - ObjC.SceneKit.SCNMorpher
+  - ObjC.SceneKit.SCNNode
+  - ObjC.SceneKit.SCNParticlePropertyController
+  - ObjC.SceneKit.SCNParticleSystem
+  - ObjC.SceneKit.SCNPhysicsBallSocketJoint
+  - ObjC.SceneKit.SCNPhysicsBehavior
+  - ObjC.SceneKit.SCNPhysicsBody
+  - ObjC.SceneKit.SCNPhysicsConeTwistJoint
+  - ObjC.SceneKit.SCNPhysicsContact
+  - ObjC.SceneKit.SCNPhysicsField
+  - ObjC.SceneKit.SCNPhysicsHingeJoint
+  - ObjC.SceneKit.SCNPhysicsShape
+  - ObjC.SceneKit.SCNPhysicsSliderJoint
+  - ObjC.SceneKit.SCNPhysicsVehicle
+  - ObjC.SceneKit.SCNPhysicsVehicleWheel
+  - ObjC.SceneKit.SCNPhysicsWorld
+  - ObjC.SceneKit.SCNPlane
+  - ObjC.SceneKit.SCNProgram
+  - ObjC.SceneKit.SCNPyramid
+  - ObjC.SceneKit.SCNReferenceNode
+  - ObjC.SceneKit.SCNRenderer
+  - ObjC.SceneKit.SCNReplicatorConstraint
+  - ObjC.SceneKit.SCNScene
+  - ObjC.SceneKit.SCNSceneSource
+  - ObjC.SceneKit.SCNShape
+  - ObjC.SceneKit.SCNSkinner
+  - ObjC.SceneKit.SCNSliderConstraint
+  - ObjC.SceneKit.SCNSphere
+  - ObjC.SceneKit.SCNTechnique
+  - ObjC.SceneKit.SCNText
+  - ObjC.SceneKit.SCNTimingFunction
+  - ObjC.SceneKit.SCNTorus
+  - ObjC.SceneKit.SCNTransaction
+  - ObjC.SceneKit.SCNTransformConstraint
+  - ObjC.SceneKit.SCNTube
+  - ObjC.SceneKit.SCNView
+  - ObjC.SceneKit.Structs

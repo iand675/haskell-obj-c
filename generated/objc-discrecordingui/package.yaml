@@ -1,0 +1,29 @@
+name:                objc-discrecordingui
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the DiscRecordingUI framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-discrecording
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.DiscRecordingUI.DRBurnProgressPanel
+  - ObjC.DiscRecordingUI.DRBurnSetupPanel
+  - ObjC.DiscRecordingUI.DREraseProgressPanel
+  - ObjC.DiscRecordingUI.DREraseSetupPanel
+  - ObjC.DiscRecordingUI.DRSetupPanel
+  - ObjC.DiscRecordingUI.Internal.Classes
+  - ObjC.DiscRecordingUI.Internal.Structs
+  - ObjC.DiscRecordingUI.NSObject
+  - ObjC.DiscRecordingUI.Structs

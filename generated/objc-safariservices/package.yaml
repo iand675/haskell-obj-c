@@ -1,0 +1,36 @@
+name:                objc-safariservices
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the SafariServices framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.SafariServices.Enums
+  - ObjC.SafariServices.Internal.Classes
+  - ObjC.SafariServices.Internal.Enums
+  - ObjC.SafariServices.SFContentBlockerManager
+  - ObjC.SafariServices.SFContentBlockerState
+  - ObjC.SafariServices.SFSafariApplication
+  - ObjC.SafariServices.SFSafariExtension
+  - ObjC.SafariServices.SFSafariExtensionHandler
+  - ObjC.SafariServices.SFSafariExtensionManager
+  - ObjC.SafariServices.SFSafariExtensionState
+  - ObjC.SafariServices.SFSafariExtensionViewController
+  - ObjC.SafariServices.SFSafariPage
+  - ObjC.SafariServices.SFSafariPageProperties
+  - ObjC.SafariServices.SFSafariTab
+  - ObjC.SafariServices.SFSafariToolbarItem
+  - ObjC.SafariServices.SFSafariWindow
+  - ObjC.SafariServices.SFUniversalLink

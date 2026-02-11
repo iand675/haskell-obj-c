@@ -1,0 +1,31 @@
+name:                objc-opendirectory
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the OpenDirectory framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+- objc-securityfoundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.OpenDirectory.Enums
+  - ObjC.OpenDirectory.Internal.Classes
+  - ObjC.OpenDirectory.Internal.Enums
+  - ObjC.OpenDirectory.ODAttributeMap
+  - ObjC.OpenDirectory.ODConfiguration
+  - ObjC.OpenDirectory.ODMappings
+  - ObjC.OpenDirectory.ODModuleEntry
+  - ObjC.OpenDirectory.ODNode
+  - ObjC.OpenDirectory.ODQuery
+  - ObjC.OpenDirectory.ODRecord
+  - ObjC.OpenDirectory.ODRecordMap
+  - ObjC.OpenDirectory.ODSession

@@ -1,0 +1,22 @@
+name:                objc-carbon
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the Carbon framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-applicationservices
+- objc-corefoundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.Carbon
+  - ObjC.Carbon.Internal.Structs
+  - ObjC.Carbon.Structs

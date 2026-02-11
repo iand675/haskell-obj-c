@@ -1,0 +1,35 @@
+name:                objc-pencilkit
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the PencilKit framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.PencilKit.Enums
+  - ObjC.PencilKit.Internal.Classes
+  - ObjC.PencilKit.Internal.Enums
+  - ObjC.PencilKit.PKDrawing
+  - ObjC.PencilKit.PKEraserTool
+  - ObjC.PencilKit.PKFloatRange
+  - ObjC.PencilKit.PKInk
+  - ObjC.PencilKit.PKInkingTool
+  - ObjC.PencilKit.PKLassoTool
+  - ObjC.PencilKit.PKStroke
+  - ObjC.PencilKit.PKStrokePath
+  - ObjC.PencilKit.PKStrokePoint
+  - ObjC.PencilKit.PKTool
+  - ObjC.PencilKit.PKToolPickerEraserItem
+  - ObjC.PencilKit.PKToolPickerInkingItem
+  - ObjC.PencilKit.PKToolPickerItem

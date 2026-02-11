@@ -1,0 +1,76 @@
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts #-}
+
+-- | VNRecognizedPoint3D
+--
+-- An extension of VNPoint3D that associates an identifier to the point.
+--
+-- It should be noted that VNRecognizedPoint3D is not intended as an overall replacement of simd float 4x4, but is used by observations that recognize labeled points of interest.
+--
+-- Generated bindings for @VNRecognizedPoint3D@.
+module ObjC.Vision.VNRecognizedPoint3D
+  ( VNRecognizedPoint3D
+  , IsVNRecognizedPoint3D(..)
+  , new
+  , init_
+  , identifier
+  , newSelector
+  , initSelector
+  , identifierSelector
+
+
+  ) where
+
+import Foreign.Ptr (Ptr, nullPtr, castPtr)
+import Foreign.LibFFI
+import Foreign.C.Types
+import Data.Int (Int8, Int16)
+import Data.Word (Word16)
+import Data.Coerce (coerce)
+
+import ObjC.Runtime.Types
+import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Selector (mkSelector)
+import ObjC.Runtime.Class (getRequiredClass)
+
+import ObjC.Vision.Internal.Classes
+import ObjC.Foundation.Internal.Classes
+
+-- | @+ new@
+new :: IO (Id VNRecognizedPoint3D)
+new  =
+  do
+    cls' <- getRequiredClass "VNRecognizedPoint3D"
+    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+
+-- | @- init@
+init_ :: IsVNRecognizedPoint3D vnRecognizedPoint3D => vnRecognizedPoint3D -> IO (Id VNRecognizedPoint3D)
+init_ vnRecognizedPoint3D  =
+  sendMsg vnRecognizedPoint3D (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+
+-- | The is the identifier that provides context as to the kind of point that was recognized.
+--
+-- The string is defined by the model that recognized the point. Usually these are technical labels that are not localized and not meant to be used directly to be presented to an end user in the UI.
+--
+-- ObjC selector: @- identifier@
+identifier :: IsVNRecognizedPoint3D vnRecognizedPoint3D => vnRecognizedPoint3D -> IO (Id NSString)
+identifier vnRecognizedPoint3D  =
+  sendMsg vnRecognizedPoint3D (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- ---------------------------------------------------------------------------
+-- Selectors
+-- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @new@
+newSelector :: Selector
+newSelector = mkSelector "new"
+
+-- | @Selector@ for @init@
+initSelector :: Selector
+initSelector = mkSelector "init"
+
+-- | @Selector@ for @identifier@
+identifierSelector :: Selector
+identifierSelector = mkSelector "identifier"
+

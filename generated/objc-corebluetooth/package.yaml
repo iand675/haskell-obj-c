@@ -1,0 +1,37 @@
+name:                objc-corebluetooth
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the CoreBluetooth framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.CoreBluetooth.CBATTRequest
+  - ObjC.CoreBluetooth.CBAttribute
+  - ObjC.CoreBluetooth.CBCentral
+  - ObjC.CoreBluetooth.CBCentralManager
+  - ObjC.CoreBluetooth.CBCharacteristic
+  - ObjC.CoreBluetooth.CBDescriptor
+  - ObjC.CoreBluetooth.CBL2CAPChannel
+  - ObjC.CoreBluetooth.CBManager
+  - ObjC.CoreBluetooth.CBMutableCharacteristic
+  - ObjC.CoreBluetooth.CBMutableDescriptor
+  - ObjC.CoreBluetooth.CBMutableService
+  - ObjC.CoreBluetooth.CBPeer
+  - ObjC.CoreBluetooth.CBPeripheral
+  - ObjC.CoreBluetooth.CBPeripheralManager
+  - ObjC.CoreBluetooth.CBService
+  - ObjC.CoreBluetooth.CBUUID
+  - ObjC.CoreBluetooth.Enums
+  - ObjC.CoreBluetooth.Internal.Classes
+  - ObjC.CoreBluetooth.Internal.Enums

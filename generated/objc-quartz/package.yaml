@@ -1,0 +1,53 @@
+name:                objc-quartz
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the Quartz framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-coreimage
+- objc-foundation
+- objc-quartzcore
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.Quartz.CIFilter
+  - ObjC.Quartz.Enums
+  - ObjC.Quartz.IKCameraDeviceView
+  - ObjC.Quartz.IKDeviceBrowserView
+  - ObjC.Quartz.IKFilterBrowserPanel
+  - ObjC.Quartz.IKFilterBrowserView
+  - ObjC.Quartz.IKFilterUIView
+  - ObjC.Quartz.IKImageBrowserCell
+  - ObjC.Quartz.IKImageBrowserView
+  - ObjC.Quartz.IKImageEditPanel
+  - ObjC.Quartz.IKImageView
+  - ObjC.Quartz.IKPictureTaker
+  - ObjC.Quartz.IKSaveOptions
+  - ObjC.Quartz.IKScannerDeviceView
+  - ObjC.Quartz.IKSlideshow
+  - ObjC.Quartz.Internal.Classes
+  - ObjC.Quartz.Internal.Enums
+  - ObjC.Quartz.NSObject
+  - ObjC.Quartz.QCComposition
+  - ObjC.Quartz.QCCompositionLayer
+  - ObjC.Quartz.QCCompositionParameterView
+  - ObjC.Quartz.QCCompositionPickerPanel
+  - ObjC.Quartz.QCCompositionPickerView
+  - ObjC.Quartz.QCCompositionRepository
+  - ObjC.Quartz.QCPatchController
+  - ObjC.Quartz.QCPlugIn
+  - ObjC.Quartz.QCPlugInViewController
+  - ObjC.Quartz.QCRenderer
+  - ObjC.Quartz.QCView
+  - ObjC.Quartz.QuartzFilter
+  - ObjC.Quartz.QuartzFilterManager
+  - ObjC.Quartz.QuartzFilterView

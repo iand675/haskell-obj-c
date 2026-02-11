@@ -1,0 +1,40 @@
+name:                objc-glkit
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the GLKit framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+- objc-modelio
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.GLKit.Enums
+  - ObjC.GLKit.GLKBaseEffect
+  - ObjC.GLKit.GLKEffectProperty
+  - ObjC.GLKit.GLKEffectPropertyFog
+  - ObjC.GLKit.GLKEffectPropertyLight
+  - ObjC.GLKit.GLKEffectPropertyMaterial
+  - ObjC.GLKit.GLKEffectPropertyTexture
+  - ObjC.GLKit.GLKEffectPropertyTransform
+  - ObjC.GLKit.GLKMesh
+  - ObjC.GLKit.GLKMeshBuffer
+  - ObjC.GLKit.GLKMeshBufferAllocator
+  - ObjC.GLKit.GLKReflectionMapEffect
+  - ObjC.GLKit.GLKSkyboxEffect
+  - ObjC.GLKit.GLKSubmesh
+  - ObjC.GLKit.GLKTextureInfo
+  - ObjC.GLKit.GLKTextureLoader
+  - ObjC.GLKit.Internal.Classes
+  - ObjC.GLKit.Internal.Enums
+  - ObjC.GLKit.Internal.Structs
+  - ObjC.GLKit.Structs

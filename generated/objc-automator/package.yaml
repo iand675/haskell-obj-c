@@ -1,0 +1,33 @@
+name:                objc-automator
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the Automator framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+- objc-osakit
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.Automator.AMAction
+  - ObjC.Automator.AMAppleScriptAction
+  - ObjC.Automator.AMBundleAction
+  - ObjC.Automator.AMShellScriptAction
+  - ObjC.Automator.AMWorkflow
+  - ObjC.Automator.AMWorkflowController
+  - ObjC.Automator.AMWorkflowView
+  - ObjC.Automator.AMWorkspace
+  - ObjC.Automator.Enums
+  - ObjC.Automator.Internal.Classes
+  - ObjC.Automator.Internal.Enums
+  - ObjC.Automator.NSObject
+  - ObjC.Automator.OSAScript

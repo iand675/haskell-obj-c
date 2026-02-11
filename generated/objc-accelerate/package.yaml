@@ -1,0 +1,22 @@
+name:                objc-accelerate
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the Accelerate framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.Accelerate
+  - ObjC.Accelerate.Enums
+  - ObjC.Accelerate.Internal.Enums
+  - ObjC.Accelerate.Internal.Structs
+  - ObjC.Accelerate.Structs

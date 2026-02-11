@@ -1,0 +1,40 @@
+name:                objc-photosui
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the PhotosUI framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+- objc-photos
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.PhotosUI.Enums
+  - ObjC.PhotosUI.Internal.Classes
+  - ObjC.PhotosUI.Internal.Enums
+  - ObjC.PhotosUI.PHLivePhotoView
+  - ObjC.PhotosUI.PHPickerConfiguration
+  - ObjC.PhotosUI.PHPickerFilter
+  - ObjC.PhotosUI.PHPickerResult
+  - ObjC.PhotosUI.PHPickerUpdateConfiguration
+  - ObjC.PhotosUI.PHPickerViewController
+  - ObjC.PhotosUI.PHProjectAssetElement
+  - ObjC.PhotosUI.PHProjectElement
+  - ObjC.PhotosUI.PHProjectExtensionContext
+  - ObjC.PhotosUI.PHProjectInfo
+  - ObjC.PhotosUI.PHProjectJournalEntryElement
+  - ObjC.PhotosUI.PHProjectMapElement
+  - ObjC.PhotosUI.PHProjectRegionOfInterest
+  - ObjC.PhotosUI.PHProjectSection
+  - ObjC.PhotosUI.PHProjectSectionContent
+  - ObjC.PhotosUI.PHProjectTextElement
+  - ObjC.PhotosUI.PHProjectTypeDescription

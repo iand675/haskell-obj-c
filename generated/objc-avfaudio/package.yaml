@@ -1,0 +1,97 @@
+name:                objc-avfaudio
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the AVFAudio framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-audiotoolbox
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.AVFAudio.AVAUPresetEvent
+  - ObjC.AVFAudio.AVAudioApplication
+  - ObjC.AVFAudio.AVAudioBuffer
+  - ObjC.AVFAudio.AVAudioChannelLayout
+  - ObjC.AVFAudio.AVAudioCompressedBuffer
+  - ObjC.AVFAudio.AVAudioConnectionPoint
+  - ObjC.AVFAudio.AVAudioConverter
+  - ObjC.AVFAudio.AVAudioEngine
+  - ObjC.AVFAudio.AVAudioEnvironmentDistanceAttenuationParameters
+  - ObjC.AVFAudio.AVAudioEnvironmentNode
+  - ObjC.AVFAudio.AVAudioEnvironmentReverbParameters
+  - ObjC.AVFAudio.AVAudioFile
+  - ObjC.AVFAudio.AVAudioFormat
+  - ObjC.AVFAudio.AVAudioIONode
+  - ObjC.AVFAudio.AVAudioInputNode
+  - ObjC.AVFAudio.AVAudioMixerNode
+  - ObjC.AVFAudio.AVAudioMixingDestination
+  - ObjC.AVFAudio.AVAudioNode
+  - ObjC.AVFAudio.AVAudioOutputNode
+  - ObjC.AVFAudio.AVAudioPCMBuffer
+  - ObjC.AVFAudio.AVAudioPlayer
+  - ObjC.AVFAudio.AVAudioPlayerNode
+  - ObjC.AVFAudio.AVAudioRecorder
+  - ObjC.AVFAudio.AVAudioRoutingArbiter
+  - ObjC.AVFAudio.AVAudioSequencer
+  - ObjC.AVFAudio.AVAudioSession
+  - ObjC.AVFAudio.AVAudioSessionCapability
+  - ObjC.AVFAudio.AVAudioSessionChannelDescription
+  - ObjC.AVFAudio.AVAudioSessionDataSourceDescription
+  - ObjC.AVFAudio.AVAudioSessionPortDescription
+  - ObjC.AVFAudio.AVAudioSessionPortExtensionBluetoothMicrophone
+  - ObjC.AVFAudio.AVAudioSessionRouteDescription
+  - ObjC.AVFAudio.AVAudioSinkNode
+  - ObjC.AVFAudio.AVAudioSourceNode
+  - ObjC.AVFAudio.AVAudioTime
+  - ObjC.AVFAudio.AVAudioUnit
+  - ObjC.AVFAudio.AVAudioUnitComponent
+  - ObjC.AVFAudio.AVAudioUnitComponentManager
+  - ObjC.AVFAudio.AVAudioUnitDelay
+  - ObjC.AVFAudio.AVAudioUnitDistortion
+  - ObjC.AVFAudio.AVAudioUnitEQ
+  - ObjC.AVFAudio.AVAudioUnitEQFilterParameters
+  - ObjC.AVFAudio.AVAudioUnitEffect
+  - ObjC.AVFAudio.AVAudioUnitGenerator
+  - ObjC.AVFAudio.AVAudioUnitMIDIInstrument
+  - ObjC.AVFAudio.AVAudioUnitReverb
+  - ObjC.AVFAudio.AVAudioUnitSampler
+  - ObjC.AVFAudio.AVAudioUnitTimeEffect
+  - ObjC.AVFAudio.AVAudioUnitTimePitch
+  - ObjC.AVFAudio.AVAudioUnitVarispeed
+  - ObjC.AVFAudio.AVExtendedNoteOnEvent
+  - ObjC.AVFAudio.AVExtendedTempoEvent
+  - ObjC.AVFAudio.AVMIDIChannelEvent
+  - ObjC.AVFAudio.AVMIDIChannelPressureEvent
+  - ObjC.AVFAudio.AVMIDIControlChangeEvent
+  - ObjC.AVFAudio.AVMIDIMetaEvent
+  - ObjC.AVFAudio.AVMIDINoteEvent
+  - ObjC.AVFAudio.AVMIDIPitchBendEvent
+  - ObjC.AVFAudio.AVMIDIPlayer
+  - ObjC.AVFAudio.AVMIDIPolyPressureEvent
+  - ObjC.AVFAudio.AVMIDIProgramChangeEvent
+  - ObjC.AVFAudio.AVMIDISysexEvent
+  - ObjC.AVFAudio.AVMusicEvent
+  - ObjC.AVFAudio.AVMusicTrack
+  - ObjC.AVFAudio.AVMusicUserEvent
+  - ObjC.AVFAudio.AVParameterEvent
+  - ObjC.AVFAudio.AVSpeechSynthesisMarker
+  - ObjC.AVFAudio.AVSpeechSynthesisProviderAudioUnit
+  - ObjC.AVFAudio.AVSpeechSynthesisProviderRequest
+  - ObjC.AVFAudio.AVSpeechSynthesisProviderVoice
+  - ObjC.AVFAudio.AVSpeechSynthesisVoice
+  - ObjC.AVFAudio.AVSpeechSynthesizer
+  - ObjC.AVFAudio.AVSpeechUtterance
+  - ObjC.AVFAudio.Enums
+  - ObjC.AVFAudio.Internal.Classes
+  - ObjC.AVFAudio.Internal.Enums
+  - ObjC.AVFAudio.Internal.Structs
+  - ObjC.AVFAudio.Structs

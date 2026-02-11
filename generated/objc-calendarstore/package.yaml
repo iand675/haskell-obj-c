@@ -1,0 +1,29 @@
+name:                objc-calendarstore
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the CalendarStore framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.CalendarStore.CalAlarm
+  - ObjC.CalendarStore.CalAttendee
+  - ObjC.CalendarStore.CalCalendar
+  - ObjC.CalendarStore.CalCalendarItem
+  - ObjC.CalendarStore.CalCalendarStore
+  - ObjC.CalendarStore.CalEvent
+  - ObjC.CalendarStore.CalNthWeekDay
+  - ObjC.CalendarStore.CalRecurrenceEnd
+  - ObjC.CalendarStore.CalRecurrenceRule
+  - ObjC.CalendarStore.CalTask
+  - ObjC.CalendarStore.Internal.Classes

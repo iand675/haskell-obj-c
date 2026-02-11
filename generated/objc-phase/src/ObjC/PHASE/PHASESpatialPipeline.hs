@@ -1,0 +1,119 @@
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts #-}
+
+-- | *************************************************************************************************
+--
+-- PHASESpatialPipeline
+--
+-- Spatial Pipeline.
+--
+-- Generated bindings for @PHASESpatialPipeline@.
+module ObjC.PHASE.PHASESpatialPipeline
+  ( PHASESpatialPipeline
+  , IsPHASESpatialPipeline(..)
+  , init_
+  , new
+  , initWithFlags
+  , flags
+  , entries
+  , initSelector
+  , newSelector
+  , initWithFlagsSelector
+  , flagsSelector
+  , entriesSelector
+
+  -- * Enum types
+  , PHASESpatialPipelineFlags(PHASESpatialPipelineFlags)
+  , pattern PHASESpatialPipelineFlagDirectPathTransmission
+  , pattern PHASESpatialPipelineFlagEarlyReflections
+  , pattern PHASESpatialPipelineFlagLateReverb
+
+  ) where
+
+import Foreign.Ptr (Ptr, nullPtr, castPtr)
+import Foreign.LibFFI
+import Foreign.C.Types
+import Data.Int (Int8, Int16)
+import Data.Word (Word16)
+import Data.Coerce (coerce)
+
+import ObjC.Runtime.Types
+import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Selector (mkSelector)
+import ObjC.Runtime.Class (getRequiredClass)
+
+import ObjC.PHASE.Internal.Classes
+import ObjC.PHASE.Internal.Enums
+import ObjC.Foundation.Internal.Classes
+
+-- | @- init@
+init_ :: IsPHASESpatialPipeline phaseSpatialPipeline => phaseSpatialPipeline -> IO (Id PHASESpatialPipeline)
+init_ phaseSpatialPipeline  =
+  sendMsg phaseSpatialPipeline (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+
+-- | @+ new@
+new :: IO (Id PHASESpatialPipeline)
+new  =
+  do
+    cls' <- getRequiredClass "PHASESpatialPipeline"
+    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+
+-- | initWithFlags
+--
+-- Initialize a Spatial Pipeline with the provided flags.
+--
+-- It's invalid to pass flags == 0 to this function. Doing so will return nil.
+--
+-- @flags@ — Options for direct path transmission, early reflections, late reverb, etc.
+--
+-- ObjC selector: @- initWithFlags:@
+initWithFlags :: IsPHASESpatialPipeline phaseSpatialPipeline => phaseSpatialPipeline -> PHASESpatialPipelineFlags -> IO (Id PHASESpatialPipeline)
+initWithFlags phaseSpatialPipeline  flags =
+  sendMsg phaseSpatialPipeline (mkSelector "initWithFlags:") (retPtr retVoid) [argCULong (coerce flags)] >>= ownedObject . castPtr
+
+-- | flags
+--
+-- Spatial Pipeline Flags.
+--
+-- ObjC selector: @- flags@
+flags :: IsPHASESpatialPipeline phaseSpatialPipeline => phaseSpatialPipeline -> IO PHASESpatialPipelineFlags
+flags phaseSpatialPipeline  =
+  fmap (coerce :: CULong -> PHASESpatialPipelineFlags) $ sendMsg phaseSpatialPipeline (mkSelector "flags") retCULong []
+
+-- | entries
+--
+-- A dictionary of entries in the Spatial Pipeline.
+--
+-- Upon initialization, an entry will be created for every flag in the PHASESpatialPipelineFlags passed to PHASESpatialPipeline:initWithFlags.
+--
+-- ObjC selector: @- entries@
+entries :: IsPHASESpatialPipeline phaseSpatialPipeline => phaseSpatialPipeline -> IO (Id NSDictionary)
+entries phaseSpatialPipeline  =
+  sendMsg phaseSpatialPipeline (mkSelector "entries") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- ---------------------------------------------------------------------------
+-- Selectors
+-- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @init@
+initSelector :: Selector
+initSelector = mkSelector "init"
+
+-- | @Selector@ for @new@
+newSelector :: Selector
+newSelector = mkSelector "new"
+
+-- | @Selector@ for @initWithFlags:@
+initWithFlagsSelector :: Selector
+initWithFlagsSelector = mkSelector "initWithFlags:"
+
+-- | @Selector@ for @flags@
+flagsSelector :: Selector
+flagsSelector = mkSelector "flags"
+
+-- | @Selector@ for @entries@
+entriesSelector :: Selector
+entriesSelector = mkSelector "entries"
+

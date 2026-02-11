@@ -1,0 +1,26 @@
+name:                objc-systemextensions
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the SystemExtensions framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.SystemExtensions.Enums
+  - ObjC.SystemExtensions.Internal.Classes
+  - ObjC.SystemExtensions.Internal.Enums
+  - ObjC.SystemExtensions.OSSystemExtensionInfo
+  - ObjC.SystemExtensions.OSSystemExtensionManager
+  - ObjC.SystemExtensions.OSSystemExtensionProperties
+  - ObjC.SystemExtensions.OSSystemExtensionRequest
+  - ObjC.SystemExtensions.OSSystemExtensionsWorkspace

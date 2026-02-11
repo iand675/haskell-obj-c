@@ -1,0 +1,173 @@
+name:                objc-metal
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the Metal framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.Metal.Enums
+  - ObjC.Metal.Internal.Classes
+  - ObjC.Metal.Internal.Enums
+  - ObjC.Metal.Internal.Structs
+  - ObjC.Metal.MTL4AccelerationStructureBoundingBoxGeometryDescriptor
+  - ObjC.Metal.MTL4AccelerationStructureCurveGeometryDescriptor
+  - ObjC.Metal.MTL4AccelerationStructureDescriptor
+  - ObjC.Metal.MTL4AccelerationStructureGeometryDescriptor
+  - ObjC.Metal.MTL4AccelerationStructureMotionBoundingBoxGeometryDescriptor
+  - ObjC.Metal.MTL4AccelerationStructureMotionCurveGeometryDescriptor
+  - ObjC.Metal.MTL4AccelerationStructureMotionTriangleGeometryDescriptor
+  - ObjC.Metal.MTL4AccelerationStructureTriangleGeometryDescriptor
+  - ObjC.Metal.MTL4ArgumentTableDescriptor
+  - ObjC.Metal.MTL4BinaryFunctionDescriptor
+  - ObjC.Metal.MTL4CommandAllocatorDescriptor
+  - ObjC.Metal.MTL4CommandBufferOptions
+  - ObjC.Metal.MTL4CommandQueueDescriptor
+  - ObjC.Metal.MTL4CommitOptions
+  - ObjC.Metal.MTL4CompilerDescriptor
+  - ObjC.Metal.MTL4CompilerTaskOptions
+  - ObjC.Metal.MTL4ComputePipelineDescriptor
+  - ObjC.Metal.MTL4CounterHeapDescriptor
+  - ObjC.Metal.MTL4FunctionDescriptor
+  - ObjC.Metal.MTL4IndirectInstanceAccelerationStructureDescriptor
+  - ObjC.Metal.MTL4InstanceAccelerationStructureDescriptor
+  - ObjC.Metal.MTL4LibraryDescriptor
+  - ObjC.Metal.MTL4LibraryFunctionDescriptor
+  - ObjC.Metal.MTL4MachineLearningPipelineDescriptor
+  - ObjC.Metal.MTL4MachineLearningPipelineReflection
+  - ObjC.Metal.MTL4MeshRenderPipelineDescriptor
+  - ObjC.Metal.MTL4PipelineDataSetSerializerDescriptor
+  - ObjC.Metal.MTL4PipelineDescriptor
+  - ObjC.Metal.MTL4PipelineOptions
+  - ObjC.Metal.MTL4PipelineStageDynamicLinkingDescriptor
+  - ObjC.Metal.MTL4PrimitiveAccelerationStructureDescriptor
+  - ObjC.Metal.MTL4RenderPassDescriptor
+  - ObjC.Metal.MTL4RenderPipelineBinaryFunctionsDescriptor
+  - ObjC.Metal.MTL4RenderPipelineColorAttachmentDescriptor
+  - ObjC.Metal.MTL4RenderPipelineColorAttachmentDescriptorArray
+  - ObjC.Metal.MTL4RenderPipelineDescriptor
+  - ObjC.Metal.MTL4RenderPipelineDynamicLinkingDescriptor
+  - ObjC.Metal.MTL4SpecializedFunctionDescriptor
+  - ObjC.Metal.MTL4StaticLinkingDescriptor
+  - ObjC.Metal.MTL4StitchedFunctionDescriptor
+  - ObjC.Metal.MTL4TileRenderPipelineDescriptor
+  - ObjC.Metal.MTLAccelerationStructureBoundingBoxGeometryDescriptor
+  - ObjC.Metal.MTLAccelerationStructureCurveGeometryDescriptor
+  - ObjC.Metal.MTLAccelerationStructureDescriptor
+  - ObjC.Metal.MTLAccelerationStructureGeometryDescriptor
+  - ObjC.Metal.MTLAccelerationStructureMotionBoundingBoxGeometryDescriptor
+  - ObjC.Metal.MTLAccelerationStructureMotionCurveGeometryDescriptor
+  - ObjC.Metal.MTLAccelerationStructureMotionTriangleGeometryDescriptor
+  - ObjC.Metal.MTLAccelerationStructurePassDescriptor
+  - ObjC.Metal.MTLAccelerationStructurePassSampleBufferAttachmentDescriptor
+  - ObjC.Metal.MTLAccelerationStructurePassSampleBufferAttachmentDescriptorArray
+  - ObjC.Metal.MTLAccelerationStructureTriangleGeometryDescriptor
+  - ObjC.Metal.MTLArchitecture
+  - ObjC.Metal.MTLArgument
+  - ObjC.Metal.MTLArgumentDescriptor
+  - ObjC.Metal.MTLArrayType
+  - ObjC.Metal.MTLAttribute
+  - ObjC.Metal.MTLAttributeDescriptor
+  - ObjC.Metal.MTLAttributeDescriptorArray
+  - ObjC.Metal.MTLBinaryArchiveDescriptor
+  - ObjC.Metal.MTLBlitPassDescriptor
+  - ObjC.Metal.MTLBlitPassSampleBufferAttachmentDescriptor
+  - ObjC.Metal.MTLBlitPassSampleBufferAttachmentDescriptorArray
+  - ObjC.Metal.MTLBufferLayoutDescriptor
+  - ObjC.Metal.MTLBufferLayoutDescriptorArray
+  - ObjC.Metal.MTLCaptureDescriptor
+  - ObjC.Metal.MTLCaptureManager
+  - ObjC.Metal.MTLCommandBufferDescriptor
+  - ObjC.Metal.MTLCommandQueueDescriptor
+  - ObjC.Metal.MTLCompileOptions
+  - ObjC.Metal.MTLComputePassDescriptor
+  - ObjC.Metal.MTLComputePassSampleBufferAttachmentDescriptor
+  - ObjC.Metal.MTLComputePassSampleBufferAttachmentDescriptorArray
+  - ObjC.Metal.MTLComputePipelineDescriptor
+  - ObjC.Metal.MTLComputePipelineReflection
+  - ObjC.Metal.MTLCounterSampleBufferDescriptor
+  - ObjC.Metal.MTLDepthStencilDescriptor
+  - ObjC.Metal.MTLFunctionConstant
+  - ObjC.Metal.MTLFunctionConstantValues
+  - ObjC.Metal.MTLFunctionDescriptor
+  - ObjC.Metal.MTLFunctionReflection
+  - ObjC.Metal.MTLFunctionStitchingAttributeAlwaysInline
+  - ObjC.Metal.MTLFunctionStitchingFunctionNode
+  - ObjC.Metal.MTLFunctionStitchingGraph
+  - ObjC.Metal.MTLFunctionStitchingInputNode
+  - ObjC.Metal.MTLHeapDescriptor
+  - ObjC.Metal.MTLIOCommandQueueDescriptor
+  - ObjC.Metal.MTLIndirectCommandBufferDescriptor
+  - ObjC.Metal.MTLIndirectInstanceAccelerationStructureDescriptor
+  - ObjC.Metal.MTLInstanceAccelerationStructureDescriptor
+  - ObjC.Metal.MTLIntersectionFunctionDescriptor
+  - ObjC.Metal.MTLIntersectionFunctionTableDescriptor
+  - ObjC.Metal.MTLLinkedFunctions
+  - ObjC.Metal.MTLLogStateDescriptor
+  - ObjC.Metal.MTLLogicalToPhysicalColorAttachmentMap
+  - ObjC.Metal.MTLMeshRenderPipelineDescriptor
+  - ObjC.Metal.MTLMotionKeyframeData
+  - ObjC.Metal.MTLPipelineBufferDescriptor
+  - ObjC.Metal.MTLPipelineBufferDescriptorArray
+  - ObjC.Metal.MTLPointerType
+  - ObjC.Metal.MTLPrimitiveAccelerationStructureDescriptor
+  - ObjC.Metal.MTLRasterizationRateLayerArray
+  - ObjC.Metal.MTLRasterizationRateLayerDescriptor
+  - ObjC.Metal.MTLRasterizationRateMapDescriptor
+  - ObjC.Metal.MTLRasterizationRateSampleArray
+  - ObjC.Metal.MTLRenderPassAttachmentDescriptor
+  - ObjC.Metal.MTLRenderPassColorAttachmentDescriptor
+  - ObjC.Metal.MTLRenderPassColorAttachmentDescriptorArray
+  - ObjC.Metal.MTLRenderPassDepthAttachmentDescriptor
+  - ObjC.Metal.MTLRenderPassDescriptor
+  - ObjC.Metal.MTLRenderPassSampleBufferAttachmentDescriptor
+  - ObjC.Metal.MTLRenderPassSampleBufferAttachmentDescriptorArray
+  - ObjC.Metal.MTLRenderPassStencilAttachmentDescriptor
+  - ObjC.Metal.MTLRenderPipelineColorAttachmentDescriptor
+  - ObjC.Metal.MTLRenderPipelineColorAttachmentDescriptorArray
+  - ObjC.Metal.MTLRenderPipelineDescriptor
+  - ObjC.Metal.MTLRenderPipelineFunctionsDescriptor
+  - ObjC.Metal.MTLRenderPipelineReflection
+  - ObjC.Metal.MTLResidencySetDescriptor
+  - ObjC.Metal.MTLResourceStatePassDescriptor
+  - ObjC.Metal.MTLResourceStatePassSampleBufferAttachmentDescriptor
+  - ObjC.Metal.MTLResourceStatePassSampleBufferAttachmentDescriptorArray
+  - ObjC.Metal.MTLResourceViewPoolDescriptor
+  - ObjC.Metal.MTLSamplerDescriptor
+  - ObjC.Metal.MTLSharedEventHandle
+  - ObjC.Metal.MTLSharedEventListener
+  - ObjC.Metal.MTLSharedTextureHandle
+  - ObjC.Metal.MTLStageInputOutputDescriptor
+  - ObjC.Metal.MTLStencilDescriptor
+  - ObjC.Metal.MTLStitchedLibraryDescriptor
+  - ObjC.Metal.MTLStructMember
+  - ObjC.Metal.MTLStructType
+  - ObjC.Metal.MTLTensorDescriptor
+  - ObjC.Metal.MTLTensorExtents
+  - ObjC.Metal.MTLTensorReferenceType
+  - ObjC.Metal.MTLTextureDescriptor
+  - ObjC.Metal.MTLTextureReferenceType
+  - ObjC.Metal.MTLTextureViewDescriptor
+  - ObjC.Metal.MTLTileRenderPipelineColorAttachmentDescriptor
+  - ObjC.Metal.MTLTileRenderPipelineColorAttachmentDescriptorArray
+  - ObjC.Metal.MTLTileRenderPipelineDescriptor
+  - ObjC.Metal.MTLType
+  - ObjC.Metal.MTLVertexAttribute
+  - ObjC.Metal.MTLVertexAttributeDescriptor
+  - ObjC.Metal.MTLVertexAttributeDescriptorArray
+  - ObjC.Metal.MTLVertexBufferLayoutDescriptor
+  - ObjC.Metal.MTLVertexBufferLayoutDescriptorArray
+  - ObjC.Metal.MTLVertexDescriptor
+  - ObjC.Metal.MTLVisibleFunctionTableDescriptor
+  - ObjC.Metal.NSProcessInfo
+  - ObjC.Metal.Structs

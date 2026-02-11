@@ -1,0 +1,24 @@
+name:                objc-businesschat
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the BusinessChat framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.BusinessChat.BCChatAction
+  - ObjC.BusinessChat.BCChatButton
+  - ObjC.BusinessChat.Enums
+  - ObjC.BusinessChat.Internal.Classes
+  - ObjC.BusinessChat.Internal.Enums

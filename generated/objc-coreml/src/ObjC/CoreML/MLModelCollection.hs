@@ -1,0 +1,105 @@
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts #-}
+
+-- | MLModelCollection
+--
+-- A collection of models managed as part of Core ML Model Deployment.
+--
+-- Generated bindings for @MLModelCollection@.
+module ObjC.CoreML.MLModelCollection
+  ( MLModelCollection
+  , IsMLModelCollection(..)
+  , beginAccessingModelCollectionWithIdentifier_completionHandler
+  , endAccessingModelCollectionWithIdentifier_completionHandler
+  , init_
+  , new
+  , beginAccessingModelCollectionWithIdentifier_completionHandlerSelector
+  , endAccessingModelCollectionWithIdentifier_completionHandlerSelector
+  , initSelector
+  , newSelector
+
+
+  ) where
+
+import Foreign.Ptr (Ptr, nullPtr, castPtr)
+import Foreign.LibFFI
+import Foreign.C.Types
+import Data.Int (Int8, Int16)
+import Data.Word (Word16)
+import Data.Coerce (coerce)
+
+import ObjC.Runtime.Types
+import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Selector (mkSelector)
+import ObjC.Runtime.Class (getRequiredClass)
+
+import ObjC.CoreML.Internal.Classes
+import ObjC.Foundation.Internal.Classes
+
+-- | Request access to a model collection. If the collection is not downloaded on the device, it is requested  from Core ML Model Deployment.
+--
+-- When called, this method downloads the model collection if it is not already on the device. Once  all models are downloaded, an MLModelCollection instance is made available for use with the completion handler.
+--
+-- @identifier@ — The model collection identifier, as managed in Core ML Model Deployment.
+--
+-- @completionHandler@ — The completion handler, invoked with a valid MLModelCollection instance on success or NSError on failure.
+--
+-- Returns: NSProgress for updates during setup and download of the model collection
+--
+-- ObjC selector: @+ beginAccessingModelCollectionWithIdentifier:completionHandler:@
+beginAccessingModelCollectionWithIdentifier_completionHandler :: IsNSString identifier => identifier -> Ptr () -> IO (Id NSProgress)
+beginAccessingModelCollectionWithIdentifier_completionHandler identifier completionHandler =
+  do
+    cls' <- getRequiredClass "MLModelCollection"
+    withObjCPtr identifier $ \raw_identifier ->
+      sendClassMsg cls' (mkSelector "beginAccessingModelCollectionWithIdentifier:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= retainedObject . castPtr
+
+-- | End access to a model collection. This informs the system you have finished accessing the models within the collection.
+--
+-- Call this method as soon as you have finished using the models in this collection.
+--
+-- @identifier@ — The model collection identifier, as managed in Core ML Model Deployment.
+--
+-- @completionHandler@ — The completion handler, invoked with YES on success or NSError on failure.
+--
+-- ObjC selector: @+ endAccessingModelCollectionWithIdentifier:completionHandler:@
+endAccessingModelCollectionWithIdentifier_completionHandler :: IsNSString identifier => identifier -> Ptr () -> IO ()
+endAccessingModelCollectionWithIdentifier_completionHandler identifier completionHandler =
+  do
+    cls' <- getRequiredClass "MLModelCollection"
+    withObjCPtr identifier $ \raw_identifier ->
+      sendClassMsg cls' (mkSelector "endAccessingModelCollectionWithIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+
+-- | @- init@
+init_ :: IsMLModelCollection mlModelCollection => mlModelCollection -> IO (Id MLModelCollection)
+init_ mlModelCollection  =
+  sendMsg mlModelCollection (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+
+-- | @+ new@
+new :: IO RawId
+new  =
+  do
+    cls' <- getRequiredClass "MLModelCollection"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "new") (retPtr retVoid) []
+
+-- ---------------------------------------------------------------------------
+-- Selectors
+-- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @beginAccessingModelCollectionWithIdentifier:completionHandler:@
+beginAccessingModelCollectionWithIdentifier_completionHandlerSelector :: Selector
+beginAccessingModelCollectionWithIdentifier_completionHandlerSelector = mkSelector "beginAccessingModelCollectionWithIdentifier:completionHandler:"
+
+-- | @Selector@ for @endAccessingModelCollectionWithIdentifier:completionHandler:@
+endAccessingModelCollectionWithIdentifier_completionHandlerSelector :: Selector
+endAccessingModelCollectionWithIdentifier_completionHandlerSelector = mkSelector "endAccessingModelCollectionWithIdentifier:completionHandler:"
+
+-- | @Selector@ for @init@
+initSelector :: Selector
+initSelector = mkSelector "init"
+
+-- | @Selector@ for @new@
+newSelector :: Selector
+newSelector = mkSelector "new"
+

@@ -1,0 +1,75 @@
+name:                objc-mediaplayer
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the MediaPlayer framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-avfoundation
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.MediaPlayer.AVMediaSelectionGroup
+  - ObjC.MediaPlayer.AVMediaSelectionOption
+  - ObjC.MediaPlayer.AVPlayerItem
+  - ObjC.MediaPlayer.Enums
+  - ObjC.MediaPlayer.Internal.Classes
+  - ObjC.MediaPlayer.Internal.Enums
+  - ObjC.MediaPlayer.MPAdTimeRange
+  - ObjC.MediaPlayer.MPChangeLanguageOptionCommandEvent
+  - ObjC.MediaPlayer.MPChangePlaybackPositionCommand
+  - ObjC.MediaPlayer.MPChangePlaybackPositionCommandEvent
+  - ObjC.MediaPlayer.MPChangePlaybackRateCommand
+  - ObjC.MediaPlayer.MPChangePlaybackRateCommandEvent
+  - ObjC.MediaPlayer.MPChangeRepeatModeCommand
+  - ObjC.MediaPlayer.MPChangeRepeatModeCommandEvent
+  - ObjC.MediaPlayer.MPChangeShuffleModeCommand
+  - ObjC.MediaPlayer.MPChangeShuffleModeCommandEvent
+  - ObjC.MediaPlayer.MPContentItem
+  - ObjC.MediaPlayer.MPFeedbackCommand
+  - ObjC.MediaPlayer.MPFeedbackCommandEvent
+  - ObjC.MediaPlayer.MPMediaEntity
+  - ObjC.MediaPlayer.MPMediaItem
+  - ObjC.MediaPlayer.MPMediaItemAnimatedArtwork
+  - ObjC.MediaPlayer.MPMediaItemArtwork
+  - ObjC.MediaPlayer.MPMediaItemCollection
+  - ObjC.MediaPlayer.MPMediaLibrary
+  - ObjC.MediaPlayer.MPMediaPlaylist
+  - ObjC.MediaPlayer.MPMediaPlaylistCreationMetadata
+  - ObjC.MediaPlayer.MPMediaPredicate
+  - ObjC.MediaPlayer.MPMediaPropertyPredicate
+  - ObjC.MediaPlayer.MPMediaQuery
+  - ObjC.MediaPlayer.MPMediaQuerySection
+  - ObjC.MediaPlayer.MPMusicPlayerApplicationController
+  - ObjC.MediaPlayer.MPMusicPlayerController
+  - ObjC.MediaPlayer.MPMusicPlayerControllerMutableQueue
+  - ObjC.MediaPlayer.MPMusicPlayerControllerQueue
+  - ObjC.MediaPlayer.MPMusicPlayerMediaItemQueueDescriptor
+  - ObjC.MediaPlayer.MPMusicPlayerPlayParameters
+  - ObjC.MediaPlayer.MPMusicPlayerPlayParametersQueueDescriptor
+  - ObjC.MediaPlayer.MPMusicPlayerQueueDescriptor
+  - ObjC.MediaPlayer.MPMusicPlayerStoreQueueDescriptor
+  - ObjC.MediaPlayer.MPNowPlayingInfoCenter
+  - ObjC.MediaPlayer.MPNowPlayingInfoLanguageOption
+  - ObjC.MediaPlayer.MPNowPlayingInfoLanguageOptionGroup
+  - ObjC.MediaPlayer.MPNowPlayingSession
+  - ObjC.MediaPlayer.MPPlayableContentManager
+  - ObjC.MediaPlayer.MPPlayableContentManagerContext
+  - ObjC.MediaPlayer.MPRatingCommand
+  - ObjC.MediaPlayer.MPRatingCommandEvent
+  - ObjC.MediaPlayer.MPRemoteCommand
+  - ObjC.MediaPlayer.MPRemoteCommandCenter
+  - ObjC.MediaPlayer.MPRemoteCommandEvent
+  - ObjC.MediaPlayer.MPSeekCommandEvent
+  - ObjC.MediaPlayer.MPSkipIntervalCommand
+  - ObjC.MediaPlayer.MPSkipIntervalCommandEvent
+  - ObjC.MediaPlayer.NSUserActivity

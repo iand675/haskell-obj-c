@@ -1,0 +1,83 @@
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts #-}
+
+-- | A class representing a named value type in a Program.
+--
+-- Generated bindings for @MLModelStructureProgramNamedValueType@.
+module ObjC.CoreML.MLModelStructureProgramNamedValueType
+  ( MLModelStructureProgramNamedValueType
+  , IsMLModelStructureProgramNamedValueType(..)
+  , init_
+  , new
+  , name
+  , type_
+  , initSelector
+  , newSelector
+  , nameSelector
+  , typeSelector
+
+
+  ) where
+
+import Foreign.Ptr (Ptr, nullPtr, castPtr)
+import Foreign.LibFFI
+import Foreign.C.Types
+import Data.Int (Int8, Int16)
+import Data.Word (Word16)
+import Data.Coerce (coerce)
+
+import ObjC.Runtime.Types
+import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Selector (mkSelector)
+import ObjC.Runtime.Class (getRequiredClass)
+
+import ObjC.CoreML.Internal.Classes
+import ObjC.Foundation.Internal.Classes
+
+-- | @- init@
+init_ :: IsMLModelStructureProgramNamedValueType mlModelStructureProgramNamedValueType => mlModelStructureProgramNamedValueType -> IO (Id MLModelStructureProgramNamedValueType)
+init_ mlModelStructureProgramNamedValueType  =
+  sendMsg mlModelStructureProgramNamedValueType (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+
+-- | @+ new@
+new :: IO (Id MLModelStructureProgramNamedValueType)
+new  =
+  do
+    cls' <- getRequiredClass "MLModelStructureProgramNamedValueType"
+    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+
+-- | The name of the parameter.
+--
+-- ObjC selector: @- name@
+name :: IsMLModelStructureProgramNamedValueType mlModelStructureProgramNamedValueType => mlModelStructureProgramNamedValueType -> IO (Id NSString)
+name mlModelStructureProgramNamedValueType  =
+  sendMsg mlModelStructureProgramNamedValueType (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The type of the parameter.
+--
+-- ObjC selector: @- type@
+type_ :: IsMLModelStructureProgramNamedValueType mlModelStructureProgramNamedValueType => mlModelStructureProgramNamedValueType -> IO (Id MLModelStructureProgramValueType)
+type_ mlModelStructureProgramNamedValueType  =
+  sendMsg mlModelStructureProgramNamedValueType (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- ---------------------------------------------------------------------------
+-- Selectors
+-- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @init@
+initSelector :: Selector
+initSelector = mkSelector "init"
+
+-- | @Selector@ for @new@
+newSelector :: Selector
+newSelector = mkSelector "new"
+
+-- | @Selector@ for @name@
+nameSelector :: Selector
+nameSelector = mkSelector "name"
+
+-- | @Selector@ for @type@
+typeSelector :: Selector
+typeSelector = mkSelector "type"
+

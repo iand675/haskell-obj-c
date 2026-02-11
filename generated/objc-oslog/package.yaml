@@ -1,0 +1,30 @@
+name:                objc-oslog
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the OSLog framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.OSLog.Enums
+  - ObjC.OSLog.Internal.Classes
+  - ObjC.OSLog.Internal.Enums
+  - ObjC.OSLog.OSLogEntry
+  - ObjC.OSLog.OSLogEntryActivity
+  - ObjC.OSLog.OSLogEntryBoundary
+  - ObjC.OSLog.OSLogEntryLog
+  - ObjC.OSLog.OSLogEntrySignpost
+  - ObjC.OSLog.OSLogEnumerator
+  - ObjC.OSLog.OSLogMessageComponent
+  - ObjC.OSLog.OSLogPosition
+  - ObjC.OSLog.OSLogStore

@@ -1,0 +1,33 @@
+name:                objc-fileprovider
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the FileProvider framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.FileProvider.Enums
+  - ObjC.FileProvider.Internal.Classes
+  - ObjC.FileProvider.Internal.Enums
+  - ObjC.FileProvider.Internal.Structs
+  - ObjC.FileProvider.NSError
+  - ObjC.FileProvider.NSFileProviderDomain
+  - ObjC.FileProvider.NSFileProviderDomainVersion
+  - ObjC.FileProvider.NSFileProviderExtension
+  - ObjC.FileProvider.NSFileProviderItemVersion
+  - ObjC.FileProvider.NSFileProviderKnownFolderLocation
+  - ObjC.FileProvider.NSFileProviderKnownFolderLocations
+  - ObjC.FileProvider.NSFileProviderManager
+  - ObjC.FileProvider.NSFileProviderRequest
+  - ObjC.FileProvider.NSFileProviderStringSearchRequest
+  - ObjC.FileProvider.Structs

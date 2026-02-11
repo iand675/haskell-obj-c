@@ -1,0 +1,50 @@
+name:                objc-corelocation
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the CoreLocation framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-contacts
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.CoreLocation.CLBackgroundActivitySession
+  - ObjC.CoreLocation.CLBackgroundActivitySessionDiagnostic
+  - ObjC.CoreLocation.CLBeacon
+  - ObjC.CoreLocation.CLBeaconIdentityCondition
+  - ObjC.CoreLocation.CLBeaconIdentityConstraint
+  - ObjC.CoreLocation.CLBeaconRegion
+  - ObjC.CoreLocation.CLCircularGeographicCondition
+  - ObjC.CoreLocation.CLCircularRegion
+  - ObjC.CoreLocation.CLCondition
+  - ObjC.CoreLocation.CLFloor
+  - ObjC.CoreLocation.CLGeocoder
+  - ObjC.CoreLocation.CLHeading
+  - ObjC.CoreLocation.CLLocation
+  - ObjC.CoreLocation.CLLocationManager
+  - ObjC.CoreLocation.CLLocationSourceInformation
+  - ObjC.CoreLocation.CLLocationUpdater
+  - ObjC.CoreLocation.CLMonitor
+  - ObjC.CoreLocation.CLMonitorConfiguration
+  - ObjC.CoreLocation.CLMonitoringEvent
+  - ObjC.CoreLocation.CLMonitoringRecord
+  - ObjC.CoreLocation.CLPlacemark
+  - ObjC.CoreLocation.CLRegion
+  - ObjC.CoreLocation.CLServiceSession
+  - ObjC.CoreLocation.CLServiceSessionDiagnostic
+  - ObjC.CoreLocation.CLUpdate
+  - ObjC.CoreLocation.CLVisit
+  - ObjC.CoreLocation.Enums
+  - ObjC.CoreLocation.Internal.Classes
+  - ObjC.CoreLocation.Internal.Enums
+  - ObjC.CoreLocation.Internal.Structs
+  - ObjC.CoreLocation.Structs

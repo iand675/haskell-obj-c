@@ -1,0 +1,31 @@
+name:                objc-naturallanguage
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the NaturalLanguage framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-coreml
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.NaturalLanguage.Enums
+  - ObjC.NaturalLanguage.Internal.Classes
+  - ObjC.NaturalLanguage.Internal.Enums
+  - ObjC.NaturalLanguage.NLContextualEmbedding
+  - ObjC.NaturalLanguage.NLContextualEmbeddingResult
+  - ObjC.NaturalLanguage.NLEmbedding
+  - ObjC.NaturalLanguage.NLGazetteer
+  - ObjC.NaturalLanguage.NLLanguageRecognizer
+  - ObjC.NaturalLanguage.NLModel
+  - ObjC.NaturalLanguage.NLModelConfiguration
+  - ObjC.NaturalLanguage.NLTagger
+  - ObjC.NaturalLanguage.NLTokenizer

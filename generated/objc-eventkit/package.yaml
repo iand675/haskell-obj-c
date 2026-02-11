@@ -1,0 +1,40 @@
+name:                objc-eventkit
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the EventKit framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-addressbook
+- objc-foundation
+- objc-mapkit
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.EventKit.EKAlarm
+  - ObjC.EventKit.EKCalendar
+  - ObjC.EventKit.EKCalendarItem
+  - ObjC.EventKit.EKEvent
+  - ObjC.EventKit.EKEventStore
+  - ObjC.EventKit.EKObject
+  - ObjC.EventKit.EKParticipant
+  - ObjC.EventKit.EKRecurrenceDayOfWeek
+  - ObjC.EventKit.EKRecurrenceEnd
+  - ObjC.EventKit.EKRecurrenceRule
+  - ObjC.EventKit.EKReminder
+  - ObjC.EventKit.EKSource
+  - ObjC.EventKit.EKStructuredLocation
+  - ObjC.EventKit.EKVirtualConferenceDescriptor
+  - ObjC.EventKit.EKVirtualConferenceProvider
+  - ObjC.EventKit.EKVirtualConferenceRoomTypeDescriptor
+  - ObjC.EventKit.EKVirtualConferenceURLDescriptor
+  - ObjC.EventKit.Enums
+  - ObjC.EventKit.Internal.Classes
+  - ObjC.EventKit.Internal.Enums

@@ -1,0 +1,64 @@
+name:                objc-gamecontroller
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the GameController framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-corehaptics
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.GameController.Enums
+  - ObjC.GameController.GCColor
+  - ObjC.GameController.GCController
+  - ObjC.GameController.GCControllerAxisInput
+  - ObjC.GameController.GCControllerButtonInput
+  - ObjC.GameController.GCControllerDirectionPad
+  - ObjC.GameController.GCControllerElement
+  - ObjC.GameController.GCControllerInputState
+  - ObjC.GameController.GCControllerLiveInput
+  - ObjC.GameController.GCControllerTouchpad
+  - ObjC.GameController.GCDeviceBattery
+  - ObjC.GameController.GCDeviceCursor
+  - ObjC.GameController.GCDeviceHaptics
+  - ObjC.GameController.GCDeviceLight
+  - ObjC.GameController.GCDirectionalGamepad
+  - ObjC.GameController.GCDualSenseAdaptiveTrigger
+  - ObjC.GameController.GCDualSenseGamepad
+  - ObjC.GameController.GCDualShockGamepad
+  - ObjC.GameController.GCEventViewController
+  - ObjC.GameController.GCExtendedGamepad
+  - ObjC.GameController.GCExtendedGamepadSnapshot
+  - ObjC.GameController.GCGamepad
+  - ObjC.GameController.GCGamepadSnapshot
+  - ObjC.GameController.GCGearShifterElement
+  - ObjC.GameController.GCKeyboard
+  - ObjC.GameController.GCKeyboardInput
+  - ObjC.GameController.GCMicroGamepad
+  - ObjC.GameController.GCMicroGamepadSnapshot
+  - ObjC.GameController.GCMotion
+  - ObjC.GameController.GCMouse
+  - ObjC.GameController.GCMouseInput
+  - ObjC.GameController.GCPhysicalInputElementCollection
+  - ObjC.GameController.GCPhysicalInputProfile
+  - ObjC.GameController.GCRacingWheel
+  - ObjC.GameController.GCRacingWheelInput
+  - ObjC.GameController.GCRacingWheelInputState
+  - ObjC.GameController.GCSteeringWheelElement
+  - ObjC.GameController.GCStylus
+  - ObjC.GameController.GCXboxGamepad
+  - ObjC.GameController.Internal.Classes
+  - ObjC.GameController.Internal.Enums
+  - ObjC.GameController.Internal.Structs
+  - ObjC.GameController.NSValue
+  - ObjC.GameController.Structs

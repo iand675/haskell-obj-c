@@ -1,0 +1,23 @@
+name:                objc-applicationservices
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the ApplicationServices framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-corefoundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.ApplicationServices
+  - ObjC.ApplicationServices.Enums
+  - ObjC.ApplicationServices.Internal.Enums
+  - ObjC.ApplicationServices.Internal.Structs
+  - ObjC.ApplicationServices.Structs

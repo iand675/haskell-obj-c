@@ -1,0 +1,29 @@
+name:                objc-corehaptics
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the CoreHaptics framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-avfaudio
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.CoreHaptics.CHHapticDynamicParameter
+  - ObjC.CoreHaptics.CHHapticEngine
+  - ObjC.CoreHaptics.CHHapticEvent
+  - ObjC.CoreHaptics.CHHapticEventParameter
+  - ObjC.CoreHaptics.CHHapticParameterCurve
+  - ObjC.CoreHaptics.CHHapticParameterCurveControlPoint
+  - ObjC.CoreHaptics.CHHapticPattern
+  - ObjC.CoreHaptics.Enums
+  - ObjC.CoreHaptics.Internal.Classes
+  - ObjC.CoreHaptics.Internal.Enums

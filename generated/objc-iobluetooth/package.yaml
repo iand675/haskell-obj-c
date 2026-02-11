@@ -1,0 +1,44 @@
+name:                objc-iobluetooth
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the IOBluetooth framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.IOBluetooth.BluetoothFileReference
+  - ObjC.IOBluetooth.Enums
+  - ObjC.IOBluetooth.IOBluetoothDevice
+  - ObjC.IOBluetooth.IOBluetoothDeviceInquiry
+  - ObjC.IOBluetooth.IOBluetoothDevicePair
+  - ObjC.IOBluetooth.IOBluetoothHandsFree
+  - ObjC.IOBluetooth.IOBluetoothHandsFreeAudioGateway
+  - ObjC.IOBluetooth.IOBluetoothHandsFreeDevice
+  - ObjC.IOBluetooth.IOBluetoothHostController
+  - ObjC.IOBluetooth.IOBluetoothL2CAPChannel
+  - ObjC.IOBluetooth.IOBluetoothOBEXSession
+  - ObjC.IOBluetooth.IOBluetoothObject
+  - ObjC.IOBluetooth.IOBluetoothRFCOMMChannel
+  - ObjC.IOBluetooth.IOBluetoothSDPDataElement
+  - ObjC.IOBluetooth.IOBluetoothSDPServiceAttribute
+  - ObjC.IOBluetooth.IOBluetoothSDPServiceRecord
+  - ObjC.IOBluetooth.IOBluetoothSDPUUID
+  - ObjC.IOBluetooth.IOBluetoothUserNotification
+  - ObjC.IOBluetooth.Internal.Classes
+  - ObjC.IOBluetooth.Internal.Enums
+  - ObjC.IOBluetooth.Internal.Structs
+  - ObjC.IOBluetooth.NSMutableDictionary
+  - ObjC.IOBluetooth.NSObject
+  - ObjC.IOBluetooth.OBEXFileTransferServices
+  - ObjC.IOBluetooth.OBEXSession
+  - ObjC.IOBluetooth.Structs

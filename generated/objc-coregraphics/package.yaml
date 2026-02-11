@@ -1,0 +1,22 @@
+name:                objc-coregraphics
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the CoreGraphics framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.CoreGraphics
+  - ObjC.CoreGraphics.Enums
+  - ObjC.CoreGraphics.Internal.Enums
+  - ObjC.CoreGraphics.Internal.Structs
+  - ObjC.CoreGraphics.Structs

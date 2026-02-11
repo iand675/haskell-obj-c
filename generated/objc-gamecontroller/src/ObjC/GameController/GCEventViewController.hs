@@ -1,0 +1,76 @@
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts #-}
+
+-- | A view controller subclass that allows fine grained control of the user interface system's handling of game controller events. Set an instance of this class as your root view controller if you intend to use GCController APIs for handling game controllers.
+--
+-- Generated bindings for @GCEventViewController@.
+module ObjC.GameController.GCEventViewController
+  ( GCEventViewController
+  , IsGCEventViewController(..)
+  , controllerUserInteractionEnabled
+  , setControllerUserInteractionEnabled
+  , controllerUserInteractionEnabledSelector
+  , setControllerUserInteractionEnabledSelector
+
+
+  ) where
+
+import Foreign.Ptr (Ptr, nullPtr, castPtr)
+import Foreign.LibFFI
+import Foreign.C.Types
+import Data.Int (Int8, Int16)
+import Data.Word (Word16)
+import Data.Coerce (coerce)
+
+import ObjC.Runtime.Types
+import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Selector (mkSelector)
+import ObjC.Runtime.Class (getRequiredClass)
+
+import ObjC.GameController.Internal.Classes
+import ObjC.AppKit.Internal.Classes
+import ObjC.Foundation.Internal.Classes
+
+-- | Controllers can be used to control the general UIKit user interface and for many views that is the default behavior. By using a controller event view controller you get fine grained control over whether the controller events go trough the UIEvent & UIResponder chain, or if they are decoupled from the UI and all incoming data is served via GCController.
+--
+-- Defaults to NO - suppressing UIEvents from game controllers and presenting them via the GCController API whilst this controller's view or any of it's subviews are the first responders. If you are not using any UIView components or UIEvents in your application you should leave this as NO and process your game controller events via the normal GCController API.
+--
+-- If set to YES the controller input will start flowing through UIEvent and the UIResponder chain will be used. This gives you fine grained control over the event handling of the controlled view and its subviews. You should stop using GCController instances and the corresponding profiles if you no longer need to read input from them.
+--
+-- Note that unlike UIView.userInteractionEnabled this only controls the flow of game controller events.
+--
+-- See: UIView.userInteractionEnabled
+--
+-- ObjC selector: @- controllerUserInteractionEnabled@
+controllerUserInteractionEnabled :: IsGCEventViewController gcEventViewController => gcEventViewController -> IO Bool
+controllerUserInteractionEnabled gcEventViewController  =
+  fmap ((/= 0) :: CULong -> Bool) $ sendMsg gcEventViewController (mkSelector "controllerUserInteractionEnabled") retCULong []
+
+-- | Controllers can be used to control the general UIKit user interface and for many views that is the default behavior. By using a controller event view controller you get fine grained control over whether the controller events go trough the UIEvent & UIResponder chain, or if they are decoupled from the UI and all incoming data is served via GCController.
+--
+-- Defaults to NO - suppressing UIEvents from game controllers and presenting them via the GCController API whilst this controller's view or any of it's subviews are the first responders. If you are not using any UIView components or UIEvents in your application you should leave this as NO and process your game controller events via the normal GCController API.
+--
+-- If set to YES the controller input will start flowing through UIEvent and the UIResponder chain will be used. This gives you fine grained control over the event handling of the controlled view and its subviews. You should stop using GCController instances and the corresponding profiles if you no longer need to read input from them.
+--
+-- Note that unlike UIView.userInteractionEnabled this only controls the flow of game controller events.
+--
+-- See: UIView.userInteractionEnabled
+--
+-- ObjC selector: @- setControllerUserInteractionEnabled:@
+setControllerUserInteractionEnabled :: IsGCEventViewController gcEventViewController => gcEventViewController -> Bool -> IO ()
+setControllerUserInteractionEnabled gcEventViewController  value =
+  sendMsg gcEventViewController (mkSelector "setControllerUserInteractionEnabled:") retVoid [argCULong (if value then 1 else 0)]
+
+-- ---------------------------------------------------------------------------
+-- Selectors
+-- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @controllerUserInteractionEnabled@
+controllerUserInteractionEnabledSelector :: Selector
+controllerUserInteractionEnabledSelector = mkSelector "controllerUserInteractionEnabled"
+
+-- | @Selector@ for @setControllerUserInteractionEnabled:@
+setControllerUserInteractionEnabledSelector :: Selector
+setControllerUserInteractionEnabledSelector = mkSelector "setControllerUserInteractionEnabled:"
+

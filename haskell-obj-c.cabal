@@ -1,0 +1,86 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.38.1.
+--
+-- see: https://github.com/sol/hpack
+
+name:           haskell-obj-c
+version:        0.1.0.0
+synopsis:       Comprehensive Haskell bindings to Apple's Objective-C runtime (libobjc)
+description:    Please see the README on GitHub at <https://github.com/githubuser/haskell-obj-c#readme>
+category:       Foreign
+homepage:       https://github.com/githubuser/haskell-obj-c#readme
+bug-reports:    https://github.com/githubuser/haskell-obj-c/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2026 Author name here
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/haskell-obj-c
+
+library
+  exposed-modules:
+      ObjC.Runtime
+      ObjC.Runtime.Types
+      ObjC.Runtime.Cast
+      ObjC.Runtime.Selector
+      ObjC.Runtime.Class
+      ObjC.Runtime.Object
+      ObjC.Runtime.Method
+      ObjC.Runtime.Ivar
+      ObjC.Runtime.Property
+      ObjC.Runtime.Protocol
+      ObjC.Runtime.Association
+      ObjC.Runtime.ClassBuilder
+      ObjC.Runtime.MsgSend
+      ObjC.Runtime.AutoreleasePool
+      ObjC.Runtime.Framework
+      ObjC.Runtime.NSString
+      ObjC.Runtime.DynClass
+      ObjC.Runtime.TH
+      ObjC.Runtime.Block
+  other-modules:
+      Paths_haskell_obj_c
+  autogen-modules:
+      Paths_haskell_obj_c
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  c-sources:
+      cbits/objc_stubs.c
+  extra-libraries:
+      objc
+  frameworks:
+      Foundation
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , libffi
+    , template-haskell
+  default-language: Haskell2010
+
+test-suite haskell-obj-c-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_haskell_obj_c
+  autogen-modules:
+      Paths_haskell_obj_c
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N -dynamic
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , haskell-obj-c
+    , hspec
+    , libffi
+    , template-haskell
+  default-language: Haskell2010

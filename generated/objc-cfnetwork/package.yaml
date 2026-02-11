@@ -1,0 +1,22 @@
+name:                objc-cfnetwork
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the CFNetwork framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.CFNetwork
+  - ObjC.CFNetwork.Enums
+  - ObjC.CFNetwork.Internal.Enums
+  - ObjC.CFNetwork.Internal.Structs
+  - ObjC.CFNetwork.Structs

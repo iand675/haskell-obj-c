@@ -1,0 +1,27 @@
+name:                objc-intentsui
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the IntentsUI framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+- objc-intents
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.IntentsUI.Enums
+  - ObjC.IntentsUI.INImage
+  - ObjC.IntentsUI.INUIAddVoiceShortcutButton
+  - ObjC.IntentsUI.INUIAddVoiceShortcutViewController
+  - ObjC.IntentsUI.INUIEditVoiceShortcutViewController
+  - ObjC.IntentsUI.Internal.Classes
+  - ObjC.IntentsUI.Internal.Enums

@@ -1,0 +1,72 @@
+name:                objc-coreml
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the CoreML framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.CoreML.Enums
+  - ObjC.CoreML.Internal.Classes
+  - ObjC.CoreML.Internal.Enums
+  - ObjC.CoreML.MLArrayBatchProvider
+  - ObjC.CoreML.MLCPUComputeDevice
+  - ObjC.CoreML.MLComputePlan
+  - ObjC.CoreML.MLComputePlanCost
+  - ObjC.CoreML.MLComputePlanDeviceUsage
+  - ObjC.CoreML.MLDictionaryConstraint
+  - ObjC.CoreML.MLDictionaryFeatureProvider
+  - ObjC.CoreML.MLFeatureDescription
+  - ObjC.CoreML.MLFeatureValue
+  - ObjC.CoreML.MLGPUComputeDevice
+  - ObjC.CoreML.MLImageConstraint
+  - ObjC.CoreML.MLImageSize
+  - ObjC.CoreML.MLImageSizeConstraint
+  - ObjC.CoreML.MLKey
+  - ObjC.CoreML.MLMetricKey
+  - ObjC.CoreML.MLModel
+  - ObjC.CoreML.MLModelAsset
+  - ObjC.CoreML.MLModelCollection
+  - ObjC.CoreML.MLModelCollectionEntry
+  - ObjC.CoreML.MLModelConfiguration
+  - ObjC.CoreML.MLModelDescription
+  - ObjC.CoreML.MLModelStructure
+  - ObjC.CoreML.MLModelStructureNeuralNetwork
+  - ObjC.CoreML.MLModelStructureNeuralNetworkLayer
+  - ObjC.CoreML.MLModelStructurePipeline
+  - ObjC.CoreML.MLModelStructureProgram
+  - ObjC.CoreML.MLModelStructureProgramArgument
+  - ObjC.CoreML.MLModelStructureProgramBinding
+  - ObjC.CoreML.MLModelStructureProgramBlock
+  - ObjC.CoreML.MLModelStructureProgramFunction
+  - ObjC.CoreML.MLModelStructureProgramNamedValueType
+  - ObjC.CoreML.MLModelStructureProgramOperation
+  - ObjC.CoreML.MLModelStructureProgramValue
+  - ObjC.CoreML.MLModelStructureProgramValueType
+  - ObjC.CoreML.MLMultiArray
+  - ObjC.CoreML.MLMultiArrayConstraint
+  - ObjC.CoreML.MLMultiArrayShapeConstraint
+  - ObjC.CoreML.MLNeuralEngineComputeDevice
+  - ObjC.CoreML.MLNumericConstraint
+  - ObjC.CoreML.MLOptimizationHints
+  - ObjC.CoreML.MLParameterDescription
+  - ObjC.CoreML.MLParameterKey
+  - ObjC.CoreML.MLPredictionOptions
+  - ObjC.CoreML.MLSequence
+  - ObjC.CoreML.MLSequenceConstraint
+  - ObjC.CoreML.MLState
+  - ObjC.CoreML.MLStateConstraint
+  - ObjC.CoreML.MLTask
+  - ObjC.CoreML.MLUpdateContext
+  - ObjC.CoreML.MLUpdateProgressHandlers
+  - ObjC.CoreML.MLUpdateTask

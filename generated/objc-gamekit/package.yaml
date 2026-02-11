@@ -1,0 +1,65 @@
+name:                objc-gamekit
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the GameKit framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.GameKit.Enums
+  - ObjC.GameKit.GKAccessPoint
+  - ObjC.GameKit.GKAchievement
+  - ObjC.GameKit.GKAchievementChallenge
+  - ObjC.GameKit.GKAchievementDescription
+  - ObjC.GameKit.GKAchievementViewController
+  - ObjC.GameKit.GKBasePlayer
+  - ObjC.GameKit.GKChallenge
+  - ObjC.GameKit.GKChallengeDefinition
+  - ObjC.GameKit.GKChallengeEventHandler
+  - ObjC.GameKit.GKChallengesViewController
+  - ObjC.GameKit.GKCloudPlayer
+  - ObjC.GameKit.GKDialogController
+  - ObjC.GameKit.GKFriendRequestComposeViewController
+  - ObjC.GameKit.GKGameActivity
+  - ObjC.GameKit.GKGameActivityDefinition
+  - ObjC.GameKit.GKGameCenterViewController
+  - ObjC.GameKit.GKGameSession
+  - ObjC.GameKit.GKInvite
+  - ObjC.GameKit.GKLeaderboard
+  - ObjC.GameKit.GKLeaderboardEntry
+  - ObjC.GameKit.GKLeaderboardScore
+  - ObjC.GameKit.GKLeaderboardSet
+  - ObjC.GameKit.GKLeaderboardViewController
+  - ObjC.GameKit.GKLocalPlayer
+  - ObjC.GameKit.GKMatch
+  - ObjC.GameKit.GKMatchRequest
+  - ObjC.GameKit.GKMatchedPlayers
+  - ObjC.GameKit.GKMatchmaker
+  - ObjC.GameKit.GKMatchmakerViewController
+  - ObjC.GameKit.GKNotificationBanner
+  - ObjC.GameKit.GKPlayer
+  - ObjC.GameKit.GKSavedGame
+  - ObjC.GameKit.GKScore
+  - ObjC.GameKit.GKScoreChallenge
+  - ObjC.GameKit.GKSession
+  - ObjC.GameKit.GKTurnBasedEventHandler
+  - ObjC.GameKit.GKTurnBasedExchange
+  - ObjC.GameKit.GKTurnBasedExchangeReply
+  - ObjC.GameKit.GKTurnBasedMatch
+  - ObjC.GameKit.GKTurnBasedMatchmakerViewController
+  - ObjC.GameKit.GKTurnBasedParticipant
+  - ObjC.GameKit.GKVoiceChat
+  - ObjC.GameKit.GKVoiceChatService
+  - ObjC.GameKit.Internal.Classes
+  - ObjC.GameKit.Internal.Enums

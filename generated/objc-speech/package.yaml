@@ -1,0 +1,35 @@
+name:                objc-speech
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the Speech framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-avfaudio
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.Speech.Enums
+  - ObjC.Speech.Internal.Classes
+  - ObjC.Speech.Internal.Enums
+  - ObjC.Speech.SFAcousticFeature
+  - ObjC.Speech.SFSpeechAudioBufferRecognitionRequest
+  - ObjC.Speech.SFSpeechLanguageModel
+  - ObjC.Speech.SFSpeechLanguageModelConfiguration
+  - ObjC.Speech.SFSpeechRecognitionMetadata
+  - ObjC.Speech.SFSpeechRecognitionRequest
+  - ObjC.Speech.SFSpeechRecognitionResult
+  - ObjC.Speech.SFSpeechRecognitionTask
+  - ObjC.Speech.SFSpeechRecognizer
+  - ObjC.Speech.SFSpeechURLRecognitionRequest
+  - ObjC.Speech.SFTranscription
+  - ObjC.Speech.SFTranscriptionSegment
+  - ObjC.Speech.SFVoiceAnalytics

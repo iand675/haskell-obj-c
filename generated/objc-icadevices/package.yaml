@@ -1,0 +1,22 @@
+name:                objc-icadevices
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the ICADevices framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.ICADevices
+  - ObjC.ICADevices.Enums
+  - ObjC.ICADevices.Internal.Enums
+  - ObjC.ICADevices.Internal.Structs
+  - ObjC.ICADevices.Structs

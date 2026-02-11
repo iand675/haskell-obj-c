@@ -1,0 +1,50 @@
+name:                objc-metalperformanceshadersgraph
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the MetalPerformanceShadersGraph framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+- objc-metalperformanceshaders
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.MetalPerformanceShadersGraph.Enums
+  - ObjC.MetalPerformanceShadersGraph.Internal.Classes
+  - ObjC.MetalPerformanceShadersGraph.Internal.Enums
+  - ObjC.MetalPerformanceShadersGraph.MPSGraph
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphCompilationDescriptor
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphConvolution2DOpDescriptor
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphConvolution3DOpDescriptor
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphCreateSparseOpDescriptor
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphDepthwiseConvolution2DOpDescriptor
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphDepthwiseConvolution3DOpDescriptor
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphDevice
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphExecutable
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphExecutableExecutionDescriptor
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphExecutableSerializationDescriptor
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphExecutionDescriptor
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphFFTDescriptor
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphGRUDescriptor
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphImToColOpDescriptor
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphLSTMDescriptor
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphObject
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphOperation
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphPooling2DOpDescriptor
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphPooling4DOpDescriptor
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphRandomOpDescriptor
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphShapedType
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphSingleGateRNNDescriptor
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphStencilOpDescriptor
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphTensor
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphTensorData
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphType
+  - ObjC.MetalPerformanceShadersGraph.MPSGraphVariableOp

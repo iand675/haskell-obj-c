@@ -1,0 +1,38 @@
+name:                objc-audiovideobridging
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the AudioVideoBridging framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.AudioVideoBridging.AVB17221ACMPInterface
+  - ObjC.AudioVideoBridging.AVB17221ACMPMessage
+  - ObjC.AudioVideoBridging.AVB17221AECPAEMMessage
+  - ObjC.AudioVideoBridging.AVB17221AECPAVCMessage
+  - ObjC.AudioVideoBridging.AVB17221AECPAddressAccessMessage
+  - ObjC.AudioVideoBridging.AVB17221AECPAddressAccessTLV
+  - ObjC.AudioVideoBridging.AVB17221AECPInterface
+  - ObjC.AudioVideoBridging.AVB17221AECPMessage
+  - ObjC.AudioVideoBridging.AVB17221AECPVendorMessage
+  - ObjC.AudioVideoBridging.AVB17221Entity
+  - ObjC.AudioVideoBridging.AVB17221EntityDiscovery
+  - ObjC.AudioVideoBridging.AVB1722ControlInterface
+  - ObjC.AudioVideoBridging.AVBCentralManager
+  - ObjC.AudioVideoBridging.AVBEthernetInterface
+  - ObjC.AudioVideoBridging.AVBIPAddress
+  - ObjC.AudioVideoBridging.AVBInterface
+  - ObjC.AudioVideoBridging.AVBMACAddress
+  - ObjC.AudioVideoBridging.Enums
+  - ObjC.AudioVideoBridging.Internal.Classes
+  - ObjC.AudioVideoBridging.Internal.Enums

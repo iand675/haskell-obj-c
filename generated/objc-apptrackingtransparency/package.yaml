@@ -1,0 +1,22 @@
+name:                objc-apptrackingtransparency
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the AppTrackingTransparency framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.AppTrackingTransparency.ATTrackingManager
+  - ObjC.AppTrackingTransparency.Enums
+  - ObjC.AppTrackingTransparency.Internal.Classes
+  - ObjC.AppTrackingTransparency.Internal.Enums

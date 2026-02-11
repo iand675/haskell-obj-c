@@ -1,0 +1,81 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.38.1.
+--
+-- see: https://github.com/sol/hpack
+
+name:           haskell-obj-c-codegen
+version:        0.1.0.0
+synopsis:       Code generator for type-safe Haskell bindings to Objective-C frameworks
+category:       Foreign
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2026 Author name here
+license:        BSD-3-Clause
+build-type:     Simple
+
+library
+  exposed-modules:
+      ObjC.CodeGen.IR
+      ObjC.CodeGen.QualType
+      ObjC.CodeGen.ClangAST
+      ObjC.CodeGen.Hierarchy
+      ObjC.CodeGen.TypeMap
+      ObjC.CodeGen.PrimitiveTypes
+      ObjC.CodeGen.Monad
+      ObjC.CodeGen.Generate
+      ObjC.CodeGen.Generate.Types
+      ObjC.CodeGen.Generate.Naming
+      ObjC.CodeGen.Generate.Shared
+      ObjC.CodeGen.Generate.Enums
+      ObjC.CodeGen.Generate.Structs
+      ObjC.CodeGen.Generate.InternalClasses
+      ObjC.CodeGen.Generate.Method
+      ObjC.CodeGen.Generate.ClassModule
+      ObjC.CodeGen.Generate.Protocols
+      ObjC.CodeGen.Generate.Package
+  other-modules:
+      Paths_haskell_obj_c_codegen
+  autogen-modules:
+      Paths_haskell_obj_c_codegen
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , directory
+    , filepath
+    , megaparsec
+    , mtl
+    , process
+    , text
+    , vector
+  default-language: Haskell2010
+
+executable objc-codegen
+  main-is: Main.hs
+  other-modules:
+      Paths_haskell_obj_c_codegen
+  autogen-modules:
+      Paths_haskell_obj_c_codegen
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , directory
+    , filepath
+    , haskell-obj-c-codegen
+    , megaparsec
+    , mtl
+    , optparse-applicative
+    , process
+    , text
+    , vector
+  default-language: Haskell2010

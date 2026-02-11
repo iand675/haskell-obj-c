@@ -1,0 +1,77 @@
+name:                objc-mlcompute
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the MLCompute framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.MLCompute.Enums
+  - ObjC.MLCompute.Internal.Classes
+  - ObjC.MLCompute.Internal.Enums
+  - ObjC.MLCompute.MLCActivationDescriptor
+  - ObjC.MLCompute.MLCActivationLayer
+  - ObjC.MLCompute.MLCAdamOptimizer
+  - ObjC.MLCompute.MLCAdamWOptimizer
+  - ObjC.MLCompute.MLCArithmeticLayer
+  - ObjC.MLCompute.MLCBatchNormalizationLayer
+  - ObjC.MLCompute.MLCComparisonLayer
+  - ObjC.MLCompute.MLCConcatenationLayer
+  - ObjC.MLCompute.MLCConvolutionDescriptor
+  - ObjC.MLCompute.MLCConvolutionLayer
+  - ObjC.MLCompute.MLCDevice
+  - ObjC.MLCompute.MLCDropoutLayer
+  - ObjC.MLCompute.MLCEmbeddingDescriptor
+  - ObjC.MLCompute.MLCEmbeddingLayer
+  - ObjC.MLCompute.MLCFullyConnectedLayer
+  - ObjC.MLCompute.MLCGatherLayer
+  - ObjC.MLCompute.MLCGramMatrixLayer
+  - ObjC.MLCompute.MLCGraph
+  - ObjC.MLCompute.MLCGroupNormalizationLayer
+  - ObjC.MLCompute.MLCInferenceGraph
+  - ObjC.MLCompute.MLCInstanceNormalizationLayer
+  - ObjC.MLCompute.MLCLSTMDescriptor
+  - ObjC.MLCompute.MLCLSTMLayer
+  - ObjC.MLCompute.MLCLayer
+  - ObjC.MLCompute.MLCLayerNormalizationLayer
+  - ObjC.MLCompute.MLCLossDescriptor
+  - ObjC.MLCompute.MLCLossLayer
+  - ObjC.MLCompute.MLCMatMulDescriptor
+  - ObjC.MLCompute.MLCMatMulLayer
+  - ObjC.MLCompute.MLCMultiheadAttentionDescriptor
+  - ObjC.MLCompute.MLCMultiheadAttentionLayer
+  - ObjC.MLCompute.MLCOptimizer
+  - ObjC.MLCompute.MLCOptimizerDescriptor
+  - ObjC.MLCompute.MLCPaddingLayer
+  - ObjC.MLCompute.MLCPlatform
+  - ObjC.MLCompute.MLCPoolingDescriptor
+  - ObjC.MLCompute.MLCPoolingLayer
+  - ObjC.MLCompute.MLCRMSPropOptimizer
+  - ObjC.MLCompute.MLCReductionLayer
+  - ObjC.MLCompute.MLCReshapeLayer
+  - ObjC.MLCompute.MLCSGDOptimizer
+  - ObjC.MLCompute.MLCScatterLayer
+  - ObjC.MLCompute.MLCSelectionLayer
+  - ObjC.MLCompute.MLCSliceLayer
+  - ObjC.MLCompute.MLCSoftmaxLayer
+  - ObjC.MLCompute.MLCSplitLayer
+  - ObjC.MLCompute.MLCTensor
+  - ObjC.MLCompute.MLCTensorData
+  - ObjC.MLCompute.MLCTensorDescriptor
+  - ObjC.MLCompute.MLCTensorOptimizerDeviceData
+  - ObjC.MLCompute.MLCTensorParameter
+  - ObjC.MLCompute.MLCTrainingGraph
+  - ObjC.MLCompute.MLCTransposeLayer
+  - ObjC.MLCompute.MLCUpsampleLayer
+  - ObjC.MLCompute.MLCYOLOLossDescriptor
+  - ObjC.MLCompute.MLCYOLOLossLayer

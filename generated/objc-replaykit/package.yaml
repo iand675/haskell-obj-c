@@ -1,0 +1,29 @@
+name:                objc-replaykit
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the ReplayKit framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.ReplayKit.Enums
+  - ObjC.ReplayKit.Internal.Classes
+  - ObjC.ReplayKit.Internal.Enums
+  - ObjC.ReplayKit.NSExtensionContext
+  - ObjC.ReplayKit.RPBroadcastActivityController
+  - ObjC.ReplayKit.RPBroadcastController
+  - ObjC.ReplayKit.RPBroadcastHandler
+  - ObjC.ReplayKit.RPBroadcastSampleHandler
+  - ObjC.ReplayKit.RPPreviewViewController
+  - ObjC.ReplayKit.RPScreenRecorder

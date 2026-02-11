@@ -1,0 +1,26 @@
+name:                objc-notificationcenter
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the NotificationCenter framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.NotificationCenter.Enums
+  - ObjC.NotificationCenter.Internal.Classes
+  - ObjC.NotificationCenter.Internal.Enums
+  - ObjC.NotificationCenter.NCWidgetController
+  - ObjC.NotificationCenter.NCWidgetListViewController
+  - ObjC.NotificationCenter.NCWidgetSearchViewController
+  - ObjC.NotificationCenter.NSViewController

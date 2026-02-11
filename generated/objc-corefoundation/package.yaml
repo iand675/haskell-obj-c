@@ -1,0 +1,22 @@
+name:                objc-corefoundation
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the CoreFoundation framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.CoreFoundation
+  - ObjC.CoreFoundation.Enums
+  - ObjC.CoreFoundation.Internal.Enums
+  - ObjC.CoreFoundation.Internal.Structs
+  - ObjC.CoreFoundation.Structs

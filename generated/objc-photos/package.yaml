@@ -1,0 +1,66 @@
+name:                objc-photos
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the Photos framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+- objc-uniformtypeidentifiers
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.Photos.Enums
+  - ObjC.Photos.Internal.Classes
+  - ObjC.Photos.Internal.Enums
+  - ObjC.Photos.PHAdjustmentData
+  - ObjC.Photos.PHAsset
+  - ObjC.Photos.PHAssetChangeRequest
+  - ObjC.Photos.PHAssetCollection
+  - ObjC.Photos.PHAssetCollectionChangeRequest
+  - ObjC.Photos.PHAssetCreationRequest
+  - ObjC.Photos.PHAssetResource
+  - ObjC.Photos.PHAssetResourceCreationOptions
+  - ObjC.Photos.PHAssetResourceManager
+  - ObjC.Photos.PHAssetResourceRequestOptions
+  - ObjC.Photos.PHAssetResourceUploadJob
+  - ObjC.Photos.PHAssetResourceUploadJobChangeRequest
+  - ObjC.Photos.PHCachingImageManager
+  - ObjC.Photos.PHChange
+  - ObjC.Photos.PHChangeRequest
+  - ObjC.Photos.PHCloudIdentifier
+  - ObjC.Photos.PHCloudIdentifierMapping
+  - ObjC.Photos.PHCollection
+  - ObjC.Photos.PHCollectionList
+  - ObjC.Photos.PHCollectionListChangeRequest
+  - ObjC.Photos.PHContentEditingInput
+  - ObjC.Photos.PHContentEditingInputRequestOptions
+  - ObjC.Photos.PHContentEditingOutput
+  - ObjC.Photos.PHFetchOptions
+  - ObjC.Photos.PHFetchResult
+  - ObjC.Photos.PHFetchResultChangeDetails
+  - ObjC.Photos.PHImageManager
+  - ObjC.Photos.PHImageRequestOptions
+  - ObjC.Photos.PHLivePhoto
+  - ObjC.Photos.PHLivePhotoEditingContext
+  - ObjC.Photos.PHLivePhotoRequestOptions
+  - ObjC.Photos.PHLocalIdentifierMapping
+  - ObjC.Photos.PHObject
+  - ObjC.Photos.PHObjectChangeDetails
+  - ObjC.Photos.PHObjectPlaceholder
+  - ObjC.Photos.PHPersistentChange
+  - ObjC.Photos.PHPersistentChangeFetchResult
+  - ObjC.Photos.PHPersistentChangeToken
+  - ObjC.Photos.PHPersistentObjectChangeDetails
+  - ObjC.Photos.PHPhotoLibrary
+  - ObjC.Photos.PHProject
+  - ObjC.Photos.PHProjectChangeRequest
+  - ObjC.Photos.PHVideoRequestOptions

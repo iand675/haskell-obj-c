@@ -1,0 +1,31 @@
+name:                objc-coreaudiokit
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the CoreAudioKit framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.CoreAudioKit.AUAudioUnit
+  - ObjC.CoreAudioKit.AUAudioUnitViewConfiguration
+  - ObjC.CoreAudioKit.AUGenericView
+  - ObjC.CoreAudioKit.AUGenericViewController
+  - ObjC.CoreAudioKit.AUPannerView
+  - ObjC.CoreAudioKit.AUViewController
+  - ObjC.CoreAudioKit.CABTLEMIDIWindowController
+  - ObjC.CoreAudioKit.CAInterDeviceAudioViewController
+  - ObjC.CoreAudioKit.CANetworkBrowserWindowController
+  - ObjC.CoreAudioKit.Enums
+  - ObjC.CoreAudioKit.Internal.Classes
+  - ObjC.CoreAudioKit.Internal.Enums

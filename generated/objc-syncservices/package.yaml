@@ -1,0 +1,28 @@
+name:                objc-syncservices
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the SyncServices framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.SyncServices.ISyncChange
+  - ObjC.SyncServices.ISyncClient
+  - ObjC.SyncServices.ISyncFilter
+  - ObjC.SyncServices.ISyncManager
+  - ObjC.SyncServices.ISyncRecordSnapshot
+  - ObjC.SyncServices.ISyncSession
+  - ObjC.SyncServices.ISyncSessionDriver
+  - ObjC.SyncServices.Internal.Classes
+  - ObjC.SyncServices.NSObject
+  - ObjC.SyncServices.NSPersistentStoreCoordinator

@@ -1,0 +1,34 @@
+name:                objc-sharedwithyou
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the SharedWithYou framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+- objc-sharedwithyoucore
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.SharedWithYou.Enums
+  - ObjC.SharedWithYou.Internal.Classes
+  - ObjC.SharedWithYou.Internal.Enums
+  - ObjC.SharedWithYou.NSPasteboardItem
+  - ObjC.SharedWithYou.SWAttributionView
+  - ObjC.SharedWithYou.SWCollaborationHighlight
+  - ObjC.SharedWithYou.SWCollaborationView
+  - ObjC.SharedWithYou.SWHighlight
+  - ObjC.SharedWithYou.SWHighlightCenter
+  - ObjC.SharedWithYou.SWHighlightChangeEvent
+  - ObjC.SharedWithYou.SWHighlightMembershipEvent
+  - ObjC.SharedWithYou.SWHighlightMentionEvent
+  - ObjC.SharedWithYou.SWHighlightPersistenceEvent
+  - ObjC.SharedWithYou.SWRemoveParticipantAlert

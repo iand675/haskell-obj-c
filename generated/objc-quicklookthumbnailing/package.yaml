@@ -1,0 +1,28 @@
+name:                objc-quicklookthumbnailing
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the QuickLookThumbnailing framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+- objc-uniformtypeidentifiers
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.QuickLookThumbnailing.Enums
+  - ObjC.QuickLookThumbnailing.Internal.Classes
+  - ObjC.QuickLookThumbnailing.Internal.Enums
+  - ObjC.QuickLookThumbnailing.QLFileThumbnailRequest
+  - ObjC.QuickLookThumbnailing.QLThumbnailGenerationRequest
+  - ObjC.QuickLookThumbnailing.QLThumbnailGenerator
+  - ObjC.QuickLookThumbnailing.QLThumbnailProvider
+  - ObjC.QuickLookThumbnailing.QLThumbnailReply
+  - ObjC.QuickLookThumbnailing.QLThumbnailRepresentation

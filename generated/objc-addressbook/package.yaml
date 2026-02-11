@@ -1,0 +1,26 @@
+name:                objc-addressbook
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the AddressBook framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.AddressBook.ABAddressBook
+  - ObjC.AddressBook.ABGroup
+  - ObjC.AddressBook.ABMultiValue
+  - ObjC.AddressBook.ABMutableMultiValue
+  - ObjC.AddressBook.ABPerson
+  - ObjC.AddressBook.ABRecord
+  - ObjC.AddressBook.ABSearchElement
+  - ObjC.AddressBook.Internal.Classes

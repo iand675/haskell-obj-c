@@ -1,0 +1,36 @@
+name:                objc-screencapturekit
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the ScreenCaptureKit framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.ScreenCaptureKit.Enums
+  - ObjC.ScreenCaptureKit.Internal.Classes
+  - ObjC.ScreenCaptureKit.Internal.Enums
+  - ObjC.ScreenCaptureKit.SCContentFilter
+  - ObjC.ScreenCaptureKit.SCContentSharingPicker
+  - ObjC.ScreenCaptureKit.SCContentSharingPickerConfiguration
+  - ObjC.ScreenCaptureKit.SCDisplay
+  - ObjC.ScreenCaptureKit.SCRecordingOutput
+  - ObjC.ScreenCaptureKit.SCRecordingOutputConfiguration
+  - ObjC.ScreenCaptureKit.SCRunningApplication
+  - ObjC.ScreenCaptureKit.SCScreenshotConfiguration
+  - ObjC.ScreenCaptureKit.SCScreenshotManager
+  - ObjC.ScreenCaptureKit.SCScreenshotOutput
+  - ObjC.ScreenCaptureKit.SCShareableContent
+  - ObjC.ScreenCaptureKit.SCShareableContentInfo
+  - ObjC.ScreenCaptureKit.SCStream
+  - ObjC.ScreenCaptureKit.SCStreamConfiguration
+  - ObjC.ScreenCaptureKit.SCWindow

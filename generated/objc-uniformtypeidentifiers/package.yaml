@@ -1,0 +1,23 @@
+name:                objc-uniformtypeidentifiers
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the UniformTypeIdentifiers framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.UniformTypeIdentifiers.Internal.Classes
+  - ObjC.UniformTypeIdentifiers.NSItemProvider
+  - ObjC.UniformTypeIdentifiers.NSString
+  - ObjC.UniformTypeIdentifiers.NSURL
+  - ObjC.UniformTypeIdentifiers.UTType

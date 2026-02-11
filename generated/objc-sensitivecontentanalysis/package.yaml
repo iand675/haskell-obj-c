@@ -1,0 +1,27 @@
+name:                objc-sensitivecontentanalysis
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the SensitiveContentAnalysis framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-avfoundation
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.SensitiveContentAnalysis.Enums
+  - ObjC.SensitiveContentAnalysis.Internal.Classes
+  - ObjC.SensitiveContentAnalysis.Internal.Enums
+  - ObjC.SensitiveContentAnalysis.Internal.Structs
+  - ObjC.SensitiveContentAnalysis.SCSensitivityAnalysis
+  - ObjC.SensitiveContentAnalysis.SCSensitivityAnalyzer
+  - ObjC.SensitiveContentAnalysis.SCVideoStreamAnalyzer
+  - ObjC.SensitiveContentAnalysis.Structs

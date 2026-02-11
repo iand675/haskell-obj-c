@@ -1,0 +1,58 @@
+name:                objc-metrickit
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the MetricKit framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.MetricKit.Enums
+  - ObjC.MetricKit.Internal.Classes
+  - ObjC.MetricKit.Internal.Enums
+  - ObjC.MetricKit.MXAnimationMetric
+  - ObjC.MetricKit.MXAppExitMetric
+  - ObjC.MetricKit.MXAppLaunchDiagnostic
+  - ObjC.MetricKit.MXAppLaunchMetric
+  - ObjC.MetricKit.MXAppResponsivenessMetric
+  - ObjC.MetricKit.MXAppRunTimeMetric
+  - ObjC.MetricKit.MXAverage
+  - ObjC.MetricKit.MXBackgroundExitData
+  - ObjC.MetricKit.MXCPUExceptionDiagnostic
+  - ObjC.MetricKit.MXCPUMetric
+  - ObjC.MetricKit.MXCallStackTree
+  - ObjC.MetricKit.MXCellularConditionMetric
+  - ObjC.MetricKit.MXCrashDiagnostic
+  - ObjC.MetricKit.MXCrashDiagnosticObjectiveCExceptionReason
+  - ObjC.MetricKit.MXDiagnostic
+  - ObjC.MetricKit.MXDiagnosticPayload
+  - ObjC.MetricKit.MXDiskIOMetric
+  - ObjC.MetricKit.MXDiskSpaceUsageMetric
+  - ObjC.MetricKit.MXDiskWriteExceptionDiagnostic
+  - ObjC.MetricKit.MXDisplayMetric
+  - ObjC.MetricKit.MXForegroundExitData
+  - ObjC.MetricKit.MXGPUMetric
+  - ObjC.MetricKit.MXHangDiagnostic
+  - ObjC.MetricKit.MXHistogram
+  - ObjC.MetricKit.MXHistogramBucket
+  - ObjC.MetricKit.MXLocationActivityMetric
+  - ObjC.MetricKit.MXMemoryMetric
+  - ObjC.MetricKit.MXMetaData
+  - ObjC.MetricKit.MXMetric
+  - ObjC.MetricKit.MXMetricManager
+  - ObjC.MetricKit.MXMetricPayload
+  - ObjC.MetricKit.MXNetworkTransferMetric
+  - ObjC.MetricKit.MXSignpostIntervalData
+  - ObjC.MetricKit.MXSignpostMetric
+  - ObjC.MetricKit.MXSignpostRecord
+  - ObjC.MetricKit.MXUnitAveragePixelLuminance
+  - ObjC.MetricKit.MXUnitSignalBars

@@ -1,0 +1,39 @@
+name:                objc-imagecapturecore
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the ImageCaptureCore framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.ImageCaptureCore.Enums
+  - ObjC.ImageCaptureCore.ICCameraDevice
+  - ObjC.ImageCaptureCore.ICCameraFile
+  - ObjC.ImageCaptureCore.ICCameraFolder
+  - ObjC.ImageCaptureCore.ICCameraItem
+  - ObjC.ImageCaptureCore.ICDevice
+  - ObjC.ImageCaptureCore.ICDeviceBrowser
+  - ObjC.ImageCaptureCore.ICScannerBandData
+  - ObjC.ImageCaptureCore.ICScannerDevice
+  - ObjC.ImageCaptureCore.ICScannerFeature
+  - ObjC.ImageCaptureCore.ICScannerFeatureBoolean
+  - ObjC.ImageCaptureCore.ICScannerFeatureEnumeration
+  - ObjC.ImageCaptureCore.ICScannerFeatureRange
+  - ObjC.ImageCaptureCore.ICScannerFeatureTemplate
+  - ObjC.ImageCaptureCore.ICScannerFunctionalUnit
+  - ObjC.ImageCaptureCore.ICScannerFunctionalUnitDocumentFeeder
+  - ObjC.ImageCaptureCore.ICScannerFunctionalUnitFlatbed
+  - ObjC.ImageCaptureCore.ICScannerFunctionalUnitNegativeTransparency
+  - ObjC.ImageCaptureCore.ICScannerFunctionalUnitPositiveTransparency
+  - ObjC.ImageCaptureCore.Internal.Classes
+  - ObjC.ImageCaptureCore.Internal.Enums

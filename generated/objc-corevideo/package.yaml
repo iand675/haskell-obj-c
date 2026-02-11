@@ -1,0 +1,22 @@
+name:                objc-corevideo
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the CoreVideo framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.CoreVideo
+  - ObjC.CoreVideo.Enums
+  - ObjC.CoreVideo.Internal.Enums
+  - ObjC.CoreVideo.Internal.Structs
+  - ObjC.CoreVideo.Structs

@@ -1,0 +1,41 @@
+name:                objc-callkit
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the CallKit framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.CallKit.CXAction
+  - ObjC.CallKit.CXAnswerCallAction
+  - ObjC.CallKit.CXCall
+  - ObjC.CallKit.CXCallAction
+  - ObjC.CallKit.CXCallController
+  - ObjC.CallKit.CXCallDirectoryExtensionContext
+  - ObjC.CallKit.CXCallDirectoryManager
+  - ObjC.CallKit.CXCallDirectoryProvider
+  - ObjC.CallKit.CXCallObserver
+  - ObjC.CallKit.CXCallUpdate
+  - ObjC.CallKit.CXEndCallAction
+  - ObjC.CallKit.CXHandle
+  - ObjC.CallKit.CXPlayDTMFCallAction
+  - ObjC.CallKit.CXProvider
+  - ObjC.CallKit.CXProviderConfiguration
+  - ObjC.CallKit.CXSetGroupCallAction
+  - ObjC.CallKit.CXSetHeldCallAction
+  - ObjC.CallKit.CXSetMutedCallAction
+  - ObjC.CallKit.CXStartCallAction
+  - ObjC.CallKit.CXTransaction
+  - ObjC.CallKit.Enums
+  - ObjC.CallKit.Internal.Classes
+  - ObjC.CallKit.Internal.Enums

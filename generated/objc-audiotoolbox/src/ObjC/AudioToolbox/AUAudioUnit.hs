@@ -1,0 +1,2130 @@
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts #-}
+
+-- | AUAudioUnit
+--
+-- An audio unit instance.
+--
+-- AUAudioUnit is a host interface to an audio unit. Hosts can instantiate either version 2 or		version 3 units with this class, and to some extent control whether an audio unit is		instantiated in-process or in a separate extension process.
+--
+-- Implementors of version 3 audio units can and should subclass AUAudioUnit. To port an		existing version 2 audio unit easily, AUAudioUnitV2Bridge can be subclassed.
+--
+-- These are the ways in which audio unit components can be registered:
+--
+-- - (v2) Packaged into a component bundle containing an @AudioComponents@ Info.plist entry,		referring to an @AudioComponentFactoryFunction@. See AudioComponent.h.
+--
+-- - (v2) AudioComponentRegister(). Associates a component description with an		AudioComponentFactoryFunction. See AudioComponent.h.
+--
+-- - (v3) Packaged into an app extension containing an AudioComponents Info.plist entry.		The principal class must conform to the AUAudioUnitFactory protocol, which will typically		instantiate an AUAudioUnit subclass.
+--
+-- - (v3) @+[AUAudioUnit registerSubclass:asComponentDescription:name:version:]@. Associates		a component description with an AUAudioUnit subclass.
+--
+-- A host need not be aware of the concrete subclass of AUAudioUnit that is being instantiated.		@initWithComponentDescription:options:error:@ ensures that the proper subclass is used.
+--
+-- When using AUAudioUnit with a v2 audio unit, or the C AudioComponent and AudioUnit API's		with a v3 audio unit, all major pieces of functionality are bridged between the		two API's. This header describes, for each v3 method or property, the v2 equivalent.
+--
+-- Generated bindings for @AUAudioUnit@.
+module ObjC.AudioToolbox.AUAudioUnit
+  ( AUAudioUnit
+  , IsAUAudioUnit(..)
+  , init_
+  , initWithComponentDescription_options_error
+  , initWithComponentDescription_error
+  , instantiateWithComponentDescription_options_completionHandler
+  , allocateRenderResourcesAndReturnError
+  , deallocateRenderResources
+  , reset
+  , tokenByAddingRenderObserver
+  , removeRenderObserver
+  , parametersForOverviewWithCount
+  , saveUserPreset_error
+  , deleteUserPreset_error
+  , presetStateFor_error
+  , profileStateForCable_channel
+  , enableProfile_cable_onChannel_error
+  , disableProfile_cable_onChannel_error
+  , messageChannelFor
+  , registerSubclass_asComponentDescription_name_version
+  , shouldChangeToFormat_forBus
+  , setRenderResourcesAllocated
+  , setDeviceID_error
+  , startHardwareAndReturnError
+  , stopHardware
+  , componentDescription
+  , component
+  , componentName
+  , audioUnitName
+  , manufacturerName
+  , audioUnitShortName
+  , componentVersion
+  , renderResourcesAllocated
+  , inputBusses
+  , outputBusses
+  , renderBlock
+  , scheduleParameterBlock
+  , maximumFramesToRender
+  , setMaximumFramesToRender
+  , parameterTree
+  , setParameterTree
+  , allParameterValues
+  , musicDeviceOrEffect
+  , virtualMIDICableCount
+  , scheduleMIDIEventBlock
+  , scheduleMIDIEventListBlock
+  , midiOutputNames
+  , providesUserInterface
+  , midiOutputEventBlock
+  , setMIDIOutputEventBlock
+  , midiOutputEventListBlock
+  , setMIDIOutputEventListBlock
+  , audioUnitMIDIProtocol
+  , hostMIDIProtocol
+  , setHostMIDIProtocol
+  , fullState
+  , setFullState
+  , fullStateForDocument
+  , setFullStateForDocument
+  , factoryPresets
+  , userPresets
+  , supportsUserPresets
+  , isLoadedInProcess
+  , currentPreset
+  , setCurrentPreset
+  , latency
+  , tailTime
+  , renderQuality
+  , setRenderQuality
+  , shouldBypassEffect
+  , setShouldBypassEffect
+  , canProcessInPlace
+  , renderingOffline
+  , setRenderingOffline
+  , channelCapabilities
+  , musicalContextBlock
+  , setMusicalContextBlock
+  , transportStateBlock
+  , setTransportStateBlock
+  , contextName
+  , setContextName
+  , migrateFromPlugin
+  , supportsMPE
+  , channelMap
+  , setChannelMap
+  , profileChangedBlock
+  , setProfileChangedBlock
+  , internalRenderBlock
+  , renderContextObserver
+  , midiOutputBufferSizeHint
+  , setMIDIOutputBufferSizeHint
+  , canPerformInput
+  , canPerformOutput
+  , inputEnabled
+  , setInputEnabled
+  , outputEnabled
+  , setOutputEnabled
+  , outputProvider
+  , setOutputProvider
+  , inputHandler
+  , setInputHandler
+  , deviceID
+  , deviceInputLatency
+  , deviceOutputLatency
+  , running
+  , osWorkgroup
+  , initSelector
+  , initWithComponentDescription_options_errorSelector
+  , initWithComponentDescription_errorSelector
+  , instantiateWithComponentDescription_options_completionHandlerSelector
+  , allocateRenderResourcesAndReturnErrorSelector
+  , deallocateRenderResourcesSelector
+  , resetSelector
+  , tokenByAddingRenderObserverSelector
+  , removeRenderObserverSelector
+  , parametersForOverviewWithCountSelector
+  , saveUserPreset_errorSelector
+  , deleteUserPreset_errorSelector
+  , presetStateFor_errorSelector
+  , profileStateForCable_channelSelector
+  , enableProfile_cable_onChannel_errorSelector
+  , disableProfile_cable_onChannel_errorSelector
+  , messageChannelForSelector
+  , registerSubclass_asComponentDescription_name_versionSelector
+  , shouldChangeToFormat_forBusSelector
+  , setRenderResourcesAllocatedSelector
+  , setDeviceID_errorSelector
+  , startHardwareAndReturnErrorSelector
+  , stopHardwareSelector
+  , componentDescriptionSelector
+  , componentSelector
+  , componentNameSelector
+  , audioUnitNameSelector
+  , manufacturerNameSelector
+  , audioUnitShortNameSelector
+  , componentVersionSelector
+  , renderResourcesAllocatedSelector
+  , inputBussesSelector
+  , outputBussesSelector
+  , renderBlockSelector
+  , scheduleParameterBlockSelector
+  , maximumFramesToRenderSelector
+  , setMaximumFramesToRenderSelector
+  , parameterTreeSelector
+  , setParameterTreeSelector
+  , allParameterValuesSelector
+  , musicDeviceOrEffectSelector
+  , virtualMIDICableCountSelector
+  , scheduleMIDIEventBlockSelector
+  , scheduleMIDIEventListBlockSelector
+  , midiOutputNamesSelector
+  , providesUserInterfaceSelector
+  , midiOutputEventBlockSelector
+  , setMIDIOutputEventBlockSelector
+  , midiOutputEventListBlockSelector
+  , setMIDIOutputEventListBlockSelector
+  , audioUnitMIDIProtocolSelector
+  , hostMIDIProtocolSelector
+  , setHostMIDIProtocolSelector
+  , fullStateSelector
+  , setFullStateSelector
+  , fullStateForDocumentSelector
+  , setFullStateForDocumentSelector
+  , factoryPresetsSelector
+  , userPresetsSelector
+  , supportsUserPresetsSelector
+  , isLoadedInProcessSelector
+  , currentPresetSelector
+  , setCurrentPresetSelector
+  , latencySelector
+  , tailTimeSelector
+  , renderQualitySelector
+  , setRenderQualitySelector
+  , shouldBypassEffectSelector
+  , setShouldBypassEffectSelector
+  , canProcessInPlaceSelector
+  , renderingOfflineSelector
+  , setRenderingOfflineSelector
+  , channelCapabilitiesSelector
+  , musicalContextBlockSelector
+  , setMusicalContextBlockSelector
+  , transportStateBlockSelector
+  , setTransportStateBlockSelector
+  , contextNameSelector
+  , setContextNameSelector
+  , migrateFromPluginSelector
+  , supportsMPESelector
+  , channelMapSelector
+  , setChannelMapSelector
+  , profileChangedBlockSelector
+  , setProfileChangedBlockSelector
+  , internalRenderBlockSelector
+  , renderContextObserverSelector
+  , midiOutputBufferSizeHintSelector
+  , setMIDIOutputBufferSizeHintSelector
+  , canPerformInputSelector
+  , canPerformOutputSelector
+  , inputEnabledSelector
+  , setInputEnabledSelector
+  , outputEnabledSelector
+  , setOutputEnabledSelector
+  , outputProviderSelector
+  , setOutputProviderSelector
+  , inputHandlerSelector
+  , setInputHandlerSelector
+  , deviceIDSelector
+  , deviceInputLatencySelector
+  , deviceOutputLatencySelector
+  , runningSelector
+  , osWorkgroupSelector
+
+  -- * Enum types
+  , AudioComponentInstantiationOptions(AudioComponentInstantiationOptions)
+  , pattern KAudioComponentInstantiation_LoadOutOfProcess
+  , pattern KAudioComponentInstantiation_LoadInProcess
+  , pattern KAudioComponentInstantiation_LoadedRemotely
+
+  ) where
+
+import Foreign.Ptr (Ptr, nullPtr, castPtr)
+import Foreign.LibFFI
+import Foreign.C.Types
+import Data.Int (Int8, Int16)
+import Data.Word (Word16)
+import Data.Coerce (coerce)
+
+import ObjC.Runtime.Types
+import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Selector (mkSelector)
+import ObjC.Runtime.Class (getRequiredClass)
+
+import ObjC.AudioToolbox.Internal.Classes
+import ObjC.AudioToolbox.Internal.Structs
+import ObjC.AudioToolbox.Internal.Enums
+import ObjC.AVFAudio.Internal.Classes
+import ObjC.CoreMIDI.Internal.Classes
+import ObjC.Foundation.Internal.Classes
+
+-- | @- init@
+init_ :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id AUAudioUnit)
+init_ auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+
+-- | initWithComponentDescription:options:error:
+--
+-- Designated initializer.
+--
+-- @componentDescription@ — A single AUAudioUnit subclass may implement multiple audio units, for example, an effect		that can also function as a generator, or a cluster of related effects. The component		description specifies the component which was instantiated.
+--
+-- @options@ — Options for loading the unit in-process or out-of-process.
+--
+-- @outError@ — Returned in the event of failure.
+--
+-- ObjC selector: @- initWithComponentDescription:options:error:@
+initWithComponentDescription_options_error :: (IsAUAudioUnit auAudioUnit, IsNSError outError) => auAudioUnit -> AudioComponentDescription -> AudioComponentInstantiationOptions -> outError -> IO (Id AUAudioUnit)
+initWithComponentDescription_options_error auAudioUnit  componentDescription options outError =
+withObjCPtr outError $ \raw_outError ->
+    sendMsg auAudioUnit (mkSelector "initWithComponentDescription:options:error:") (retPtr retVoid) [argAudioComponentDescription componentDescription, argCUInt (coerce options), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+
+-- | initWithComponentDescription:error:
+--
+-- Convenience initializer (omits options).
+--
+-- ObjC selector: @- initWithComponentDescription:error:@
+initWithComponentDescription_error :: (IsAUAudioUnit auAudioUnit, IsNSError outError) => auAudioUnit -> AudioComponentDescription -> outError -> IO (Id AUAudioUnit)
+initWithComponentDescription_error auAudioUnit  componentDescription outError =
+withObjCPtr outError $ \raw_outError ->
+    sendMsg auAudioUnit (mkSelector "initWithComponentDescription:error:") (retPtr retVoid) [argAudioComponentDescription componentDescription, argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+
+-- | instantiateWithComponentDescription:options:completionHandler:
+--
+-- Asynchronously create an AUAudioUnit instance.
+--
+-- @componentDescription@ — The AudioComponentDescription of the audio unit to instantiate.
+--
+-- @options@ — See the discussion of AudioComponentInstantiationOptions in AudioToolbox/AudioComponent.h.
+--
+-- @completionHandler@ — Called in a thread/dispatch queue context internal to the implementation. The client should		retain the supplied AUAudioUnit.
+--
+-- Certain types of AUAudioUnits must be instantiated asynchronously -- see 		the discussion of kAudioComponentFlag_RequiresAsyncInstantiation in		AudioToolbox/AudioComponent.h.
+--
+-- Note: Do not block the main thread while waiting for the completion handler to be called;		this can deadlock.
+--
+-- ObjC selector: @+ instantiateWithComponentDescription:options:completionHandler:@
+instantiateWithComponentDescription_options_completionHandler :: AudioComponentDescription -> AudioComponentInstantiationOptions -> Ptr () -> IO ()
+instantiateWithComponentDescription_options_completionHandler componentDescription options completionHandler =
+  do
+    cls' <- getRequiredClass "AUAudioUnit"
+    sendClassMsg cls' (mkSelector "instantiateWithComponentDescription:options:completionHandler:") retVoid [argAudioComponentDescription componentDescription, argCUInt (coerce options), argPtr (castPtr completionHandler :: Ptr ())]
+
+-- | allocateRenderResourcesAndReturnError:
+--
+-- Allocate resources required to render.
+--
+-- Hosts must call this before beginning to render. Subclassers should call the superclass		implementation.
+--
+-- Bridged to the v2 API AudioUnitInitialize().
+--
+-- ObjC selector: @- allocateRenderResourcesAndReturnError:@
+allocateRenderResourcesAndReturnError :: (IsAUAudioUnit auAudioUnit, IsNSError outError) => auAudioUnit -> outError -> IO Bool
+allocateRenderResourcesAndReturnError auAudioUnit  outError =
+withObjCPtr outError $ \raw_outError ->
+    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "allocateRenderResourcesAndReturnError:") retCULong [argPtr (castPtr raw_outError :: Ptr ())]
+
+-- | deallocateRenderResources
+--
+-- Deallocate resources allocated by allocateRenderResourcesAndReturnError:
+--
+-- Hosts should call this after finishing rendering. Subclassers should call the superclass		implementation.
+--
+-- Bridged to the v2 API AudioUnitUninitialize().
+--
+-- ObjC selector: @- deallocateRenderResources@
+deallocateRenderResources :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO ()
+deallocateRenderResources auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "deallocateRenderResources") retVoid []
+
+-- | reset
+--
+-- Reset transitory rendering state to its initial state.
+--
+-- Hosts should call this at the point of a discontinuity in the input stream being provided to		an audio unit, for example, when seeking forward or backward within a track. In response,		implementations should clear delay lines, filters, etc. Subclassers should call the		superclass implementation.
+--
+-- Bridged to the v2 API AudioUnitReset(), in the global scope.
+--
+-- ObjC selector: @- reset@
+reset :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO ()
+reset auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "reset") retVoid []
+
+-- | tokenByAddingRenderObserver:
+--
+-- Add a block to be called on each render cycle.
+--
+-- The supplied block is called at the beginning and ending of each render cycle. It should		not make any blocking calls.
+--
+-- This method is implemented in the base class AUAudioUnit, and should not be overridden.
+--
+-- Bridged to the v2 API AudioUnitAddRenderNotify().
+--
+-- @observer@ — The block to call.
+--
+-- Returns: A token to be used when removing the observer.
+--
+-- ObjC selector: @- tokenByAddingRenderObserver:@
+tokenByAddingRenderObserver :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Ptr () -> IO CLong
+tokenByAddingRenderObserver auAudioUnit  observer =
+  sendMsg auAudioUnit (mkSelector "tokenByAddingRenderObserver:") retCLong [argPtr (castPtr observer :: Ptr ())]
+
+-- | removeRenderObserver:
+--
+-- Remove an observer block added via tokenByAddingRenderObserver:
+--
+-- @token@ — The token previously returned by tokenByAddingRenderObserver:
+--
+-- Bridged to the v2 API AudioUnitRemoveRenderNotify().
+--
+-- ObjC selector: @- removeRenderObserver:@
+removeRenderObserver :: IsAUAudioUnit auAudioUnit => auAudioUnit -> CLong -> IO ()
+removeRenderObserver auAudioUnit  token =
+  sendMsg auAudioUnit (mkSelector "removeRenderObserver:") retVoid [argCLong (fromIntegral token)]
+
+-- | parametersForOverviewWithCount:
+--
+-- Returns the audio unit's @count@ most important parameters.
+--
+-- This property allows a host to query an audio unit for some small number of parameters which		are its "most important", to be displayed in a compact generic view.
+--
+-- An audio unit subclass should return an array of NSNumbers representing the addresses		of the @count@ most important parameters.
+--
+-- The base class returns an empty array regardless of count.
+--
+-- Partially bridged to kAudioUnitProperty_ParametersForOverview (v2 hosts can use that		property to access this v3 method of an audio unit).
+--
+-- ObjC selector: @- parametersForOverviewWithCount:@
+parametersForOverviewWithCount :: IsAUAudioUnit auAudioUnit => auAudioUnit -> CLong -> IO (Id NSArray)
+parametersForOverviewWithCount auAudioUnit  count =
+  sendMsg auAudioUnit (mkSelector "parametersForOverviewWithCount:") (retPtr retVoid) [argCLong (fromIntegral count)] >>= retainedObject . castPtr
+
+-- | saveUserPreset:error
+--
+-- Persistently save the current state of the audio unit into a userPreset
+--
+-- The new preset will be added to userPresets and will become selectable by assigning it		to the currentPreset property.		If a preset with the provided name already exists then it will be overwritten.
+--
+-- For user presets, the preset number is required to be negative.		If a positive number is passed, the sign will be changed to negative.		If zero is passed, the number will be set to -1.		These changes will be reflected on the userPreset argument.
+--
+-- The default implementation of this method will save the user preset to an internal		location.
+--
+-- Audio Units are free to override this method to operate on a different location (e.g. their		iCloud container).
+--
+-- @userPreset@ — The preset under which the current state will be saved.
+--
+-- @outError@ — In the event of a failure, the method will return NO and outError will be set to an 		NSError, describing the problem. 		Some possible errors: 				- domain: NSOSStatusErrorDomain code: kAudioUnitErr_NoConnection				- domain: NSOSStatusErrorDomain	code: kAudioUnitErr_InvalidFilePath				- domain: NSOSStatusErrorDomain	code: kAudioUnitErr_MissingKey
+--
+-- Returns: YES for success. NO in the event of a failure, in which case the error is returned in		outError.
+--
+-- ObjC selector: @- saveUserPreset:error:@
+saveUserPreset_error :: (IsAUAudioUnit auAudioUnit, IsAUAudioUnitPreset userPreset, IsNSError outError) => auAudioUnit -> userPreset -> outError -> IO Bool
+saveUserPreset_error auAudioUnit  userPreset outError =
+withObjCPtr userPreset $ \raw_userPreset ->
+  withObjCPtr outError $ \raw_outError ->
+      fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "saveUserPreset:error:") retCULong [argPtr (castPtr raw_userPreset :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+
+-- | deleteUserPreset:error
+--
+-- Remove a user preset.
+--
+-- The user preset will be removed from userPresets and will be permanently deleted.
+--
+-- The default implementation of this method will delete the user preset from an internal		location.
+--
+-- Audio Units are free to override this method to operate on a different location (e.g. their		iCloud container).
+--
+-- @userPreset@ — The preset to be deleted.
+--
+-- @outError@ — In the event of a failure, the method will return NO and outError will be set to an 		NSError, describing the problem. 		Some possible errors: 				- domain: NSOSStatusErrorDomain code: kAudioUnitErr_NoConnection				- domain: NSPOSIXErrorDomain	code: ENOENT				- domain: NSOSStatusErrorDomain	code: kAudioUnitErr_InvalidFilePath
+--
+-- Returns: YES for success. NO in the event of a failure, in which case the error is returned in		outError.
+--
+-- ObjC selector: @- deleteUserPreset:error:@
+deleteUserPreset_error :: (IsAUAudioUnit auAudioUnit, IsAUAudioUnitPreset userPreset, IsNSError outError) => auAudioUnit -> userPreset -> outError -> IO Bool
+deleteUserPreset_error auAudioUnit  userPreset outError =
+withObjCPtr userPreset $ \raw_userPreset ->
+  withObjCPtr outError $ \raw_outError ->
+      fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "deleteUserPreset:error:") retCULong [argPtr (castPtr raw_userPreset :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+
+-- | presetStateFor:error
+--
+-- Retrieve the state stored in a user preset
+--
+-- This method allows access to the contents of a preset without having to set that preset as		current. The returned dictionary is assignable to the audio unit's fullState and/or		fullStateForDocument properties.
+--
+-- Audio units can override this method in order to vend user presets from a different location		(e.g. their iCloud container).
+--
+-- In order to restore the state from a user preset, the audio unit should override the setter		for the currentPreset property and check the preset number to determine the type of preset.		If the preset number is >= 0 then the preset is a factory preset.		If the preset number is < 0 then it is a user preset.
+--
+-- This method can then be called to retrieve the state stored in a user preset and the audio		unit can assign this to fullState or fullStateForDocument.
+--
+-- @userPreset@ — The preset to be selected.
+--
+-- @outError@ — In the event of a failure, the method will return nil and outError will be set to an 		NSError, describing the problem. 		Some possible errors: 				- domain: NSOSStatusErrorDomain code: kAudioUnitErr_NoConnection				- domain: NSPOSIXErrorDomain	code: ENOENT				- domain: NSCocoaErrorDomain	code: NSCoderReadCorruptError
+--
+-- Returns: Returns nil if there was an error, otherwise returns a dictionary containing the full state		of the audio unit saved in the preset.		For details on the possible keys present in the full state dictionary, please see the		documentation for kAudioUnitProperty_ClassInfo. 		The minimal set of keys and their type is:	 : NSNumber,													 : NSNumber, 													 : NSNumber, 											   		 : NSNumber, 													 : NSString, 													: NSNumber,													 : NSData
+--
+-- ObjC selector: @- presetStateFor:error:@
+presetStateFor_error :: (IsAUAudioUnit auAudioUnit, IsAUAudioUnitPreset userPreset, IsNSError outError) => auAudioUnit -> userPreset -> outError -> IO (Id NSDictionary)
+presetStateFor_error auAudioUnit  userPreset outError =
+withObjCPtr userPreset $ \raw_userPreset ->
+  withObjCPtr outError $ \raw_outError ->
+      sendMsg auAudioUnit (mkSelector "presetStateFor:error:") (retPtr retVoid) [argPtr (castPtr raw_userPreset :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+
+-- | profileStateForCable:channel:
+--
+-- Given a MIDI cable and channel number, return the supported MIDI-CI Profiles.
+--
+-- @cable@ — The virtual MIDI cable for which the profiles are requested.
+--
+-- @channel@ — The MIDI channel for which the profiles are requested.
+--
+-- Returns: A MIDICIProfileState object containing all the supported MIDI-CI profiles for this channel		on this cable.
+--
+-- ObjC selector: @- profileStateForCable:channel:@
+profileStateForCable_channel :: IsAUAudioUnit auAudioUnit => auAudioUnit -> CUChar -> CUChar -> IO (Id MIDICIProfileState)
+profileStateForCable_channel auAudioUnit  cable channel =
+  sendMsg auAudioUnit (mkSelector "profileStateForCable:channel:") (retPtr retVoid) [argCUChar (fromIntegral cable), argCUChar (fromIntegral channel)] >>= retainedObject . castPtr
+
+-- | enableProfile:cable:onChannel:error:
+--
+-- Enable a MIDI-CI Profile on the specified cable/channel.
+--
+-- @profile@ — The MIDI-CI profile to be enabled.
+--
+-- @cable@ — The virtual MIDI cable.
+--
+-- @channel@ — The MIDI channel.
+--
+-- @outError@ — Returned in the event of failure.
+--
+-- Returns: YES for success. NO in the event of a failure, in which case the error is returned		in outError.
+--
+-- ObjC selector: @- enableProfile:cable:onChannel:error:@
+enableProfile_cable_onChannel_error :: (IsAUAudioUnit auAudioUnit, IsMIDICIProfile profile, IsNSError outError) => auAudioUnit -> profile -> CUChar -> CUChar -> outError -> IO Bool
+enableProfile_cable_onChannel_error auAudioUnit  profile cable channel outError =
+withObjCPtr profile $ \raw_profile ->
+  withObjCPtr outError $ \raw_outError ->
+      fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "enableProfile:cable:onChannel:error:") retCULong [argPtr (castPtr raw_profile :: Ptr ()), argCUChar (fromIntegral cable), argCUChar (fromIntegral channel), argPtr (castPtr raw_outError :: Ptr ())]
+
+-- | disableProfile:cable:onChannel:error:
+--
+-- Disable a MIDI-CI Profile on the specified cable/channel.
+--
+-- @profile@ — The MIDI-CI profile to be disabled.
+--
+-- @cable@ — The virtual MIDI cable.
+--
+-- @channel@ — The MIDI channel.
+--
+-- @outError@ — Returned in the event of failure.
+--
+-- Returns: YES for success. NO in the event of a failure, in which case the error is returned		in outError.
+--
+-- ObjC selector: @- disableProfile:cable:onChannel:error:@
+disableProfile_cable_onChannel_error :: (IsAUAudioUnit auAudioUnit, IsMIDICIProfile profile, IsNSError outError) => auAudioUnit -> profile -> CUChar -> CUChar -> outError -> IO Bool
+disableProfile_cable_onChannel_error auAudioUnit  profile cable channel outError =
+withObjCPtr profile $ \raw_profile ->
+  withObjCPtr outError $ \raw_outError ->
+      fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "disableProfile:cable:onChannel:error:") retCULong [argPtr (castPtr raw_profile :: Ptr ()), argCUChar (fromIntegral cable), argCUChar (fromIntegral channel), argPtr (castPtr raw_outError :: Ptr ())]
+
+-- | messageChannelFor:
+--
+-- Returns an object for bidirectional communication between an Audio Unit and its host.
+--
+-- Message channels provide a flexible way for custom data exchange between an Audio Unit and its host.		An Audio Unit can support multiple message channels which are identified by the @channelName@.		The message channel object's lifetime is managed by the host. Message channel objects should be designed		in such a way that they could outlive the AU that vended them.		For further details see discussion for @AUMessageChannel@.
+--
+-- @channelName@ — The name of the message channel to be returned by the Audio Unit if supported.
+--
+-- Returns: An object that conforms to the @AUMessageChannel@ protocol.
+--
+-- ObjC selector: @- messageChannelFor:@
+messageChannelFor :: (IsAUAudioUnit auAudioUnit, IsNSString channelName) => auAudioUnit -> channelName -> IO RawId
+messageChannelFor auAudioUnit  channelName =
+withObjCPtr channelName $ \raw_channelName ->
+    fmap (RawId . castPtr) $ sendMsg auAudioUnit (mkSelector "messageChannelFor:") (retPtr retVoid) [argPtr (castPtr raw_channelName :: Ptr ())]
+
+-- | Register an audio unit component implemented as an AUAudioUnit subclass.
+--
+-- This method dynamically registers the supplied AUAudioUnit subclass with the Audio Component		system, in the context of the current process (only). After registering the subclass, it can		be instantiated via AudioComponentInstanceNew, 		-[AUAudioUnit initWithComponentDescription:options:error:], and via any other API's which		instantiate audio units via their component descriptions (e.g. <AudioToolbox/AUGraph.h>, or		<AVFoundation/AVAudioUnitEffect.h>).
+--
+-- ObjC selector: @+ registerSubclass:asComponentDescription:name:version:@
+registerSubclass_asComponentDescription_name_version :: IsNSString name => Class -> AudioComponentDescription -> name -> CUInt -> IO ()
+registerSubclass_asComponentDescription_name_version cls componentDescription name version =
+  do
+    cls' <- getRequiredClass "AUAudioUnit"
+    withObjCPtr name $ \raw_name ->
+      sendClassMsg cls' (mkSelector "registerSubclass:asComponentDescription:name:version:") retVoid [argPtr (unClass cls), argAudioComponentDescription componentDescription, argPtr (castPtr raw_name :: Ptr ()), argCUInt (fromIntegral version)]
+
+-- | shouldChangeToFormat:forBus:
+--
+-- @format@ — An AVAudioFormat which is proposed as the new format.
+--
+-- @bus@ — The AUAudioUnitBus on which the format will be changed.
+--
+-- This is called when setting the format on an AUAudioUnitBus.        The bus has already checked that the format meets the channel constraints of the bus.        The AU can override this method to check before allowing a new format to be set on the bus.        If this method returns NO, then the new format will not be set on the bus.        The default implementation returns NO if the unit has renderResourcesAllocated, otherwise it results YES.
+--
+-- ObjC selector: @- shouldChangeToFormat:forBus:@
+shouldChangeToFormat_forBus :: (IsAUAudioUnit auAudioUnit, IsAVAudioFormat format, IsAUAudioUnitBus bus) => auAudioUnit -> format -> bus -> IO Bool
+shouldChangeToFormat_forBus auAudioUnit  format bus =
+withObjCPtr format $ \raw_format ->
+  withObjCPtr bus $ \raw_bus ->
+      fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "shouldChangeToFormat:forBus:") retCULong [argPtr (castPtr raw_format :: Ptr ()), argPtr (castPtr raw_bus :: Ptr ())]
+
+-- | setRenderResourcesAllocated:
+--
+-- @flag@ — In the base class implementation of allocateRenderResourcesAndReturnError:, the property renderResourcesAllocated is set to YES.        If allocateRenderResourcesAndReturnError: should fail in a subclass, subclassers must use this method to set renderResourcesAllocated to NO.
+--
+-- ObjC selector: @- setRenderResourcesAllocated:@
+setRenderResourcesAllocated :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Bool -> IO ()
+setRenderResourcesAllocated auAudioUnit  flag =
+  sendMsg auAudioUnit (mkSelector "setRenderResourcesAllocated:") retVoid [argCULong (if flag then 1 else 0)]
+
+-- | setDeviceID:error:
+--
+-- Set the I/O hardware device.
+--
+-- @deviceID@ — The device to select.
+--
+-- @outError@ — Returned in the event of failure.
+--
+-- ObjC selector: @- setDeviceID:error:@
+setDeviceID_error :: (IsAUAudioUnit auAudioUnit, IsNSError outError) => auAudioUnit -> CUInt -> outError -> IO Bool
+setDeviceID_error auAudioUnit  deviceID outError =
+withObjCPtr outError $ \raw_outError ->
+    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "setDeviceID:error:") retCULong [argCUInt (fromIntegral deviceID), argPtr (castPtr raw_outError :: Ptr ())]
+
+-- | startHardwareAndReturnError:
+--
+-- Starts the audio hardware.
+--
+-- @outError@ — Returned in the event of failure.
+--
+-- ObjC selector: @- startHardwareAndReturnError:@
+startHardwareAndReturnError :: (IsAUAudioUnit auAudioUnit, IsNSError outError) => auAudioUnit -> outError -> IO Bool
+startHardwareAndReturnError auAudioUnit  outError =
+withObjCPtr outError $ \raw_outError ->
+    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "startHardwareAndReturnError:") retCULong [argPtr (castPtr raw_outError :: Ptr ())]
+
+-- | stopHardware
+--
+-- Stops the audio hardware.
+--
+-- ObjC selector: @- stopHardware@
+stopHardware :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO ()
+stopHardware auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "stopHardware") retVoid []
+
+-- | componentDescription
+--
+-- The AudioComponentDescription with which the audio unit was created.
+--
+-- ObjC selector: @- componentDescription@
+componentDescription :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO AudioComponentDescription
+componentDescription auAudioUnit  =
+  sendMsgStret auAudioUnit (mkSelector "componentDescription") retAudioComponentDescription []
+
+-- | component
+--
+-- The AudioComponent which was found based on componentDescription when the				audio unit was created.
+--
+-- ObjC selector: @- component@
+component :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
+component auAudioUnit  =
+  fmap castPtr $ sendMsg auAudioUnit (mkSelector "component") (retPtr retVoid) []
+
+-- | componentName
+--
+-- The unit's component's name.
+--
+-- By convention, an audio unit's component name is its manufacturer's name, plus ": ",		plus the audio unit's name. The audioUnitName and manufacturerName properties are derived		from the component name.
+--
+-- ObjC selector: @- componentName@
+componentName :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSString)
+componentName auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "componentName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | audioUnitName
+--
+-- The audio unit's name.
+--
+-- ObjC selector: @- audioUnitName@
+audioUnitName :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSString)
+audioUnitName auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "audioUnitName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | manufacturerName
+--
+-- The manufacturer's name.
+--
+-- ObjC selector: @- manufacturerName@
+manufacturerName :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSString)
+manufacturerName auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "manufacturerName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | audioUnitShortName
+--
+-- A short name for the audio unit.
+--
+-- Audio unit host applications can display this name in situations where the audioUnitName 		might be too long. The recommended length is up to 16 characters. Host applications may 		truncate it.
+--
+-- ObjC selector: @- audioUnitShortName@
+audioUnitShortName :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSString)
+audioUnitShortName auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "audioUnitShortName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | componentVersion
+--
+-- The unit's component's version.
+--
+-- ObjC selector: @- componentVersion@
+componentVersion :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO CUInt
+componentVersion auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "componentVersion") retCUInt []
+
+-- | renderResourcesAllocated
+--
+-- returns YES if the unit has render resources allocated.
+--
+-- ObjC selector: @- renderResourcesAllocated@
+renderResourcesAllocated :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
+renderResourcesAllocated auAudioUnit  =
+  fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "renderResourcesAllocated") retCULong []
+
+-- | inputBusses
+--
+-- An audio unit's audio input connection points.
+--
+-- Subclassers must override this property's getter. The implementation should return the same		object every time it is asked for it, since clients can install KVO observers on it.
+--
+-- ObjC selector: @- inputBusses@
+inputBusses :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id AUAudioUnitBusArray)
+inputBusses auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "inputBusses") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | outputBusses
+--
+-- An audio unit's audio output connection points.
+--
+-- Subclassers must override this property's getter. The implementation should return the same		object every time it is asked for it, since clients can install KVO observers on it.
+--
+-- ObjC selector: @- outputBusses@
+outputBusses :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id AUAudioUnitBusArray)
+outputBusses auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "outputBusses") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | renderBlock
+--
+-- Block which hosts use to ask the unit to render.
+--
+-- Before invoking an audio unit's rendering functionality, a host should fetch this block and		cache the result. The block can then be called from a realtime context without the		possibility of blocking and causing an overload at the Core Audio HAL level.
+--
+-- This block will call a subclass' internalRenderBlock, providing all realtime events		scheduled for the current render time interval, bracketed by calls to any render observers.
+--
+-- Subclassers should override internalRenderBlock, not this property.
+--
+-- Bridged to the v2 API AudioUnitRender().
+--
+-- ObjC selector: @- renderBlock@
+renderBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
+renderBlock auAudioUnit  =
+  fmap castPtr $ sendMsg auAudioUnit (mkSelector "renderBlock") (retPtr retVoid) []
+
+-- | scheduleParameterBlock
+--
+-- Block which hosts use to schedule parameters.
+--
+-- As with renderBlock, a host should fetch and cache this block before calling		allocateRenderResources, if it intends to schedule parameters.
+--
+-- The block is safe to call from any thread context, including realtime audio render		threads.
+--
+-- Subclassers should not override this; it is implemented in the base class and will schedule		the events to be provided to the internalRenderBlock.
+--
+-- Bridged to the v2 API AudioUnitScheduleParameters().
+--
+-- ObjC selector: @- scheduleParameterBlock@
+scheduleParameterBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
+scheduleParameterBlock auAudioUnit  =
+  fmap castPtr $ sendMsg auAudioUnit (mkSelector "scheduleParameterBlock") (retPtr retVoid) []
+
+-- | maximumFramesToRender
+--
+-- The maximum number of frames which the audio unit can render at once.
+--
+-- This must be set by the host before render resources are allocated. It cannot be changed		while render resources are allocated.
+--
+-- Bridged to the v2 property kAudioUnitProperty_MaximumFramesPerSlice.
+--
+-- ObjC selector: @- maximumFramesToRender@
+maximumFramesToRender :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO CUInt
+maximumFramesToRender auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "maximumFramesToRender") retCUInt []
+
+-- | maximumFramesToRender
+--
+-- The maximum number of frames which the audio unit can render at once.
+--
+-- This must be set by the host before render resources are allocated. It cannot be changed		while render resources are allocated.
+--
+-- Bridged to the v2 property kAudioUnitProperty_MaximumFramesPerSlice.
+--
+-- ObjC selector: @- setMaximumFramesToRender:@
+setMaximumFramesToRender :: IsAUAudioUnit auAudioUnit => auAudioUnit -> CUInt -> IO ()
+setMaximumFramesToRender auAudioUnit  value =
+  sendMsg auAudioUnit (mkSelector "setMaximumFramesToRender:") retVoid [argCUInt (fromIntegral value)]
+
+-- | parameterTree
+--
+-- An audio unit's parameters, organized in a hierarchy.
+--
+-- Returns: A parameter tree object, or nil if the unit has no parameters.
+--
+-- Audio unit hosts can fetch this property to discover a unit's parameters. KVO notifications		are issued on this member to notify the host of changes to the set of available parameters.
+--
+-- AUAudioUnit has an additional pseudo-property, "allParameterValues", on which KVO		notifications are issued in response to certain events where potentially all parameter		values are invalidated. This includes changes to currentPreset, fullState, and		fullStateForDocument.
+--
+-- Hosts should not attempt to set this property.
+--
+-- Subclassers should implement the parameterTree getter to expose parameters to hosts. They		should cache as much as possible and send KVO notifications on "parameterTree" when altering		the structure of the tree or the static information (ranges, etc) of parameters.
+--
+-- This is similar to the v2 properties kAudioUnitProperty_ParameterList and		kAudioUnitProperty_ParameterInfo.
+--
+-- Note that it is not safe to modify this property in a real-time context.
+--
+-- ObjC selector: @- parameterTree@
+parameterTree :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id AUParameterTree)
+parameterTree auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "parameterTree") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | parameterTree
+--
+-- An audio unit's parameters, organized in a hierarchy.
+--
+-- Returns: A parameter tree object, or nil if the unit has no parameters.
+--
+-- Audio unit hosts can fetch this property to discover a unit's parameters. KVO notifications		are issued on this member to notify the host of changes to the set of available parameters.
+--
+-- AUAudioUnit has an additional pseudo-property, "allParameterValues", on which KVO		notifications are issued in response to certain events where potentially all parameter		values are invalidated. This includes changes to currentPreset, fullState, and		fullStateForDocument.
+--
+-- Hosts should not attempt to set this property.
+--
+-- Subclassers should implement the parameterTree getter to expose parameters to hosts. They		should cache as much as possible and send KVO notifications on "parameterTree" when altering		the structure of the tree or the static information (ranges, etc) of parameters.
+--
+-- This is similar to the v2 properties kAudioUnitProperty_ParameterList and		kAudioUnitProperty_ParameterInfo.
+--
+-- Note that it is not safe to modify this property in a real-time context.
+--
+-- ObjC selector: @- setParameterTree:@
+setParameterTree :: (IsAUAudioUnit auAudioUnit, IsAUParameterTree value) => auAudioUnit -> value -> IO ()
+setParameterTree auAudioUnit  value =
+withObjCPtr value $ \raw_value ->
+    sendMsg auAudioUnit (mkSelector "setParameterTree:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- allParameterValues@
+allParameterValues :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
+allParameterValues auAudioUnit  =
+  fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "allParameterValues") retCULong []
+
+-- | musicDeviceOrEffect
+--
+-- Specifies whether an audio unit responds to MIDI events.
+--
+-- This is implemented in the base class and returns YES if the component type is music		device or music effect.
+--
+-- ObjC selector: @- musicDeviceOrEffect@
+musicDeviceOrEffect :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
+musicDeviceOrEffect auAudioUnit  =
+  fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "musicDeviceOrEffect") retCULong []
+
+-- | virtualMIDICableCount
+--
+-- The number of virtual MIDI cables implemented by a music device or effect.
+--
+-- A music device or MIDI effect can support up to 256 virtual MIDI cables of input; this		property expresses the number of cables supported by the audio unit.
+--
+-- ObjC selector: @- virtualMIDICableCount@
+virtualMIDICableCount :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO CLong
+virtualMIDICableCount auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "virtualMIDICableCount") retCLong []
+
+-- | scheduleMIDIEventBlock
+--
+-- Block used to schedule MIDI events.
+--
+-- As with renderBlock, a host should fetch and cache this block before calling		allocateRenderResources if it intends to schedule MIDI events.
+--
+-- This is implemented in the base class. It is nil when musicDeviceOrEffect is NO.
+--
+-- Subclasses should not override. When hosts schedule events via this block, they are		sent to the Audio Unit via the list of AURenderEvents delivered to		internalRenderBlock.
+--
+-- All events sent via this block will be delivered to the internalRenderBlock in the MIDI		protocol returned by the AudioUnitMIDIProtocol property. For example, if AudioUnitMIDIProtocol		returns kMIDIProtocol_2_0, incoming events will be translated to MIDI 2.0 if necessary.		If AudioUnitMIDIProtocol is not set, events will be delivered as legacy MIDI.
+--
+-- This bridged to the v2 API MusicDeviceMIDIEvent.
+--
+-- ObjC selector: @- scheduleMIDIEventBlock@
+scheduleMIDIEventBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
+scheduleMIDIEventBlock auAudioUnit  =
+  fmap castPtr $ sendMsg auAudioUnit (mkSelector "scheduleMIDIEventBlock") (retPtr retVoid) []
+
+-- | scheduleMIDIEventListBlock
+--
+-- Block used to schedule MIDIEventLists.
+--
+-- As with renderBlock, a host should fetch and cache this block before calling		allocateRenderResources, if it intends to schedule MIDI events.
+--
+-- When scheduling events during the render cycle (e.g. via a render observer) eventSampleTime can be		AUEventSampleTimeImmediate plus an optional buffer offset, in which case the event is		scheduled at the provided offset position within the current render cycle.
+--
+-- This is implemented in the base class. It is nil when musicDeviceOrEffect is NO.
+--
+-- Subclassers should not override. When hosts schedule events via this block, they are		delivered to the Audio Unit via the list of AURenderEvents delivered to		internalRenderBlock.
+--
+-- All events sent via this block will be delivered to the internalRenderBlock in the MIDI protocol returned by		the AudioUnitMIDIProtocol property. For example, if this block is called with MIDI-1.0 events but		AudioUnitMIDIProtocol returns kMIDIProtocol_2_0, incoming events will be translated to MIDI 2.0.		If AudioUnitMIDIProtocol is not set, events will be delivered as legacy MIDI.
+--
+-- Note: This block should be preferred over scheduleMIDIEventBlock going forward.
+--
+-- This bridged to the v2 API MusicDeviceMIDIEventList.
+--
+-- ObjC selector: @- scheduleMIDIEventListBlock@
+scheduleMIDIEventListBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
+scheduleMIDIEventListBlock auAudioUnit  =
+  fmap castPtr $ sendMsg auAudioUnit (mkSelector "scheduleMIDIEventListBlock") (retPtr retVoid) []
+
+-- | MIDIOutputNames
+--
+-- Count, and names of, a plug-in's MIDI outputs.
+--
+-- A plug-in may override this method to inform hosts about its MIDI outputs. The size of the		array is the number of outputs the Audio Unit supports. Each item in the array is the name		of the MIDI output at that index.
+--
+-- This is bridged to the v2 API property kAudioUnitProperty_MIDIOutputCallbackInfo.
+--
+-- ObjC selector: @- MIDIOutputNames@
+midiOutputNames :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSArray)
+midiOutputNames auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "MIDIOutputNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | providesUserInterface
+--
+-- Specifies whether an audio unit provides UI (normally in the form of a view controller).
+--
+-- Implemented in the framework and should not be overridden by implementators. The		framework detects whether any subclass has implemented		@requestViewControllerWithCompletionHandler:@ or is implemented by an AU extension whose		extension point identifier is @com.apple.AudioUnit-UI@. See also		@requestViewControllerWithCompletionHandler:@ in <CoreAudioKit/AUViewController.h>
+--
+-- ObjC selector: @- providesUserInterface@
+providesUserInterface :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
+providesUserInterface auAudioUnit  =
+  fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "providesUserInterface") retCULong []
+
+-- | MIDIOutputEventBlock
+--
+-- Block used by the host to access the MIDI output generated by an Audio Unit.
+--
+-- The host can set this block and the plug-in can call it in its renderBlock to provide to the 		host the MIDI data associated with the current render cycle.
+--
+-- All events sent via this block will be delivered to the host in the MIDI protocol returned by		the hostMIDIProtocol property. For example, if hostMIDIProtocol is set to		kMIDIProtocol_2_0, incoming events will be translated to MIDI 2.0. If hostMIDIProtocol		is not set, events will be delivered as legacy MIDI.
+--
+-- Note: AUMIDIEventListBlock should be preferred over this block going forward.
+--
+-- This is bridged to the v2 API property kAudioUnitProperty_MIDIOutputCallback.
+--
+-- ObjC selector: @- MIDIOutputEventBlock@
+midiOutputEventBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
+midiOutputEventBlock auAudioUnit  =
+  fmap castPtr $ sendMsg auAudioUnit (mkSelector "MIDIOutputEventBlock") (retPtr retVoid) []
+
+-- | MIDIOutputEventBlock
+--
+-- Block used by the host to access the MIDI output generated by an Audio Unit.
+--
+-- The host can set this block and the plug-in can call it in its renderBlock to provide to the 		host the MIDI data associated with the current render cycle.
+--
+-- All events sent via this block will be delivered to the host in the MIDI protocol returned by		the hostMIDIProtocol property. For example, if hostMIDIProtocol is set to		kMIDIProtocol_2_0, incoming events will be translated to MIDI 2.0. If hostMIDIProtocol		is not set, events will be delivered as legacy MIDI.
+--
+-- Note: AUMIDIEventListBlock should be preferred over this block going forward.
+--
+-- This is bridged to the v2 API property kAudioUnitProperty_MIDIOutputCallback.
+--
+-- ObjC selector: @- setMIDIOutputEventBlock:@
+setMIDIOutputEventBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Ptr () -> IO ()
+setMIDIOutputEventBlock auAudioUnit  value =
+  sendMsg auAudioUnit (mkSelector "setMIDIOutputEventBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+
+-- | MIDIOutputEventListBlock
+--
+-- Block used by the host to access the MIDIEventList output generated by an Audio Unit.
+--
+-- The host can set this block and the plug-in can call it in its renderBlock to provide to the		host the MIDIEventList data associated with the current render cycle.
+--
+-- All events sent via this block will be delivered to the host in the MIDI protocol returned by		the hostMIDIProtocol property. For example, if hostMIDIProtocol is set to		kMIDIProtocol_2_0, incoming events will be translated to MIDI 2.0. If hostMIDIProtocol		is not set, events will be delivered as legacy MIDI.
+--
+-- Note: This block is cross-compatible with Audio Units using MIDIOutputEventBlock and should be		preferred over MIDIOutputEventBlock by hosts going forward. The framework will provide the Audio Unit		with both a MIDIOutputEventBlock and MIDIOutputEventListBlock, the Audio Unit is free to call either		block as all messages will be translated as described above.
+--
+-- Host should setup in the following order:		 - Set hostMIDIProtocol		 - Set MIDIOutputEventListBlock		 - Call allocateRenderResourcesAndReturnError
+--
+-- This is bridged to the v2 API property kAudioUnitProperty_MIDIOutputEventListCallback.
+--
+-- ObjC selector: @- MIDIOutputEventListBlock@
+midiOutputEventListBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
+midiOutputEventListBlock auAudioUnit  =
+  fmap castPtr $ sendMsg auAudioUnit (mkSelector "MIDIOutputEventListBlock") (retPtr retVoid) []
+
+-- | MIDIOutputEventListBlock
+--
+-- Block used by the host to access the MIDIEventList output generated by an Audio Unit.
+--
+-- The host can set this block and the plug-in can call it in its renderBlock to provide to the		host the MIDIEventList data associated with the current render cycle.
+--
+-- All events sent via this block will be delivered to the host in the MIDI protocol returned by		the hostMIDIProtocol property. For example, if hostMIDIProtocol is set to		kMIDIProtocol_2_0, incoming events will be translated to MIDI 2.0. If hostMIDIProtocol		is not set, events will be delivered as legacy MIDI.
+--
+-- Note: This block is cross-compatible with Audio Units using MIDIOutputEventBlock and should be		preferred over MIDIOutputEventBlock by hosts going forward. The framework will provide the Audio Unit		with both a MIDIOutputEventBlock and MIDIOutputEventListBlock, the Audio Unit is free to call either		block as all messages will be translated as described above.
+--
+-- Host should setup in the following order:		 - Set hostMIDIProtocol		 - Set MIDIOutputEventListBlock		 - Call allocateRenderResourcesAndReturnError
+--
+-- This is bridged to the v2 API property kAudioUnitProperty_MIDIOutputEventListCallback.
+--
+-- ObjC selector: @- setMIDIOutputEventListBlock:@
+setMIDIOutputEventListBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Ptr () -> IO ()
+setMIDIOutputEventListBlock auAudioUnit  value =
+  sendMsg auAudioUnit (mkSelector "setMIDIOutputEventListBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+
+-- | AudioUnitMIDIProtocol
+--
+-- The MIDI protocol used by the Audio Unit for receiving MIDIEventList data.
+--
+-- Subclassers should override to return the desired protocol in which the Audio Unit wants		to receive input MIDI data, otherwise the Audio Unit will default to receiving legacy MIDI.
+--
+-- All translatable messages will be converted (if necessary) to this protocol prior to delivery		to the Audio Unit.
+--
+-- This is bridged to the v2 API property kAudioUnitProperty_AudioUnitMIDIProtocol.
+--
+-- ObjC selector: @- AudioUnitMIDIProtocol@
+audioUnitMIDIProtocol :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO MIDIProtocolID
+audioUnitMIDIProtocol auAudioUnit  =
+  fmap (coerce :: CInt -> MIDIProtocolID) $ sendMsg auAudioUnit (mkSelector "AudioUnitMIDIProtocol") retCInt []
+
+-- | hostMIDIProtocol
+--
+-- The MIDI protocol to be used by the host for receiving MIDIEventList data.
+--
+-- Hosts should set this property to the protocol they wish to receive MIDIEventList data		from the Audio Unit. This should be set prior to initialization, all translatable messages		will be converted  (if necessary) to this property's protocol prior to delivery to the host.
+--
+-- Host should setup in the following order:		- Set hostMIDIProtocol		- Set MIDIOutputEventListBlock		- Call allocateRenderResourcesAndReturnError
+--
+-- This is bridged to the v2 API property kAudioUnitProperty_HostMIDIProtocol.
+--
+-- Notes:		- If overriding this property, subclassers must call [super setHostMIDIProtocol:]		- hostMIDIProtocol should be set before attempting to query AudioUnitMIDIProtocol		or calling allocateRenderResourcesAndReturnError to allow Audio Units to		optionally match their input MIDI protocol to the desired host protocol and prevent		protocol conversion.
+--
+-- ObjC selector: @- hostMIDIProtocol@
+hostMIDIProtocol :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO MIDIProtocolID
+hostMIDIProtocol auAudioUnit  =
+  fmap (coerce :: CInt -> MIDIProtocolID) $ sendMsg auAudioUnit (mkSelector "hostMIDIProtocol") retCInt []
+
+-- | hostMIDIProtocol
+--
+-- The MIDI protocol to be used by the host for receiving MIDIEventList data.
+--
+-- Hosts should set this property to the protocol they wish to receive MIDIEventList data		from the Audio Unit. This should be set prior to initialization, all translatable messages		will be converted  (if necessary) to this property's protocol prior to delivery to the host.
+--
+-- Host should setup in the following order:		- Set hostMIDIProtocol		- Set MIDIOutputEventListBlock		- Call allocateRenderResourcesAndReturnError
+--
+-- This is bridged to the v2 API property kAudioUnitProperty_HostMIDIProtocol.
+--
+-- Notes:		- If overriding this property, subclassers must call [super setHostMIDIProtocol:]		- hostMIDIProtocol should be set before attempting to query AudioUnitMIDIProtocol		or calling allocateRenderResourcesAndReturnError to allow Audio Units to		optionally match their input MIDI protocol to the desired host protocol and prevent		protocol conversion.
+--
+-- ObjC selector: @- setHostMIDIProtocol:@
+setHostMIDIProtocol :: IsAUAudioUnit auAudioUnit => auAudioUnit -> MIDIProtocolID -> IO ()
+setHostMIDIProtocol auAudioUnit  value =
+  sendMsg auAudioUnit (mkSelector "setHostMIDIProtocol:") retVoid [argCInt (coerce value)]
+
+-- | fullState
+--
+-- A persistable snapshot of the Audio Unit's properties and parameters, suitable for				saving as a user preset.
+--
+-- Hosts may use this property to save and restore the state of an Audio Unit being used in a		user preset or document. The Audio Unit should not persist transitory properties such as		stream formats, but should save and restore all parameters and custom properties.
+--
+-- The base class implementation of this property saves the values of all parameters 		currently in the parameter tree. A subclass which dynamically produces multiple variants		of the parameter tree needs to be aware that the serialization method does a depth-first		preorder traversal of the tree.
+--
+-- Bridged to the v2 property kAudioUnitProperty_ClassInfo.
+--
+-- ObjC selector: @- fullState@
+fullState :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSDictionary)
+fullState auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "fullState") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | fullState
+--
+-- A persistable snapshot of the Audio Unit's properties and parameters, suitable for				saving as a user preset.
+--
+-- Hosts may use this property to save and restore the state of an Audio Unit being used in a		user preset or document. The Audio Unit should not persist transitory properties such as		stream formats, but should save and restore all parameters and custom properties.
+--
+-- The base class implementation of this property saves the values of all parameters 		currently in the parameter tree. A subclass which dynamically produces multiple variants		of the parameter tree needs to be aware that the serialization method does a depth-first		preorder traversal of the tree.
+--
+-- Bridged to the v2 property kAudioUnitProperty_ClassInfo.
+--
+-- ObjC selector: @- setFullState:@
+setFullState :: (IsAUAudioUnit auAudioUnit, IsNSDictionary value) => auAudioUnit -> value -> IO ()
+setFullState auAudioUnit  value =
+withObjCPtr value $ \raw_value ->
+    sendMsg auAudioUnit (mkSelector "setFullState:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | fullStateForDocument
+--
+-- A persistable snapshot of the audio unit's properties and parameters, suitable for				saving in a user's document.
+--
+-- This property is distinct from fullState in that some state is suitable for saving in user		presets, while other state is not. For example, a synthesizer's master tuning setting could		be considered global state, inappropriate for storing in reusable presets, but desirable		for storing in a document for a specific live performance.
+--
+-- Hosts saving documents should use this property. If the audio unit does not implement it,		the base class simply sets/gets fullState.
+--
+-- Bridged to the v2 property kAudioUnitProperty_ClassInfoFromDocument.
+--
+-- ObjC selector: @- fullStateForDocument@
+fullStateForDocument :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSDictionary)
+fullStateForDocument auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "fullStateForDocument") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | fullStateForDocument
+--
+-- A persistable snapshot of the audio unit's properties and parameters, suitable for				saving in a user's document.
+--
+-- This property is distinct from fullState in that some state is suitable for saving in user		presets, while other state is not. For example, a synthesizer's master tuning setting could		be considered global state, inappropriate for storing in reusable presets, but desirable		for storing in a document for a specific live performance.
+--
+-- Hosts saving documents should use this property. If the audio unit does not implement it,		the base class simply sets/gets fullState.
+--
+-- Bridged to the v2 property kAudioUnitProperty_ClassInfoFromDocument.
+--
+-- ObjC selector: @- setFullStateForDocument:@
+setFullStateForDocument :: (IsAUAudioUnit auAudioUnit, IsNSDictionary value) => auAudioUnit -> value -> IO ()
+setFullStateForDocument auAudioUnit  value =
+withObjCPtr value $ \raw_value ->
+    sendMsg auAudioUnit (mkSelector "setFullStateForDocument:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | factoryPresets
+--
+-- A collection of presets provided by the audio unit's developer.
+--
+-- A preset provides users of an audio unit with an easily-selectable, fine-tuned set of		parameters provided by the developer. This property returns all of the available factory presets.
+--
+-- Bridged to the v2 property kAudioUnitProperty_FactoryPresets.
+--
+-- ObjC selector: @- factoryPresets@
+factoryPresets :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSArray)
+factoryPresets auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "factoryPresets") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | userPresets
+--
+-- A collection of presets saved by the user
+--
+-- In addition to factory presets, provided by the audio unit vendor, users have the ability to		save the values of the parameters of an audio unit into a user preset. These users presets		can be accessed using this property.
+--
+-- The default implementation of this method will load the user presets from an internal		location that might not be directly accessible to the audio unit host application or to the		audio unit. Instead of accessing this path directly, the audio unit should rely on the		superclass implementation of this method to retrieve the presets.
+--
+-- Audio Units are free to override this method to load their user presets via different means		(e.g. from their iCloud container).
+--
+-- ObjC selector: @- userPresets@
+userPresets :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSArray)
+userPresets auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "userPresets") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | supportsUserPresets
+--
+-- Specifies whether an audio unit supports loading and saving user presets
+--
+-- The audio unit should set this property to YES if a user preset can be assigned to		currentPreset.
+--
+-- Audio unit host applications should query this property to determine whether the audio unit		supports user presets.
+--
+-- Assigning a user preset to the currentPreset property of an audio unit that does not support		restoring state from user presets may result in incorrect behavior.
+--
+-- ObjC selector: @- supportsUserPresets@
+supportsUserPresets :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
+supportsUserPresets auAudioUnit  =
+  fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "supportsUserPresets") retCULong []
+
+-- | isLoadedInProcess
+--
+-- Set to YES when an AUAudioUnit is loaded in-process
+--
+-- If the AUAudioUnit is instantiated with kAudioComponentInstantiation_LoadInProcess, but the		audio unit is not packaged properly to support loading in-process, the system will silently		fall back to loading the audio unit out-of-process.
+--
+-- This property can be used to determine whether the instantiation succeeded as intended and		the audio unit is running in-process.
+--
+-- The presence of an extension process is not sufficient indication that the audio unit failed		to load in-process, since the framework might launch the audio unit extension process to		fulfill auxiliary functionality. If the audio unit is loaded in-process then rendering is		done in the host process. Other operations that are not essential to rendering audio, might		be done in the audio unit's extension process.
+--
+-- ObjC selector: @- isLoadedInProcess@
+isLoadedInProcess :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
+isLoadedInProcess auAudioUnit  =
+  fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "isLoadedInProcess") retCULong []
+
+-- | currentPreset
+--
+-- The audio unit's last-selected preset.
+--
+-- Hosts can let the user select a preset by setting this property. Note that when getting		this property, it does not reflect whether parameters may have been modified since the		preset was selected.
+--
+-- Bridged to the v2 property kAudioUnitProperty_PresentPreset.
+--
+-- ObjC selector: @- currentPreset@
+currentPreset :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id AUAudioUnitPreset)
+currentPreset auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "currentPreset") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | currentPreset
+--
+-- The audio unit's last-selected preset.
+--
+-- Hosts can let the user select a preset by setting this property. Note that when getting		this property, it does not reflect whether parameters may have been modified since the		preset was selected.
+--
+-- Bridged to the v2 property kAudioUnitProperty_PresentPreset.
+--
+-- ObjC selector: @- setCurrentPreset:@
+setCurrentPreset :: (IsAUAudioUnit auAudioUnit, IsAUAudioUnitPreset value) => auAudioUnit -> value -> IO ()
+setCurrentPreset auAudioUnit  value =
+withObjCPtr value $ \raw_value ->
+    sendMsg auAudioUnit (mkSelector "setCurrentPreset:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | latency
+--
+-- The audio unit's processing latency, in seconds.
+--
+-- This property reflects the delay between when an impulse in the unit's audio unit stream		arrives in the input vs. output streams. This should reflect the delay due		to signal processing (e.g. filters, FFT's, etc.), not delay or reverberation which is		being applied as an effect.
+--
+-- Note that a latency that varies with parameter settings, including bypass, is generally not		useful to hosts. A host is usually only prepared to add delays before starting to render and		those delays need to be fixed. A variable delay would introduce artifacts even if the host		could track it. If an algorithm has a variable latency it should be adjusted upwards to some		fixed latency within the audio unit. If for some reason this is not possible, then latency		could be regarded as an unavoidable consequence of the algorithm and left unreported (i.e.		with a value of 0).
+--
+-- Bridged to the v2 property kAudioUnitProperty_Latency.
+--
+-- ObjC selector: @- latency@
+latency :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO CDouble
+latency auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "latency") retCDouble []
+
+-- | tailTime
+--
+-- The audio unit's tail time, in seconds.
+--
+-- This property reflects the time interval between when the input stream ends or otherwise		transitions to silence, and when the output stream becomes silent. Unlike latency, this		should reflect the duration of a delay or reverb effect.
+--
+-- Bridged to the v2 property kAudioUnitProperty_TailTime.
+--
+-- ObjC selector: @- tailTime@
+tailTime :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO CDouble
+tailTime auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "tailTime") retCDouble []
+
+-- | renderQuality
+--
+-- Provides a trade-off between rendering quality and CPU load.
+--
+-- The range of valid values is 0-127.
+--
+-- Bridged to the v2 property kAudioUnitProperty_RenderQuality.
+--
+-- ObjC selector: @- renderQuality@
+renderQuality :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO CLong
+renderQuality auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "renderQuality") retCLong []
+
+-- | renderQuality
+--
+-- Provides a trade-off between rendering quality and CPU load.
+--
+-- The range of valid values is 0-127.
+--
+-- Bridged to the v2 property kAudioUnitProperty_RenderQuality.
+--
+-- ObjC selector: @- setRenderQuality:@
+setRenderQuality :: IsAUAudioUnit auAudioUnit => auAudioUnit -> CLong -> IO ()
+setRenderQuality auAudioUnit  value =
+  sendMsg auAudioUnit (mkSelector "setRenderQuality:") retVoid [argCLong (fromIntegral value)]
+
+-- | shouldBypassEffect
+--
+-- Directs an effect to route input directly to output, without any processing.
+--
+-- Bridged to the v2 property kAudioUnitProperty_BypassEffect.
+--
+-- ObjC selector: @- shouldBypassEffect@
+shouldBypassEffect :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
+shouldBypassEffect auAudioUnit  =
+  fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "shouldBypassEffect") retCULong []
+
+-- | shouldBypassEffect
+--
+-- Directs an effect to route input directly to output, without any processing.
+--
+-- Bridged to the v2 property kAudioUnitProperty_BypassEffect.
+--
+-- ObjC selector: @- setShouldBypassEffect:@
+setShouldBypassEffect :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Bool -> IO ()
+setShouldBypassEffect auAudioUnit  value =
+  sendMsg auAudioUnit (mkSelector "setShouldBypassEffect:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | canProcessInPlace
+--
+-- Expresses whether an audio unit can process in place.
+--
+-- In-place processing is the ability for an audio unit to transform an input signal to an		output signal in-place in the input buffer, without requiring a separate output buffer.
+--
+-- A host can express its desire to process in place by using null mData pointers in the output		buffer list. The audio unit may process in-place in the input buffers. See the discussion of		renderBlock.
+--
+-- Partially bridged to the v2 property kAudioUnitProperty_InPlaceProcessing; in v3 it is not		settable.
+--
+-- Defaults to NO. Subclassers can override to return YES.
+--
+-- ObjC selector: @- canProcessInPlace@
+canProcessInPlace :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
+canProcessInPlace auAudioUnit  =
+  fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "canProcessInPlace") retCULong []
+
+-- | renderingOffline
+--
+-- Communicates to an audio unit that it is rendering offline.
+--
+-- A host should set this property when using an audio unit in a context where there are no		realtime deadlines, before asking the unit to allocate render resources. An audio unit may		respond by using a more expensive signal processing algorithm, or allowing itself to block		at render time if data being generated on secondary work threads is not ready in time.		(Normally, in a realtime thread, this data would have to be dropped).
+--
+-- Bridged to the v2 property kAudioUnitProperty_OfflineRender.
+--
+-- ObjC selector: @- renderingOffline@
+renderingOffline :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
+renderingOffline auAudioUnit  =
+  fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "renderingOffline") retCULong []
+
+-- | renderingOffline
+--
+-- Communicates to an audio unit that it is rendering offline.
+--
+-- A host should set this property when using an audio unit in a context where there are no		realtime deadlines, before asking the unit to allocate render resources. An audio unit may		respond by using a more expensive signal processing algorithm, or allowing itself to block		at render time if data being generated on secondary work threads is not ready in time.		(Normally, in a realtime thread, this data would have to be dropped).
+--
+-- Bridged to the v2 property kAudioUnitProperty_OfflineRender.
+--
+-- ObjC selector: @- setRenderingOffline:@
+setRenderingOffline :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Bool -> IO ()
+setRenderingOffline auAudioUnit  value =
+  sendMsg auAudioUnit (mkSelector "setRenderingOffline:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | channelCapabilities
+--
+-- Expresses valid combinations of input and output channel counts.
+--
+-- Elements are NSNumber containing integers; [0]=input count, [1]=output count, [2]=2nd input		count, [3]=2nd output count, etc.
+--
+-- An input, output count of (2, 2) signifies that the audio unit can process 2 input channels		to 2 output channels.
+--
+-- Negative numbers (-1, -2) indicate *any* number of channels. (-1, -1) means any number		of channels on input and output as long as they are the same. (-1, -2) means any number of		channels on input or output, without the requirement that the counts are the same.
+--
+-- A negative number less than -2 is used to indicate a total number of channels across every		bus in that scope, regardless of how many channels are set on any particular bus. For		example, (-16, 2) indicates that a unit can accept up to 16 channels of input across its		input busses, but will only produce 2 channels of output.
+--
+-- Zero on either side (though typically input) means "not applicable", because there are no		elements on that side.
+--
+-- Bridged to the v2 property kAudioUnitProperty_SupportedNumChannels.
+--
+-- ObjC selector: @- channelCapabilities@
+channelCapabilities :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSArray)
+channelCapabilities auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "channelCapabilities") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | musicalContextBlock
+--
+-- A callback for the AU to call the host for musical context information.
+--
+-- Note that an audio unit implementation accessing this property should cache it in		realtime-safe storage before beginning to render.
+--
+-- Bridged to the HostCallback_GetBeatAndTempo and HostCallback_GetMusicalTimeLocation		callback members in kAudioUnitProperty_HostCallbacks.
+--
+-- ObjC selector: @- musicalContextBlock@
+musicalContextBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
+musicalContextBlock auAudioUnit  =
+  fmap castPtr $ sendMsg auAudioUnit (mkSelector "musicalContextBlock") (retPtr retVoid) []
+
+-- | musicalContextBlock
+--
+-- A callback for the AU to call the host for musical context information.
+--
+-- Note that an audio unit implementation accessing this property should cache it in		realtime-safe storage before beginning to render.
+--
+-- Bridged to the HostCallback_GetBeatAndTempo and HostCallback_GetMusicalTimeLocation		callback members in kAudioUnitProperty_HostCallbacks.
+--
+-- ObjC selector: @- setMusicalContextBlock:@
+setMusicalContextBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Ptr () -> IO ()
+setMusicalContextBlock auAudioUnit  value =
+  sendMsg auAudioUnit (mkSelector "setMusicalContextBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+
+-- | transportStateBlock
+--
+-- A callback for the AU to call the host for transport state information.
+--
+-- Note that an audio unit implementation accessing this property should cache it in		realtime-safe storage before beginning to render.
+--
+-- Bridged to the HostCallback_GetTransportState and HostCallback_GetTransportState2		callback members in kAudioUnitProperty_HostCallbacks.
+--
+-- ObjC selector: @- transportStateBlock@
+transportStateBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
+transportStateBlock auAudioUnit  =
+  fmap castPtr $ sendMsg auAudioUnit (mkSelector "transportStateBlock") (retPtr retVoid) []
+
+-- | transportStateBlock
+--
+-- A callback for the AU to call the host for transport state information.
+--
+-- Note that an audio unit implementation accessing this property should cache it in		realtime-safe storage before beginning to render.
+--
+-- Bridged to the HostCallback_GetTransportState and HostCallback_GetTransportState2		callback members in kAudioUnitProperty_HostCallbacks.
+--
+-- ObjC selector: @- setTransportStateBlock:@
+setTransportStateBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Ptr () -> IO ()
+setTransportStateBlock auAudioUnit  value =
+  sendMsg auAudioUnit (mkSelector "setTransportStateBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+
+-- | contextName
+--
+-- Information about the host context in which the audio unit is connected, for display				in the audio unit's view.
+--
+-- For example, a host could set "track 3" as the context, so that the audio unit's view could		then display to the user "My audio unit on track 3".
+--
+-- Bridged to the v2 property kAudioUnitProperty_ContextName.
+--
+-- ObjC selector: @- contextName@
+contextName :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSString)
+contextName auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "contextName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | contextName
+--
+-- Information about the host context in which the audio unit is connected, for display				in the audio unit's view.
+--
+-- For example, a host could set "track 3" as the context, so that the audio unit's view could		then display to the user "My audio unit on track 3".
+--
+-- Bridged to the v2 property kAudioUnitProperty_ContextName.
+--
+-- ObjC selector: @- setContextName:@
+setContextName :: (IsAUAudioUnit auAudioUnit, IsNSString value) => auAudioUnit -> value -> IO ()
+setContextName auAudioUnit  value =
+withObjCPtr value $ \raw_value ->
+    sendMsg auAudioUnit (mkSelector "setContextName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | migrateFromPlugin
+--
+-- Information for migrating data from other audio plug-ins to the v3 Audio Unit architecture.
+--
+-- This can be used to migrate settings from an older Audio Unit; this allows manufacturers		to deprecate older Audio Units and replace them with new ones. The data for the older Audio Unit is		an array of NSData representing byte encoded AudioUnitOtherPluginDescs to migrate from.		Can also be used to migrate from a v2 to a v3 Audio Unit.
+--
+-- Bridged to the v2 property kAudioUnitMigrateProperty_FromPlugin.
+--
+-- ObjC selector: @- migrateFromPlugin@
+migrateFromPlugin :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSArray)
+migrateFromPlugin auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "migrateFromPlugin") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | supportsMPE
+--
+-- Specifies whether an audio unit supports Multi-dimensional Polyphonic Expression.
+--
+-- Bridged to the v2 property kAudioUnitProperty_SupportsMPE.
+--
+-- ObjC selector: @- supportsMPE@
+supportsMPE :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
+supportsMPE auAudioUnit  =
+  fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "supportsMPE") retCULong []
+
+-- | channelMap
+--
+-- Specify a mapping of input channels to output channels.
+--
+-- Converter and input/output audio units may support re-ordering or splitting of input		channels to output channels. The number of channels in the channel map is the number of		channels of the destination (output format). The channel map entries contain a channel		number of the source channel that should be mapped to that destination channel. If -1 is		specified, then that destination channel will not contain any channel from the source (so it		will be silent).
+--
+-- If the property value is nil, then the audio unit does not support this property.
+--
+-- Bridged to the v2 property kAudioOutputUnitProperty_ChannelMap.
+--
+-- ObjC selector: @- channelMap@
+channelMap :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSArray)
+channelMap auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "channelMap") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | channelMap
+--
+-- Specify a mapping of input channels to output channels.
+--
+-- Converter and input/output audio units may support re-ordering or splitting of input		channels to output channels. The number of channels in the channel map is the number of		channels of the destination (output format). The channel map entries contain a channel		number of the source channel that should be mapped to that destination channel. If -1 is		specified, then that destination channel will not contain any channel from the source (so it		will be silent).
+--
+-- If the property value is nil, then the audio unit does not support this property.
+--
+-- Bridged to the v2 property kAudioOutputUnitProperty_ChannelMap.
+--
+-- ObjC selector: @- setChannelMap:@
+setChannelMap :: (IsAUAudioUnit auAudioUnit, IsNSArray value) => auAudioUnit -> value -> IO ()
+setChannelMap auAudioUnit  value =
+withObjCPtr value $ \raw_value ->
+    sendMsg auAudioUnit (mkSelector "setChannelMap:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | profileChangedBlock
+--
+-- A block called when a device notifies that a MIDI-CI profile has been enabled or 				disabled.
+--
+-- Since enabling / disabling MIDI-CI profiles is an asynchronous operation, the host can set 		this block and the audio unit is expected to call it every time the state of a MIDI-CI 		profile has changed.
+--
+-- ObjC selector: @- profileChangedBlock@
+profileChangedBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
+profileChangedBlock auAudioUnit  =
+  fmap castPtr $ sendMsg auAudioUnit (mkSelector "profileChangedBlock") (retPtr retVoid) []
+
+-- | profileChangedBlock
+--
+-- A block called when a device notifies that a MIDI-CI profile has been enabled or 				disabled.
+--
+-- Since enabling / disabling MIDI-CI profiles is an asynchronous operation, the host can set 		this block and the audio unit is expected to call it every time the state of a MIDI-CI 		profile has changed.
+--
+-- ObjC selector: @- setProfileChangedBlock:@
+setProfileChangedBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Ptr () -> IO ()
+setProfileChangedBlock auAudioUnit  value =
+  sendMsg auAudioUnit (mkSelector "setProfileChangedBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+
+-- | Block which subclassers must provide (via a getter) to implement rendering.
+--
+-- ObjC selector: @- internalRenderBlock@
+internalRenderBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
+internalRenderBlock auAudioUnit  =
+  fmap castPtr $ sendMsg auAudioUnit (mkSelector "internalRenderBlock") (retPtr retVoid) []
+
+-- | renderContextObserver
+--
+-- Block called by the OS when the rendering context changes.
+--
+-- Audio Units which create auxiliary realtime rendering threads should implement this property to	return a block which will be called by the OS when the render context changes. Audio Unit hosts	must not attempt to interact with the AudioUnit through this block; it is for the exclusive use	of the OS. See <AudioToolbox/AudioWorkInterval.h> for more information.
+--
+-- ObjC selector: @- renderContextObserver@
+renderContextObserver :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
+renderContextObserver auAudioUnit  =
+  fmap castPtr $ sendMsg auAudioUnit (mkSelector "renderContextObserver") (retPtr retVoid) []
+
+-- | MIDIOutputBufferSizeHint
+--
+-- Hint to control the size of the allocated buffer for outgoing MIDI events.
+--
+-- This property allows the plug-in to provide a hint to the framework regarding the size of        its outgoing MIDI data buffer.
+--
+-- If the plug-in produces more MIDI output data than the default size of the allocated buffer,        then the plug-in can provide this property to increase the size of this buffer.
+--
+-- The value represents the number of 3-byte Legacy MIDI messages that fit into the buffer or		a single MIDIEventList containing 1 MIDIEventPacket of 2 words when using MIDI 2.0 (MIDIEventList based API's).
+--
+-- This property is set to the default value by the framework.
+--
+-- In case of kAudioUnitErr_MIDIOutputBufferFull errors caused by producing too much MIDI        output in one render call, set this property to increase the buffer.
+--
+-- This only provides a recommendation to the framework.
+--
+-- Bridged to kAudioUnitProperty_MIDIOutputBufferSizeHint.
+--
+-- ObjC selector: @- MIDIOutputBufferSizeHint@
+midiOutputBufferSizeHint :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO CLong
+midiOutputBufferSizeHint auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "MIDIOutputBufferSizeHint") retCLong []
+
+-- | MIDIOutputBufferSizeHint
+--
+-- Hint to control the size of the allocated buffer for outgoing MIDI events.
+--
+-- This property allows the plug-in to provide a hint to the framework regarding the size of        its outgoing MIDI data buffer.
+--
+-- If the plug-in produces more MIDI output data than the default size of the allocated buffer,        then the plug-in can provide this property to increase the size of this buffer.
+--
+-- The value represents the number of 3-byte Legacy MIDI messages that fit into the buffer or		a single MIDIEventList containing 1 MIDIEventPacket of 2 words when using MIDI 2.0 (MIDIEventList based API's).
+--
+-- This property is set to the default value by the framework.
+--
+-- In case of kAudioUnitErr_MIDIOutputBufferFull errors caused by producing too much MIDI        output in one render call, set this property to increase the buffer.
+--
+-- This only provides a recommendation to the framework.
+--
+-- Bridged to kAudioUnitProperty_MIDIOutputBufferSizeHint.
+--
+-- ObjC selector: @- setMIDIOutputBufferSizeHint:@
+setMIDIOutputBufferSizeHint :: IsAUAudioUnit auAudioUnit => auAudioUnit -> CLong -> IO ()
+setMIDIOutputBufferSizeHint auAudioUnit  value =
+  sendMsg auAudioUnit (mkSelector "setMIDIOutputBufferSizeHint:") retVoid [argCLong (fromIntegral value)]
+
+-- | canPerformInput
+--
+-- Whether the I/O device can perform input.
+--
+-- ObjC selector: @- canPerformInput@
+canPerformInput :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
+canPerformInput auAudioUnit  =
+  fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "canPerformInput") retCULong []
+
+-- | canPerformOutput
+--
+-- Whether the I/O device can perform output.
+--
+-- ObjC selector: @- canPerformOutput@
+canPerformOutput :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
+canPerformOutput auAudioUnit  =
+  fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "canPerformOutput") retCULong []
+
+-- | inputEnabled
+--
+-- Flag enabling audio input from the unit.
+--
+-- Input is disabled by default. This must be set to YES if input audio is desired. 				Setting to YES will have no effect if canPerformInput is false.
+--
+-- ObjC selector: @- inputEnabled@
+inputEnabled :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
+inputEnabled auAudioUnit  =
+  fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "inputEnabled") retCULong []
+
+-- | inputEnabled
+--
+-- Flag enabling audio input from the unit.
+--
+-- Input is disabled by default. This must be set to YES if input audio is desired. 				Setting to YES will have no effect if canPerformInput is false.
+--
+-- ObjC selector: @- setInputEnabled:@
+setInputEnabled :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Bool -> IO ()
+setInputEnabled auAudioUnit  value =
+  sendMsg auAudioUnit (mkSelector "setInputEnabled:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | outputEnabled
+--
+-- Flag enabling audio output from the unit.
+--
+-- Output is enabled by default.				Setting to YES will have no effect if canPerformOutput is false.
+--
+-- ObjC selector: @- outputEnabled@
+outputEnabled :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
+outputEnabled auAudioUnit  =
+  fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "outputEnabled") retCULong []
+
+-- | outputEnabled
+--
+-- Flag enabling audio output from the unit.
+--
+-- Output is enabled by default.				Setting to YES will have no effect if canPerformOutput is false.
+--
+-- ObjC selector: @- setOutputEnabled:@
+setOutputEnabled :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Bool -> IO ()
+setOutputEnabled auAudioUnit  value =
+  sendMsg auAudioUnit (mkSelector "setOutputEnabled:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | outputProvider
+--
+-- The block that the output unit will call to get audio to send to the output.
+--
+-- This block must be set if output is enabled.
+--
+-- ObjC selector: @- outputProvider@
+outputProvider :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
+outputProvider auAudioUnit  =
+  fmap castPtr $ sendMsg auAudioUnit (mkSelector "outputProvider") (retPtr retVoid) []
+
+-- | outputProvider
+--
+-- The block that the output unit will call to get audio to send to the output.
+--
+-- This block must be set if output is enabled.
+--
+-- ObjC selector: @- setOutputProvider:@
+setOutputProvider :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Ptr () -> IO ()
+setOutputProvider auAudioUnit  value =
+  sendMsg auAudioUnit (mkSelector "setOutputProvider:") retVoid [argPtr (castPtr value :: Ptr ())]
+
+-- | inputHandler
+--
+-- The block that the output unit will call to notify when input is available.
+--
+-- See discussion for AUInputHandler.
+--
+-- ObjC selector: @- inputHandler@
+inputHandler :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
+inputHandler auAudioUnit  =
+  fmap castPtr $ sendMsg auAudioUnit (mkSelector "inputHandler") (retPtr retVoid) []
+
+-- | inputHandler
+--
+-- The block that the output unit will call to notify when input is available.
+--
+-- See discussion for AUInputHandler.
+--
+-- ObjC selector: @- setInputHandler:@
+setInputHandler :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Ptr () -> IO ()
+setInputHandler auAudioUnit  value =
+  sendMsg auAudioUnit (mkSelector "setInputHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+
+-- | device
+--
+-- Get the I/O hardware device.
+--
+-- ObjC selector: @- deviceID@
+deviceID :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO CUInt
+deviceID auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "deviceID") retCUInt []
+
+-- | deviceInputLatency
+--
+-- The audio device's input latency, in seconds.
+--
+-- Bridged to the HAL property kAudioDevicePropertyLatency, which is implemented 		by v2 input/output units.
+--
+-- ObjC selector: @- deviceInputLatency@
+deviceInputLatency :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO CDouble
+deviceInputLatency auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "deviceInputLatency") retCDouble []
+
+-- | deviceOutputLatency
+--
+-- The audio device's output latency, in seconds.
+--
+-- Bridged to the HAL property kAudioDevicePropertyLatency, which is implemented		by v2 input/output units.
+--
+-- ObjC selector: @- deviceOutputLatency@
+deviceOutputLatency :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO CDouble
+deviceOutputLatency auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "deviceOutputLatency") retCDouble []
+
+-- | running
+--
+-- The audio device's running state.
+--
+-- ObjC selector: @- running@
+running :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
+running auAudioUnit  =
+  fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "running") retCULong []
+
+-- | osWorkgroup
+--
+-- The os_workgroup_t to which the input/output audio unit belongs.
+--
+-- For further background, see <AudioToolbox/AudioWorkInterval.h>.
+--
+-- Bridged to the v2 property kAudioOutputUnitProperty_OSWorkgroup.
+--
+-- ObjC selector: @- osWorkgroup@
+osWorkgroup :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id OS_os_workgroup)
+osWorkgroup auAudioUnit  =
+  sendMsg auAudioUnit (mkSelector "osWorkgroup") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- ---------------------------------------------------------------------------
+-- Selectors
+-- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @init@
+initSelector :: Selector
+initSelector = mkSelector "init"
+
+-- | @Selector@ for @initWithComponentDescription:options:error:@
+initWithComponentDescription_options_errorSelector :: Selector
+initWithComponentDescription_options_errorSelector = mkSelector "initWithComponentDescription:options:error:"
+
+-- | @Selector@ for @initWithComponentDescription:error:@
+initWithComponentDescription_errorSelector :: Selector
+initWithComponentDescription_errorSelector = mkSelector "initWithComponentDescription:error:"
+
+-- | @Selector@ for @instantiateWithComponentDescription:options:completionHandler:@
+instantiateWithComponentDescription_options_completionHandlerSelector :: Selector
+instantiateWithComponentDescription_options_completionHandlerSelector = mkSelector "instantiateWithComponentDescription:options:completionHandler:"
+
+-- | @Selector@ for @allocateRenderResourcesAndReturnError:@
+allocateRenderResourcesAndReturnErrorSelector :: Selector
+allocateRenderResourcesAndReturnErrorSelector = mkSelector "allocateRenderResourcesAndReturnError:"
+
+-- | @Selector@ for @deallocateRenderResources@
+deallocateRenderResourcesSelector :: Selector
+deallocateRenderResourcesSelector = mkSelector "deallocateRenderResources"
+
+-- | @Selector@ for @reset@
+resetSelector :: Selector
+resetSelector = mkSelector "reset"
+
+-- | @Selector@ for @tokenByAddingRenderObserver:@
+tokenByAddingRenderObserverSelector :: Selector
+tokenByAddingRenderObserverSelector = mkSelector "tokenByAddingRenderObserver:"
+
+-- | @Selector@ for @removeRenderObserver:@
+removeRenderObserverSelector :: Selector
+removeRenderObserverSelector = mkSelector "removeRenderObserver:"
+
+-- | @Selector@ for @parametersForOverviewWithCount:@
+parametersForOverviewWithCountSelector :: Selector
+parametersForOverviewWithCountSelector = mkSelector "parametersForOverviewWithCount:"
+
+-- | @Selector@ for @saveUserPreset:error:@
+saveUserPreset_errorSelector :: Selector
+saveUserPreset_errorSelector = mkSelector "saveUserPreset:error:"
+
+-- | @Selector@ for @deleteUserPreset:error:@
+deleteUserPreset_errorSelector :: Selector
+deleteUserPreset_errorSelector = mkSelector "deleteUserPreset:error:"
+
+-- | @Selector@ for @presetStateFor:error:@
+presetStateFor_errorSelector :: Selector
+presetStateFor_errorSelector = mkSelector "presetStateFor:error:"
+
+-- | @Selector@ for @profileStateForCable:channel:@
+profileStateForCable_channelSelector :: Selector
+profileStateForCable_channelSelector = mkSelector "profileStateForCable:channel:"
+
+-- | @Selector@ for @enableProfile:cable:onChannel:error:@
+enableProfile_cable_onChannel_errorSelector :: Selector
+enableProfile_cable_onChannel_errorSelector = mkSelector "enableProfile:cable:onChannel:error:"
+
+-- | @Selector@ for @disableProfile:cable:onChannel:error:@
+disableProfile_cable_onChannel_errorSelector :: Selector
+disableProfile_cable_onChannel_errorSelector = mkSelector "disableProfile:cable:onChannel:error:"
+
+-- | @Selector@ for @messageChannelFor:@
+messageChannelForSelector :: Selector
+messageChannelForSelector = mkSelector "messageChannelFor:"
+
+-- | @Selector@ for @registerSubclass:asComponentDescription:name:version:@
+registerSubclass_asComponentDescription_name_versionSelector :: Selector
+registerSubclass_asComponentDescription_name_versionSelector = mkSelector "registerSubclass:asComponentDescription:name:version:"
+
+-- | @Selector@ for @shouldChangeToFormat:forBus:@
+shouldChangeToFormat_forBusSelector :: Selector
+shouldChangeToFormat_forBusSelector = mkSelector "shouldChangeToFormat:forBus:"
+
+-- | @Selector@ for @setRenderResourcesAllocated:@
+setRenderResourcesAllocatedSelector :: Selector
+setRenderResourcesAllocatedSelector = mkSelector "setRenderResourcesAllocated:"
+
+-- | @Selector@ for @setDeviceID:error:@
+setDeviceID_errorSelector :: Selector
+setDeviceID_errorSelector = mkSelector "setDeviceID:error:"
+
+-- | @Selector@ for @startHardwareAndReturnError:@
+startHardwareAndReturnErrorSelector :: Selector
+startHardwareAndReturnErrorSelector = mkSelector "startHardwareAndReturnError:"
+
+-- | @Selector@ for @stopHardware@
+stopHardwareSelector :: Selector
+stopHardwareSelector = mkSelector "stopHardware"
+
+-- | @Selector@ for @componentDescription@
+componentDescriptionSelector :: Selector
+componentDescriptionSelector = mkSelector "componentDescription"
+
+-- | @Selector@ for @component@
+componentSelector :: Selector
+componentSelector = mkSelector "component"
+
+-- | @Selector@ for @componentName@
+componentNameSelector :: Selector
+componentNameSelector = mkSelector "componentName"
+
+-- | @Selector@ for @audioUnitName@
+audioUnitNameSelector :: Selector
+audioUnitNameSelector = mkSelector "audioUnitName"
+
+-- | @Selector@ for @manufacturerName@
+manufacturerNameSelector :: Selector
+manufacturerNameSelector = mkSelector "manufacturerName"
+
+-- | @Selector@ for @audioUnitShortName@
+audioUnitShortNameSelector :: Selector
+audioUnitShortNameSelector = mkSelector "audioUnitShortName"
+
+-- | @Selector@ for @componentVersion@
+componentVersionSelector :: Selector
+componentVersionSelector = mkSelector "componentVersion"
+
+-- | @Selector@ for @renderResourcesAllocated@
+renderResourcesAllocatedSelector :: Selector
+renderResourcesAllocatedSelector = mkSelector "renderResourcesAllocated"
+
+-- | @Selector@ for @inputBusses@
+inputBussesSelector :: Selector
+inputBussesSelector = mkSelector "inputBusses"
+
+-- | @Selector@ for @outputBusses@
+outputBussesSelector :: Selector
+outputBussesSelector = mkSelector "outputBusses"
+
+-- | @Selector@ for @renderBlock@
+renderBlockSelector :: Selector
+renderBlockSelector = mkSelector "renderBlock"
+
+-- | @Selector@ for @scheduleParameterBlock@
+scheduleParameterBlockSelector :: Selector
+scheduleParameterBlockSelector = mkSelector "scheduleParameterBlock"
+
+-- | @Selector@ for @maximumFramesToRender@
+maximumFramesToRenderSelector :: Selector
+maximumFramesToRenderSelector = mkSelector "maximumFramesToRender"
+
+-- | @Selector@ for @setMaximumFramesToRender:@
+setMaximumFramesToRenderSelector :: Selector
+setMaximumFramesToRenderSelector = mkSelector "setMaximumFramesToRender:"
+
+-- | @Selector@ for @parameterTree@
+parameterTreeSelector :: Selector
+parameterTreeSelector = mkSelector "parameterTree"
+
+-- | @Selector@ for @setParameterTree:@
+setParameterTreeSelector :: Selector
+setParameterTreeSelector = mkSelector "setParameterTree:"
+
+-- | @Selector@ for @allParameterValues@
+allParameterValuesSelector :: Selector
+allParameterValuesSelector = mkSelector "allParameterValues"
+
+-- | @Selector@ for @musicDeviceOrEffect@
+musicDeviceOrEffectSelector :: Selector
+musicDeviceOrEffectSelector = mkSelector "musicDeviceOrEffect"
+
+-- | @Selector@ for @virtualMIDICableCount@
+virtualMIDICableCountSelector :: Selector
+virtualMIDICableCountSelector = mkSelector "virtualMIDICableCount"
+
+-- | @Selector@ for @scheduleMIDIEventBlock@
+scheduleMIDIEventBlockSelector :: Selector
+scheduleMIDIEventBlockSelector = mkSelector "scheduleMIDIEventBlock"
+
+-- | @Selector@ for @scheduleMIDIEventListBlock@
+scheduleMIDIEventListBlockSelector :: Selector
+scheduleMIDIEventListBlockSelector = mkSelector "scheduleMIDIEventListBlock"
+
+-- | @Selector@ for @MIDIOutputNames@
+midiOutputNamesSelector :: Selector
+midiOutputNamesSelector = mkSelector "MIDIOutputNames"
+
+-- | @Selector@ for @providesUserInterface@
+providesUserInterfaceSelector :: Selector
+providesUserInterfaceSelector = mkSelector "providesUserInterface"
+
+-- | @Selector@ for @MIDIOutputEventBlock@
+midiOutputEventBlockSelector :: Selector
+midiOutputEventBlockSelector = mkSelector "MIDIOutputEventBlock"
+
+-- | @Selector@ for @setMIDIOutputEventBlock:@
+setMIDIOutputEventBlockSelector :: Selector
+setMIDIOutputEventBlockSelector = mkSelector "setMIDIOutputEventBlock:"
+
+-- | @Selector@ for @MIDIOutputEventListBlock@
+midiOutputEventListBlockSelector :: Selector
+midiOutputEventListBlockSelector = mkSelector "MIDIOutputEventListBlock"
+
+-- | @Selector@ for @setMIDIOutputEventListBlock:@
+setMIDIOutputEventListBlockSelector :: Selector
+setMIDIOutputEventListBlockSelector = mkSelector "setMIDIOutputEventListBlock:"
+
+-- | @Selector@ for @AudioUnitMIDIProtocol@
+audioUnitMIDIProtocolSelector :: Selector
+audioUnitMIDIProtocolSelector = mkSelector "AudioUnitMIDIProtocol"
+
+-- | @Selector@ for @hostMIDIProtocol@
+hostMIDIProtocolSelector :: Selector
+hostMIDIProtocolSelector = mkSelector "hostMIDIProtocol"
+
+-- | @Selector@ for @setHostMIDIProtocol:@
+setHostMIDIProtocolSelector :: Selector
+setHostMIDIProtocolSelector = mkSelector "setHostMIDIProtocol:"
+
+-- | @Selector@ for @fullState@
+fullStateSelector :: Selector
+fullStateSelector = mkSelector "fullState"
+
+-- | @Selector@ for @setFullState:@
+setFullStateSelector :: Selector
+setFullStateSelector = mkSelector "setFullState:"
+
+-- | @Selector@ for @fullStateForDocument@
+fullStateForDocumentSelector :: Selector
+fullStateForDocumentSelector = mkSelector "fullStateForDocument"
+
+-- | @Selector@ for @setFullStateForDocument:@
+setFullStateForDocumentSelector :: Selector
+setFullStateForDocumentSelector = mkSelector "setFullStateForDocument:"
+
+-- | @Selector@ for @factoryPresets@
+factoryPresetsSelector :: Selector
+factoryPresetsSelector = mkSelector "factoryPresets"
+
+-- | @Selector@ for @userPresets@
+userPresetsSelector :: Selector
+userPresetsSelector = mkSelector "userPresets"
+
+-- | @Selector@ for @supportsUserPresets@
+supportsUserPresetsSelector :: Selector
+supportsUserPresetsSelector = mkSelector "supportsUserPresets"
+
+-- | @Selector@ for @isLoadedInProcess@
+isLoadedInProcessSelector :: Selector
+isLoadedInProcessSelector = mkSelector "isLoadedInProcess"
+
+-- | @Selector@ for @currentPreset@
+currentPresetSelector :: Selector
+currentPresetSelector = mkSelector "currentPreset"
+
+-- | @Selector@ for @setCurrentPreset:@
+setCurrentPresetSelector :: Selector
+setCurrentPresetSelector = mkSelector "setCurrentPreset:"
+
+-- | @Selector@ for @latency@
+latencySelector :: Selector
+latencySelector = mkSelector "latency"
+
+-- | @Selector@ for @tailTime@
+tailTimeSelector :: Selector
+tailTimeSelector = mkSelector "tailTime"
+
+-- | @Selector@ for @renderQuality@
+renderQualitySelector :: Selector
+renderQualitySelector = mkSelector "renderQuality"
+
+-- | @Selector@ for @setRenderQuality:@
+setRenderQualitySelector :: Selector
+setRenderQualitySelector = mkSelector "setRenderQuality:"
+
+-- | @Selector@ for @shouldBypassEffect@
+shouldBypassEffectSelector :: Selector
+shouldBypassEffectSelector = mkSelector "shouldBypassEffect"
+
+-- | @Selector@ for @setShouldBypassEffect:@
+setShouldBypassEffectSelector :: Selector
+setShouldBypassEffectSelector = mkSelector "setShouldBypassEffect:"
+
+-- | @Selector@ for @canProcessInPlace@
+canProcessInPlaceSelector :: Selector
+canProcessInPlaceSelector = mkSelector "canProcessInPlace"
+
+-- | @Selector@ for @renderingOffline@
+renderingOfflineSelector :: Selector
+renderingOfflineSelector = mkSelector "renderingOffline"
+
+-- | @Selector@ for @setRenderingOffline:@
+setRenderingOfflineSelector :: Selector
+setRenderingOfflineSelector = mkSelector "setRenderingOffline:"
+
+-- | @Selector@ for @channelCapabilities@
+channelCapabilitiesSelector :: Selector
+channelCapabilitiesSelector = mkSelector "channelCapabilities"
+
+-- | @Selector@ for @musicalContextBlock@
+musicalContextBlockSelector :: Selector
+musicalContextBlockSelector = mkSelector "musicalContextBlock"
+
+-- | @Selector@ for @setMusicalContextBlock:@
+setMusicalContextBlockSelector :: Selector
+setMusicalContextBlockSelector = mkSelector "setMusicalContextBlock:"
+
+-- | @Selector@ for @transportStateBlock@
+transportStateBlockSelector :: Selector
+transportStateBlockSelector = mkSelector "transportStateBlock"
+
+-- | @Selector@ for @setTransportStateBlock:@
+setTransportStateBlockSelector :: Selector
+setTransportStateBlockSelector = mkSelector "setTransportStateBlock:"
+
+-- | @Selector@ for @contextName@
+contextNameSelector :: Selector
+contextNameSelector = mkSelector "contextName"
+
+-- | @Selector@ for @setContextName:@
+setContextNameSelector :: Selector
+setContextNameSelector = mkSelector "setContextName:"
+
+-- | @Selector@ for @migrateFromPlugin@
+migrateFromPluginSelector :: Selector
+migrateFromPluginSelector = mkSelector "migrateFromPlugin"
+
+-- | @Selector@ for @supportsMPE@
+supportsMPESelector :: Selector
+supportsMPESelector = mkSelector "supportsMPE"
+
+-- | @Selector@ for @channelMap@
+channelMapSelector :: Selector
+channelMapSelector = mkSelector "channelMap"
+
+-- | @Selector@ for @setChannelMap:@
+setChannelMapSelector :: Selector
+setChannelMapSelector = mkSelector "setChannelMap:"
+
+-- | @Selector@ for @profileChangedBlock@
+profileChangedBlockSelector :: Selector
+profileChangedBlockSelector = mkSelector "profileChangedBlock"
+
+-- | @Selector@ for @setProfileChangedBlock:@
+setProfileChangedBlockSelector :: Selector
+setProfileChangedBlockSelector = mkSelector "setProfileChangedBlock:"
+
+-- | @Selector@ for @internalRenderBlock@
+internalRenderBlockSelector :: Selector
+internalRenderBlockSelector = mkSelector "internalRenderBlock"
+
+-- | @Selector@ for @renderContextObserver@
+renderContextObserverSelector :: Selector
+renderContextObserverSelector = mkSelector "renderContextObserver"
+
+-- | @Selector@ for @MIDIOutputBufferSizeHint@
+midiOutputBufferSizeHintSelector :: Selector
+midiOutputBufferSizeHintSelector = mkSelector "MIDIOutputBufferSizeHint"
+
+-- | @Selector@ for @setMIDIOutputBufferSizeHint:@
+setMIDIOutputBufferSizeHintSelector :: Selector
+setMIDIOutputBufferSizeHintSelector = mkSelector "setMIDIOutputBufferSizeHint:"
+
+-- | @Selector@ for @canPerformInput@
+canPerformInputSelector :: Selector
+canPerformInputSelector = mkSelector "canPerformInput"
+
+-- | @Selector@ for @canPerformOutput@
+canPerformOutputSelector :: Selector
+canPerformOutputSelector = mkSelector "canPerformOutput"
+
+-- | @Selector@ for @inputEnabled@
+inputEnabledSelector :: Selector
+inputEnabledSelector = mkSelector "inputEnabled"
+
+-- | @Selector@ for @setInputEnabled:@
+setInputEnabledSelector :: Selector
+setInputEnabledSelector = mkSelector "setInputEnabled:"
+
+-- | @Selector@ for @outputEnabled@
+outputEnabledSelector :: Selector
+outputEnabledSelector = mkSelector "outputEnabled"
+
+-- | @Selector@ for @setOutputEnabled:@
+setOutputEnabledSelector :: Selector
+setOutputEnabledSelector = mkSelector "setOutputEnabled:"
+
+-- | @Selector@ for @outputProvider@
+outputProviderSelector :: Selector
+outputProviderSelector = mkSelector "outputProvider"
+
+-- | @Selector@ for @setOutputProvider:@
+setOutputProviderSelector :: Selector
+setOutputProviderSelector = mkSelector "setOutputProvider:"
+
+-- | @Selector@ for @inputHandler@
+inputHandlerSelector :: Selector
+inputHandlerSelector = mkSelector "inputHandler"
+
+-- | @Selector@ for @setInputHandler:@
+setInputHandlerSelector :: Selector
+setInputHandlerSelector = mkSelector "setInputHandler:"
+
+-- | @Selector@ for @deviceID@
+deviceIDSelector :: Selector
+deviceIDSelector = mkSelector "deviceID"
+
+-- | @Selector@ for @deviceInputLatency@
+deviceInputLatencySelector :: Selector
+deviceInputLatencySelector = mkSelector "deviceInputLatency"
+
+-- | @Selector@ for @deviceOutputLatency@
+deviceOutputLatencySelector :: Selector
+deviceOutputLatencySelector = mkSelector "deviceOutputLatency"
+
+-- | @Selector@ for @running@
+runningSelector :: Selector
+runningSelector = mkSelector "running"
+
+-- | @Selector@ for @osWorkgroup@
+osWorkgroupSelector :: Selector
+osWorkgroupSelector = mkSelector "osWorkgroup"
+

@@ -1,0 +1,42 @@
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts #-}
+
+-- | Generated bindings for @ASAuthorizationPublicKeyCredentialLargeBlobRegistrationOutput@.
+module ObjC.AuthenticationServices.ASAuthorizationPublicKeyCredentialLargeBlobRegistrationOutput
+  ( ASAuthorizationPublicKeyCredentialLargeBlobRegistrationOutput
+  , IsASAuthorizationPublicKeyCredentialLargeBlobRegistrationOutput(..)
+  , isSupported
+  , isSupportedSelector
+
+
+  ) where
+
+import Foreign.Ptr (Ptr, nullPtr, castPtr)
+import Foreign.LibFFI
+import Foreign.C.Types
+import Data.Int (Int8, Int16)
+import Data.Word (Word16)
+import Data.Coerce (coerce)
+
+import ObjC.Runtime.Types
+import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Selector (mkSelector)
+import ObjC.Runtime.Class (getRequiredClass)
+
+import ObjC.AuthenticationServices.Internal.Classes
+import ObjC.Foundation.Internal.Classes
+
+-- | @- isSupported@
+isSupported :: IsASAuthorizationPublicKeyCredentialLargeBlobRegistrationOutput asAuthorizationPublicKeyCredentialLargeBlobRegistrationOutput => asAuthorizationPublicKeyCredentialLargeBlobRegistrationOutput -> IO Bool
+isSupported asAuthorizationPublicKeyCredentialLargeBlobRegistrationOutput  =
+  fmap ((/= 0) :: CULong -> Bool) $ sendMsg asAuthorizationPublicKeyCredentialLargeBlobRegistrationOutput (mkSelector "isSupported") retCULong []
+
+-- ---------------------------------------------------------------------------
+-- Selectors
+-- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @isSupported@
+isSupportedSelector :: Selector
+isSupportedSelector = mkSelector "isSupported"
+

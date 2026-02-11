@@ -1,0 +1,101 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.38.1.
+--
+-- see: https://github.com/sol/hpack
+
+name:           haskell-obj-c-examples
+version:        0.1.0.0
+synopsis:       Example macOS GUI applications using Haskell Objective-C bindings
+license:        BSD-3-Clause
+build-type:     Simple
+
+executable color-mixer
+  main-is: Main.hs
+  other-modules:
+      Paths_haskell_obj_c_examples
+  autogen-modules:
+      Paths_haskell_obj_c_examples
+  hs-source-dirs:
+      color-mixer
+  ghc-options: -Wall -Wno-orphans -threaded -rtsopts -with-rtsopts=-N -dynamic
+  build-depends:
+      base >=4.7 && <5
+    , haskell-obj-c
+    , libffi
+    , objc-appkit
+    , objc-foundation
+    , template-haskell
+  default-language: Haskell2010
+
+executable controls-gallery
+  main-is: Main.hs
+  other-modules:
+      Paths_haskell_obj_c_examples
+  autogen-modules:
+      Paths_haskell_obj_c_examples
+  hs-source-dirs:
+      controls-gallery
+  ghc-options: -Wall -Wno-orphans -threaded -rtsopts -with-rtsopts=-N -dynamic
+  build-depends:
+      base >=4.7 && <5
+    , haskell-obj-c
+    , libffi
+    , objc-appkit
+    , objc-foundation
+    , template-haskell
+  default-language: Haskell2010
+
+executable counter
+  main-is: Main.hs
+  other-modules:
+      Paths_haskell_obj_c_examples
+  autogen-modules:
+      Paths_haskell_obj_c_examples
+  hs-source-dirs:
+      counter
+  ghc-options: -Wall -Wno-orphans -threaded -rtsopts -with-rtsopts=-N -dynamic
+  build-depends:
+      base >=4.7 && <5
+    , haskell-obj-c
+    , libffi
+    , objc-appkit
+    , objc-foundation
+    , template-haskell
+  default-language: Haskell2010
+
+executable hello-world
+  main-is: Main.hs
+  other-modules:
+      Paths_haskell_obj_c_examples
+  autogen-modules:
+      Paths_haskell_obj_c_examples
+  hs-source-dirs:
+      hello-world
+  ghc-options: -Wall -Wno-orphans -threaded -rtsopts -with-rtsopts=-N -dynamic
+  build-depends:
+      base >=4.7 && <5
+    , haskell-obj-c
+    , libffi
+    , objc-appkit
+    , objc-foundation
+    , template-haskell
+  default-language: Haskell2010
+
+executable temperature-converter
+  main-is: Main.hs
+  other-modules:
+      Paths_haskell_obj_c_examples
+  autogen-modules:
+      Paths_haskell_obj_c_examples
+  hs-source-dirs:
+      temperature-converter
+  ghc-options: -Wall -Wno-orphans -threaded -rtsopts -with-rtsopts=-N -dynamic
+  build-depends:
+      base >=4.7 && <5
+    , haskell-obj-c
+    , libffi
+    , objc-appkit
+    , objc-foundation
+    , template-haskell
+  default-language: Haskell2010

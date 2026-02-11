@@ -1,0 +1,28 @@
+name:                objc-multipeerconnectivity
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the MultipeerConnectivity framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.MultipeerConnectivity.Enums
+  - ObjC.MultipeerConnectivity.Internal.Classes
+  - ObjC.MultipeerConnectivity.Internal.Enums
+  - ObjC.MultipeerConnectivity.MCAdvertiserAssistant
+  - ObjC.MultipeerConnectivity.MCBrowserViewController
+  - ObjC.MultipeerConnectivity.MCNearbyServiceAdvertiser
+  - ObjC.MultipeerConnectivity.MCNearbyServiceBrowser
+  - ObjC.MultipeerConnectivity.MCPeerID
+  - ObjC.MultipeerConnectivity.MCSession

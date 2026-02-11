@@ -1,0 +1,36 @@
+name:                objc-corespotlight
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the CoreSpotlight framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+- objc-uniformtypeidentifiers
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.CoreSpotlight.CSCustomAttributeKey
+  - ObjC.CoreSpotlight.CSImportExtension
+  - ObjC.CoreSpotlight.CSIndexExtensionRequestHandler
+  - ObjC.CoreSpotlight.CSLocalizedString
+  - ObjC.CoreSpotlight.CSPerson
+  - ObjC.CoreSpotlight.CSSearchQuery
+  - ObjC.CoreSpotlight.CSSearchQueryContext
+  - ObjC.CoreSpotlight.CSSearchableIndex
+  - ObjC.CoreSpotlight.CSSearchableItem
+  - ObjC.CoreSpotlight.CSSearchableItemAttributeSet
+  - ObjC.CoreSpotlight.CSSuggestion
+  - ObjC.CoreSpotlight.CSUserQuery
+  - ObjC.CoreSpotlight.CSUserQueryContext
+  - ObjC.CoreSpotlight.Enums
+  - ObjC.CoreSpotlight.Internal.Classes
+  - ObjC.CoreSpotlight.Internal.Enums
+  - ObjC.CoreSpotlight.NSUserActivity

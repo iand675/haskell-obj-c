@@ -1,0 +1,29 @@
+name:                objc-soundanalysis
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the SoundAnalysis framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-avfaudio
+- objc-coreml
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.SoundAnalysis.Enums
+  - ObjC.SoundAnalysis.Internal.Classes
+  - ObjC.SoundAnalysis.Internal.Enums
+  - ObjC.SoundAnalysis.SNAudioFileAnalyzer
+  - ObjC.SoundAnalysis.SNAudioStreamAnalyzer
+  - ObjC.SoundAnalysis.SNClassification
+  - ObjC.SoundAnalysis.SNClassificationResult
+  - ObjC.SoundAnalysis.SNClassifySoundRequest
+  - ObjC.SoundAnalysis.SNTimeDurationConstraint

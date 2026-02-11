@@ -1,0 +1,43 @@
+name:                objc-usernotifications
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the UserNotifications framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-corelocation
+- objc-foundation
+- objc-intents
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.UserNotifications.Enums
+  - ObjC.UserNotifications.Internal.Classes
+  - ObjC.UserNotifications.Internal.Enums
+  - ObjC.UserNotifications.NSString
+  - ObjC.UserNotifications.UNCalendarNotificationTrigger
+  - ObjC.UserNotifications.UNLocationNotificationTrigger
+  - ObjC.UserNotifications.UNNotification
+  - ObjC.UserNotifications.UNNotificationAction
+  - ObjC.UserNotifications.UNNotificationActionIcon
+  - ObjC.UserNotifications.UNNotificationAttachment
+  - ObjC.UserNotifications.UNNotificationAttributedMessageContext
+  - ObjC.UserNotifications.UNNotificationCategory
+  - ObjC.UserNotifications.UNNotificationRequest
+  - ObjC.UserNotifications.UNNotificationResponse
+  - ObjC.UserNotifications.UNNotificationServiceExtension
+  - ObjC.UserNotifications.UNNotificationSettings
+  - ObjC.UserNotifications.UNNotificationSound
+  - ObjC.UserNotifications.UNNotificationTrigger
+  - ObjC.UserNotifications.UNPushNotificationTrigger
+  - ObjC.UserNotifications.UNTextInputNotificationAction
+  - ObjC.UserNotifications.UNTextInputNotificationResponse
+  - ObjC.UserNotifications.UNTimeIntervalNotificationTrigger
+  - ObjC.UserNotifications.UNUserNotificationCenter

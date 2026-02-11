@@ -1,0 +1,34 @@
+name:                objc-videosubscriberaccount
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the VideoSubscriberAccount framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.VideoSubscriberAccount.Enums
+  - ObjC.VideoSubscriberAccount.Internal.Classes
+  - ObjC.VideoSubscriberAccount.Internal.Enums
+  - ObjC.VideoSubscriberAccount.VSAccountApplicationProvider
+  - ObjC.VideoSubscriberAccount.VSAccountManager
+  - ObjC.VideoSubscriberAccount.VSAccountManagerResult
+  - ObjC.VideoSubscriberAccount.VSAccountMetadata
+  - ObjC.VideoSubscriberAccount.VSAccountMetadataRequest
+  - ObjC.VideoSubscriberAccount.VSAccountProviderResponse
+  - ObjC.VideoSubscriberAccount.VSAppleSubscription
+  - ObjC.VideoSubscriberAccount.VSAutoSignInToken
+  - ObjC.VideoSubscriberAccount.VSAutoSignInTokenUpdateContext
+  - ObjC.VideoSubscriberAccount.VSSubscription
+  - ObjC.VideoSubscriberAccount.VSSubscriptionRegistrationCenter
+  - ObjC.VideoSubscriberAccount.VSUserAccount
+  - ObjC.VideoSubscriberAccount.VSUserAccountManager

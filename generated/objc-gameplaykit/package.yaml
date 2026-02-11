@@ -1,0 +1,89 @@
+name:                objc-gameplaykit
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the GameplayKit framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+- objc-scenekit
+- objc-spritekit
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.GameplayKit.Enums
+  - ObjC.GameplayKit.GKARC4RandomSource
+  - ObjC.GameplayKit.GKAgent
+  - ObjC.GameplayKit.GKAgent2D
+  - ObjC.GameplayKit.GKAgent3D
+  - ObjC.GameplayKit.GKBehavior
+  - ObjC.GameplayKit.GKBillowNoiseSource
+  - ObjC.GameplayKit.GKCheckerboardNoiseSource
+  - ObjC.GameplayKit.GKCircleObstacle
+  - ObjC.GameplayKit.GKCoherentNoiseSource
+  - ObjC.GameplayKit.GKComponent
+  - ObjC.GameplayKit.GKComponentSystem
+  - ObjC.GameplayKit.GKCompositeBehavior
+  - ObjC.GameplayKit.GKConstantNoiseSource
+  - ObjC.GameplayKit.GKCylindersNoiseSource
+  - ObjC.GameplayKit.GKDecisionNode
+  - ObjC.GameplayKit.GKDecisionTree
+  - ObjC.GameplayKit.GKEntity
+  - ObjC.GameplayKit.GKGaussianDistribution
+  - ObjC.GameplayKit.GKGoal
+  - ObjC.GameplayKit.GKGraph
+  - ObjC.GameplayKit.GKGraphNode
+  - ObjC.GameplayKit.GKGraphNode2D
+  - ObjC.GameplayKit.GKGraphNode3D
+  - ObjC.GameplayKit.GKGridGraph
+  - ObjC.GameplayKit.GKGridGraphNode
+  - ObjC.GameplayKit.GKLinearCongruentialRandomSource
+  - ObjC.GameplayKit.GKMersenneTwisterRandomSource
+  - ObjC.GameplayKit.GKMeshGraph
+  - ObjC.GameplayKit.GKMinmaxStrategist
+  - ObjC.GameplayKit.GKMonteCarloStrategist
+  - ObjC.GameplayKit.GKNSPredicateRule
+  - ObjC.GameplayKit.GKNoise
+  - ObjC.GameplayKit.GKNoiseMap
+  - ObjC.GameplayKit.GKNoiseSource
+  - ObjC.GameplayKit.GKObstacle
+  - ObjC.GameplayKit.GKObstacleGraph
+  - ObjC.GameplayKit.GKOctree
+  - ObjC.GameplayKit.GKOctreeNode
+  - ObjC.GameplayKit.GKPath
+  - ObjC.GameplayKit.GKPerlinNoiseSource
+  - ObjC.GameplayKit.GKPolygonObstacle
+  - ObjC.GameplayKit.GKQuadtree
+  - ObjC.GameplayKit.GKQuadtreeNode
+  - ObjC.GameplayKit.GKRTree
+  - ObjC.GameplayKit.GKRandomDistribution
+  - ObjC.GameplayKit.GKRandomSource
+  - ObjC.GameplayKit.GKRidgedNoiseSource
+  - ObjC.GameplayKit.GKRule
+  - ObjC.GameplayKit.GKRuleSystem
+  - ObjC.GameplayKit.GKSCNNodeComponent
+  - ObjC.GameplayKit.GKSKNodeComponent
+  - ObjC.GameplayKit.GKScene
+  - ObjC.GameplayKit.GKShuffledDistribution
+  - ObjC.GameplayKit.GKSphereObstacle
+  - ObjC.GameplayKit.GKSpheresNoiseSource
+  - ObjC.GameplayKit.GKState
+  - ObjC.GameplayKit.GKStateMachine
+  - ObjC.GameplayKit.GKVoronoiNoiseSource
+  - ObjC.GameplayKit.Internal.Classes
+  - ObjC.GameplayKit.Internal.Enums
+  - ObjC.GameplayKit.Internal.Structs
+  - ObjC.GameplayKit.NSArray
+  - ObjC.GameplayKit.SCNNode
+  - ObjC.GameplayKit.SKNode
+  - ObjC.GameplayKit.SKTexture
+  - ObjC.GameplayKit.SKTileMapNode
+  - ObjC.GameplayKit.Structs

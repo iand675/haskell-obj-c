@@ -1,0 +1,74 @@
+name:                haskell-obj-c
+version:             0.1.0.0
+github:              "githubuser/haskell-obj-c"
+license:             BSD-3-Clause
+author:              "Author name here"
+maintainer:          "example@example.com"
+copyright:           "2026 Author name here"
+
+extra-source-files:
+- README.md
+- CHANGELOG.md
+
+synopsis:            Comprehensive Haskell bindings to Apple's Objective-C runtime (libobjc)
+category:            Foreign
+
+description:         Please see the README on GitHub at <https://github.com/githubuser/haskell-obj-c#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- libffi
+- bytestring
+- template-haskell
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+
+library:
+  source-dirs: src
+  c-sources:
+  - cbits/objc_stubs.c
+  extra-libraries:
+  - objc
+  frameworks:
+  - Foundation
+  exposed-modules:
+  - ObjC.Runtime
+  - ObjC.Runtime.Types
+  - ObjC.Runtime.Cast
+  - ObjC.Runtime.Selector
+  - ObjC.Runtime.Class
+  - ObjC.Runtime.Object
+  - ObjC.Runtime.Method
+  - ObjC.Runtime.Ivar
+  - ObjC.Runtime.Property
+  - ObjC.Runtime.Protocol
+  - ObjC.Runtime.Association
+  - ObjC.Runtime.ClassBuilder
+  - ObjC.Runtime.MsgSend
+  - ObjC.Runtime.AutoreleasePool
+  - ObjC.Runtime.Framework
+  - ObjC.Runtime.NSString
+  - ObjC.Runtime.DynClass
+  - ObjC.Runtime.TH
+  - ObjC.Runtime.Block
+
+tests:
+  haskell-obj-c-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -dynamic
+    dependencies:
+    - haskell-obj-c
+    - hspec

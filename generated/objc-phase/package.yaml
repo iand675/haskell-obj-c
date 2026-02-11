@@ -1,0 +1,82 @@
+name:                objc-phase
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the PHASE framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-avfaudio
+- objc-foundation
+- objc-modelio
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.PHASE.Enums
+  - ObjC.PHASE.Internal.Classes
+  - ObjC.PHASE.Internal.Enums
+  - ObjC.PHASE.PHASEAmbientMixerDefinition
+  - ObjC.PHASE.PHASEAsset
+  - ObjC.PHASE.PHASEAssetRegistry
+  - ObjC.PHASE.PHASEBlendNodeDefinition
+  - ObjC.PHASE.PHASECardioidDirectivityModelParameters
+  - ObjC.PHASE.PHASECardioidDirectivityModelSubbandParameters
+  - ObjC.PHASE.PHASEChannelMixerDefinition
+  - ObjC.PHASE.PHASEConeDirectivityModelParameters
+  - ObjC.PHASE.PHASEConeDirectivityModelSubbandParameters
+  - ObjC.PHASE.PHASEContainerNodeDefinition
+  - ObjC.PHASE.PHASEDefinition
+  - ObjC.PHASE.PHASEDirectivityModelParameters
+  - ObjC.PHASE.PHASEDistanceModelFadeOutParameters
+  - ObjC.PHASE.PHASEDistanceModelParameters
+  - ObjC.PHASE.PHASEDucker
+  - ObjC.PHASE.PHASEEngine
+  - ObjC.PHASE.PHASEEnvelope
+  - ObjC.PHASE.PHASEEnvelopeDistanceModelParameters
+  - ObjC.PHASE.PHASEEnvelopeSegment
+  - ObjC.PHASE.PHASEGeneratorNodeDefinition
+  - ObjC.PHASE.PHASEGeometricSpreadingDistanceModelParameters
+  - ObjC.PHASE.PHASEGlobalMetaParameterAsset
+  - ObjC.PHASE.PHASEGroup
+  - ObjC.PHASE.PHASEGroupPreset
+  - ObjC.PHASE.PHASEGroupPresetSetting
+  - ObjC.PHASE.PHASEListener
+  - ObjC.PHASE.PHASEMappedMetaParameterDefinition
+  - ObjC.PHASE.PHASEMaterial
+  - ObjC.PHASE.PHASEMedium
+  - ObjC.PHASE.PHASEMetaParameter
+  - ObjC.PHASE.PHASEMetaParameterDefinition
+  - ObjC.PHASE.PHASEMixer
+  - ObjC.PHASE.PHASEMixerDefinition
+  - ObjC.PHASE.PHASEMixerParameters
+  - ObjC.PHASE.PHASENumberMetaParameter
+  - ObjC.PHASE.PHASENumberMetaParameterDefinition
+  - ObjC.PHASE.PHASENumericPair
+  - ObjC.PHASE.PHASEObject
+  - ObjC.PHASE.PHASEOccluder
+  - ObjC.PHASE.PHASEPullStreamNode
+  - ObjC.PHASE.PHASEPullStreamNodeDefinition
+  - ObjC.PHASE.PHASEPushStreamNode
+  - ObjC.PHASE.PHASEPushStreamNodeDefinition
+  - ObjC.PHASE.PHASERandomNodeDefinition
+  - ObjC.PHASE.PHASESamplerNodeDefinition
+  - ObjC.PHASE.PHASEShape
+  - ObjC.PHASE.PHASEShapeElement
+  - ObjC.PHASE.PHASESoundAsset
+  - ObjC.PHASE.PHASESoundEvent
+  - ObjC.PHASE.PHASESoundEventNodeAsset
+  - ObjC.PHASE.PHASESoundEventNodeDefinition
+  - ObjC.PHASE.PHASESource
+  - ObjC.PHASE.PHASESpatialMixerDefinition
+  - ObjC.PHASE.PHASESpatialPipeline
+  - ObjC.PHASE.PHASESpatialPipelineEntry
+  - ObjC.PHASE.PHASEStreamNode
+  - ObjC.PHASE.PHASEStringMetaParameter
+  - ObjC.PHASE.PHASEStringMetaParameterDefinition
+  - ObjC.PHASE.PHASESwitchNodeDefinition

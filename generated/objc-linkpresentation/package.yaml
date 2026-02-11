@@ -1,0 +1,25 @@
+name:                objc-linkpresentation
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the LinkPresentation framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.LinkPresentation.Enums
+  - ObjC.LinkPresentation.Internal.Classes
+  - ObjC.LinkPresentation.Internal.Enums
+  - ObjC.LinkPresentation.LPLinkMetadata
+  - ObjC.LinkPresentation.LPLinkView
+  - ObjC.LinkPresentation.LPMetadataProvider

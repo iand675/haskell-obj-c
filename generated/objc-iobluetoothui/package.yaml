@@ -1,0 +1,28 @@
+name:                objc-iobluetoothui
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the IOBluetoothUI framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+- objc-iobluetooth
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.IOBluetoothUI.IOBluetoothAccessibilityIgnoredImageCell
+  - ObjC.IOBluetoothUI.IOBluetoothAccessibilityIgnoredTextFieldCell
+  - ObjC.IOBluetoothUI.IOBluetoothDeviceSelectorController
+  - ObjC.IOBluetoothUI.IOBluetoothObjectPushUIController
+  - ObjC.IOBluetoothUI.IOBluetoothPairingController
+  - ObjC.IOBluetoothUI.IOBluetoothPasskeyDisplay
+  - ObjC.IOBluetoothUI.IOBluetoothServiceBrowserController
+  - ObjC.IOBluetoothUI.Internal.Classes

@@ -1,0 +1,25 @@
+name:                objc-automaticassessmentconfiguration
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the AutomaticAssessmentConfiguration framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.AutomaticAssessmentConfiguration.AEAssessmentApplication
+  - ObjC.AutomaticAssessmentConfiguration.AEAssessmentConfiguration
+  - ObjC.AutomaticAssessmentConfiguration.AEAssessmentParticipantConfiguration
+  - ObjC.AutomaticAssessmentConfiguration.AEAssessmentSession
+  - ObjC.AutomaticAssessmentConfiguration.Enums
+  - ObjC.AutomaticAssessmentConfiguration.Internal.Classes
+  - ObjC.AutomaticAssessmentConfiguration.Internal.Enums

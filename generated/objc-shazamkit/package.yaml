@@ -1,0 +1,34 @@
+name:                objc-shazamkit
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the ShazamKit framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-avfaudio
+- objc-avfoundation
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.ShazamKit.Enums
+  - ObjC.ShazamKit.Internal.Classes
+  - ObjC.ShazamKit.Internal.Enums
+  - ObjC.ShazamKit.SHCatalog
+  - ObjC.ShazamKit.SHCustomCatalog
+  - ObjC.ShazamKit.SHMatch
+  - ObjC.ShazamKit.SHMatchedMediaItem
+  - ObjC.ShazamKit.SHMediaItem
+  - ObjC.ShazamKit.SHMediaLibrary
+  - ObjC.ShazamKit.SHRange
+  - ObjC.ShazamKit.SHSession
+  - ObjC.ShazamKit.SHSignature
+  - ObjC.ShazamKit.SHSignatureGenerator
+  - ObjC.ShazamKit.UTType

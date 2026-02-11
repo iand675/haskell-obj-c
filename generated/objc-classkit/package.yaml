@@ -1,0 +1,31 @@
+name:                objc-classkit
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the ClassKit framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.ClassKit.CLSActivity
+  - ObjC.ClassKit.CLSActivityItem
+  - ObjC.ClassKit.CLSBinaryItem
+  - ObjC.ClassKit.CLSContext
+  - ObjC.ClassKit.CLSDataStore
+  - ObjC.ClassKit.CLSObject
+  - ObjC.ClassKit.CLSProgressReportingCapability
+  - ObjC.ClassKit.CLSQuantityItem
+  - ObjC.ClassKit.CLSScoreItem
+  - ObjC.ClassKit.Enums
+  - ObjC.ClassKit.Internal.Classes
+  - ObjC.ClassKit.Internal.Enums
+  - ObjC.ClassKit.NSUserActivity

@@ -1,0 +1,24 @@
+name:                objc-findersync
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the FinderSync framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.FinderSync.Enums
+  - ObjC.FinderSync.FIFinderSync
+  - ObjC.FinderSync.FIFinderSyncController
+  - ObjC.FinderSync.Internal.Classes
+  - ObjC.FinderSync.Internal.Enums

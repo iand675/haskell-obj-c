@@ -1,0 +1,49 @@
+name:                objc-storekit
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the StoreKit framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.StoreKit.Enums
+  - ObjC.StoreKit.Internal.Classes
+  - ObjC.StoreKit.Internal.Enums
+  - ObjC.StoreKit.SKAdImpression
+  - ObjC.StoreKit.SKAdNetwork
+  - ObjC.StoreKit.SKArcadeService
+  - ObjC.StoreKit.SKCloudServiceController
+  - ObjC.StoreKit.SKCloudServiceSetupViewController
+  - ObjC.StoreKit.SKDownload
+  - ObjC.StoreKit.SKMutablePayment
+  - ObjC.StoreKit.SKOverlay
+  - ObjC.StoreKit.SKOverlayAppClipConfiguration
+  - ObjC.StoreKit.SKOverlayAppConfiguration
+  - ObjC.StoreKit.SKOverlayConfiguration
+  - ObjC.StoreKit.SKOverlayTransitionContext
+  - ObjC.StoreKit.SKPayment
+  - ObjC.StoreKit.SKPaymentDiscount
+  - ObjC.StoreKit.SKPaymentQueue
+  - ObjC.StoreKit.SKPaymentTransaction
+  - ObjC.StoreKit.SKProduct
+  - ObjC.StoreKit.SKProductDiscount
+  - ObjC.StoreKit.SKProductStorePromotionController
+  - ObjC.StoreKit.SKProductSubscriptionPeriod
+  - ObjC.StoreKit.SKProductsRequest
+  - ObjC.StoreKit.SKProductsResponse
+  - ObjC.StoreKit.SKReceiptRefreshRequest
+  - ObjC.StoreKit.SKRequest
+  - ObjC.StoreKit.SKStoreProductViewController
+  - ObjC.StoreKit.SKStoreReviewController
+  - ObjC.StoreKit.SKStorefront

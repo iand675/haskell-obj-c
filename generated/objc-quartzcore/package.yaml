@@ -1,0 +1,56 @@
+name:                objc-quartzcore
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the QuartzCore framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+- objc-scenekit
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.QuartzCore.CAAnimation
+  - ObjC.QuartzCore.CAAnimationGroup
+  - ObjC.QuartzCore.CABasicAnimation
+  - ObjC.QuartzCore.CAConstraint
+  - ObjC.QuartzCore.CAConstraintLayoutManager
+  - ObjC.QuartzCore.CADisplayLink
+  - ObjC.QuartzCore.CAEDRMetadata
+  - ObjC.QuartzCore.CAEmitterCell
+  - ObjC.QuartzCore.CAEmitterLayer
+  - ObjC.QuartzCore.CAGradientLayer
+  - ObjC.QuartzCore.CAKeyframeAnimation
+  - ObjC.QuartzCore.CALayer
+  - ObjC.QuartzCore.CAMediaTimingFunction
+  - ObjC.QuartzCore.CAMetalDisplayLink
+  - ObjC.QuartzCore.CAMetalDisplayLinkUpdate
+  - ObjC.QuartzCore.CAMetalLayer
+  - ObjC.QuartzCore.CAOpenGLLayer
+  - ObjC.QuartzCore.CAPropertyAnimation
+  - ObjC.QuartzCore.CARemoteLayerClient
+  - ObjC.QuartzCore.CARemoteLayerServer
+  - ObjC.QuartzCore.CARenderer
+  - ObjC.QuartzCore.CAReplicatorLayer
+  - ObjC.QuartzCore.CAScrollLayer
+  - ObjC.QuartzCore.CAShapeLayer
+  - ObjC.QuartzCore.CASpringAnimation
+  - ObjC.QuartzCore.CATextLayer
+  - ObjC.QuartzCore.CATiledLayer
+  - ObjC.QuartzCore.CATransaction
+  - ObjC.QuartzCore.CATransformLayer
+  - ObjC.QuartzCore.CATransition
+  - ObjC.QuartzCore.CAValueFunction
+  - ObjC.QuartzCore.Enums
+  - ObjC.QuartzCore.Internal.Classes
+  - ObjC.QuartzCore.Internal.Enums
+  - ObjC.QuartzCore.Internal.Structs
+  - ObjC.QuartzCore.NSValue
+  - ObjC.QuartzCore.Structs

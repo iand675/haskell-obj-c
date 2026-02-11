@@ -1,0 +1,36 @@
+name:                objc-audiotoolbox
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the AudioToolbox framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-avfaudio
+- objc-coreaudiokit
+- objc-coreaudiotypes
+- objc-coremidi
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.AudioToolbox.AUAudioUnit
+  - ObjC.AudioToolbox.AUAudioUnitBus
+  - ObjC.AudioToolbox.AUAudioUnitBusArray
+  - ObjC.AudioToolbox.AUAudioUnitPreset
+  - ObjC.AudioToolbox.AUAudioUnitV2Bridge
+  - ObjC.AudioToolbox.AUParameter
+  - ObjC.AudioToolbox.AUParameterGroup
+  - ObjC.AudioToolbox.AUParameterNode
+  - ObjC.AudioToolbox.AUParameterTree
+  - ObjC.AudioToolbox.Enums
+  - ObjC.AudioToolbox.Internal.Classes
+  - ObjC.AudioToolbox.Internal.Enums
+  - ObjC.AudioToolbox.Internal.Structs
+  - ObjC.AudioToolbox.Structs

@@ -1,0 +1,35 @@
+name:                objc-securityinterface
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the SecurityInterface framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+- objc-securityfoundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.SecurityInterface.Internal.Classes
+  - ObjC.SecurityInterface.Internal.Structs
+  - ObjC.SecurityInterface.NSObject
+  - ObjC.SecurityInterface.SFAuthorizationPluginView
+  - ObjC.SecurityInterface.SFAuthorizationView
+  - ObjC.SecurityInterface.SFAuthorizationViewDelegate
+  - ObjC.SecurityInterface.SFAutoLockTextValue
+  - ObjC.SecurityInterface.SFCertificatePanel
+  - ObjC.SecurityInterface.SFCertificateTrustPanel
+  - ObjC.SecurityInterface.SFCertificateView
+  - ObjC.SecurityInterface.SFChooseIdentityPanel
+  - ObjC.SecurityInterface.SFChooseIdentityTableCellView
+  - ObjC.SecurityInterface.SFKeychainSavePanel
+  - ObjC.SecurityInterface.SFKeychainSettingsPanel
+  - ObjC.SecurityInterface.Structs

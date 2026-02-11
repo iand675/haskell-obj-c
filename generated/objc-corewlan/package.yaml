@@ -1,0 +1,30 @@
+name:                objc-corewlan
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the CoreWLAN framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-foundation
+- objc-securityfoundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.CoreWLAN.CWChannel
+  - ObjC.CoreWLAN.CWConfiguration
+  - ObjC.CoreWLAN.CWInterface
+  - ObjC.CoreWLAN.CWMutableConfiguration
+  - ObjC.CoreWLAN.CWMutableNetworkProfile
+  - ObjC.CoreWLAN.CWNetwork
+  - ObjC.CoreWLAN.CWNetworkProfile
+  - ObjC.CoreWLAN.CWWiFiClient
+  - ObjC.CoreWLAN.Enums
+  - ObjC.CoreWLAN.Internal.Classes
+  - ObjC.CoreWLAN.Internal.Enums

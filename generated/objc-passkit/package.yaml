@@ -1,0 +1,94 @@
+name:                objc-passkit
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the PassKit framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.PassKit.Enums
+  - ObjC.PassKit.Internal.Classes
+  - ObjC.PassKit.Internal.Enums
+  - ObjC.PassKit.PKAddCarKeyPassConfiguration
+  - ObjC.PassKit.PKAddIdentityDocumentConfiguration
+  - ObjC.PassKit.PKAddIdentityDocumentMetadata
+  - ObjC.PassKit.PKAddPassMetadataPreview
+  - ObjC.PassKit.PKAddPaymentPassRequest
+  - ObjC.PassKit.PKAddPaymentPassRequestConfiguration
+  - ObjC.PassKit.PKAddSecureElementPassConfiguration
+  - ObjC.PassKit.PKAddShareablePassConfiguration
+  - ObjC.PassKit.PKAutomaticReloadPaymentRequest
+  - ObjC.PassKit.PKAutomaticReloadPaymentSummaryItem
+  - ObjC.PassKit.PKBarcodeEventConfigurationRequest
+  - ObjC.PassKit.PKBarcodeEventMetadataRequest
+  - ObjC.PassKit.PKBarcodeEventMetadataResponse
+  - ObjC.PassKit.PKBarcodeEventSignatureRequest
+  - ObjC.PassKit.PKBarcodeEventSignatureResponse
+  - ObjC.PassKit.PKContact
+  - ObjC.PassKit.PKDateComponentsRange
+  - ObjC.PassKit.PKDeferredPaymentRequest
+  - ObjC.PassKit.PKDeferredPaymentSummaryItem
+  - ObjC.PassKit.PKDisbursementRequest
+  - ObjC.PassKit.PKDisbursementSummaryItem
+  - ObjC.PassKit.PKIdentityAnyOfDescriptor
+  - ObjC.PassKit.PKIdentityAuthorizationController
+  - ObjC.PassKit.PKIdentityDocument
+  - ObjC.PassKit.PKIdentityDocumentMetadata
+  - ObjC.PassKit.PKIdentityDriversLicenseDescriptor
+  - ObjC.PassKit.PKIdentityElement
+  - ObjC.PassKit.PKIdentityIntentToStore
+  - ObjC.PassKit.PKIdentityNationalIDCardDescriptor
+  - ObjC.PassKit.PKIdentityPhotoIDDescriptor
+  - ObjC.PassKit.PKIdentityRequest
+  - ObjC.PassKit.PKInstantFundsOutFeeSummaryItem
+  - ObjC.PassKit.PKIssuerProvisioningExtensionHandler
+  - ObjC.PassKit.PKIssuerProvisioningExtensionPassEntry
+  - ObjC.PassKit.PKIssuerProvisioningExtensionPaymentPassEntry
+  - ObjC.PassKit.PKIssuerProvisioningExtensionStatus
+  - ObjC.PassKit.PKJapanIndividualNumberCardMetadata
+  - ObjC.PassKit.PKLabeledValue
+  - ObjC.PassKit.PKPass
+  - ObjC.PassKit.PKPassLibrary
+  - ObjC.PassKit.PKPassRelevantDate
+  - ObjC.PassKit.PKPayment
+  - ObjC.PassKit.PKPaymentAuthorizationController
+  - ObjC.PassKit.PKPaymentAuthorizationResult
+  - ObjC.PassKit.PKPaymentAuthorizationViewController
+  - ObjC.PassKit.PKPaymentButton
+  - ObjC.PassKit.PKPaymentInformationEventExtension
+  - ObjC.PassKit.PKPaymentMerchantSession
+  - ObjC.PassKit.PKPaymentMethod
+  - ObjC.PassKit.PKPaymentOrderDetails
+  - ObjC.PassKit.PKPaymentPass
+  - ObjC.PassKit.PKPaymentRequest
+  - ObjC.PassKit.PKPaymentRequestCouponCodeUpdate
+  - ObjC.PassKit.PKPaymentRequestMerchantSessionUpdate
+  - ObjC.PassKit.PKPaymentRequestPaymentMethodUpdate
+  - ObjC.PassKit.PKPaymentRequestShippingContactUpdate
+  - ObjC.PassKit.PKPaymentRequestShippingMethodUpdate
+  - ObjC.PassKit.PKPaymentRequestUpdate
+  - ObjC.PassKit.PKPaymentSummaryItem
+  - ObjC.PassKit.PKPaymentToken
+  - ObjC.PassKit.PKPaymentTokenContext
+  - ObjC.PassKit.PKRecurringPaymentRequest
+  - ObjC.PassKit.PKRecurringPaymentSummaryItem
+  - ObjC.PassKit.PKSecureElementPass
+  - ObjC.PassKit.PKShareablePassMetadata
+  - ObjC.PassKit.PKShareablePassMetadataPreview
+  - ObjC.PassKit.PKShippingMethod
+  - ObjC.PassKit.PKStoredValuePassBalance
+  - ObjC.PassKit.PKStoredValuePassProperties
+  - ObjC.PassKit.PKSuicaPassProperties
+  - ObjC.PassKit.PKTransitPassProperties
+  - ObjC.PassKit.PKVehicleConnectionSession

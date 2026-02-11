@@ -1,0 +1,51 @@
+name:                objc-pdfkit
+version:             0.1.0.0
+synopsis:            Generated Haskell bindings for the PDFKit framework
+license:             BSD-3-Clause
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-obj-c
+- libffi
+- objc-appkit
+- objc-foundation
+
+ghc-options:
+- -Wall
+- -Wno-orphans
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - ObjC.PDFKit.Enums
+  - ObjC.PDFKit.Internal.Classes
+  - ObjC.PDFKit.Internal.Enums
+  - ObjC.PDFKit.PDFAction
+  - ObjC.PDFKit.PDFActionGoTo
+  - ObjC.PDFKit.PDFActionNamed
+  - ObjC.PDFKit.PDFActionRemoteGoTo
+  - ObjC.PDFKit.PDFActionResetForm
+  - ObjC.PDFKit.PDFActionURL
+  - ObjC.PDFKit.PDFAnnotation
+  - ObjC.PDFKit.PDFAnnotationButtonWidget
+  - ObjC.PDFKit.PDFAnnotationChoiceWidget
+  - ObjC.PDFKit.PDFAnnotationCircle
+  - ObjC.PDFKit.PDFAnnotationFreeText
+  - ObjC.PDFKit.PDFAnnotationInk
+  - ObjC.PDFKit.PDFAnnotationLine
+  - ObjC.PDFKit.PDFAnnotationLink
+  - ObjC.PDFKit.PDFAnnotationMarkup
+  - ObjC.PDFKit.PDFAnnotationPopup
+  - ObjC.PDFKit.PDFAnnotationSquare
+  - ObjC.PDFKit.PDFAnnotationStamp
+  - ObjC.PDFKit.PDFAnnotationText
+  - ObjC.PDFKit.PDFAnnotationTextWidget
+  - ObjC.PDFKit.PDFAppearanceCharacteristics
+  - ObjC.PDFKit.PDFBorder
+  - ObjC.PDFKit.PDFDestination
+  - ObjC.PDFKit.PDFDocument
+  - ObjC.PDFKit.PDFOutline
+  - ObjC.PDFKit.PDFPage
+  - ObjC.PDFKit.PDFSelection
+  - ObjC.PDFKit.PDFThumbnailView
+  - ObjC.PDFKit.PDFView
