@@ -21,6 +21,7 @@ module ObjC.IOBluetooth.IOBluetoothDevicePair
   , stop
   , device
   , setDevice
+  , replyPINCode_PINCode
   , replyUserConfirmation
   , delegate
   , setDelegate
@@ -29,6 +30,7 @@ module ObjC.IOBluetooth.IOBluetoothDevicePair
   , stopSelector
   , deviceSelector
   , setDeviceSelector
+  , replyPINCode_PINCodeSelector
   , replyUserConfirmationSelector
   , delegateSelector
   , setDelegateSelector
@@ -110,6 +112,19 @@ setDevice ioBluetoothDevicePair  inDevice =
   withObjCPtr inDevice $ \raw_inDevice ->
       sendMsg ioBluetoothDevicePair (mkSelector "setDevice:") retVoid [argPtr (castPtr raw_inDevice :: Ptr ())]
 
+-- | replyPINCode:
+--
+-- This is the required reply to the devicePairingPINCodeRequest delegate message.				Set the PIN code to use during pairing if required.
+--
+-- @PINCodeSize@ — The PIN code length in octets (8 bits).
+--
+-- @PINcode@ — PIN code for the device.  Can be up to a maximum of 128 bits.
+--
+-- ObjC selector: @- replyPINCode:PINCode:@
+replyPINCode_PINCode :: IsIOBluetoothDevicePair ioBluetoothDevicePair => ioBluetoothDevicePair -> CULong -> RawId -> IO ()
+replyPINCode_PINCode ioBluetoothDevicePair  pinCodeSize pinCode =
+    sendMsg ioBluetoothDevicePair (mkSelector "replyPINCode:PINCode:") retVoid [argCULong pinCodeSize, argPtr (castPtr (unRawId pinCode) :: Ptr ())]
+
 -- | replyUserConfirmation:
 --
 -- This is the required reply to the devicePairingUserConfirmationRequest delegate message.
@@ -154,6 +169,10 @@ deviceSelector = mkSelector "device"
 -- | @Selector@ for @setDevice:@
 setDeviceSelector :: Selector
 setDeviceSelector = mkSelector "setDevice:"
+
+-- | @Selector@ for @replyPINCode:PINCode:@
+replyPINCode_PINCodeSelector :: Selector
+replyPINCode_PINCodeSelector = mkSelector "replyPINCode:PINCode:"
 
 -- | @Selector@ for @replyUserConfirmation:@
 replyUserConfirmationSelector :: Selector

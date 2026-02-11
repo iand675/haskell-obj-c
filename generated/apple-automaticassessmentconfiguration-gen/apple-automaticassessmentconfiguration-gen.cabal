@@ -16,6 +16,7 @@ library
       ObjC.AutomaticAssessmentConfiguration.AEAssessmentConfiguration
       ObjC.AutomaticAssessmentConfiguration.AEAssessmentParticipantConfiguration
       ObjC.AutomaticAssessmentConfiguration.AEAssessmentSession
+      ObjC.AutomaticAssessmentConfiguration.Delegate.AEAssessmentSessionDelegate
       ObjC.AutomaticAssessmentConfiguration.Enums
       ObjC.AutomaticAssessmentConfiguration.Internal.Classes
       ObjC.AutomaticAssessmentConfiguration.Internal.Enums

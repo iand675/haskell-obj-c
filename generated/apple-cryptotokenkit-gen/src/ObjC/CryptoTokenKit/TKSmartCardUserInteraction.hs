@@ -12,12 +12,16 @@ module ObjC.CryptoTokenKit.TKSmartCardUserInteraction
   , IsTKSmartCardUserInteraction(..)
   , runWithReply
   , cancel
+  , delegate
+  , setDelegate
   , initialTimeout
   , setInitialTimeout
   , interactionTimeout
   , setInteractionTimeout
   , runWithReplySelector
   , cancelSelector
+  , delegateSelector
+  , setDelegateSelector
   , initialTimeoutSelector
   , setInitialTimeoutSelector
   , interactionTimeoutSelector
@@ -56,6 +60,20 @@ runWithReply tkSmartCardUserInteraction  reply =
 cancel :: IsTKSmartCardUserInteraction tkSmartCardUserInteraction => tkSmartCardUserInteraction -> IO Bool
 cancel tkSmartCardUserInteraction  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg tkSmartCardUserInteraction (mkSelector "cancel") retCULong []
+
+-- | Delegate for state observing of the interaction.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsTKSmartCardUserInteraction tkSmartCardUserInteraction => tkSmartCardUserInteraction -> IO RawId
+delegate tkSmartCardUserInteraction  =
+    fmap (RawId . castPtr) $ sendMsg tkSmartCardUserInteraction (mkSelector "delegate") (retPtr retVoid) []
+
+-- | Delegate for state observing of the interaction.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsTKSmartCardUserInteraction tkSmartCardUserInteraction => tkSmartCardUserInteraction -> RawId -> IO ()
+setDelegate tkSmartCardUserInteraction  value =
+    sendMsg tkSmartCardUserInteraction (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | Initial interaction timeout. If set to 0, the reader-defined default timeout is used.
 --
@@ -104,6 +122,14 @@ runWithReplySelector = mkSelector "runWithReply:"
 -- | @Selector@ for @cancel@
 cancelSelector :: Selector
 cancelSelector = mkSelector "cancel"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @initialTimeout@
 initialTimeoutSelector :: Selector

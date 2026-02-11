@@ -27,6 +27,7 @@ library:
   - ObjC.AudioToolbox.AUParameterGroup
   - ObjC.AudioToolbox.AUParameterNode
   - ObjC.AudioToolbox.AUParameterTree
+  - ObjC.AudioToolbox.Delegate.AUMessageChannel
   - ObjC.AudioToolbox.Enums
   - ObjC.AudioToolbox.Internal.Classes
   - ObjC.AudioToolbox.Internal.Enums

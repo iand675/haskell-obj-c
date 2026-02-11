@@ -11,11 +11,15 @@ module ObjC.SpriteKit.SKPhysicsWorld
   , removeAllJoints
   , speed
   , setSpeed
+  , contactDelegate
+  , setContactDelegate
   , addJointSelector
   , removeJointSelector
   , removeAllJointsSelector
   , speedSelector
   , setSpeedSelector
+  , contactDelegateSelector
+  , setContactDelegateSelector
 
 
   ) where
@@ -62,6 +66,16 @@ setSpeed :: IsSKPhysicsWorld skPhysicsWorld => skPhysicsWorld -> CDouble -> IO (
 setSpeed skPhysicsWorld  value =
     sendMsg skPhysicsWorld (mkSelector "setSpeed:") retVoid [argCDouble value]
 
+-- | @- contactDelegate@
+contactDelegate :: IsSKPhysicsWorld skPhysicsWorld => skPhysicsWorld -> IO RawId
+contactDelegate skPhysicsWorld  =
+    fmap (RawId . castPtr) $ sendMsg skPhysicsWorld (mkSelector "contactDelegate") (retPtr retVoid) []
+
+-- | @- setContactDelegate:@
+setContactDelegate :: IsSKPhysicsWorld skPhysicsWorld => skPhysicsWorld -> RawId -> IO ()
+setContactDelegate skPhysicsWorld  value =
+    sendMsg skPhysicsWorld (mkSelector "setContactDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -85,4 +99,12 @@ speedSelector = mkSelector "speed"
 -- | @Selector@ for @setSpeed:@
 setSpeedSelector :: Selector
 setSpeedSelector = mkSelector "setSpeed:"
+
+-- | @Selector@ for @contactDelegate@
+contactDelegateSelector :: Selector
+contactDelegateSelector = mkSelector "contactDelegate"
+
+-- | @Selector@ for @setContactDelegate:@
+setContactDelegateSelector :: Selector
+setContactDelegateSelector = mkSelector "setContactDelegate:"
 

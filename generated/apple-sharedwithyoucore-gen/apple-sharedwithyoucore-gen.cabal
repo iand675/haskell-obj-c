@@ -12,6 +12,7 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.SharedWithYouCore.Delegate.SWCollaborationActionHandler
       ObjC.SharedWithYouCore.Internal.Classes
       ObjC.SharedWithYouCore.SWAction
       ObjC.SharedWithYouCore.SWCollaborationCoordinator

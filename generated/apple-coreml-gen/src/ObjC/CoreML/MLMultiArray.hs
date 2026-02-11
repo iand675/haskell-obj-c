@@ -34,6 +34,7 @@ module ObjC.CoreML.MLMultiArray
   , initWithShape_dataType_strides
   , initWithDataPointer_shape_dataType_strides_deallocator_error
   , initWithPixelBuffer_shape
+  , dataPointer
   , dataType
   , shape
   , strides
@@ -50,6 +51,7 @@ module ObjC.CoreML.MLMultiArray
   , initWithShape_dataType_stridesSelector
   , initWithDataPointer_shape_dataType_strides_deallocator_errorSelector
   , initWithPixelBuffer_shapeSelector
+  , dataPointerSelector
   , dataTypeSelector
   , shapeSelector
   , stridesSelector
@@ -243,6 +245,13 @@ initWithPixelBuffer_shape mlMultiArray  pixelBuffer shape =
   withObjCPtr shape $ \raw_shape ->
       sendMsg mlMultiArray (mkSelector "initWithPixelBuffer:shape:") (retPtr retVoid) [argPtr pixelBuffer, argPtr (castPtr raw_shape :: Ptr ())] >>= ownedObject . castPtr
 
+-- | Unsafe pointer to underlying buffer holding the data
+--
+-- ObjC selector: @- dataPointer@
+dataPointer :: IsMLMultiArray mlMultiArray => mlMultiArray -> IO (Ptr ())
+dataPointer mlMultiArray  =
+    fmap castPtr $ sendMsg mlMultiArray (mkSelector "dataPointer") (retPtr retVoid) []
+
 -- | Scalar's data type.
 --
 -- ObjC selector: @- dataType@
@@ -329,6 +338,10 @@ initWithDataPointer_shape_dataType_strides_deallocator_errorSelector = mkSelecto
 -- | @Selector@ for @initWithPixelBuffer:shape:@
 initWithPixelBuffer_shapeSelector :: Selector
 initWithPixelBuffer_shapeSelector = mkSelector "initWithPixelBuffer:shape:"
+
+-- | @Selector@ for @dataPointer@
+dataPointerSelector :: Selector
+dataPointerSelector = mkSelector "dataPointer"
 
 -- | @Selector@ for @dataType@
 dataTypeSelector :: Selector

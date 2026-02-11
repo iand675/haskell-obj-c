@@ -15,6 +15,8 @@ module ObjC.GameplayKit.GKScene
   , addGraph_name
   , removeGraph
   , entities
+  , rootNode
+  , setRootNode
   , graphs
   , sceneWithFileNamedSelector
   , sceneWithFileNamed_rootNodeSelector
@@ -23,6 +25,8 @@ module ObjC.GameplayKit.GKScene
   , addGraph_nameSelector
   , removeGraphSelector
   , entitiesSelector
+  , rootNodeSelector
+  , setRootNodeSelector
   , graphsSelector
 
 
@@ -111,6 +115,24 @@ entities :: IsGKScene gkScene => gkScene -> IO (Id NSArray)
 entities gkScene  =
     sendMsg gkScene (mkSelector "entities") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The root node for the scene.
+--
+-- See: GKSceneRootNodeType
+--
+-- ObjC selector: @- rootNode@
+rootNode :: IsGKScene gkScene => gkScene -> IO RawId
+rootNode gkScene  =
+    fmap (RawId . castPtr) $ sendMsg gkScene (mkSelector "rootNode") (retPtr retVoid) []
+
+-- | The root node for the scene.
+--
+-- See: GKSceneRootNodeType
+--
+-- ObjC selector: @- setRootNode:@
+setRootNode :: IsGKScene gkScene => gkScene -> RawId -> IO ()
+setRootNode gkScene  value =
+    sendMsg gkScene (mkSelector "setRootNode:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | The navigational graphs of this scene.
 --
 -- ObjC selector: @- graphs@
@@ -149,6 +171,14 @@ removeGraphSelector = mkSelector "removeGraph:"
 -- | @Selector@ for @entities@
 entitiesSelector :: Selector
 entitiesSelector = mkSelector "entities"
+
+-- | @Selector@ for @rootNode@
+rootNodeSelector :: Selector
+rootNodeSelector = mkSelector "rootNode"
+
+-- | @Selector@ for @setRootNode:@
+setRootNodeSelector :: Selector
+setRootNodeSelector = mkSelector "setRootNode:"
 
 -- | @Selector@ for @graphs@
 graphsSelector :: Selector

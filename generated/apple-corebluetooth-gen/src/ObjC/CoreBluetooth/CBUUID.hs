@@ -15,11 +15,13 @@ module ObjC.CoreBluetooth.CBUUID
   , uuidWithCFUUID
   , uuidWithNSUUID
   , data_
+  , uuidString
   , uuidWithStringSelector
   , uuidWithDataSelector
   , uuidWithCFUUIDSelector
   , uuidWithNSUUIDSelector
   , dataSelector
+  , uuidStringSelector
 
 
   ) where
@@ -95,6 +97,15 @@ data_ :: IsCBUUID cbuuid => cbuuid -> IO (Id NSData)
 data_ cbuuid  =
     sendMsg cbuuid (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | UUIDString
+--
+-- The UUID as NSString.
+--
+-- ObjC selector: @- UUIDString@
+uuidString :: IsCBUUID cbuuid => cbuuid -> IO RawId
+uuidString cbuuid  =
+    fmap (RawId . castPtr) $ sendMsg cbuuid (mkSelector "UUIDString") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -118,4 +129,8 @@ uuidWithNSUUIDSelector = mkSelector "UUIDWithNSUUID:"
 -- | @Selector@ for @data@
 dataSelector :: Selector
 dataSelector = mkSelector "data"
+
+-- | @Selector@ for @UUIDString@
+uuidStringSelector :: Selector
+uuidStringSelector = mkSelector "UUIDString"
 

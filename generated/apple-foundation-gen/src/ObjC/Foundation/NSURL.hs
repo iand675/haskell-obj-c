@@ -78,6 +78,7 @@ module ObjC.Foundation.NSURL
   , query
   , relativePath
   , hasDirectoryPath
+  , fileSystemRepresentation
   , fileURL
   , standardizedURL
   , filePathURL
@@ -159,6 +160,7 @@ module ObjC.Foundation.NSURL
   , querySelector
   , relativePathSelector
   , hasDirectoryPathSelector
+  , fileSystemRepresentationSelector
   , fileURLSelector
   , standardizedURLSelector
   , filePathURLSelector
@@ -670,6 +672,11 @@ hasDirectoryPath :: IsNSURL nsurl => nsurl -> IO Bool
 hasDirectoryPath nsurl  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurl (mkSelector "hasDirectoryPath") retCULong []
 
+-- | @- fileSystemRepresentation@
+fileSystemRepresentation :: IsNSURL nsurl => nsurl -> IO (Ptr CChar)
+fileSystemRepresentation nsurl  =
+    fmap castPtr $ sendMsg nsurl (mkSelector "fileSystemRepresentation") (retPtr retVoid) []
+
 -- | @- fileURL@
 fileURL :: IsNSURL nsurl => nsurl -> IO Bool
 fileURL nsurl  =
@@ -1007,6 +1014,10 @@ relativePathSelector = mkSelector "relativePath"
 -- | @Selector@ for @hasDirectoryPath@
 hasDirectoryPathSelector :: Selector
 hasDirectoryPathSelector = mkSelector "hasDirectoryPath"
+
+-- | @Selector@ for @fileSystemRepresentation@
+fileSystemRepresentationSelector :: Selector
+fileSystemRepresentationSelector = mkSelector "fileSystemRepresentation"
 
 -- | @Selector@ for @fileURL@
 fileURLSelector :: Selector

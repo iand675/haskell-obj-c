@@ -12,6 +12,11 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.MapKit.Delegate.MKLocalSearchCompleterDelegate
+      ObjC.MapKit.Delegate.MKLookAroundViewControllerDelegate
+      ObjC.MapKit.Delegate.MKMapItemDetailViewControllerDelegate
+      ObjC.MapKit.Delegate.MKMapViewDelegate
+      ObjC.MapKit.Delegate.MKOverlay
       ObjC.MapKit.Enums
       ObjC.MapKit.Internal.Classes
       ObjC.MapKit.Internal.Enums

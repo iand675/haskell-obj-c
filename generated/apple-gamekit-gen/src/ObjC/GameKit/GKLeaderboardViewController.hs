@@ -13,10 +13,14 @@ module ObjC.GameKit.GKLeaderboardViewController
   , setTimeScope
   , category
   , setCategory
+  , leaderboardDelegate
+  , setLeaderboardDelegate
   , timeScopeSelector
   , setTimeScopeSelector
   , categorySelector
   , setCategorySelector
+  , leaderboardDelegateSelector
+  , setLeaderboardDelegateSelector
 
   -- * Enum types
   , GKLeaderboardTimeScope(GKLeaderboardTimeScope)
@@ -64,6 +68,16 @@ setCategory gkLeaderboardViewController  value =
   withObjCPtr value $ \raw_value ->
       sendMsg gkLeaderboardViewController (mkSelector "setCategory:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- leaderboardDelegate@
+leaderboardDelegate :: IsGKLeaderboardViewController gkLeaderboardViewController => gkLeaderboardViewController -> IO RawId
+leaderboardDelegate gkLeaderboardViewController  =
+    fmap (RawId . castPtr) $ sendMsg gkLeaderboardViewController (mkSelector "leaderboardDelegate") (retPtr retVoid) []
+
+-- | @- setLeaderboardDelegate:@
+setLeaderboardDelegate :: IsGKLeaderboardViewController gkLeaderboardViewController => gkLeaderboardViewController -> RawId -> IO ()
+setLeaderboardDelegate gkLeaderboardViewController  value =
+    sendMsg gkLeaderboardViewController (mkSelector "setLeaderboardDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -83,4 +97,12 @@ categorySelector = mkSelector "category"
 -- | @Selector@ for @setCategory:@
 setCategorySelector :: Selector
 setCategorySelector = mkSelector "setCategory:"
+
+-- | @Selector@ for @leaderboardDelegate@
+leaderboardDelegateSelector :: Selector
+leaderboardDelegateSelector = mkSelector "leaderboardDelegate"
+
+-- | @Selector@ for @setLeaderboardDelegate:@
+setLeaderboardDelegateSelector :: Selector
+setLeaderboardDelegateSelector = mkSelector "setLeaderboardDelegate:"
 

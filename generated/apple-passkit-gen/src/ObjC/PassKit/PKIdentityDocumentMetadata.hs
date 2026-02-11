@@ -15,6 +15,7 @@ module ObjC.PassKit.PKIdentityDocumentMetadata
   , cardConfigurationIdentifier
   , serverEnvironmentIdentifier
   , setServerEnvironmentIdentifier
+  , issuingCountryCode
   , documentType
   , initSelector
   , newSelector
@@ -24,6 +25,7 @@ module ObjC.PassKit.PKIdentityDocumentMetadata
   , cardConfigurationIdentifierSelector
   , serverEnvironmentIdentifierSelector
   , setServerEnvironmentIdentifierSelector
+  , issuingCountryCodeSelector
   , documentTypeSelector
 
   -- * Enum types
@@ -105,6 +107,13 @@ setServerEnvironmentIdentifier pkIdentityDocumentMetadata  value =
   withObjCPtr value $ \raw_value ->
       sendMsg pkIdentityDocumentMetadata (mkSelector "setServerEnvironmentIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | issuingCountryCode: identifies the issuing country of the identity document
+--
+-- ObjC selector: @- issuingCountryCode@
+issuingCountryCode :: IsPKIdentityDocumentMetadata pkIdentityDocumentMetadata => pkIdentityDocumentMetadata -> IO (Id NSString)
+issuingCountryCode pkIdentityDocumentMetadata  =
+    sendMsg pkIdentityDocumentMetadata (mkSelector "issuingCountryCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | identityDocumentType: identifies the type of the identity document
 --
 -- ObjC selector: @- documentType@
@@ -147,6 +156,10 @@ serverEnvironmentIdentifierSelector = mkSelector "serverEnvironmentIdentifier"
 -- | @Selector@ for @setServerEnvironmentIdentifier:@
 setServerEnvironmentIdentifierSelector :: Selector
 setServerEnvironmentIdentifierSelector = mkSelector "setServerEnvironmentIdentifier:"
+
+-- | @Selector@ for @issuingCountryCode@
+issuingCountryCodeSelector :: Selector
+issuingCountryCodeSelector = mkSelector "issuingCountryCode"
 
 -- | @Selector@ for @documentType@
 documentTypeSelector :: Selector

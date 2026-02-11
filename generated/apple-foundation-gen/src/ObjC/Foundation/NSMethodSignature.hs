@@ -11,12 +11,14 @@ module ObjC.Foundation.NSMethodSignature
   , isOneway
   , numberOfArguments
   , frameLength
+  , methodReturnType
   , methodReturnLength
   , signatureWithObjCTypesSelector
   , getArgumentTypeAtIndexSelector
   , isOnewaySelector
   , numberOfArgumentsSelector
   , frameLengthSelector
+  , methodReturnTypeSelector
   , methodReturnLengthSelector
 
 
@@ -63,6 +65,11 @@ frameLength :: IsNSMethodSignature nsMethodSignature => nsMethodSignature -> IO 
 frameLength nsMethodSignature  =
     sendMsg nsMethodSignature (mkSelector "frameLength") retCULong []
 
+-- | @- methodReturnType@
+methodReturnType :: IsNSMethodSignature nsMethodSignature => nsMethodSignature -> IO (Ptr CChar)
+methodReturnType nsMethodSignature  =
+    fmap castPtr $ sendMsg nsMethodSignature (mkSelector "methodReturnType") (retPtr retVoid) []
+
 -- | @- methodReturnLength@
 methodReturnLength :: IsNSMethodSignature nsMethodSignature => nsMethodSignature -> IO CULong
 methodReturnLength nsMethodSignature  =
@@ -91,6 +98,10 @@ numberOfArgumentsSelector = mkSelector "numberOfArguments"
 -- | @Selector@ for @frameLength@
 frameLengthSelector :: Selector
 frameLengthSelector = mkSelector "frameLength"
+
+-- | @Selector@ for @methodReturnType@
+methodReturnTypeSelector :: Selector
+methodReturnTypeSelector = mkSelector "methodReturnType"
 
 -- | @Selector@ for @methodReturnLength@
 methodReturnLengthSelector :: Selector

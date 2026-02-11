@@ -6,8 +6,12 @@
 module ObjC.AppKit.NSMenuToolbarItem
   ( NSMenuToolbarItem
   , IsNSMenuToolbarItem(..)
+  , menu
+  , setMenu
   , showsIndicator
   , setShowsIndicator
+  , menuSelector
+  , setMenuSelector
   , showsIndicatorSelector
   , setShowsIndicatorSelector
 
@@ -29,6 +33,17 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.AppKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | @- menu@
+menu :: IsNSMenuToolbarItem nsMenuToolbarItem => nsMenuToolbarItem -> IO (Id NSMenu)
+menu nsMenuToolbarItem  =
+    sendMsg nsMenuToolbarItem (mkSelector "menu") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setMenu:@
+setMenu :: (IsNSMenuToolbarItem nsMenuToolbarItem, IsNSMenu value) => nsMenuToolbarItem -> value -> IO ()
+setMenu nsMenuToolbarItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsMenuToolbarItem (mkSelector "setMenu:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- showsIndicator@
 showsIndicator :: IsNSMenuToolbarItem nsMenuToolbarItem => nsMenuToolbarItem -> IO Bool
 showsIndicator nsMenuToolbarItem  =
@@ -42,6 +57,14 @@ setShowsIndicator nsMenuToolbarItem  value =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @menu@
+menuSelector :: Selector
+menuSelector = mkSelector "menu"
+
+-- | @Selector@ for @setMenu:@
+setMenuSelector :: Selector
+setMenuSelector = mkSelector "setMenu:"
 
 -- | @Selector@ for @showsIndicator@
 showsIndicatorSelector :: Selector

@@ -14,6 +14,8 @@ module ObjC.SceneKit.SCNCameraController
   , dollyToTarget
   , clearRoll
   , stopInertia
+  , delegate
+  , setDelegate
   , pointOfView
   , setPointOfView
   , interactionMode
@@ -44,6 +46,8 @@ module ObjC.SceneKit.SCNCameraController
   , dollyToTargetSelector
   , clearRollSelector
   , stopInertiaSelector
+  , delegateSelector
+  , setDelegateSelector
   , pointOfViewSelector
   , setPointOfViewSelector
   , interactionModeSelector
@@ -132,6 +136,16 @@ clearRoll scnCameraController  =
 stopInertia :: IsSCNCameraController scnCameraController => scnCameraController -> IO ()
 stopInertia scnCameraController  =
     sendMsg scnCameraController (mkSelector "stopInertia") retVoid []
+
+-- | @- delegate@
+delegate :: IsSCNCameraController scnCameraController => scnCameraController -> IO RawId
+delegate scnCameraController  =
+    fmap (RawId . castPtr) $ sendMsg scnCameraController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsSCNCameraController scnCameraController => scnCameraController -> RawId -> IO ()
+setDelegate scnCameraController  value =
+    sendMsg scnCameraController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- pointOfView@
 pointOfView :: IsSCNCameraController scnCameraController => scnCameraController -> IO (Id SCNNode)
@@ -280,6 +294,14 @@ clearRollSelector = mkSelector "clearRoll"
 -- | @Selector@ for @stopInertia@
 stopInertiaSelector :: Selector
 stopInertiaSelector = mkSelector "stopInertia"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @pointOfView@
 pointOfViewSelector :: Selector

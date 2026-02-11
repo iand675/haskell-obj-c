@@ -17,10 +17,12 @@ module ObjC.MLCompute.MLCReductionLayer
   , layerWithReductionType_dimensions
   , reductionType
   , dimension
+  , dimensions
   , layerWithReductionType_dimensionSelector
   , layerWithReductionType_dimensionsSelector
   , reductionTypeSelector
   , dimensionSelector
+  , dimensionsSelector
 
   -- * Enum types
   , MLCReductionType(MLCReductionType)
@@ -103,6 +105,15 @@ dimension :: IsMLCReductionLayer mlcReductionLayer => mlcReductionLayer -> IO CU
 dimension mlcReductionLayer  =
     sendMsg mlcReductionLayer (mkSelector "dimension") retCULong []
 
+-- | dimensions
+--
+-- The dimensions over which to perform the reduction operation
+--
+-- ObjC selector: @- dimensions@
+dimensions :: IsMLCReductionLayer mlcReductionLayer => mlcReductionLayer -> IO (Id NSArray)
+dimensions mlcReductionLayer  =
+    sendMsg mlcReductionLayer (mkSelector "dimensions") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -122,4 +133,8 @@ reductionTypeSelector = mkSelector "reductionType"
 -- | @Selector@ for @dimension@
 dimensionSelector :: Selector
 dimensionSelector = mkSelector "dimension"
+
+-- | @Selector@ for @dimensions@
+dimensionsSelector :: Selector
+dimensionsSelector = mkSelector "dimensions"
 

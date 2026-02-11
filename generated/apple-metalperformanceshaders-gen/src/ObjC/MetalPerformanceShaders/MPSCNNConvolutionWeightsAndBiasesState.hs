@@ -14,12 +14,16 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionWeightsAndBiasesState
   , initWithDevice_cnnConvolutionDescriptor
   , temporaryCNNConvolutionWeightsAndBiasesStateWithCommandBuffer_cnnConvolutionDescriptor
   , initWithWeights_weightsOffset_biases_biasesOffset_cnnConvolutionDescriptor
+  , weights
+  , biases
   , weightsOffset
   , biasesOffset
   , initWithWeights_biasesSelector
   , initWithDevice_cnnConvolutionDescriptorSelector
   , temporaryCNNConvolutionWeightsAndBiasesStateWithCommandBuffer_cnnConvolutionDescriptorSelector
   , initWithWeights_weightsOffset_biases_biasesOffset_cnnConvolutionDescriptorSelector
+  , weightsSelector
+  , biasesSelector
   , weightsOffsetSelector
   , biasesOffsetSelector
 
@@ -82,6 +86,26 @@ initWithWeights_weightsOffset_biases_biasesOffset_cnnConvolutionDescriptor mpscn
   withObjCPtr descriptor $ \raw_descriptor ->
       sendMsg mpscnnConvolutionWeightsAndBiasesState (mkSelector "initWithWeights:weightsOffset:biases:biasesOffset:cnnConvolutionDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId weights) :: Ptr ()), argCULong weightsOffset, argPtr (castPtr (unRawId biases) :: Ptr ()), argCULong biasesOffset, argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
 
+-- | weights
+--
+-- A buffer that contains the weights.              Each value in the buffer is a float. The layout of the weights with respect to the weights is the same as              the weights layout provided by data source i.e. it can be interpreted as 4D array
+--
+-- weights[outputFeatureChannels][kernelHeight][kernelWidth][inputFeatureChannels/groups]              for regular convolution. For depthwise convolution                   weights[outputFeatureChannels][kernelHeight][kernelWidth] as we currently only support channel multiplier of 1.
+--
+-- ObjC selector: @- weights@
+weights :: IsMPSCNNConvolutionWeightsAndBiasesState mpscnnConvolutionWeightsAndBiasesState => mpscnnConvolutionWeightsAndBiasesState -> IO RawId
+weights mpscnnConvolutionWeightsAndBiasesState  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnConvolutionWeightsAndBiasesState (mkSelector "weights") (retPtr retVoid) []
+
+-- | biases
+--
+-- A buffer that contains the biases. Each value is float and there are ouputFeatureChannels values.
+--
+-- ObjC selector: @- biases@
+biases :: IsMPSCNNConvolutionWeightsAndBiasesState mpscnnConvolutionWeightsAndBiasesState => mpscnnConvolutionWeightsAndBiasesState -> IO RawId
+biases mpscnnConvolutionWeightsAndBiasesState  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnConvolutionWeightsAndBiasesState (mkSelector "biases") (retPtr retVoid) []
+
 -- | weightsOffset
 --
 -- Offset at which weights start in weights buffer              Default value is 0.
@@ -119,6 +143,14 @@ temporaryCNNConvolutionWeightsAndBiasesStateWithCommandBuffer_cnnConvolutionDesc
 -- | @Selector@ for @initWithWeights:weightsOffset:biases:biasesOffset:cnnConvolutionDescriptor:@
 initWithWeights_weightsOffset_biases_biasesOffset_cnnConvolutionDescriptorSelector :: Selector
 initWithWeights_weightsOffset_biases_biasesOffset_cnnConvolutionDescriptorSelector = mkSelector "initWithWeights:weightsOffset:biases:biasesOffset:cnnConvolutionDescriptor:"
+
+-- | @Selector@ for @weights@
+weightsSelector :: Selector
+weightsSelector = mkSelector "weights"
+
+-- | @Selector@ for @biases@
+biasesSelector :: Selector
+biasesSelector = mkSelector "biases"
 
 -- | @Selector@ for @weightsOffset@
 weightsOffsetSelector :: Selector

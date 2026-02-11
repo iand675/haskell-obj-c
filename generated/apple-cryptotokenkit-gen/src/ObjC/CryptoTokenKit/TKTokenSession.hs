@@ -17,9 +17,13 @@ module ObjC.CryptoTokenKit.TKTokenSession
   , initWithToken
   , init_
   , token
+  , delegate
+  , setDelegate
   , initWithTokenSelector
   , initSelector
   , tokenSelector
+  , delegateSelector
+  , setDelegateSelector
 
 
   ) where
@@ -57,6 +61,16 @@ token :: IsTKTokenSession tkTokenSession => tkTokenSession -> IO (Id TKToken)
 token tkTokenSession  =
     sendMsg tkTokenSession (mkSelector "token") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- delegate@
+delegate :: IsTKTokenSession tkTokenSession => tkTokenSession -> IO RawId
+delegate tkTokenSession  =
+    fmap (RawId . castPtr) $ sendMsg tkTokenSession (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsTKTokenSession tkTokenSession => tkTokenSession -> RawId -> IO ()
+setDelegate tkTokenSession  value =
+    sendMsg tkTokenSession (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -72,4 +86,12 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @token@
 tokenSelector :: Selector
 tokenSelector = mkSelector "token"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

@@ -14,11 +14,15 @@ module ObjC.ExternalAccessory.EAWiFiUnconfiguredAccessoryBrowser
   , startSearchingForUnconfiguredAccessoriesMatchingPredicate
   , stopSearchingForUnconfiguredAccessories
   , configureAccessory_withConfigurationUIOnViewController
+  , delegate
+  , setDelegate
   , unconfiguredAccessories
   , initWithDelegate_queueSelector
   , startSearchingForUnconfiguredAccessoriesMatchingPredicateSelector
   , stopSearchingForUnconfiguredAccessoriesSelector
   , configureAccessory_withConfigurationUIOnViewControllerSelector
+  , delegateSelector
+  , setDelegateSelector
   , unconfiguredAccessoriesSelector
 
 
@@ -89,6 +93,24 @@ configureAccessory_withConfigurationUIOnViewController eaWiFiUnconfiguredAccesso
     withObjCPtr viewController $ \raw_viewController ->
         sendMsg eaWiFiUnconfiguredAccessoryBrowser (mkSelector "configureAccessory:withConfigurationUIOnViewController:") retVoid [argPtr (castPtr raw_accessory :: Ptr ()), argPtr (castPtr raw_viewController :: Ptr ())]
 
+-- | delegate
+--
+-- The delegate object that will receive the browser events.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsEAWiFiUnconfiguredAccessoryBrowser eaWiFiUnconfiguredAccessoryBrowser => eaWiFiUnconfiguredAccessoryBrowser -> IO RawId
+delegate eaWiFiUnconfiguredAccessoryBrowser  =
+    fmap (RawId . castPtr) $ sendMsg eaWiFiUnconfiguredAccessoryBrowser (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- The delegate object that will receive the browser events.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsEAWiFiUnconfiguredAccessoryBrowser eaWiFiUnconfiguredAccessoryBrowser => eaWiFiUnconfiguredAccessoryBrowser -> RawId -> IO ()
+setDelegate eaWiFiUnconfiguredAccessoryBrowser  value =
+    sendMsg eaWiFiUnconfiguredAccessoryBrowser (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | unconfiguredAccessories
 --
 -- The set of discovered unconfigured accessories described by EAWiFiUnconfiguredAccessory objects.             This snapshot will only include objects matching the filter predicate defined when starting the search.
@@ -117,6 +139,14 @@ stopSearchingForUnconfiguredAccessoriesSelector = mkSelector "stopSearchingForUn
 -- | @Selector@ for @configureAccessory:withConfigurationUIOnViewController:@
 configureAccessory_withConfigurationUIOnViewControllerSelector :: Selector
 configureAccessory_withConfigurationUIOnViewControllerSelector = mkSelector "configureAccessory:withConfigurationUIOnViewController:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @unconfiguredAccessories@
 unconfiguredAccessoriesSelector :: Selector

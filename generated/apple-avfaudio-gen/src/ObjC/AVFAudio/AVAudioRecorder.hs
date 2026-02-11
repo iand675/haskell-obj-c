@@ -27,10 +27,14 @@ module ObjC.AVFAudio.AVAudioRecorder
   , url
   , settings
   , format
+  , delegate
+  , setDelegate
   , currentTime
   , deviceCurrentTime
   , meteringEnabled
   , setMeteringEnabled
+  , channelAssignments
+  , setChannelAssignments
   , initWithURL_settings_errorSelector
   , initWithURL_format_errorSelector
   , prepareToRecordSelector
@@ -48,10 +52,14 @@ module ObjC.AVFAudio.AVAudioRecorder
   , urlSelector
   , settingsSelector
   , formatSelector
+  , delegateSelector
+  , setDelegateSelector
   , currentTimeSelector
   , deviceCurrentTimeSelector
   , meteringEnabledSelector
   , setMeteringEnabledSelector
+  , channelAssignmentsSelector
+  , setChannelAssignmentsSelector
 
 
   ) where
@@ -252,6 +260,24 @@ format :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> IO (Id AVAudio
 format avAudioRecorder  =
     sendMsg avAudioRecorder (mkSelector "format") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | delegate
+--
+-- A delegate object to the AudioRecorder that conforms to the AVAudioRecorderDelegate protocol.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> IO RawId
+delegate avAudioRecorder  =
+    fmap (RawId . castPtr) $ sendMsg avAudioRecorder (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- A delegate object to the AudioRecorder that conforms to the AVAudioRecorderDelegate protocol.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> RawId -> IO ()
+setDelegate avAudioRecorder  value =
+    sendMsg avAudioRecorder (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | currentTime
 --
 -- Get the current time of the recording.
@@ -295,6 +321,29 @@ meteringEnabled avAudioRecorder  =
 setMeteringEnabled :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> Bool -> IO ()
 setMeteringEnabled avAudioRecorder  value =
     sendMsg avAudioRecorder (mkSelector "setMeteringEnabled:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | channelAssignments
+--
+-- Array of AVAudioSessionChannelDescription objects
+--
+-- The channels property lets you assign the output to record specific channels as described by AVAudioSessionPortDescription's channels property. This property is nil valued until set. The array must have the same number of channels as returned by the numberOfChannels property.
+--
+-- ObjC selector: @- channelAssignments@
+channelAssignments :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> IO (Id NSArray)
+channelAssignments avAudioRecorder  =
+    sendMsg avAudioRecorder (mkSelector "channelAssignments") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | channelAssignments
+--
+-- Array of AVAudioSessionChannelDescription objects
+--
+-- The channels property lets you assign the output to record specific channels as described by AVAudioSessionPortDescription's channels property. This property is nil valued until set. The array must have the same number of channels as returned by the numberOfChannels property.
+--
+-- ObjC selector: @- setChannelAssignments:@
+setChannelAssignments :: (IsAVAudioRecorder avAudioRecorder, IsNSArray value) => avAudioRecorder -> value -> IO ()
+setChannelAssignments avAudioRecorder  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avAudioRecorder (mkSelector "setChannelAssignments:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -368,6 +417,14 @@ settingsSelector = mkSelector "settings"
 formatSelector :: Selector
 formatSelector = mkSelector "format"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @currentTime@
 currentTimeSelector :: Selector
 currentTimeSelector = mkSelector "currentTime"
@@ -383,4 +440,12 @@ meteringEnabledSelector = mkSelector "meteringEnabled"
 -- | @Selector@ for @setMeteringEnabled:@
 setMeteringEnabledSelector :: Selector
 setMeteringEnabledSelector = mkSelector "setMeteringEnabled:"
+
+-- | @Selector@ for @channelAssignments@
+channelAssignmentsSelector :: Selector
+channelAssignmentsSelector = mkSelector "channelAssignments"
+
+-- | @Selector@ for @setChannelAssignments:@
+setChannelAssignmentsSelector :: Selector
+setChannelAssignmentsSelector = mkSelector "setChannelAssignments:"
 

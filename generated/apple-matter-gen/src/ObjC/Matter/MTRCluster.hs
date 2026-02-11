@@ -10,8 +10,10 @@ module ObjC.Matter.MTRCluster
   , IsMTRCluster(..)
   , init_
   , new
+  , endpointID
   , initSelector
   , newSelector
+  , endpointIDSelector
 
 
   ) where
@@ -43,6 +45,13 @@ new  =
     cls' <- getRequiredClass "MTRCluster"
     sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | The endpoint this cluster lives on.
+--
+-- ObjC selector: @- endpointID@
+endpointID :: IsMTRCluster mtrCluster => mtrCluster -> IO (Id NSNumber)
+endpointID mtrCluster  =
+    sendMsg mtrCluster (mkSelector "endpointID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -54,4 +63,8 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @new@
 newSelector :: Selector
 newSelector = mkSelector "new"
+
+-- | @Selector@ for @endpointID@
+endpointIDSelector :: Selector
+endpointIDSelector = mkSelector "endpointID"
 

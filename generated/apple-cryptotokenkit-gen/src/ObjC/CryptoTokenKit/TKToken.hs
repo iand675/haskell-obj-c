@@ -11,11 +11,15 @@ module ObjC.CryptoTokenKit.TKToken
   , initWithTokenDriver_instanceID
   , init_
   , tokenDriver
+  , delegate
+  , setDelegate
   , configuration
   , keychainContents
   , initWithTokenDriver_instanceIDSelector
   , initSelector
   , tokenDriverSelector
+  , delegateSelector
+  , setDelegateSelector
   , configurationSelector
   , keychainContentsSelector
 
@@ -60,6 +64,16 @@ tokenDriver :: IsTKToken tkToken => tkToken -> IO (Id TKTokenDriver)
 tokenDriver tkToken  =
     sendMsg tkToken (mkSelector "tokenDriver") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- delegate@
+delegate :: IsTKToken tkToken => tkToken -> IO RawId
+delegate tkToken  =
+    fmap (RawId . castPtr) $ sendMsg tkToken (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsTKToken tkToken => tkToken -> RawId -> IO ()
+setDelegate tkToken  value =
+    sendMsg tkToken (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Token configuration associated with this token instance.
 --
 -- ObjC selector: @- configuration@
@@ -89,6 +103,14 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @tokenDriver@
 tokenDriverSelector :: Selector
 tokenDriverSelector = mkSelector "tokenDriver"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @configuration@
 configurationSelector :: Selector

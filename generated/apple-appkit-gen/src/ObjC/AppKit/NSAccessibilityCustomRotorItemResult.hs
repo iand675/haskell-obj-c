@@ -11,6 +11,7 @@ module ObjC.AppKit.NSAccessibilityCustomRotorItemResult
   , new
   , init_
   , initWithTargetElement
+  , targetElement
   , targetRange
   , setTargetRange
   , customLabel
@@ -18,6 +19,7 @@ module ObjC.AppKit.NSAccessibilityCustomRotorItemResult
   , newSelector
   , initSelector
   , initWithTargetElementSelector
+  , targetElementSelector
   , targetRangeSelector
   , setTargetRangeSelector
   , customLabelSelector
@@ -60,6 +62,13 @@ init_ nsAccessibilityCustomRotorItemResult  =
 initWithTargetElement :: IsNSAccessibilityCustomRotorItemResult nsAccessibilityCustomRotorItemResult => nsAccessibilityCustomRotorItemResult -> RawId -> IO (Id NSAccessibilityCustomRotorItemResult)
 initWithTargetElement nsAccessibilityCustomRotorItemResult  targetElement =
     sendMsg nsAccessibilityCustomRotorItemResult (mkSelector "initWithTargetElement:") (retPtr retVoid) [argPtr (castPtr (unRawId targetElement) :: Ptr ())] >>= ownedObject . castPtr
+
+-- | A target element references an element that will be messaged for other accessibility properties. If it is not nil, assistive technologies may try to set accessibility focus on it.
+--
+-- ObjC selector: @- targetElement@
+targetElement :: IsNSAccessibilityCustomRotorItemResult nsAccessibilityCustomRotorItemResult => nsAccessibilityCustomRotorItemResult -> IO RawId
+targetElement nsAccessibilityCustomRotorItemResult  =
+    fmap (RawId . castPtr) $ sendMsg nsAccessibilityCustomRotorItemResult (mkSelector "targetElement") (retPtr retVoid) []
 
 -- | For text-based elements such as an NSTextView, this is an NSRange that specifies the area of interest. If the target range has NSNotFound for the location, the search should begin from the first or last character of the text element, depending on the search direction.
 --
@@ -109,6 +118,10 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @initWithTargetElement:@
 initWithTargetElementSelector :: Selector
 initWithTargetElementSelector = mkSelector "initWithTargetElement:"
+
+-- | @Selector@ for @targetElement@
+targetElementSelector :: Selector
+targetElementSelector = mkSelector "targetElement"
 
 -- | @Selector@ for @targetRange@
 targetRangeSelector :: Selector

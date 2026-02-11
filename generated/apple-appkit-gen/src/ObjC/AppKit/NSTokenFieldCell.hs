@@ -15,6 +15,8 @@ module ObjC.AppKit.NSTokenFieldCell
   , tokenizingCharacterSet
   , setTokenizingCharacterSet
   , defaultTokenizingCharacterSet
+  , delegate
+  , setDelegate
   , tokenStyleSelector
   , setTokenStyleSelector
   , completionDelaySelector
@@ -23,6 +25,8 @@ module ObjC.AppKit.NSTokenFieldCell
   , tokenizingCharacterSetSelector
   , setTokenizingCharacterSetSelector
   , defaultTokenizingCharacterSetSelector
+  , delegateSelector
+  , setDelegateSelector
 
   -- * Enum types
   , NSTokenStyle(NSTokenStyle)
@@ -95,6 +99,16 @@ defaultTokenizingCharacterSet  =
     cls' <- getRequiredClass "NSTokenFieldCell"
     sendClassMsg cls' (mkSelector "defaultTokenizingCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- delegate@
+delegate :: IsNSTokenFieldCell nsTokenFieldCell => nsTokenFieldCell -> IO RawId
+delegate nsTokenFieldCell  =
+    fmap (RawId . castPtr) $ sendMsg nsTokenFieldCell (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSTokenFieldCell nsTokenFieldCell => nsTokenFieldCell -> RawId -> IO ()
+setDelegate nsTokenFieldCell  value =
+    sendMsg nsTokenFieldCell (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -130,4 +144,12 @@ setTokenizingCharacterSetSelector = mkSelector "setTokenizingCharacterSet:"
 -- | @Selector@ for @defaultTokenizingCharacterSet@
 defaultTokenizingCharacterSetSelector :: Selector
 defaultTokenizingCharacterSetSelector = mkSelector "defaultTokenizingCharacterSet"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

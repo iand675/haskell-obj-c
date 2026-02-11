@@ -26,6 +26,8 @@ module ObjC.MetalFX.MTLFXFrameInterpolatorDescriptor
   , setMotionTextureFormat
   , uiTextureFormat
   , setUiTextureFormat
+  , scaler
+  , setScaler
   , inputWidth
   , setInputWidth
   , inputHeight
@@ -48,6 +50,8 @@ module ObjC.MetalFX.MTLFXFrameInterpolatorDescriptor
   , setMotionTextureFormatSelector
   , uiTextureFormatSelector
   , setUiTextureFormatSelector
+  , scalerSelector
+  , setScalerSelector
   , inputWidthSelector
   , setInputWidthSelector
   , inputHeightSelector
@@ -189,6 +193,16 @@ setUiTextureFormat :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorD
 setUiTextureFormat mtlfxFrameInterpolatorDescriptor  value =
     sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "setUiTextureFormat:") retVoid [argCInt (fromIntegral value)]
 
+-- | @- scaler@
+scaler :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> IO RawId
+scaler mtlfxFrameInterpolatorDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "scaler") (retPtr retVoid) []
+
+-- | @- setScaler:@
+setScaler :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> RawId -> IO ()
+setScaler mtlfxFrameInterpolatorDescriptor  value =
+    sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "setScaler:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | The width, in pixels, of the input motion and depth texture for the frame interpolator.
 --
 -- ObjC selector: @- inputWidth@
@@ -304,6 +318,14 @@ uiTextureFormatSelector = mkSelector "uiTextureFormat"
 -- | @Selector@ for @setUiTextureFormat:@
 setUiTextureFormatSelector :: Selector
 setUiTextureFormatSelector = mkSelector "setUiTextureFormat:"
+
+-- | @Selector@ for @scaler@
+scalerSelector :: Selector
+scalerSelector = mkSelector "scaler"
+
+-- | @Selector@ for @setScaler:@
+setScalerSelector :: Selector
+setScalerSelector = mkSelector "setScaler:"
 
 -- | @Selector@ for @inputWidth@
 inputWidthSelector :: Selector

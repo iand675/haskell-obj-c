@@ -19,6 +19,7 @@ module ObjC.MediaExtension.METrackInfo
   , trackID
   , enabled
   , setEnabled
+  , formatDescriptions
   , nominalFrameRate
   , setNominalFrameRate
   , requiresFrameReordering
@@ -27,6 +28,8 @@ module ObjC.MediaExtension.METrackInfo
   , setExtendedLanguageTag
   , naturalTimescale
   , setNaturalTimescale
+  , trackEdits
+  , setTrackEdits
   , newSelector
   , initSelector
   , initWithMediaType_trackID_formatDescriptionsSelector
@@ -34,6 +37,7 @@ module ObjC.MediaExtension.METrackInfo
   , trackIDSelector
   , enabledSelector
   , setEnabledSelector
+  , formatDescriptionsSelector
   , nominalFrameRateSelector
   , setNominalFrameRateSelector
   , requiresFrameReorderingSelector
@@ -42,6 +46,8 @@ module ObjC.MediaExtension.METrackInfo
   , setExtendedLanguageTagSelector
   , naturalTimescaleSelector
   , setNaturalTimescaleSelector
+  , trackEditsSelector
+  , setTrackEditsSelector
 
 
   ) where
@@ -133,6 +139,17 @@ setEnabled :: IsMETrackInfo meTrackInfo => meTrackInfo -> Bool -> IO ()
 setEnabled meTrackInfo  value =
     sendMsg meTrackInfo (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | formatDescriptions
+--
+-- The format descriptions for the track, as an NSArray.
+--
+-- This value is set through the class initializer.
+--
+-- ObjC selector: @- formatDescriptions@
+formatDescriptions :: IsMETrackInfo meTrackInfo => meTrackInfo -> IO (Id NSArray)
+formatDescriptions meTrackInfo  =
+    sendMsg meTrackInfo (mkSelector "formatDescriptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | nominalFrameRate
 --
 -- The frame rate of the track, in frames per second, as a 32-bit floating point number.
@@ -218,6 +235,29 @@ setNaturalTimescale :: IsMETrackInfo meTrackInfo => meTrackInfo -> CInt -> IO ()
 setNaturalTimescale meTrackInfo  value =
     sendMsg meTrackInfo (mkSelector "setNaturalTimescale:") retVoid [argCInt value]
 
+-- | trackEdits
+--
+-- Returns the array of edit segments for the given track.
+--
+-- Each NSValue in the array contains a CMTimeMapping object describing the track edit. The CMTimeMapping.target time ranges for successive edits must partition the time range from 0 to the track's duration. In other words, for edit index = 0 the CMTimeMapping.target.start must be kCMTimeZero, while for edit index > 0, the CMTimeMapping.target.start must match the CMTimeRangeGetEnd(CMTimeMapping.target) for edit (index - 1). It is valid for a track to have an empty trackEdits array; this means that there is nothing at all in the track and the track duration is zero. If this property is implemented for media asset formats that do not support edit segments, it can return nil.
+--
+-- ObjC selector: @- trackEdits@
+trackEdits :: IsMETrackInfo meTrackInfo => meTrackInfo -> IO (Id NSArray)
+trackEdits meTrackInfo  =
+    sendMsg meTrackInfo (mkSelector "trackEdits") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | trackEdits
+--
+-- Returns the array of edit segments for the given track.
+--
+-- Each NSValue in the array contains a CMTimeMapping object describing the track edit. The CMTimeMapping.target time ranges for successive edits must partition the time range from 0 to the track's duration. In other words, for edit index = 0 the CMTimeMapping.target.start must be kCMTimeZero, while for edit index > 0, the CMTimeMapping.target.start must match the CMTimeRangeGetEnd(CMTimeMapping.target) for edit (index - 1). It is valid for a track to have an empty trackEdits array; this means that there is nothing at all in the track and the track duration is zero. If this property is implemented for media asset formats that do not support edit segments, it can return nil.
+--
+-- ObjC selector: @- setTrackEdits:@
+setTrackEdits :: (IsMETrackInfo meTrackInfo, IsNSArray value) => meTrackInfo -> value -> IO ()
+setTrackEdits meTrackInfo  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg meTrackInfo (mkSelector "setTrackEdits:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -250,6 +290,10 @@ enabledSelector = mkSelector "enabled"
 setEnabledSelector :: Selector
 setEnabledSelector = mkSelector "setEnabled:"
 
+-- | @Selector@ for @formatDescriptions@
+formatDescriptionsSelector :: Selector
+formatDescriptionsSelector = mkSelector "formatDescriptions"
+
 -- | @Selector@ for @nominalFrameRate@
 nominalFrameRateSelector :: Selector
 nominalFrameRateSelector = mkSelector "nominalFrameRate"
@@ -281,4 +325,12 @@ naturalTimescaleSelector = mkSelector "naturalTimescale"
 -- | @Selector@ for @setNaturalTimescale:@
 setNaturalTimescaleSelector :: Selector
 setNaturalTimescaleSelector = mkSelector "setNaturalTimescale:"
+
+-- | @Selector@ for @trackEdits@
+trackEditsSelector :: Selector
+trackEditsSelector = mkSelector "trackEdits"
+
+-- | @Selector@ for @setTrackEdits:@
+setTrackEditsSelector :: Selector
+setTrackEditsSelector = mkSelector "setTrackEdits:"
 

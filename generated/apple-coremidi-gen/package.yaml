@@ -16,6 +16,7 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.CoreMIDI.Delegate.MIDICIProfileResponderDelegate
   - ObjC.CoreMIDI.Enums
   - ObjC.CoreMIDI.Internal.Classes
   - ObjC.CoreMIDI.Internal.Enums

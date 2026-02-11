@@ -10,8 +10,12 @@ module ObjC.Metal.MTL4CompilerDescriptor
   , IsMTL4CompilerDescriptor(..)
   , label
   , setLabel
+  , pipelineDataSetSerializer
+  , setPipelineDataSetSerializer
   , labelSelector
   , setLabelSelector
+  , pipelineDataSetSerializerSelector
+  , setPipelineDataSetSerializerSelector
 
 
   ) where
@@ -46,6 +50,20 @@ setLabel mtL4CompilerDescriptor  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mtL4CompilerDescriptor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | Assigns a pipeline data set serializer into which this compiler stores data for all pipelines it creates.
+--
+-- ObjC selector: @- pipelineDataSetSerializer@
+pipelineDataSetSerializer :: IsMTL4CompilerDescriptor mtL4CompilerDescriptor => mtL4CompilerDescriptor -> IO RawId
+pipelineDataSetSerializer mtL4CompilerDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtL4CompilerDescriptor (mkSelector "pipelineDataSetSerializer") (retPtr retVoid) []
+
+-- | Assigns a pipeline data set serializer into which this compiler stores data for all pipelines it creates.
+--
+-- ObjC selector: @- setPipelineDataSetSerializer:@
+setPipelineDataSetSerializer :: IsMTL4CompilerDescriptor mtL4CompilerDescriptor => mtL4CompilerDescriptor -> RawId -> IO ()
+setPipelineDataSetSerializer mtL4CompilerDescriptor  value =
+    sendMsg mtL4CompilerDescriptor (mkSelector "setPipelineDataSetSerializer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -57,4 +75,12 @@ labelSelector = mkSelector "label"
 -- | @Selector@ for @setLabel:@
 setLabelSelector :: Selector
 setLabelSelector = mkSelector "setLabel:"
+
+-- | @Selector@ for @pipelineDataSetSerializer@
+pipelineDataSetSerializerSelector :: Selector
+pipelineDataSetSerializerSelector = mkSelector "pipelineDataSetSerializer"
+
+-- | @Selector@ for @setPipelineDataSetSerializer:@
+setPipelineDataSetSerializerSelector :: Selector
+setPipelineDataSetSerializerSelector = mkSelector "setPipelineDataSetSerializer:"
 

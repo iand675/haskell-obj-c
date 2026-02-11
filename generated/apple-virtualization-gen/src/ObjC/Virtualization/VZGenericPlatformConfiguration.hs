@@ -13,10 +13,14 @@ module ObjC.Virtualization.VZGenericPlatformConfiguration
   ( VZGenericPlatformConfiguration
   , IsVZGenericPlatformConfiguration(..)
   , init_
+  , machineIdentifier
+  , setMachineIdentifier
   , nestedVirtualizationSupported
   , nestedVirtualizationEnabled
   , setNestedVirtualizationEnabled
   , initSelector
+  , machineIdentifierSelector
+  , setMachineIdentifierSelector
   , nestedVirtualizationSupportedSelector
   , nestedVirtualizationEnabledSelector
   , setNestedVirtualizationEnabledSelector
@@ -43,6 +47,25 @@ import ObjC.Foundation.Internal.Classes
 init_ :: IsVZGenericPlatformConfiguration vzGenericPlatformConfiguration => vzGenericPlatformConfiguration -> IO (Id VZGenericPlatformConfiguration)
 init_ vzGenericPlatformConfiguration  =
     sendMsg vzGenericPlatformConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+
+-- | The unique machine identifier.
+--
+-- Running two virtual machines concurrently with the same identifier results in undefined behavior    in the guest operating system. When restoring a virtual machine from saved state, this    @machineIdentifier@ must match the @machineIdentifier@ of the saved virtual machine.
+--
+-- ObjC selector: @- machineIdentifier@
+machineIdentifier :: IsVZGenericPlatformConfiguration vzGenericPlatformConfiguration => vzGenericPlatformConfiguration -> IO (Id VZGenericMachineIdentifier)
+machineIdentifier vzGenericPlatformConfiguration  =
+    sendMsg vzGenericPlatformConfiguration (mkSelector "machineIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The unique machine identifier.
+--
+-- Running two virtual machines concurrently with the same identifier results in undefined behavior    in the guest operating system. When restoring a virtual machine from saved state, this    @machineIdentifier@ must match the @machineIdentifier@ of the saved virtual machine.
+--
+-- ObjC selector: @- setMachineIdentifier:@
+setMachineIdentifier :: (IsVZGenericPlatformConfiguration vzGenericPlatformConfiguration, IsVZGenericMachineIdentifier value) => vzGenericPlatformConfiguration -> value -> IO ()
+setMachineIdentifier vzGenericPlatformConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg vzGenericPlatformConfiguration (mkSelector "setMachineIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | Indicate whether or not nested virtualization is available.
 --
@@ -96,6 +119,14 @@ setNestedVirtualizationEnabled vzGenericPlatformConfiguration  value =
 -- | @Selector@ for @init@
 initSelector :: Selector
 initSelector = mkSelector "init"
+
+-- | @Selector@ for @machineIdentifier@
+machineIdentifierSelector :: Selector
+machineIdentifierSelector = mkSelector "machineIdentifier"
+
+-- | @Selector@ for @setMachineIdentifier:@
+setMachineIdentifierSelector :: Selector
+setMachineIdentifierSelector = mkSelector "setMachineIdentifier:"
 
 -- | @Selector@ for @nestedVirtualizationSupported@
 nestedVirtualizationSupportedSelector :: Selector

@@ -9,9 +9,11 @@ module ObjC.SystemExtensions.OSSystemExtensionManager
   , init_
   , new
   , submitRequest
+  , sharedManager
   , initSelector
   , newSelector
   , submitRequestSelector
+  , sharedManagerSelector
 
 
   ) where
@@ -51,6 +53,13 @@ submitRequest osSystemExtensionManager  request =
   withObjCPtr request $ \raw_request ->
       sendMsg osSystemExtensionManager (mkSelector "submitRequest:") retVoid [argPtr (castPtr raw_request :: Ptr ())]
 
+-- | @+ sharedManager@
+sharedManager :: IO (Id OSSystemExtensionManager)
+sharedManager  =
+  do
+    cls' <- getRequiredClass "OSSystemExtensionManager"
+    sendClassMsg cls' (mkSelector "sharedManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -66,4 +75,8 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @submitRequest:@
 submitRequestSelector :: Selector
 submitRequestSelector = mkSelector "submitRequest:"
+
+-- | @Selector@ for @sharedManager@
+sharedManagerSelector :: Selector
+sharedManagerSelector = mkSelector "sharedManager"
 

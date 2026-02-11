@@ -36,8 +36,18 @@ module ObjC.MapKit.MKMapView
   , addOverlays
   , insertOverlay_atIndex
   , exchangeOverlayAtIndex_withOverlayAtIndex
+  , delegate
+  , setDelegate
   , mapType
   , setMapType
+  , preferredConfiguration
+  , setPreferredConfiguration
+  , camera
+  , setCamera
+  , cameraZoomRange
+  , setCameraZoomRange
+  , cameraBoundary
+  , setCameraBoundary
   , zoomEnabled
   , setZoomEnabled
   , scrollEnabled
@@ -58,6 +68,8 @@ module ObjC.MapKit.MKMapView
   , setShowsCompass
   , showsScale
   , setShowsScale
+  , pointOfInterestFilter
+  , setPointOfInterestFilter
   , showsPointsOfInterest
   , setShowsPointsOfInterest
   , showsBuildings
@@ -70,6 +82,10 @@ module ObjC.MapKit.MKMapView
   , userTrackingMode
   , setUserTrackingMode
   , userLocationVisible
+  , annotations
+  , selectedAnnotations
+  , setSelectedAnnotations
+  , overlays
   , setCamera_animatedSelector
   , setCameraZoomRange_animatedSelector
   , setCameraBoundary_animatedSelector
@@ -99,8 +115,18 @@ module ObjC.MapKit.MKMapView
   , addOverlaysSelector
   , insertOverlay_atIndexSelector
   , exchangeOverlayAtIndex_withOverlayAtIndexSelector
+  , delegateSelector
+  , setDelegateSelector
   , mapTypeSelector
   , setMapTypeSelector
+  , preferredConfigurationSelector
+  , setPreferredConfigurationSelector
+  , cameraSelector
+  , setCameraSelector
+  , cameraZoomRangeSelector
+  , setCameraZoomRangeSelector
+  , cameraBoundarySelector
+  , setCameraBoundarySelector
   , zoomEnabledSelector
   , setZoomEnabledSelector
   , scrollEnabledSelector
@@ -121,6 +147,8 @@ module ObjC.MapKit.MKMapView
   , setShowsCompassSelector
   , showsScaleSelector
   , setShowsScaleSelector
+  , pointOfInterestFilterSelector
+  , setPointOfInterestFilterSelector
   , showsPointsOfInterestSelector
   , setShowsPointsOfInterestSelector
   , showsBuildingsSelector
@@ -133,6 +161,10 @@ module ObjC.MapKit.MKMapView
   , userTrackingModeSelector
   , setUserTrackingModeSelector
   , userLocationVisibleSelector
+  , annotationsSelector
+  , selectedAnnotationsSelector
+  , setSelectedAnnotationsSelector
+  , overlaysSelector
 
   -- * Enum types
   , MKFeatureVisibility(MKFeatureVisibility)
@@ -331,6 +363,16 @@ exchangeOverlayAtIndex_withOverlayAtIndex :: IsMKMapView mkMapView => mkMapView 
 exchangeOverlayAtIndex_withOverlayAtIndex mkMapView  index1 index2 =
     sendMsg mkMapView (mkSelector "exchangeOverlayAtIndex:withOverlayAtIndex:") retVoid [argCULong index1, argCULong index2]
 
+-- | @- delegate@
+delegate :: IsMKMapView mkMapView => mkMapView -> IO RawId
+delegate mkMapView  =
+    fmap (RawId . castPtr) $ sendMsg mkMapView (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsMKMapView mkMapView => mkMapView -> RawId -> IO ()
+setDelegate mkMapView  value =
+    sendMsg mkMapView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- mapType@
 mapType :: IsMKMapView mkMapView => mkMapView -> IO MKMapType
 mapType mkMapView  =
@@ -340,6 +382,50 @@ mapType mkMapView  =
 setMapType :: IsMKMapView mkMapView => mkMapView -> MKMapType -> IO ()
 setMapType mkMapView  value =
     sendMsg mkMapView (mkSelector "setMapType:") retVoid [argCULong (coerce value)]
+
+-- | @- preferredConfiguration@
+preferredConfiguration :: IsMKMapView mkMapView => mkMapView -> IO (Id MKMapConfiguration)
+preferredConfiguration mkMapView  =
+    sendMsg mkMapView (mkSelector "preferredConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setPreferredConfiguration:@
+setPreferredConfiguration :: (IsMKMapView mkMapView, IsMKMapConfiguration value) => mkMapView -> value -> IO ()
+setPreferredConfiguration mkMapView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mkMapView (mkSelector "setPreferredConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- camera@
+camera :: IsMKMapView mkMapView => mkMapView -> IO (Id MKMapCamera)
+camera mkMapView  =
+    sendMsg mkMapView (mkSelector "camera") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setCamera:@
+setCamera :: (IsMKMapView mkMapView, IsMKMapCamera value) => mkMapView -> value -> IO ()
+setCamera mkMapView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mkMapView (mkSelector "setCamera:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- cameraZoomRange@
+cameraZoomRange :: IsMKMapView mkMapView => mkMapView -> IO (Id MKMapCameraZoomRange)
+cameraZoomRange mkMapView  =
+    sendMsg mkMapView (mkSelector "cameraZoomRange") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setCameraZoomRange:@
+setCameraZoomRange :: (IsMKMapView mkMapView, IsMKMapCameraZoomRange value) => mkMapView -> value -> IO ()
+setCameraZoomRange mkMapView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mkMapView (mkSelector "setCameraZoomRange:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- cameraBoundary@
+cameraBoundary :: IsMKMapView mkMapView => mkMapView -> IO (Id MKMapCameraBoundary)
+cameraBoundary mkMapView  =
+    sendMsg mkMapView (mkSelector "cameraBoundary") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setCameraBoundary:@
+setCameraBoundary :: (IsMKMapView mkMapView, IsMKMapCameraBoundary value) => mkMapView -> value -> IO ()
+setCameraBoundary mkMapView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mkMapView (mkSelector "setCameraBoundary:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- zoomEnabled@
 zoomEnabled :: IsMKMapView mkMapView => mkMapView -> IO Bool
@@ -441,6 +527,17 @@ setShowsScale :: IsMKMapView mkMapView => mkMapView -> Bool -> IO ()
 setShowsScale mkMapView  value =
     sendMsg mkMapView (mkSelector "setShowsScale:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @- pointOfInterestFilter@
+pointOfInterestFilter :: IsMKMapView mkMapView => mkMapView -> IO (Id MKPointOfInterestFilter)
+pointOfInterestFilter mkMapView  =
+    sendMsg mkMapView (mkSelector "pointOfInterestFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setPointOfInterestFilter:@
+setPointOfInterestFilter :: (IsMKMapView mkMapView, IsMKPointOfInterestFilter value) => mkMapView -> value -> IO ()
+setPointOfInterestFilter mkMapView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mkMapView (mkSelector "setPointOfInterestFilter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- showsPointsOfInterest@
 showsPointsOfInterest :: IsMKMapView mkMapView => mkMapView -> IO Bool
 showsPointsOfInterest mkMapView  =
@@ -500,6 +597,27 @@ setUserTrackingMode mkMapView  value =
 userLocationVisible :: IsMKMapView mkMapView => mkMapView -> IO Bool
 userLocationVisible mkMapView  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMapView (mkSelector "userLocationVisible") retCULong []
+
+-- | @- annotations@
+annotations :: IsMKMapView mkMapView => mkMapView -> IO (Id NSArray)
+annotations mkMapView  =
+    sendMsg mkMapView (mkSelector "annotations") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- selectedAnnotations@
+selectedAnnotations :: IsMKMapView mkMapView => mkMapView -> IO (Id NSArray)
+selectedAnnotations mkMapView  =
+    sendMsg mkMapView (mkSelector "selectedAnnotations") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setSelectedAnnotations:@
+setSelectedAnnotations :: (IsMKMapView mkMapView, IsNSArray value) => mkMapView -> value -> IO ()
+setSelectedAnnotations mkMapView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mkMapView (mkSelector "setSelectedAnnotations:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- overlays@
+overlays :: IsMKMapView mkMapView => mkMapView -> IO (Id NSArray)
+overlays mkMapView  =
+    sendMsg mkMapView (mkSelector "overlays") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -621,6 +739,14 @@ insertOverlay_atIndexSelector = mkSelector "insertOverlay:atIndex:"
 exchangeOverlayAtIndex_withOverlayAtIndexSelector :: Selector
 exchangeOverlayAtIndex_withOverlayAtIndexSelector = mkSelector "exchangeOverlayAtIndex:withOverlayAtIndex:"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @mapType@
 mapTypeSelector :: Selector
 mapTypeSelector = mkSelector "mapType"
@@ -628,6 +754,38 @@ mapTypeSelector = mkSelector "mapType"
 -- | @Selector@ for @setMapType:@
 setMapTypeSelector :: Selector
 setMapTypeSelector = mkSelector "setMapType:"
+
+-- | @Selector@ for @preferredConfiguration@
+preferredConfigurationSelector :: Selector
+preferredConfigurationSelector = mkSelector "preferredConfiguration"
+
+-- | @Selector@ for @setPreferredConfiguration:@
+setPreferredConfigurationSelector :: Selector
+setPreferredConfigurationSelector = mkSelector "setPreferredConfiguration:"
+
+-- | @Selector@ for @camera@
+cameraSelector :: Selector
+cameraSelector = mkSelector "camera"
+
+-- | @Selector@ for @setCamera:@
+setCameraSelector :: Selector
+setCameraSelector = mkSelector "setCamera:"
+
+-- | @Selector@ for @cameraZoomRange@
+cameraZoomRangeSelector :: Selector
+cameraZoomRangeSelector = mkSelector "cameraZoomRange"
+
+-- | @Selector@ for @setCameraZoomRange:@
+setCameraZoomRangeSelector :: Selector
+setCameraZoomRangeSelector = mkSelector "setCameraZoomRange:"
+
+-- | @Selector@ for @cameraBoundary@
+cameraBoundarySelector :: Selector
+cameraBoundarySelector = mkSelector "cameraBoundary"
+
+-- | @Selector@ for @setCameraBoundary:@
+setCameraBoundarySelector :: Selector
+setCameraBoundarySelector = mkSelector "setCameraBoundary:"
 
 -- | @Selector@ for @zoomEnabled@
 zoomEnabledSelector :: Selector
@@ -709,6 +867,14 @@ showsScaleSelector = mkSelector "showsScale"
 setShowsScaleSelector :: Selector
 setShowsScaleSelector = mkSelector "setShowsScale:"
 
+-- | @Selector@ for @pointOfInterestFilter@
+pointOfInterestFilterSelector :: Selector
+pointOfInterestFilterSelector = mkSelector "pointOfInterestFilter"
+
+-- | @Selector@ for @setPointOfInterestFilter:@
+setPointOfInterestFilterSelector :: Selector
+setPointOfInterestFilterSelector = mkSelector "setPointOfInterestFilter:"
+
 -- | @Selector@ for @showsPointsOfInterest@
 showsPointsOfInterestSelector :: Selector
 showsPointsOfInterestSelector = mkSelector "showsPointsOfInterest"
@@ -756,4 +922,20 @@ setUserTrackingModeSelector = mkSelector "setUserTrackingMode:"
 -- | @Selector@ for @userLocationVisible@
 userLocationVisibleSelector :: Selector
 userLocationVisibleSelector = mkSelector "userLocationVisible"
+
+-- | @Selector@ for @annotations@
+annotationsSelector :: Selector
+annotationsSelector = mkSelector "annotations"
+
+-- | @Selector@ for @selectedAnnotations@
+selectedAnnotationsSelector :: Selector
+selectedAnnotationsSelector = mkSelector "selectedAnnotations"
+
+-- | @Selector@ for @setSelectedAnnotations:@
+setSelectedAnnotationsSelector :: Selector
+setSelectedAnnotationsSelector = mkSelector "setSelectedAnnotations:"
+
+-- | @Selector@ for @overlays@
+overlaysSelector :: Selector
+overlaysSelector = mkSelector "overlays"
 

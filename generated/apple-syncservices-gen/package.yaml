@@ -16,6 +16,9 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.SyncServices.Delegate.ISyncFiltering
+  - ObjC.SyncServices.Delegate.ISyncSessionDriverDataSource
+  - ObjC.SyncServices.Delegate.NSPersistentStoreCoordinatorSyncing
   - ObjC.SyncServices.ISyncChange
   - ObjC.SyncServices.ISyncClient
   - ObjC.SyncServices.ISyncFilter

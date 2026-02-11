@@ -18,6 +18,8 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.CoreData.Delegate.NSFetchedResultsControllerDelegate
+  - ObjC.CoreData.Delegate.NSFetchedResultsSectionInfo
   - ObjC.CoreData.Enums
   - ObjC.CoreData.Internal.Classes
   - ObjC.CoreData.Internal.Enums

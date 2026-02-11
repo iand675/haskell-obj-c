@@ -10,8 +10,12 @@ module ObjC.VideoSubscriberAccount.VSAccountManager
   , IsVSAccountManager(..)
   , checkAccessStatusWithOptions_completionHandler
   , enqueueAccountMetadataRequest_completionHandler
+  , delegate
+  , setDelegate
   , checkAccessStatusWithOptions_completionHandlerSelector
   , enqueueAccountMetadataRequest_completionHandlerSelector
+  , delegateSelector
+  , setDelegateSelector
 
 
   ) where
@@ -65,6 +69,20 @@ enqueueAccountMetadataRequest_completionHandler vsAccountManager  request comple
   withObjCPtr request $ \raw_request ->
       sendMsg vsAccountManager (mkSelector "enqueueAccountMetadataRequest:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= retainedObject . castPtr
 
+-- | An object that can help the account manager by presenting and dismissing view controllers when needed, and deciding whether to allow authentication with the selected provider. Some requests may fail if a delegate is not provided.  For example, an account metadata request may require a delegate if it allows interruption.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsVSAccountManager vsAccountManager => vsAccountManager -> IO RawId
+delegate vsAccountManager  =
+    fmap (RawId . castPtr) $ sendMsg vsAccountManager (mkSelector "delegate") (retPtr retVoid) []
+
+-- | An object that can help the account manager by presenting and dismissing view controllers when needed, and deciding whether to allow authentication with the selected provider. Some requests may fail if a delegate is not provided.  For example, an account metadata request may require a delegate if it allows interruption.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsVSAccountManager vsAccountManager => vsAccountManager -> RawId -> IO ()
+setDelegate vsAccountManager  value =
+    sendMsg vsAccountManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -76,4 +94,12 @@ checkAccessStatusWithOptions_completionHandlerSelector = mkSelector "checkAccess
 -- | @Selector@ for @enqueueAccountMetadataRequest:completionHandler:@
 enqueueAccountMetadataRequest_completionHandlerSelector :: Selector
 enqueueAccountMetadataRequest_completionHandlerSelector = mkSelector "enqueueAccountMetadataRequest:completionHandler:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

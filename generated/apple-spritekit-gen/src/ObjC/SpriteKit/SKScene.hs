@@ -28,6 +28,8 @@ module ObjC.SpriteKit.SKScene
   , audioEngine
   , backgroundColor
   , setBackgroundColor
+  , delegate
+  , setDelegate
   , physicsWorld
   , view
   , sceneDidLoadSelector
@@ -47,6 +49,8 @@ module ObjC.SpriteKit.SKScene
   , audioEngineSelector
   , backgroundColorSelector
   , setBackgroundColorSelector
+  , delegateSelector
+  , setDelegateSelector
   , physicsWorldSelector
   , viewSelector
 
@@ -201,6 +205,16 @@ setBackgroundColor skScene  value =
   withObjCPtr value $ \raw_value ->
       sendMsg skScene (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsSKScene skScene => skScene -> IO RawId
+delegate skScene  =
+    fmap (RawId . castPtr) $ sendMsg skScene (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsSKScene skScene => skScene -> RawId -> IO ()
+setDelegate skScene  value =
+    sendMsg skScene (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Physics simulation functionality
 --
 -- ObjC selector: @- physicsWorld@
@@ -286,6 +300,14 @@ backgroundColorSelector = mkSelector "backgroundColor"
 -- | @Selector@ for @setBackgroundColor:@
 setBackgroundColorSelector :: Selector
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @physicsWorld@
 physicsWorldSelector :: Selector

@@ -18,6 +18,7 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.GLKit.Delegate.GLKNamedEffect
   - ObjC.GLKit.Enums
   - ObjC.GLKit.GLKBaseEffect
   - ObjC.GLKit.GLKEffectProperty

@@ -10,6 +10,8 @@ module ObjC.Metal.MTLComputePipelineDescriptor
   , reset
   , label
   , setLabel
+  , computeFunction
+  , setComputeFunction
   , threadGroupSizeIsMultipleOfThreadExecutionWidth
   , setThreadGroupSizeIsMultipleOfThreadExecutionWidth
   , maxTotalThreadsPerThreadgroup
@@ -19,6 +21,12 @@ module ObjC.Metal.MTLComputePipelineDescriptor
   , buffers
   , supportIndirectCommandBuffers
   , setSupportIndirectCommandBuffers
+  , insertLibraries
+  , setInsertLibraries
+  , preloadedLibraries
+  , setPreloadedLibraries
+  , binaryArchives
+  , setBinaryArchives
   , linkedFunctions
   , setLinkedFunctions
   , supportAddingBinaryFunctions
@@ -30,6 +38,8 @@ module ObjC.Metal.MTLComputePipelineDescriptor
   , resetSelector
   , labelSelector
   , setLabelSelector
+  , computeFunctionSelector
+  , setComputeFunctionSelector
   , threadGroupSizeIsMultipleOfThreadExecutionWidthSelector
   , setThreadGroupSizeIsMultipleOfThreadExecutionWidthSelector
   , maxTotalThreadsPerThreadgroupSelector
@@ -39,6 +49,12 @@ module ObjC.Metal.MTLComputePipelineDescriptor
   , buffersSelector
   , supportIndirectCommandBuffersSelector
   , setSupportIndirectCommandBuffersSelector
+  , insertLibrariesSelector
+  , setInsertLibrariesSelector
+  , preloadedLibrariesSelector
+  , setPreloadedLibrariesSelector
+  , binaryArchivesSelector
+  , setBinaryArchivesSelector
   , linkedFunctionsSelector
   , setLinkedFunctionsSelector
   , supportAddingBinaryFunctionsSelector
@@ -99,6 +115,24 @@ setLabel :: (IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor, IsNSSt
 setLabel mtlComputePipelineDescriptor  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mtlComputePipelineDescriptor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | computeFunction
+--
+-- The function to use with the MTLComputePipelineState
+--
+-- ObjC selector: @- computeFunction@
+computeFunction :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> IO RawId
+computeFunction mtlComputePipelineDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlComputePipelineDescriptor (mkSelector "computeFunction") (retPtr retVoid) []
+
+-- | computeFunction
+--
+-- The function to use with the MTLComputePipelineState
+--
+-- ObjC selector: @- setComputeFunction:@
+setComputeFunction :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> RawId -> IO ()
+setComputeFunction mtlComputePipelineDescriptor  value =
+    sendMsg mtlComputePipelineDescriptor (mkSelector "setComputeFunction:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | threadGroupSizeIsMultipleOfThreadExecutionWidth
 --
@@ -181,6 +215,87 @@ supportIndirectCommandBuffers mtlComputePipelineDescriptor  =
 setSupportIndirectCommandBuffers :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> Bool -> IO ()
 setSupportIndirectCommandBuffers mtlComputePipelineDescriptor  value =
     sendMsg mtlComputePipelineDescriptor (mkSelector "setSupportIndirectCommandBuffers:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | insertLibraries
+--
+-- The set of MTLDynamicLibrary to use to resolve external symbols before considering symbols from dependent MTLDynamicLibrary.
+--
+-- Typical workflows use the libraries property of MTLCompileOptions to record dependent libraries at compile time without having to use insertLibraries. This property can be used to override symbols from dependent libraries for experimentation or evaluating alternative implementations. It can also be used to provide dynamic libraries that are dynamically created (for example, from source) that have no stable installName that can be used to automatically load from the file system.
+--
+-- See: MTLDynamicLibrary
+--
+-- ObjC selector: @- insertLibraries@
+insertLibraries :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> IO (Id NSArray)
+insertLibraries mtlComputePipelineDescriptor  =
+    sendMsg mtlComputePipelineDescriptor (mkSelector "insertLibraries") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | insertLibraries
+--
+-- The set of MTLDynamicLibrary to use to resolve external symbols before considering symbols from dependent MTLDynamicLibrary.
+--
+-- Typical workflows use the libraries property of MTLCompileOptions to record dependent libraries at compile time without having to use insertLibraries. This property can be used to override symbols from dependent libraries for experimentation or evaluating alternative implementations. It can also be used to provide dynamic libraries that are dynamically created (for example, from source) that have no stable installName that can be used to automatically load from the file system.
+--
+-- See: MTLDynamicLibrary
+--
+-- ObjC selector: @- setInsertLibraries:@
+setInsertLibraries :: (IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor, IsNSArray value) => mtlComputePipelineDescriptor -> value -> IO ()
+setInsertLibraries mtlComputePipelineDescriptor  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mtlComputePipelineDescriptor (mkSelector "setInsertLibraries:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | preloadedLibraries
+--
+-- The set of MTLDynamicLibrary to use to resolve external symbols before considering symbols from dependent MTLDynamicLibrary.
+--
+-- Typical workflows use the libraries property of MTLCompileOptions to record dependent libraries at compile time without having to use preloadedLibraries. This property can be used to override symbols from dependent libraries for experimentation or evaluating alternative implementations. It can also be used to provide dynamic libraries that are dynamically created (for example, from source) that have no stable installName that can be used to automatically load from the file system.
+--
+-- See: MTLDynamicLibrary
+--
+-- ObjC selector: @- preloadedLibraries@
+preloadedLibraries :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> IO (Id NSArray)
+preloadedLibraries mtlComputePipelineDescriptor  =
+    sendMsg mtlComputePipelineDescriptor (mkSelector "preloadedLibraries") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | preloadedLibraries
+--
+-- The set of MTLDynamicLibrary to use to resolve external symbols before considering symbols from dependent MTLDynamicLibrary.
+--
+-- Typical workflows use the libraries property of MTLCompileOptions to record dependent libraries at compile time without having to use preloadedLibraries. This property can be used to override symbols from dependent libraries for experimentation or evaluating alternative implementations. It can also be used to provide dynamic libraries that are dynamically created (for example, from source) that have no stable installName that can be used to automatically load from the file system.
+--
+-- See: MTLDynamicLibrary
+--
+-- ObjC selector: @- setPreloadedLibraries:@
+setPreloadedLibraries :: (IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor, IsNSArray value) => mtlComputePipelineDescriptor -> value -> IO ()
+setPreloadedLibraries mtlComputePipelineDescriptor  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mtlComputePipelineDescriptor (mkSelector "setPreloadedLibraries:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | binaryArchives
+--
+-- The set of MTLBinaryArchive to search for compiled code when creating the pipeline state.
+--
+-- Accelerate pipeline state creation by providing archives of compiled code such that no compilation needs to happen on the fast path.
+--
+-- See: MTLBinaryArchive
+--
+-- ObjC selector: @- binaryArchives@
+binaryArchives :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> IO (Id NSArray)
+binaryArchives mtlComputePipelineDescriptor  =
+    sendMsg mtlComputePipelineDescriptor (mkSelector "binaryArchives") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | binaryArchives
+--
+-- The set of MTLBinaryArchive to search for compiled code when creating the pipeline state.
+--
+-- Accelerate pipeline state creation by providing archives of compiled code such that no compilation needs to happen on the fast path.
+--
+-- See: MTLBinaryArchive
+--
+-- ObjC selector: @- setBinaryArchives:@
+setBinaryArchives :: (IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor, IsNSArray value) => mtlComputePipelineDescriptor -> value -> IO ()
+setBinaryArchives mtlComputePipelineDescriptor  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mtlComputePipelineDescriptor (mkSelector "setBinaryArchives:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | linkedFunctions
 --
@@ -279,6 +394,14 @@ labelSelector = mkSelector "label"
 setLabelSelector :: Selector
 setLabelSelector = mkSelector "setLabel:"
 
+-- | @Selector@ for @computeFunction@
+computeFunctionSelector :: Selector
+computeFunctionSelector = mkSelector "computeFunction"
+
+-- | @Selector@ for @setComputeFunction:@
+setComputeFunctionSelector :: Selector
+setComputeFunctionSelector = mkSelector "setComputeFunction:"
+
 -- | @Selector@ for @threadGroupSizeIsMultipleOfThreadExecutionWidth@
 threadGroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector
 threadGroupSizeIsMultipleOfThreadExecutionWidthSelector = mkSelector "threadGroupSizeIsMultipleOfThreadExecutionWidth"
@@ -314,6 +437,30 @@ supportIndirectCommandBuffersSelector = mkSelector "supportIndirectCommandBuffer
 -- | @Selector@ for @setSupportIndirectCommandBuffers:@
 setSupportIndirectCommandBuffersSelector :: Selector
 setSupportIndirectCommandBuffersSelector = mkSelector "setSupportIndirectCommandBuffers:"
+
+-- | @Selector@ for @insertLibraries@
+insertLibrariesSelector :: Selector
+insertLibrariesSelector = mkSelector "insertLibraries"
+
+-- | @Selector@ for @setInsertLibraries:@
+setInsertLibrariesSelector :: Selector
+setInsertLibrariesSelector = mkSelector "setInsertLibraries:"
+
+-- | @Selector@ for @preloadedLibraries@
+preloadedLibrariesSelector :: Selector
+preloadedLibrariesSelector = mkSelector "preloadedLibraries"
+
+-- | @Selector@ for @setPreloadedLibraries:@
+setPreloadedLibrariesSelector :: Selector
+setPreloadedLibrariesSelector = mkSelector "setPreloadedLibraries:"
+
+-- | @Selector@ for @binaryArchives@
+binaryArchivesSelector :: Selector
+binaryArchivesSelector = mkSelector "binaryArchives"
+
+-- | @Selector@ for @setBinaryArchives:@
+setBinaryArchivesSelector :: Selector
+setBinaryArchivesSelector = mkSelector "setBinaryArchives:"
 
 -- | @Selector@ for @linkedFunctions@
 linkedFunctionsSelector :: Selector

@@ -29,6 +29,7 @@ module ObjC.MetalKit.MTKTextureLoader
   , newTextureWithMDLTexture_options_error
   , newTextureWithName_scaleFactor_bundle_options_error
   , newTextureWithName_scaleFactor_displayGamut_bundle_options_error
+  , device
   , initSelector
   , initWithDeviceSelector
   , newTextureWithContentsOfURL_options_completionHandlerSelector
@@ -47,6 +48,7 @@ module ObjC.MetalKit.MTKTextureLoader
   , newTextureWithMDLTexture_options_errorSelector
   , newTextureWithName_scaleFactor_bundle_options_errorSelector
   , newTextureWithName_scaleFactor_displayGamut_bundle_options_errorSelector
+  , deviceSelector
 
   -- * Enum types
   , NSDisplayGamut(NSDisplayGamut)
@@ -425,6 +427,15 @@ newTextureWithName_scaleFactor_displayGamut_bundle_options_error mtkTextureLoade
         withObjCPtr error_ $ \raw_error_ ->
             fmap (RawId . castPtr) $ sendMsg mtkTextureLoader (mkSelector "newTextureWithName:scaleFactor:displayGamut:bundle:options:error:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCDouble scaleFactor, argCLong (coerce displayGamut), argPtr (castPtr raw_bundle :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
 
+-- | device
+--
+-- Metal device with which to create Metal textures
+--
+-- ObjC selector: @- device@
+device :: IsMTKTextureLoader mtkTextureLoader => mtkTextureLoader -> IO RawId
+device mtkTextureLoader  =
+    fmap (RawId . castPtr) $ sendMsg mtkTextureLoader (mkSelector "device") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -500,4 +511,8 @@ newTextureWithName_scaleFactor_bundle_options_errorSelector = mkSelector "newTex
 -- | @Selector@ for @newTextureWithName:scaleFactor:displayGamut:bundle:options:error:@
 newTextureWithName_scaleFactor_displayGamut_bundle_options_errorSelector :: Selector
 newTextureWithName_scaleFactor_displayGamut_bundle_options_errorSelector = mkSelector "newTextureWithName:scaleFactor:displayGamut:bundle:options:error:"
+
+-- | @Selector@ for @device@
+deviceSelector :: Selector
+deviceSelector = mkSelector "device"
 

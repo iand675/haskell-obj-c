@@ -11,6 +11,7 @@ module ObjC.Foundation.NSPositionalSpecifier
   , setInsertionClassDescription
   , evaluate
   , position
+  , objectSpecifier
   , insertionContainer
   , insertionKey
   , insertionIndex
@@ -19,6 +20,7 @@ module ObjC.Foundation.NSPositionalSpecifier
   , setInsertionClassDescriptionSelector
   , evaluateSelector
   , positionSelector
+  , objectSpecifierSelector
   , insertionContainerSelector
   , insertionKeySelector
   , insertionIndexSelector
@@ -71,6 +73,11 @@ position :: IsNSPositionalSpecifier nsPositionalSpecifier => nsPositionalSpecifi
 position nsPositionalSpecifier  =
     fmap (coerce :: CULong -> NSInsertionPosition) $ sendMsg nsPositionalSpecifier (mkSelector "position") retCULong []
 
+-- | @- objectSpecifier@
+objectSpecifier :: IsNSPositionalSpecifier nsPositionalSpecifier => nsPositionalSpecifier -> IO (Id NSScriptObjectSpecifier)
+objectSpecifier nsPositionalSpecifier  =
+    sendMsg nsPositionalSpecifier (mkSelector "objectSpecifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- insertionContainer@
 insertionContainer :: IsNSPositionalSpecifier nsPositionalSpecifier => nsPositionalSpecifier -> IO RawId
 insertionContainer nsPositionalSpecifier  =
@@ -110,6 +117,10 @@ evaluateSelector = mkSelector "evaluate"
 -- | @Selector@ for @position@
 positionSelector :: Selector
 positionSelector = mkSelector "position"
+
+-- | @Selector@ for @objectSpecifier@
+objectSpecifierSelector :: Selector
+objectSpecifierSelector = mkSelector "objectSpecifier"
 
 -- | @Selector@ for @insertionContainer@
 insertionContainerSelector :: Selector

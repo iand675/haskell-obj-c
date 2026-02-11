@@ -137,8 +137,14 @@ module ObjC.QuartzCore.CALayer
   , setShadowPath
   , autoresizingMask
   , setAutoresizingMask
+  , layoutManager
+  , setLayoutManager
+  , actions
+  , setActions
   , name
   , setName
+  , delegate
+  , setDelegate
   , style
   , setStyle
   , constraints
@@ -271,8 +277,14 @@ module ObjC.QuartzCore.CALayer
   , setShadowPathSelector
   , autoresizingMaskSelector
   , setAutoresizingMaskSelector
+  , layoutManagerSelector
+  , setLayoutManagerSelector
+  , actionsSelector
+  , setActionsSelector
   , nameSelector
   , setNameSelector
+  , delegateSelector
+  , setDelegateSelector
   , styleSelector
   , setStyleSelector
   , constraintsSelector
@@ -1023,6 +1035,27 @@ setAutoresizingMask :: IsCALayer caLayer => caLayer -> CAAutoresizingMask -> IO 
 setAutoresizingMask caLayer  value =
     sendMsg caLayer (mkSelector "setAutoresizingMask:") retVoid [argCUInt (coerce value)]
 
+-- | @- layoutManager@
+layoutManager :: IsCALayer caLayer => caLayer -> IO RawId
+layoutManager caLayer  =
+    fmap (RawId . castPtr) $ sendMsg caLayer (mkSelector "layoutManager") (retPtr retVoid) []
+
+-- | @- setLayoutManager:@
+setLayoutManager :: IsCALayer caLayer => caLayer -> RawId -> IO ()
+setLayoutManager caLayer  value =
+    sendMsg caLayer (mkSelector "setLayoutManager:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- actions@
+actions :: IsCALayer caLayer => caLayer -> IO (Id NSDictionary)
+actions caLayer  =
+    sendMsg caLayer (mkSelector "actions") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setActions:@
+setActions :: (IsCALayer caLayer, IsNSDictionary value) => caLayer -> value -> IO ()
+setActions caLayer  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg caLayer (mkSelector "setActions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | Miscellaneous properties. *
 --
 -- ObjC selector: @- name@
@@ -1037,6 +1070,16 @@ setName :: (IsCALayer caLayer, IsNSString value) => caLayer -> value -> IO ()
 setName caLayer  value =
   withObjCPtr value $ \raw_value ->
       sendMsg caLayer (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- delegate@
+delegate :: IsCALayer caLayer => caLayer -> IO RawId
+delegate caLayer  =
+    fmap (RawId . castPtr) $ sendMsg caLayer (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsCALayer caLayer => caLayer -> RawId -> IO ()
+setDelegate caLayer  value =
+    sendMsg caLayer (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- style@
 style :: IsCALayer caLayer => caLayer -> IO (Id NSDictionary)
@@ -1576,6 +1619,22 @@ autoresizingMaskSelector = mkSelector "autoresizingMask"
 setAutoresizingMaskSelector :: Selector
 setAutoresizingMaskSelector = mkSelector "setAutoresizingMask:"
 
+-- | @Selector@ for @layoutManager@
+layoutManagerSelector :: Selector
+layoutManagerSelector = mkSelector "layoutManager"
+
+-- | @Selector@ for @setLayoutManager:@
+setLayoutManagerSelector :: Selector
+setLayoutManagerSelector = mkSelector "setLayoutManager:"
+
+-- | @Selector@ for @actions@
+actionsSelector :: Selector
+actionsSelector = mkSelector "actions"
+
+-- | @Selector@ for @setActions:@
+setActionsSelector :: Selector
+setActionsSelector = mkSelector "setActions:"
+
 -- | @Selector@ for @name@
 nameSelector :: Selector
 nameSelector = mkSelector "name"
@@ -1583,6 +1642,14 @@ nameSelector = mkSelector "name"
 -- | @Selector@ for @setName:@
 setNameSelector :: Selector
 setNameSelector = mkSelector "setName:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @style@
 styleSelector :: Selector

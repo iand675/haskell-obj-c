@@ -11,10 +11,14 @@ module ObjC.Intents.INLodgingReservation
   , initWithItemReference_reservationNumber_bookingTime_reservationStatus_reservationHolderName_actions_lodgingBusinessLocation_reservationDuration_numberOfAdults_numberOfChildren
   , lodgingBusinessLocation
   , reservationDuration
+  , numberOfAdults
+  , numberOfChildren
   , initWithItemReference_reservationNumber_bookingTime_reservationStatus_reservationHolderName_actions_URL_lodgingBusinessLocation_reservationDuration_numberOfAdults_numberOfChildrenSelector
   , initWithItemReference_reservationNumber_bookingTime_reservationStatus_reservationHolderName_actions_lodgingBusinessLocation_reservationDuration_numberOfAdults_numberOfChildrenSelector
   , lodgingBusinessLocationSelector
   , reservationDurationSelector
+  , numberOfAdultsSelector
+  , numberOfChildrenSelector
 
   -- * Enum types
   , INReservationStatus(INReservationStatus)
@@ -82,6 +86,16 @@ reservationDuration :: IsINLodgingReservation inLodgingReservation => inLodgingR
 reservationDuration inLodgingReservation  =
     sendMsg inLodgingReservation (mkSelector "reservationDuration") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- numberOfAdults@
+numberOfAdults :: IsINLodgingReservation inLodgingReservation => inLodgingReservation -> IO (Id NSNumber)
+numberOfAdults inLodgingReservation  =
+    sendMsg inLodgingReservation (mkSelector "numberOfAdults") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- numberOfChildren@
+numberOfChildren :: IsINLodgingReservation inLodgingReservation => inLodgingReservation -> IO (Id NSNumber)
+numberOfChildren inLodgingReservation  =
+    sendMsg inLodgingReservation (mkSelector "numberOfChildren") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -101,4 +115,12 @@ lodgingBusinessLocationSelector = mkSelector "lodgingBusinessLocation"
 -- | @Selector@ for @reservationDuration@
 reservationDurationSelector :: Selector
 reservationDurationSelector = mkSelector "reservationDuration"
+
+-- | @Selector@ for @numberOfAdults@
+numberOfAdultsSelector :: Selector
+numberOfAdultsSelector = mkSelector "numberOfAdults"
+
+-- | @Selector@ for @numberOfChildren@
+numberOfChildrenSelector :: Selector
+numberOfChildrenSelector = mkSelector "numberOfChildren"
 

@@ -18,6 +18,7 @@ module ObjC.ImageCaptureCore.ICCameraItem
   , parentFolder
   , name
   , uti
+  , fileSystemPath
   , locked
   , raw
   , inTemporaryStore
@@ -38,6 +39,7 @@ module ObjC.ImageCaptureCore.ICCameraItem
   , parentFolderSelector
   , nameSelector
   , utiSelector
+  , fileSystemPathSelector
   , lockedSelector
   , rawSelector
   , inTemporaryStoreSelector
@@ -144,6 +146,15 @@ name icCameraItem  =
 uti :: IsICCameraItem icCameraItem => icCameraItem -> IO (Id NSString)
 uti icCameraItem  =
     sendMsg icCameraItem (mkSelector "UTI") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | fileSystemPath
+--
+-- ￼The file system path of the item for items on a device with transportType of ICTransportTypeMassStorage.
+--
+-- ObjC selector: @- fileSystemPath@
+fileSystemPath :: IsICCameraItem icCameraItem => icCameraItem -> IO RawId
+fileSystemPath icCameraItem  =
+    fmap (RawId . castPtr) $ sendMsg icCameraItem (mkSelector "fileSystemPath") (retPtr retVoid) []
 
 -- | locked
 --
@@ -284,6 +295,10 @@ nameSelector = mkSelector "name"
 -- | @Selector@ for @UTI@
 utiSelector :: Selector
 utiSelector = mkSelector "UTI"
+
+-- | @Selector@ for @fileSystemPath@
+fileSystemPathSelector :: Selector
+fileSystemPathSelector = mkSelector "fileSystemPath"
 
 -- | @Selector@ for @locked@
 lockedSelector :: Selector

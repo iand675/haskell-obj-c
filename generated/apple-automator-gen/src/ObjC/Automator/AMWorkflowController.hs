@@ -15,6 +15,8 @@ module ObjC.Automator.AMWorkflowController
   , setWorkflow
   , workflowView
   , setWorkflowView
+  , delegate
+  , setDelegate
   , canRun
   , running
   , paused
@@ -27,6 +29,8 @@ module ObjC.Automator.AMWorkflowController
   , setWorkflowSelector
   , workflowViewSelector
   , setWorkflowViewSelector
+  , delegateSelector
+  , setDelegateSelector
   , canRunSelector
   , runningSelector
   , pausedSelector
@@ -97,6 +101,16 @@ setWorkflowView amWorkflowController  value =
   withObjCPtr value $ \raw_value ->
       sendMsg amWorkflowController (mkSelector "setWorkflowView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsAMWorkflowController amWorkflowController => amWorkflowController -> IO RawId
+delegate amWorkflowController  =
+    fmap (RawId . castPtr) $ sendMsg amWorkflowController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsAMWorkflowController amWorkflowController => amWorkflowController -> RawId -> IO ()
+setDelegate amWorkflowController  value =
+    sendMsg amWorkflowController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- canRun@
 canRun :: IsAMWorkflowController amWorkflowController => amWorkflowController -> IO Bool
 canRun amWorkflowController  =
@@ -151,6 +165,14 @@ workflowViewSelector = mkSelector "workflowView"
 -- | @Selector@ for @setWorkflowView:@
 setWorkflowViewSelector :: Selector
 setWorkflowViewSelector = mkSelector "setWorkflowView:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @canRun@
 canRunSelector :: Selector

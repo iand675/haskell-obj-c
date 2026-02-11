@@ -9,12 +9,22 @@ module ObjC.Intents.INSetSeatSettingsInCarIntent
   , IsINSetSeatSettingsInCarIntent(..)
   , initWithEnableHeating_enableCooling_enableMassage_seat_level_relativeLevelSetting_carName
   , initWithEnableHeating_enableCooling_enableMassage_seat_level_relativeLevelSetting
+  , enableHeating
+  , enableCooling
+  , enableMassage
   , seat
+  , level
   , relativeLevelSetting
+  , carName
   , initWithEnableHeating_enableCooling_enableMassage_seat_level_relativeLevelSetting_carNameSelector
   , initWithEnableHeating_enableCooling_enableMassage_seat_level_relativeLevelSettingSelector
+  , enableHeatingSelector
+  , enableCoolingSelector
+  , enableMassageSelector
   , seatSelector
+  , levelSelector
   , relativeLevelSettingSelector
+  , carNameSelector
 
   -- * Enum types
   , INCarSeat(INCarSeat)
@@ -75,15 +85,40 @@ initWithEnableHeating_enableCooling_enableMassage_seat_level_relativeLevelSettin
         withObjCPtr level $ \raw_level ->
             sendMsg inSetSeatSettingsInCarIntent (mkSelector "initWithEnableHeating:enableCooling:enableMassage:seat:level:relativeLevelSetting:") (retPtr retVoid) [argPtr (castPtr raw_enableHeating :: Ptr ()), argPtr (castPtr raw_enableCooling :: Ptr ()), argPtr (castPtr raw_enableMassage :: Ptr ()), argCLong (coerce seat), argPtr (castPtr raw_level :: Ptr ()), argCLong (coerce relativeLevelSetting)] >>= ownedObject . castPtr
 
+-- | @- enableHeating@
+enableHeating :: IsINSetSeatSettingsInCarIntent inSetSeatSettingsInCarIntent => inSetSeatSettingsInCarIntent -> IO (Id NSNumber)
+enableHeating inSetSeatSettingsInCarIntent  =
+    sendMsg inSetSeatSettingsInCarIntent (mkSelector "enableHeating") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- enableCooling@
+enableCooling :: IsINSetSeatSettingsInCarIntent inSetSeatSettingsInCarIntent => inSetSeatSettingsInCarIntent -> IO (Id NSNumber)
+enableCooling inSetSeatSettingsInCarIntent  =
+    sendMsg inSetSeatSettingsInCarIntent (mkSelector "enableCooling") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- enableMassage@
+enableMassage :: IsINSetSeatSettingsInCarIntent inSetSeatSettingsInCarIntent => inSetSeatSettingsInCarIntent -> IO (Id NSNumber)
+enableMassage inSetSeatSettingsInCarIntent  =
+    sendMsg inSetSeatSettingsInCarIntent (mkSelector "enableMassage") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- seat@
 seat :: IsINSetSeatSettingsInCarIntent inSetSeatSettingsInCarIntent => inSetSeatSettingsInCarIntent -> IO INCarSeat
 seat inSetSeatSettingsInCarIntent  =
     fmap (coerce :: CLong -> INCarSeat) $ sendMsg inSetSeatSettingsInCarIntent (mkSelector "seat") retCLong []
 
+-- | @- level@
+level :: IsINSetSeatSettingsInCarIntent inSetSeatSettingsInCarIntent => inSetSeatSettingsInCarIntent -> IO (Id NSNumber)
+level inSetSeatSettingsInCarIntent  =
+    sendMsg inSetSeatSettingsInCarIntent (mkSelector "level") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- relativeLevelSetting@
 relativeLevelSetting :: IsINSetSeatSettingsInCarIntent inSetSeatSettingsInCarIntent => inSetSeatSettingsInCarIntent -> IO INRelativeSetting
 relativeLevelSetting inSetSeatSettingsInCarIntent  =
     fmap (coerce :: CLong -> INRelativeSetting) $ sendMsg inSetSeatSettingsInCarIntent (mkSelector "relativeLevelSetting") retCLong []
+
+-- | @- carName@
+carName :: IsINSetSeatSettingsInCarIntent inSetSeatSettingsInCarIntent => inSetSeatSettingsInCarIntent -> IO (Id INSpeakableString)
+carName inSetSeatSettingsInCarIntent  =
+    sendMsg inSetSeatSettingsInCarIntent (mkSelector "carName") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -97,11 +132,31 @@ initWithEnableHeating_enableCooling_enableMassage_seat_level_relativeLevelSettin
 initWithEnableHeating_enableCooling_enableMassage_seat_level_relativeLevelSettingSelector :: Selector
 initWithEnableHeating_enableCooling_enableMassage_seat_level_relativeLevelSettingSelector = mkSelector "initWithEnableHeating:enableCooling:enableMassage:seat:level:relativeLevelSetting:"
 
+-- | @Selector@ for @enableHeating@
+enableHeatingSelector :: Selector
+enableHeatingSelector = mkSelector "enableHeating"
+
+-- | @Selector@ for @enableCooling@
+enableCoolingSelector :: Selector
+enableCoolingSelector = mkSelector "enableCooling"
+
+-- | @Selector@ for @enableMassage@
+enableMassageSelector :: Selector
+enableMassageSelector = mkSelector "enableMassage"
+
 -- | @Selector@ for @seat@
 seatSelector :: Selector
 seatSelector = mkSelector "seat"
 
+-- | @Selector@ for @level@
+levelSelector :: Selector
+levelSelector = mkSelector "level"
+
 -- | @Selector@ for @relativeLevelSetting@
 relativeLevelSettingSelector :: Selector
 relativeLevelSettingSelector = mkSelector "relativeLevelSetting"
+
+-- | @Selector@ for @carName@
+carNameSelector :: Selector
+carNameSelector = mkSelector "carName"
 

@@ -18,6 +18,8 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.QuickLookUI.Delegate.QLPreviewPanelDataSource
+  - ObjC.QuickLookUI.Delegate.QLPreviewPanelDelegate
   - ObjC.QuickLookUI.Enums
   - ObjC.QuickLookUI.Internal.Classes
   - ObjC.QuickLookUI.Internal.Enums

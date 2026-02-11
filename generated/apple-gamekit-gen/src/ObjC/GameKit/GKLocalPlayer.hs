@@ -21,6 +21,7 @@ module ObjC.GameKit.GKLocalPlayer
   , registerListener
   , unregisterListener
   , unregisterAllListeners
+  , local
   , localPlayer
   , authenticated
   , underage
@@ -29,6 +30,7 @@ module ObjC.GameKit.GKLocalPlayer
   , authenticateHandler
   , setAuthenticateHandler
   , isPresentingFriendRequestViewController
+  , friends
   , fetchItemsForIdentityVerificationSignatureSelector
   , saveGameData_withName_completionHandlerSelector
   , deleteSavedGamesWithName_completionHandlerSelector
@@ -44,6 +46,7 @@ module ObjC.GameKit.GKLocalPlayer
   , registerListenerSelector
   , unregisterListenerSelector
   , unregisterAllListenersSelector
+  , localSelector
   , localPlayerSelector
   , authenticatedSelector
   , underageSelector
@@ -52,6 +55,7 @@ module ObjC.GameKit.GKLocalPlayer
   , authenticateHandlerSelector
   , setAuthenticateHandlerSelector
   , isPresentingFriendRequestViewControllerSelector
+  , friendsSelector
 
 
   ) where
@@ -182,6 +186,15 @@ unregisterAllListeners :: IsGKLocalPlayer gkLocalPlayer => gkLocalPlayer -> IO (
 unregisterAllListeners gkLocalPlayer  =
     sendMsg gkLocalPlayer (mkSelector "unregisterAllListeners") retVoid []
 
+-- | Obtain the primary GKLocalPlayer object.    The player is only available for offline play until logged in.    A temporary player is created if no account is set up.
+--
+-- ObjC selector: @+ local@
+local :: IO (Id GKLocalPlayer)
+local  =
+  do
+    cls' <- getRequiredClass "GKLocalPlayer"
+    sendClassMsg cls' (mkSelector "local") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @+ localPlayer@
 localPlayer :: IO (Id GKLocalPlayer)
 localPlayer  =
@@ -233,6 +246,13 @@ setAuthenticateHandler gkLocalPlayer  value =
 isPresentingFriendRequestViewController :: IsGKLocalPlayer gkLocalPlayer => gkLocalPlayer -> IO Bool
 isPresentingFriendRequestViewController gkLocalPlayer  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkLocalPlayer (mkSelector "isPresentingFriendRequestViewController") retCULong []
+
+-- | This property is obsolete. **
+--
+-- ObjC selector: @- friends@
+friends :: IsGKLocalPlayer gkLocalPlayer => gkLocalPlayer -> IO (Id NSArray)
+friends gkLocalPlayer  =
+    sendMsg gkLocalPlayer (mkSelector "friends") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -298,6 +318,10 @@ unregisterListenerSelector = mkSelector "unregisterListener:"
 unregisterAllListenersSelector :: Selector
 unregisterAllListenersSelector = mkSelector "unregisterAllListeners"
 
+-- | @Selector@ for @local@
+localSelector :: Selector
+localSelector = mkSelector "local"
+
 -- | @Selector@ for @localPlayer@
 localPlayerSelector :: Selector
 localPlayerSelector = mkSelector "localPlayer"
@@ -329,4 +353,8 @@ setAuthenticateHandlerSelector = mkSelector "setAuthenticateHandler:"
 -- | @Selector@ for @isPresentingFriendRequestViewController@
 isPresentingFriendRequestViewControllerSelector :: Selector
 isPresentingFriendRequestViewControllerSelector = mkSelector "isPresentingFriendRequestViewController"
+
+-- | @Selector@ for @friends@
+friendsSelector :: Selector
+friendsSelector = mkSelector "friends"
 

@@ -21,6 +21,10 @@ module ObjC.ScreenCaptureKit.SCContentSharingPicker
   , presentPickerForStream
   , presentPickerForStream_usingContentStyle
   , sharedPicker
+  , defaultConfiguration
+  , setDefaultConfiguration
+  , maximumStreamCount
+  , setMaximumStreamCount
   , active
   , setActive
   , initSelector
@@ -33,6 +37,10 @@ module ObjC.ScreenCaptureKit.SCContentSharingPicker
   , presentPickerForStreamSelector
   , presentPickerForStream_usingContentStyleSelector
   , sharedPickerSelector
+  , defaultConfigurationSelector
+  , setDefaultConfigurationSelector
+  , maximumStreamCountSelector
+  , setMaximumStreamCountSelector
   , activeSelector
   , setActiveSelector
 
@@ -165,6 +173,36 @@ sharedPicker  =
     cls' <- getRequiredClass "SCContentSharingPicker"
     sendClassMsg cls' (mkSelector "sharedPicker") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | defaultConfiguration for the content sharing picker. If a stream does not have a configuration, the default configuration will be used.
+--
+-- ObjC selector: @- defaultConfiguration@
+defaultConfiguration :: IsSCContentSharingPicker scContentSharingPicker => scContentSharingPicker -> IO (Id SCContentSharingPickerConfiguration)
+defaultConfiguration scContentSharingPicker  =
+    sendMsg scContentSharingPicker (mkSelector "defaultConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | defaultConfiguration for the content sharing picker. If a stream does not have a configuration, the default configuration will be used.
+--
+-- ObjC selector: @- setDefaultConfiguration:@
+setDefaultConfiguration :: (IsSCContentSharingPicker scContentSharingPicker, IsSCContentSharingPickerConfiguration value) => scContentSharingPicker -> value -> IO ()
+setDefaultConfiguration scContentSharingPicker  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg scContentSharingPicker (mkSelector "setDefaultConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | maximumStreamCount An integer value that, if set, limits when Control Center will show the UI to present a picker with no associated stream. If set to 0, Control Center will never ever show UI to present a picker without an associated stream.
+--
+-- ObjC selector: @- maximumStreamCount@
+maximumStreamCount :: IsSCContentSharingPicker scContentSharingPicker => scContentSharingPicker -> IO (Id NSNumber)
+maximumStreamCount scContentSharingPicker  =
+    sendMsg scContentSharingPicker (mkSelector "maximumStreamCount") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | maximumStreamCount An integer value that, if set, limits when Control Center will show the UI to present a picker with no associated stream. If set to 0, Control Center will never ever show UI to present a picker without an associated stream.
+--
+-- ObjC selector: @- setMaximumStreamCount:@
+setMaximumStreamCount :: (IsSCContentSharingPicker scContentSharingPicker, IsNSNumber value) => scContentSharingPicker -> value -> IO ()
+setMaximumStreamCount scContentSharingPicker  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg scContentSharingPicker (mkSelector "setMaximumStreamCount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | active A picker needs to be marked as active for its UI to appear. If @startPickingContent@ is called and the picker is not marked as active, the picker will not appear.
 --
 -- ObjC selector: @- active@
@@ -222,6 +260,22 @@ presentPickerForStream_usingContentStyleSelector = mkSelector "presentPickerForS
 -- | @Selector@ for @sharedPicker@
 sharedPickerSelector :: Selector
 sharedPickerSelector = mkSelector "sharedPicker"
+
+-- | @Selector@ for @defaultConfiguration@
+defaultConfigurationSelector :: Selector
+defaultConfigurationSelector = mkSelector "defaultConfiguration"
+
+-- | @Selector@ for @setDefaultConfiguration:@
+setDefaultConfigurationSelector :: Selector
+setDefaultConfigurationSelector = mkSelector "setDefaultConfiguration:"
+
+-- | @Selector@ for @maximumStreamCount@
+maximumStreamCountSelector :: Selector
+maximumStreamCountSelector = mkSelector "maximumStreamCount"
+
+-- | @Selector@ for @setMaximumStreamCount:@
+setMaximumStreamCountSelector :: Selector
+setMaximumStreamCountSelector = mkSelector "setMaximumStreamCount:"
 
 -- | @Selector@ for @active@
 activeSelector :: Selector

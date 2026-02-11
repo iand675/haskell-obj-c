@@ -17,6 +17,10 @@ module ObjC.CoreMediaIO.CMIOExtensionDeviceProperties
   , setPropertyState_forProperty
   , model
   , setModel
+  , suspended
+  , setSuspended
+  , transportType
+  , setTransportType
   , linkedCoreAudioDeviceUID
   , setLinkedCoreAudioDeviceUID
   , propertiesDictionary
@@ -28,6 +32,10 @@ module ObjC.CoreMediaIO.CMIOExtensionDeviceProperties
   , setPropertyState_forPropertySelector
   , modelSelector
   , setModelSelector
+  , suspendedSelector
+  , setSuspendedSelector
+  , transportTypeSelector
+  , setTransportTypeSelector
   , linkedCoreAudioDeviceUIDSelector
   , setLinkedCoreAudioDeviceUIDSelector
   , propertiesDictionarySelector
@@ -133,6 +141,52 @@ setModel cmioExtensionDeviceProperties  value =
   withObjCPtr value $ \raw_value ->
       sendMsg cmioExtensionDeviceProperties (mkSelector "setModel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | suspended
+--
+-- Indicates whether the device is suspended.
+--
+-- The property key is CMIOExtensionPropertyDeviceIsSuspended.
+--
+-- ObjC selector: @- suspended@
+suspended :: IsCMIOExtensionDeviceProperties cmioExtensionDeviceProperties => cmioExtensionDeviceProperties -> IO (Id NSNumber)
+suspended cmioExtensionDeviceProperties  =
+    sendMsg cmioExtensionDeviceProperties (mkSelector "suspended") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | suspended
+--
+-- Indicates whether the device is suspended.
+--
+-- The property key is CMIOExtensionPropertyDeviceIsSuspended.
+--
+-- ObjC selector: @- setSuspended:@
+setSuspended :: (IsCMIOExtensionDeviceProperties cmioExtensionDeviceProperties, IsNSNumber value) => cmioExtensionDeviceProperties -> value -> IO ()
+setSuspended cmioExtensionDeviceProperties  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg cmioExtensionDeviceProperties (mkSelector "setSuspended:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | transportType
+--
+-- The transport type of the receiver (e.g. USB, PCI, etc) whose value correspond to the audio transport type ( kIOAudioDeviceTransportType... ) defined in <IOKit/audio/IOAudioTypes.h>.
+--
+-- The property key is CMIOExtensionPropertyDeviceTransportType.
+--
+-- ObjC selector: @- transportType@
+transportType :: IsCMIOExtensionDeviceProperties cmioExtensionDeviceProperties => cmioExtensionDeviceProperties -> IO (Id NSNumber)
+transportType cmioExtensionDeviceProperties  =
+    sendMsg cmioExtensionDeviceProperties (mkSelector "transportType") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | transportType
+--
+-- The transport type of the receiver (e.g. USB, PCI, etc) whose value correspond to the audio transport type ( kIOAudioDeviceTransportType... ) defined in <IOKit/audio/IOAudioTypes.h>.
+--
+-- The property key is CMIOExtensionPropertyDeviceTransportType.
+--
+-- ObjC selector: @- setTransportType:@
+setTransportType :: (IsCMIOExtensionDeviceProperties cmioExtensionDeviceProperties, IsNSNumber value) => cmioExtensionDeviceProperties -> value -> IO ()
+setTransportType cmioExtensionDeviceProperties  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg cmioExtensionDeviceProperties (mkSelector "setTransportType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | linkedCoreAudioDeviceUID
 --
 -- The device linked CoreAudio device UID.
@@ -210,6 +264,22 @@ modelSelector = mkSelector "model"
 -- | @Selector@ for @setModel:@
 setModelSelector :: Selector
 setModelSelector = mkSelector "setModel:"
+
+-- | @Selector@ for @suspended@
+suspendedSelector :: Selector
+suspendedSelector = mkSelector "suspended"
+
+-- | @Selector@ for @setSuspended:@
+setSuspendedSelector :: Selector
+setSuspendedSelector = mkSelector "setSuspended:"
+
+-- | @Selector@ for @transportType@
+transportTypeSelector :: Selector
+transportTypeSelector = mkSelector "transportType"
+
+-- | @Selector@ for @setTransportType:@
+setTransportTypeSelector :: Selector
+setTransportTypeSelector = mkSelector "setTransportType:"
 
 -- | @Selector@ for @linkedCoreAudioDeviceUID@
 linkedCoreAudioDeviceUIDSelector :: Selector

@@ -27,6 +27,7 @@ module ObjC.AuthenticationServices.ASAuthorizationProviderExtensionAuthorization
   , localizedCallerDisplayName
   , callerAuditToken
   , userInterfaceEnabled
+  , loginManager
   , doNotHandleSelector
   , cancelSelector
   , completeSelector
@@ -48,6 +49,7 @@ module ObjC.AuthenticationServices.ASAuthorizationProviderExtensionAuthorization
   , localizedCallerDisplayNameSelector
   , callerAuditTokenSelector
   , userInterfaceEnabledSelector
+  , loginManagerSelector
 
 
   ) where
@@ -227,6 +229,13 @@ userInterfaceEnabled :: IsASAuthorizationProviderExtensionAuthorizationRequest a
 userInterfaceEnabled asAuthorizationProviderExtensionAuthorizationRequest  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "userInterfaceEnabled") retCULong []
 
+-- | The login manager to interface with the Platform SSO configuration.
+--
+-- ObjC selector: @- loginManager@
+loginManager :: IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest => asAuthorizationProviderExtensionAuthorizationRequest -> IO (Id ASAuthorizationProviderExtensionLoginManager)
+loginManager asAuthorizationProviderExtensionAuthorizationRequest  =
+    sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "loginManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -314,4 +323,8 @@ callerAuditTokenSelector = mkSelector "callerAuditToken"
 -- | @Selector@ for @userInterfaceEnabled@
 userInterfaceEnabledSelector :: Selector
 userInterfaceEnabledSelector = mkSelector "userInterfaceEnabled"
+
+-- | @Selector@ for @loginManager@
+loginManagerSelector :: Selector
+loginManagerSelector = mkSelector "loginManager"
 

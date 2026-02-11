@@ -15,6 +15,11 @@ module ObjC.SensorKit.SRPhotoplethysmogramOpticalSample
   , effectiveWavelength
   , samplingFrequency
   , nanosecondsSinceStart
+  , normalizedReflectance
+  , whiteNoise
+  , pinkNoise
+  , backgroundNoise
+  , backgroundNoiseOffset
   , conditions
   , initSelector
   , newSelector
@@ -25,6 +30,11 @@ module ObjC.SensorKit.SRPhotoplethysmogramOpticalSample
   , effectiveWavelengthSelector
   , samplingFrequencySelector
   , nanosecondsSinceStartSelector
+  , normalizedReflectanceSelector
+  , whiteNoiseSelector
+  , pinkNoiseSelector
+  , backgroundNoiseSelector
+  , backgroundNoiseOffsetSelector
   , conditionsSelector
 
 
@@ -122,6 +132,61 @@ nanosecondsSinceStart :: IsSRPhotoplethysmogramOpticalSample srPhotoplethysmogra
 nanosecondsSinceStart srPhotoplethysmogramOpticalSample  =
     sendMsg srPhotoplethysmogramOpticalSample (mkSelector "nanosecondsSinceStart") retCLong []
 
+-- | normalizedReflectance
+--
+-- The PPG waveform
+--
+-- This may be @nil@ when the sensor data reading is invalid
+--
+-- ObjC selector: @- normalizedReflectance@
+normalizedReflectance :: IsSRPhotoplethysmogramOpticalSample srPhotoplethysmogramOpticalSample => srPhotoplethysmogramOpticalSample -> IO (Id NSNumber)
+normalizedReflectance srPhotoplethysmogramOpticalSample  =
+    sendMsg srPhotoplethysmogramOpticalSample (mkSelector "normalizedReflectance") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | whiteNoise
+--
+-- White noise estimation
+--
+-- This may be @nil@ when the sensor data reading is invalid
+--
+-- ObjC selector: @- whiteNoise@
+whiteNoise :: IsSRPhotoplethysmogramOpticalSample srPhotoplethysmogramOpticalSample => srPhotoplethysmogramOpticalSample -> IO (Id NSNumber)
+whiteNoise srPhotoplethysmogramOpticalSample  =
+    sendMsg srPhotoplethysmogramOpticalSample (mkSelector "whiteNoise") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | pinkNoise
+--
+-- Pink noise estimation
+--
+-- This may be @nil@ when the sensor data reading is invalid
+--
+-- ObjC selector: @- pinkNoise@
+pinkNoise :: IsSRPhotoplethysmogramOpticalSample srPhotoplethysmogramOpticalSample => srPhotoplethysmogramOpticalSample -> IO (Id NSNumber)
+pinkNoise srPhotoplethysmogramOpticalSample  =
+    sendMsg srPhotoplethysmogramOpticalSample (mkSelector "pinkNoise") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | backgroundNoise
+--
+-- Estimated ambient noise intrusion
+--
+-- This may be @nil@ when the sensor data reading is invalid
+--
+-- ObjC selector: @- backgroundNoise@
+backgroundNoise :: IsSRPhotoplethysmogramOpticalSample srPhotoplethysmogramOpticalSample => srPhotoplethysmogramOpticalSample -> IO (Id NSNumber)
+backgroundNoise srPhotoplethysmogramOpticalSample  =
+    sendMsg srPhotoplethysmogramOpticalSample (mkSelector "backgroundNoise") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | backgroundNoiseOffset
+--
+-- Estimated electronics noise floor level of the sensor
+--
+-- To estimate the total ambient noise, subtract scaled background noise offset  from the background noise. The scaling factor can be computed based on the researcher's digital filter setup. This may be @nil@ when the sensor data reading is invalid
+--
+-- ObjC selector: @- backgroundNoiseOffset@
+backgroundNoiseOffset :: IsSRPhotoplethysmogramOpticalSample srPhotoplethysmogramOpticalSample => srPhotoplethysmogramOpticalSample -> IO (Id NSNumber)
+backgroundNoiseOffset srPhotoplethysmogramOpticalSample  =
+    sendMsg srPhotoplethysmogramOpticalSample (mkSelector "backgroundNoiseOffset") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | conditions
 --
 -- Flags indicating sensor context or conditions that may effect the sample reading
@@ -172,6 +237,26 @@ samplingFrequencySelector = mkSelector "samplingFrequency"
 -- | @Selector@ for @nanosecondsSinceStart@
 nanosecondsSinceStartSelector :: Selector
 nanosecondsSinceStartSelector = mkSelector "nanosecondsSinceStart"
+
+-- | @Selector@ for @normalizedReflectance@
+normalizedReflectanceSelector :: Selector
+normalizedReflectanceSelector = mkSelector "normalizedReflectance"
+
+-- | @Selector@ for @whiteNoise@
+whiteNoiseSelector :: Selector
+whiteNoiseSelector = mkSelector "whiteNoise"
+
+-- | @Selector@ for @pinkNoise@
+pinkNoiseSelector :: Selector
+pinkNoiseSelector = mkSelector "pinkNoise"
+
+-- | @Selector@ for @backgroundNoise@
+backgroundNoiseSelector :: Selector
+backgroundNoiseSelector = mkSelector "backgroundNoise"
+
+-- | @Selector@ for @backgroundNoiseOffset@
+backgroundNoiseOffsetSelector :: Selector
+backgroundNoiseOffsetSelector = mkSelector "backgroundNoiseOffset"
 
 -- | @Selector@ for @conditions@
 conditionsSelector :: Selector

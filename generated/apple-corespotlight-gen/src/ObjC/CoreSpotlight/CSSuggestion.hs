@@ -9,9 +9,11 @@ module ObjC.CoreSpotlight.CSSuggestion
   , IsCSSuggestion(..)
   , compareByRank
   , compare_
+  , localizedAttributedSuggestion
   , suggestionKind
   , compareByRankSelector
   , compareSelector
+  , localizedAttributedSuggestionSelector
   , suggestionKindSelector
 
   -- * Enum types
@@ -55,6 +57,11 @@ compare_ csSuggestion  other =
   withObjCPtr other $ \raw_other ->
       fmap (coerce :: CLong -> NSComparisonResult) $ sendMsg csSuggestion (mkSelector "compare:") retCLong [argPtr (castPtr raw_other :: Ptr ())]
 
+-- | @- localizedAttributedSuggestion@
+localizedAttributedSuggestion :: IsCSSuggestion csSuggestion => csSuggestion -> IO (Id NSAttributedString)
+localizedAttributedSuggestion csSuggestion  =
+    sendMsg csSuggestion (mkSelector "localizedAttributedSuggestion") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- suggestionKind@
 suggestionKind :: IsCSSuggestion csSuggestion => csSuggestion -> IO CSSuggestionKind
 suggestionKind csSuggestion  =
@@ -71,6 +78,10 @@ compareByRankSelector = mkSelector "compareByRank:"
 -- | @Selector@ for @compare:@
 compareSelector :: Selector
 compareSelector = mkSelector "compare:"
+
+-- | @Selector@ for @localizedAttributedSuggestion@
+localizedAttributedSuggestionSelector :: Selector
+localizedAttributedSuggestionSelector = mkSelector "localizedAttributedSuggestion"
 
 -- | @Selector@ for @suggestionKind@
 suggestionKindSelector :: Selector

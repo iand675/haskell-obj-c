@@ -10,10 +10,14 @@ module ObjC.SyncServices.ISyncRecordSnapshot
   , targetIdentifiersForRelationshipName_withSourceIdentifier
   , sourceIdentifiersForRelationshipName_withTargetIdentifier
   , recordsWithMatchingAttributes
+  , recordReferenceForRecordWithIdentifier
+  , recordIdentifierForReference_isModified
   , recordsWithIdentifiersSelector
   , targetIdentifiersForRelationshipName_withSourceIdentifierSelector
   , sourceIdentifiersForRelationshipName_withTargetIdentifierSelector
   , recordsWithMatchingAttributesSelector
+  , recordReferenceForRecordWithIdentifierSelector
+  , recordIdentifierForReference_isModifiedSelector
 
 
   ) where
@@ -59,6 +63,17 @@ recordsWithMatchingAttributes iSyncRecordSnapshot  attributes =
   withObjCPtr attributes $ \raw_attributes ->
       sendMsg iSyncRecordSnapshot (mkSelector "recordsWithMatchingAttributes:") (retPtr retVoid) [argPtr (castPtr raw_attributes :: Ptr ())] >>= retainedObject . castPtr
 
+-- | @- recordReferenceForRecordWithIdentifier:@
+recordReferenceForRecordWithIdentifier :: (IsISyncRecordSnapshot iSyncRecordSnapshot, IsNSString identifier) => iSyncRecordSnapshot -> identifier -> IO RawId
+recordReferenceForRecordWithIdentifier iSyncRecordSnapshot  identifier =
+  withObjCPtr identifier $ \raw_identifier ->
+      fmap (RawId . castPtr) $ sendMsg iSyncRecordSnapshot (mkSelector "recordReferenceForRecordWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())]
+
+-- | @- recordIdentifierForReference:isModified:@
+recordIdentifierForReference_isModified :: IsISyncRecordSnapshot iSyncRecordSnapshot => iSyncRecordSnapshot -> RawId -> Ptr Bool -> IO (Id NSString)
+recordIdentifierForReference_isModified iSyncRecordSnapshot  reference pModified =
+    sendMsg iSyncRecordSnapshot (mkSelector "recordIdentifierForReference:isModified:") (retPtr retVoid) [argPtr (castPtr (unRawId reference) :: Ptr ()), argPtr pModified] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -78,4 +93,12 @@ sourceIdentifiersForRelationshipName_withTargetIdentifierSelector = mkSelector "
 -- | @Selector@ for @recordsWithMatchingAttributes:@
 recordsWithMatchingAttributesSelector :: Selector
 recordsWithMatchingAttributesSelector = mkSelector "recordsWithMatchingAttributes:"
+
+-- | @Selector@ for @recordReferenceForRecordWithIdentifier:@
+recordReferenceForRecordWithIdentifierSelector :: Selector
+recordReferenceForRecordWithIdentifierSelector = mkSelector "recordReferenceForRecordWithIdentifier:"
+
+-- | @Selector@ for @recordIdentifierForReference:isModified:@
+recordIdentifierForReference_isModifiedSelector :: Selector
+recordIdentifierForReference_isModifiedSelector = mkSelector "recordIdentifierForReference:isModified:"
 

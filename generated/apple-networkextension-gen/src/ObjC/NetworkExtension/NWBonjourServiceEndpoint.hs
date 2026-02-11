@@ -11,7 +11,13 @@ module ObjC.NetworkExtension.NWBonjourServiceEndpoint
   ( NWBonjourServiceEndpoint
   , IsNWBonjourServiceEndpoint(..)
   , endpointWithName_type_domain
+  , name
+  , type_
+  , domain
   , endpointWithName_type_domainSelector
+  , nameSelector
+  , typeSelector
+  , domainSelector
 
 
   ) where
@@ -51,6 +57,33 @@ endpointWithName_type_domain name type_ domain =
         withObjCPtr domain $ \raw_domain ->
           sendClassMsg cls' (mkSelector "endpointWithName:type:domain:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_type_ :: Ptr ()), argPtr (castPtr raw_domain :: Ptr ())] >>= retainedObject . castPtr
 
+-- | name
+--
+-- The endpoint's Bonjour service name.
+--
+-- ObjC selector: @- name@
+name :: IsNWBonjourServiceEndpoint nwBonjourServiceEndpoint => nwBonjourServiceEndpoint -> IO (Id NSString)
+name nwBonjourServiceEndpoint  =
+    sendMsg nwBonjourServiceEndpoint (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | type
+--
+-- The endpoint's Bonjour service type.
+--
+-- ObjC selector: @- type@
+type_ :: IsNWBonjourServiceEndpoint nwBonjourServiceEndpoint => nwBonjourServiceEndpoint -> IO (Id NSString)
+type_ nwBonjourServiceEndpoint  =
+    sendMsg nwBonjourServiceEndpoint (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | domain
+--
+-- The endpoint's Bonjour service domain.
+--
+-- ObjC selector: @- domain@
+domain :: IsNWBonjourServiceEndpoint nwBonjourServiceEndpoint => nwBonjourServiceEndpoint -> IO (Id NSString)
+domain nwBonjourServiceEndpoint  =
+    sendMsg nwBonjourServiceEndpoint (mkSelector "domain") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -58,4 +91,16 @@ endpointWithName_type_domain name type_ domain =
 -- | @Selector@ for @endpointWithName:type:domain:@
 endpointWithName_type_domainSelector :: Selector
 endpointWithName_type_domainSelector = mkSelector "endpointWithName:type:domain:"
+
+-- | @Selector@ for @name@
+nameSelector :: Selector
+nameSelector = mkSelector "name"
+
+-- | @Selector@ for @type@
+typeSelector :: Selector
+typeSelector = mkSelector "type"
+
+-- | @Selector@ for @domain@
+domainSelector :: Selector
+domainSelector = mkSelector "domain"
 

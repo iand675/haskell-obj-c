@@ -10,6 +10,8 @@ module ObjC.Metal.MTLTileRenderPipelineDescriptor
   , reset
   , label
   , setLabel
+  , tileFunction
+  , setTileFunction
   , rasterSampleCount
   , setRasterSampleCount
   , colorAttachments
@@ -18,6 +20,10 @@ module ObjC.Metal.MTLTileRenderPipelineDescriptor
   , tileBuffers
   , maxTotalThreadsPerThreadgroup
   , setMaxTotalThreadsPerThreadgroup
+  , binaryArchives
+  , setBinaryArchives
+  , preloadedLibraries
+  , setPreloadedLibraries
   , linkedFunctions
   , setLinkedFunctions
   , supportAddingBinaryFunctions
@@ -29,6 +35,8 @@ module ObjC.Metal.MTLTileRenderPipelineDescriptor
   , resetSelector
   , labelSelector
   , setLabelSelector
+  , tileFunctionSelector
+  , setTileFunctionSelector
   , rasterSampleCountSelector
   , setRasterSampleCountSelector
   , colorAttachmentsSelector
@@ -37,6 +45,10 @@ module ObjC.Metal.MTLTileRenderPipelineDescriptor
   , tileBuffersSelector
   , maxTotalThreadsPerThreadgroupSelector
   , setMaxTotalThreadsPerThreadgroupSelector
+  , binaryArchivesSelector
+  , setBinaryArchivesSelector
+  , preloadedLibrariesSelector
+  , setPreloadedLibrariesSelector
   , linkedFunctionsSelector
   , setLinkedFunctionsSelector
   , supportAddingBinaryFunctionsSelector
@@ -93,6 +105,28 @@ setLabel :: (IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor, 
 setLabel mtlTileRenderPipelineDescriptor  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mtlTileRenderPipelineDescriptor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | tileFunction:
+--
+-- The kernel or fragment function that serves as the tile shader for this pipeline.
+--
+-- Both kernel-based and fragment-based tile pipelines dispatches will barrier against previous draws and other dispatches. Kernel-based pipelines will wait until all prior access to the tile completes. Fragment-based pipelines will only wait until all prior access to the fragment's location completes.
+--
+-- ObjC selector: @- tileFunction@
+tileFunction :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> IO RawId
+tileFunction mtlTileRenderPipelineDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlTileRenderPipelineDescriptor (mkSelector "tileFunction") (retPtr retVoid) []
+
+-- | tileFunction:
+--
+-- The kernel or fragment function that serves as the tile shader for this pipeline.
+--
+-- Both kernel-based and fragment-based tile pipelines dispatches will barrier against previous draws and other dispatches. Kernel-based pipelines will wait until all prior access to the tile completes. Fragment-based pipelines will only wait until all prior access to the fragment's location completes.
+--
+-- ObjC selector: @- setTileFunction:@
+setTileFunction :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> RawId -> IO ()
+setTileFunction mtlTileRenderPipelineDescriptor  value =
+    sendMsg mtlTileRenderPipelineDescriptor (mkSelector "setTileFunction:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- rasterSampleCount@
 rasterSampleCount :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> IO CULong
@@ -153,6 +187,60 @@ maxTotalThreadsPerThreadgroup mtlTileRenderPipelineDescriptor  =
 setMaxTotalThreadsPerThreadgroup :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> CULong -> IO ()
 setMaxTotalThreadsPerThreadgroup mtlTileRenderPipelineDescriptor  value =
     sendMsg mtlTileRenderPipelineDescriptor (mkSelector "setMaxTotalThreadsPerThreadgroup:") retVoid [argCULong value]
+
+-- | binaryArchives
+--
+-- The set of MTLBinaryArchive to search for compiled code when creating the pipeline state.
+--
+-- Accelerate pipeline state creation by providing archives of compiled code such that no compilation needs to happen on the fast path.
+--
+-- See: MTLBinaryArchive
+--
+-- ObjC selector: @- binaryArchives@
+binaryArchives :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> IO (Id NSArray)
+binaryArchives mtlTileRenderPipelineDescriptor  =
+    sendMsg mtlTileRenderPipelineDescriptor (mkSelector "binaryArchives") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | binaryArchives
+--
+-- The set of MTLBinaryArchive to search for compiled code when creating the pipeline state.
+--
+-- Accelerate pipeline state creation by providing archives of compiled code such that no compilation needs to happen on the fast path.
+--
+-- See: MTLBinaryArchive
+--
+-- ObjC selector: @- setBinaryArchives:@
+setBinaryArchives :: (IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor, IsNSArray value) => mtlTileRenderPipelineDescriptor -> value -> IO ()
+setBinaryArchives mtlTileRenderPipelineDescriptor  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mtlTileRenderPipelineDescriptor (mkSelector "setBinaryArchives:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | preloadedLibraries
+--
+-- The set of MTLDynamicLibrary to use to resolve external symbols before considering symbols from dependent MTLDynamicLibrary.
+--
+-- Typical workflows use the libraries property of MTLCompileOptions to record dependent libraries at compile time without having to use preloadedLibraries. This property can be used to override symbols from dependent libraries for experimentation or evaluating alternative implementations. It can also be used to provide dynamic libraries that are dynamically created (for example, from source) that have no stable installName that can be used to automatically load from the file system.
+--
+-- See: MTLDynamicLibrary
+--
+-- ObjC selector: @- preloadedLibraries@
+preloadedLibraries :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> IO (Id NSArray)
+preloadedLibraries mtlTileRenderPipelineDescriptor  =
+    sendMsg mtlTileRenderPipelineDescriptor (mkSelector "preloadedLibraries") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | preloadedLibraries
+--
+-- The set of MTLDynamicLibrary to use to resolve external symbols before considering symbols from dependent MTLDynamicLibrary.
+--
+-- Typical workflows use the libraries property of MTLCompileOptions to record dependent libraries at compile time without having to use preloadedLibraries. This property can be used to override symbols from dependent libraries for experimentation or evaluating alternative implementations. It can also be used to provide dynamic libraries that are dynamically created (for example, from source) that have no stable installName that can be used to automatically load from the file system.
+--
+-- See: MTLDynamicLibrary
+--
+-- ObjC selector: @- setPreloadedLibraries:@
+setPreloadedLibraries :: (IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor, IsNSArray value) => mtlTileRenderPipelineDescriptor -> value -> IO ()
+setPreloadedLibraries mtlTileRenderPipelineDescriptor  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mtlTileRenderPipelineDescriptor (mkSelector "setPreloadedLibraries:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | linkedFunctions
 --
@@ -251,6 +339,14 @@ labelSelector = mkSelector "label"
 setLabelSelector :: Selector
 setLabelSelector = mkSelector "setLabel:"
 
+-- | @Selector@ for @tileFunction@
+tileFunctionSelector :: Selector
+tileFunctionSelector = mkSelector "tileFunction"
+
+-- | @Selector@ for @setTileFunction:@
+setTileFunctionSelector :: Selector
+setTileFunctionSelector = mkSelector "setTileFunction:"
+
 -- | @Selector@ for @rasterSampleCount@
 rasterSampleCountSelector :: Selector
 rasterSampleCountSelector = mkSelector "rasterSampleCount"
@@ -282,6 +378,22 @@ maxTotalThreadsPerThreadgroupSelector = mkSelector "maxTotalThreadsPerThreadgrou
 -- | @Selector@ for @setMaxTotalThreadsPerThreadgroup:@
 setMaxTotalThreadsPerThreadgroupSelector :: Selector
 setMaxTotalThreadsPerThreadgroupSelector = mkSelector "setMaxTotalThreadsPerThreadgroup:"
+
+-- | @Selector@ for @binaryArchives@
+binaryArchivesSelector :: Selector
+binaryArchivesSelector = mkSelector "binaryArchives"
+
+-- | @Selector@ for @setBinaryArchives:@
+setBinaryArchivesSelector :: Selector
+setBinaryArchivesSelector = mkSelector "setBinaryArchives:"
+
+-- | @Selector@ for @preloadedLibraries@
+preloadedLibrariesSelector :: Selector
+preloadedLibrariesSelector = mkSelector "preloadedLibraries"
+
+-- | @Selector@ for @setPreloadedLibraries:@
+setPreloadedLibrariesSelector :: Selector
+setPreloadedLibrariesSelector = mkSelector "setPreloadedLibraries:"
 
 -- | @Selector@ for @linkedFunctions@
 linkedFunctionsSelector :: Selector

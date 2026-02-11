@@ -17,6 +17,8 @@ module ObjC.Accessibility.AXDataPoint
   , setXValue
   , yValue
   , setYValue
+  , additionalValues
+  , setAdditionalValues
   , label
   , setLabel
   , attributedLabel
@@ -30,6 +32,8 @@ module ObjC.Accessibility.AXDataPoint
   , setXValueSelector
   , yValueSelector
   , setYValueSelector
+  , additionalValuesSelector
+  , setAdditionalValuesSelector
   , labelSelector
   , setLabelSelector
   , attributedLabelSelector
@@ -119,6 +123,21 @@ setYValue axDataPoint  value =
   withObjCPtr value $ \raw_value ->
       sendMsg axDataPoint (mkSelector "setYValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | Any additional values for additional axes for this data point. These should be provided in the same order as their corresponding @AXDataAxisDescriptor@ objects in @AXChartDescriptor.additionalAxes@.
+--
+-- ObjC selector: @- additionalValues@
+additionalValues :: IsAXDataPoint axDataPoint => axDataPoint -> IO (Id NSArray)
+additionalValues axDataPoint  =
+    sendMsg axDataPoint (mkSelector "additionalValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Any additional values for additional axes for this data point. These should be provided in the same order as their corresponding @AXDataAxisDescriptor@ objects in @AXChartDescriptor.additionalAxes@.
+--
+-- ObjC selector: @- setAdditionalValues:@
+setAdditionalValues :: (IsAXDataPoint axDataPoint, IsNSArray value) => axDataPoint -> value -> IO ()
+setAdditionalValues axDataPoint  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg axDataPoint (mkSelector "setAdditionalValues:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | A name or label for this data point.
 --
 -- ObjC selector: @- label@
@@ -188,6 +207,14 @@ yValueSelector = mkSelector "yValue"
 -- | @Selector@ for @setYValue:@
 setYValueSelector :: Selector
 setYValueSelector = mkSelector "setYValue:"
+
+-- | @Selector@ for @additionalValues@
+additionalValuesSelector :: Selector
+additionalValuesSelector = mkSelector "additionalValues"
+
+-- | @Selector@ for @setAdditionalValues:@
+setAdditionalValuesSelector :: Selector
+setAdditionalValuesSelector = mkSelector "setAdditionalValues:"
 
 -- | @Selector@ for @label@
 labelSelector :: Selector

@@ -11,8 +11,10 @@ module ObjC.PencilKit.PKToolPickerEraserItem
   , IsPKToolPickerEraserItem(..)
   , initWithEraserType
   , initWithEraserType_width
+  , eraserTool
   , initWithEraserTypeSelector
   , initWithEraserType_widthSelector
+  , eraserToolSelector
 
   -- * Enum types
   , PKEraserType(PKEraserType)
@@ -56,6 +58,13 @@ initWithEraserType_width :: IsPKToolPickerEraserItem pkToolPickerEraserItem => p
 initWithEraserType_width pkToolPickerEraserItem  eraserType width =
     sendMsg pkToolPickerEraserItem (mkSelector "initWithEraserType:width:") (retPtr retVoid) [argCLong (coerce eraserType), argCDouble width] >>= ownedObject . castPtr
 
+-- | An eraser tool for erasing parts of a drawing.
+--
+-- ObjC selector: @- eraserTool@
+eraserTool :: IsPKToolPickerEraserItem pkToolPickerEraserItem => pkToolPickerEraserItem -> IO (Id PKEraserTool)
+eraserTool pkToolPickerEraserItem  =
+    sendMsg pkToolPickerEraserItem (mkSelector "eraserTool") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -67,4 +76,8 @@ initWithEraserTypeSelector = mkSelector "initWithEraserType:"
 -- | @Selector@ for @initWithEraserType:width:@
 initWithEraserType_widthSelector :: Selector
 initWithEraserType_widthSelector = mkSelector "initWithEraserType:width:"
+
+-- | @Selector@ for @eraserTool@
+eraserToolSelector :: Selector
+eraserToolSelector = mkSelector "eraserTool"
 

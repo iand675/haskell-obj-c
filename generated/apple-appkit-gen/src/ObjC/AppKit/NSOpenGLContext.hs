@@ -18,12 +18,16 @@ module ObjC.AppKit.NSOpenGLContext
   , makeCurrentContext
   , clearCurrentContext
   , copyAttributesFromContext_withMask
+  , setValues_forParameter
+  , getValues_forParameter
   , createTexture_fromView_internalFormat
   , setPixelBuffer_cubeMapFace_mipMapLevel_currentVirtualScreen
   , pixelBuffer
   , pixelBufferCubeMapFace
   , pixelBufferMipMapLevel
   , setTextureImageToPixelBuffer_colorBuffer
+  , pixelFormat
+  , view
   , currentContext
   , currentVirtualScreen
   , setCurrentVirtualScreen
@@ -39,12 +43,16 @@ module ObjC.AppKit.NSOpenGLContext
   , makeCurrentContextSelector
   , clearCurrentContextSelector
   , copyAttributesFromContext_withMaskSelector
+  , setValues_forParameterSelector
+  , getValues_forParameterSelector
   , createTexture_fromView_internalFormatSelector
   , setPixelBuffer_cubeMapFace_mipMapLevel_currentVirtualScreenSelector
   , pixelBufferSelector
   , pixelBufferCubeMapFaceSelector
   , pixelBufferMipMapLevelSelector
   , setTextureImageToPixelBuffer_colorBufferSelector
+  , pixelFormatSelector
+  , viewSelector
   , currentContextSelector
   , currentVirtualScreenSelector
   , setCurrentVirtualScreenSelector
@@ -147,6 +155,16 @@ copyAttributesFromContext_withMask nsOpenGLContext  context mask =
   withObjCPtr context $ \raw_context ->
       sendMsg nsOpenGLContext (mkSelector "copyAttributesFromContext:withMask:") retVoid [argPtr (castPtr raw_context :: Ptr ()), argCUInt mask]
 
+-- | @- setValues:forParameter:@
+setValues_forParameter :: IsNSOpenGLContext nsOpenGLContext => nsOpenGLContext -> Const RawId -> NSOpenGLContextParameter -> IO ()
+setValues_forParameter nsOpenGLContext  vals param =
+    sendMsg nsOpenGLContext (mkSelector "setValues:forParameter:") retVoid [argPtr (castPtr (unRawId (unConst vals)) :: Ptr ()), argCLong (coerce param)]
+
+-- | @- getValues:forParameter:@
+getValues_forParameter :: IsNSOpenGLContext nsOpenGLContext => nsOpenGLContext -> RawId -> NSOpenGLContextParameter -> IO ()
+getValues_forParameter nsOpenGLContext  vals param =
+    sendMsg nsOpenGLContext (mkSelector "getValues:forParameter:") retVoid [argPtr (castPtr (unRawId vals) :: Ptr ()), argCLong (coerce param)]
+
 -- | @- createTexture:fromView:internalFormat:@
 createTexture_fromView_internalFormat :: (IsNSOpenGLContext nsOpenGLContext, IsNSView view) => nsOpenGLContext -> CUInt -> view -> CUInt -> IO ()
 createTexture_fromView_internalFormat nsOpenGLContext  target view format =
@@ -179,6 +197,16 @@ setTextureImageToPixelBuffer_colorBuffer :: (IsNSOpenGLContext nsOpenGLContext, 
 setTextureImageToPixelBuffer_colorBuffer nsOpenGLContext  pixelBuffer source =
   withObjCPtr pixelBuffer $ \raw_pixelBuffer ->
       sendMsg nsOpenGLContext (mkSelector "setTextureImageToPixelBuffer:colorBuffer:") retVoid [argPtr (castPtr raw_pixelBuffer :: Ptr ()), argCUInt source]
+
+-- | @- pixelFormat@
+pixelFormat :: IsNSOpenGLContext nsOpenGLContext => nsOpenGLContext -> IO (Id NSOpenGLPixelFormat)
+pixelFormat nsOpenGLContext  =
+    sendMsg nsOpenGLContext (mkSelector "pixelFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- view@
+view :: IsNSOpenGLContext nsOpenGLContext => nsOpenGLContext -> IO RawId
+view nsOpenGLContext  =
+    fmap (RawId . castPtr) $ sendMsg nsOpenGLContext (mkSelector "view") (retPtr retVoid) []
 
 -- | @+ currentContext@
 currentContext :: IO (Id NSOpenGLContext)
@@ -250,6 +278,14 @@ clearCurrentContextSelector = mkSelector "clearCurrentContext"
 copyAttributesFromContext_withMaskSelector :: Selector
 copyAttributesFromContext_withMaskSelector = mkSelector "copyAttributesFromContext:withMask:"
 
+-- | @Selector@ for @setValues:forParameter:@
+setValues_forParameterSelector :: Selector
+setValues_forParameterSelector = mkSelector "setValues:forParameter:"
+
+-- | @Selector@ for @getValues:forParameter:@
+getValues_forParameterSelector :: Selector
+getValues_forParameterSelector = mkSelector "getValues:forParameter:"
+
 -- | @Selector@ for @createTexture:fromView:internalFormat:@
 createTexture_fromView_internalFormatSelector :: Selector
 createTexture_fromView_internalFormatSelector = mkSelector "createTexture:fromView:internalFormat:"
@@ -273,6 +309,14 @@ pixelBufferMipMapLevelSelector = mkSelector "pixelBufferMipMapLevel"
 -- | @Selector@ for @setTextureImageToPixelBuffer:colorBuffer:@
 setTextureImageToPixelBuffer_colorBufferSelector :: Selector
 setTextureImageToPixelBuffer_colorBufferSelector = mkSelector "setTextureImageToPixelBuffer:colorBuffer:"
+
+-- | @Selector@ for @pixelFormat@
+pixelFormatSelector :: Selector
+pixelFormatSelector = mkSelector "pixelFormat"
+
+-- | @Selector@ for @view@
+viewSelector :: Selector
+viewSelector = mkSelector "view"
 
 -- | @Selector@ for @currentContext@
 currentContextSelector :: Selector

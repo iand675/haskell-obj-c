@@ -13,13 +13,21 @@ module ObjC.AVFoundation.AVAssetDownloadTask
   , init_
   , new
   , urlAsset
+  , destinationURL
   , options
   , loadedTimeRanges
+  , originalRequest
+  , currentRequest
+  , response
   , initSelector
   , newSelector
   , urlAssetSelector
+  , destinationURLSelector
   , optionsSelector
   , loadedTimeRangesSelector
+  , originalRequestSelector
+  , currentRequestSelector
+  , responseSelector
 
 
   ) where
@@ -58,6 +66,15 @@ urlAsset :: IsAVAssetDownloadTask avAssetDownloadTask => avAssetDownloadTask -> 
 urlAsset avAssetDownloadTask  =
     sendMsg avAssetDownloadTask (mkSelector "URLAsset") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The file URL supplied to the download task upon initialization.
+--
+-- This URL may have been appended with the appropriate extension for the asset.
+--
+-- ObjC selector: @- destinationURL@
+destinationURL :: IsAVAssetDownloadTask avAssetDownloadTask => avAssetDownloadTask -> IO (Id NSURL)
+destinationURL avAssetDownloadTask  =
+    sendMsg avAssetDownloadTask (mkSelector "destinationURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | The options supplied to the download task upon initialization.
 --
 -- ObjC selector: @- options@
@@ -73,6 +90,21 @@ options avAssetDownloadTask  =
 loadedTimeRanges :: IsAVAssetDownloadTask avAssetDownloadTask => avAssetDownloadTask -> IO (Id NSArray)
 loadedTimeRanges avAssetDownloadTask  =
     sendMsg avAssetDownloadTask (mkSelector "loadedTimeRanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- originalRequest@
+originalRequest :: IsAVAssetDownloadTask avAssetDownloadTask => avAssetDownloadTask -> IO RawId
+originalRequest avAssetDownloadTask  =
+    fmap (RawId . castPtr) $ sendMsg avAssetDownloadTask (mkSelector "originalRequest") (retPtr retVoid) []
+
+-- | @- currentRequest@
+currentRequest :: IsAVAssetDownloadTask avAssetDownloadTask => avAssetDownloadTask -> IO RawId
+currentRequest avAssetDownloadTask  =
+    fmap (RawId . castPtr) $ sendMsg avAssetDownloadTask (mkSelector "currentRequest") (retPtr retVoid) []
+
+-- | @- response@
+response :: IsAVAssetDownloadTask avAssetDownloadTask => avAssetDownloadTask -> IO RawId
+response avAssetDownloadTask  =
+    fmap (RawId . castPtr) $ sendMsg avAssetDownloadTask (mkSelector "response") (retPtr retVoid) []
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -90,6 +122,10 @@ newSelector = mkSelector "new"
 urlAssetSelector :: Selector
 urlAssetSelector = mkSelector "URLAsset"
 
+-- | @Selector@ for @destinationURL@
+destinationURLSelector :: Selector
+destinationURLSelector = mkSelector "destinationURL"
+
 -- | @Selector@ for @options@
 optionsSelector :: Selector
 optionsSelector = mkSelector "options"
@@ -97,4 +133,16 @@ optionsSelector = mkSelector "options"
 -- | @Selector@ for @loadedTimeRanges@
 loadedTimeRangesSelector :: Selector
 loadedTimeRangesSelector = mkSelector "loadedTimeRanges"
+
+-- | @Selector@ for @originalRequest@
+originalRequestSelector :: Selector
+originalRequestSelector = mkSelector "originalRequest"
+
+-- | @Selector@ for @currentRequest@
+currentRequestSelector :: Selector
+currentRequestSelector = mkSelector "currentRequest"
+
+-- | @Selector@ for @response@
+responseSelector :: Selector
+responseSelector = mkSelector "response"
 

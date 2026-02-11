@@ -37,6 +37,7 @@ module ObjC.PassKit.PKPassLibrary
   , authorizationStatusForCapability
   , requestAuthorizationForCapability_completion
   , secureElementPassActivationAvailable
+  , remoteSecureElementPasses
   , isPassLibraryAvailableSelector
   , requestAutomaticPassPresentationSuppressionWithResponseHandlerSelector
   , endAutomaticPassPresentationSuppressionWithRequestTokenSelector
@@ -66,6 +67,7 @@ module ObjC.PassKit.PKPassLibrary
   , authorizationStatusForCapabilitySelector
   , requestAuthorizationForCapability_completionSelector
   , secureElementPassActivationAvailableSelector
+  , remoteSecureElementPassesSelector
 
   -- * Enum types
   , PKPassLibraryAuthorizationStatus(PKPassLibraryAuthorizationStatus)
@@ -280,6 +282,11 @@ secureElementPassActivationAvailable :: IsPKPassLibrary pkPassLibrary => pkPassL
 secureElementPassActivationAvailable pkPassLibrary  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkPassLibrary (mkSelector "secureElementPassActivationAvailable") retCULong []
 
+-- | @- remoteSecureElementPasses@
+remoteSecureElementPasses :: IsPKPassLibrary pkPassLibrary => pkPassLibrary -> IO (Id NSArray)
+remoteSecureElementPasses pkPassLibrary  =
+    sendMsg pkPassLibrary (mkSelector "remoteSecureElementPasses") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -399,4 +406,8 @@ requestAuthorizationForCapability_completionSelector = mkSelector "requestAuthor
 -- | @Selector@ for @secureElementPassActivationAvailable@
 secureElementPassActivationAvailableSelector :: Selector
 secureElementPassActivationAvailableSelector = mkSelector "secureElementPassActivationAvailable"
+
+-- | @Selector@ for @remoteSecureElementPasses@
+remoteSecureElementPassesSelector :: Selector
+remoteSecureElementPassesSelector = mkSelector "remoteSecureElementPasses"
 

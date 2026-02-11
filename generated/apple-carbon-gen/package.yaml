@@ -18,5 +18,7 @@ library:
   source-dirs: src
   exposed-modules:
   - ObjC.Carbon
+  - ObjC.Carbon.Delegate.IMKTextInput
+  - ObjC.Carbon.Delegate.IMKUnicodeTextInput
   - ObjC.Carbon.Internal.Structs
   - ObjC.Carbon.Structs

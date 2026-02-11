@@ -18,6 +18,26 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.Intents.Delegate.INAddMediaIntentHandling
+  - ObjC.Intents.Delegate.INAddTasksIntentHandling
+  - ObjC.Intents.Delegate.INCreateTaskListIntentHandling
+  - ObjC.Intents.Delegate.INDeleteTasksIntentHandling
+  - ObjC.Intents.Delegate.INGetCarPowerLevelStatusIntentHandling
+  - ObjC.Intents.Delegate.INGetCarPowerLevelStatusIntentResponseObserver
+  - ObjC.Intents.Delegate.INGetRideStatusIntentHandling
+  - ObjC.Intents.Delegate.INGetRideStatusIntentResponseObserver
+  - ObjC.Intents.Delegate.INIntentHandlerProviding
+  - ObjC.Intents.Delegate.INPlayMediaIntentHandling
+  - ObjC.Intents.Delegate.INSearchForMediaIntentHandling
+  - ObjC.Intents.Delegate.INSearchForMessagesIntentHandling
+  - ObjC.Intents.Delegate.INSearchForPhotosIntentHandling
+  - ObjC.Intents.Delegate.INSendMessageIntentHandling
+  - ObjC.Intents.Delegate.INSnoozeTasksIntentHandling
+  - ObjC.Intents.Delegate.INStartAudioCallIntentHandling
+  - ObjC.Intents.Delegate.INStartCallIntentHandling
+  - ObjC.Intents.Delegate.INStartPhotoPlaybackIntentHandling
+  - ObjC.Intents.Delegate.INStartVideoCallIntentHandling
+  - ObjC.Intents.Delegate.INUpdateMediaAffinityIntentHandling
   - ObjC.Intents.Enums
   - ObjC.Intents.INAccountTypeResolutionResult
   - ObjC.Intents.INActivateCarSignalIntent

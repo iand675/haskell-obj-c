@@ -6,8 +6,12 @@
 module ObjC.GameKit.GKMatchedPlayers
   ( GKMatchedPlayers
   , IsGKMatchedPlayers(..)
+  , properties
   , players
+  , playerProperties
+  , propertiesSelector
   , playersSelector
+  , playerPropertiesSelector
 
 
   ) where
@@ -27,16 +31,34 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.GameKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | @- properties@
+properties :: IsGKMatchedPlayers gkMatchedPlayers => gkMatchedPlayers -> IO RawId
+properties gkMatchedPlayers  =
+    fmap (RawId . castPtr) $ sendMsg gkMatchedPlayers (mkSelector "properties") (retPtr retVoid) []
+
 -- | @- players@
 players :: IsGKMatchedPlayers gkMatchedPlayers => gkMatchedPlayers -> IO (Id NSArray)
 players gkMatchedPlayers  =
     sendMsg gkMatchedPlayers (mkSelector "players") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- playerProperties@
+playerProperties :: IsGKMatchedPlayers gkMatchedPlayers => gkMatchedPlayers -> IO (Id NSDictionary)
+playerProperties gkMatchedPlayers  =
+    sendMsg gkMatchedPlayers (mkSelector "playerProperties") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
+-- | @Selector@ for @properties@
+propertiesSelector :: Selector
+propertiesSelector = mkSelector "properties"
+
 -- | @Selector@ for @players@
 playersSelector :: Selector
 playersSelector = mkSelector "players"
+
+-- | @Selector@ for @playerProperties@
+playerPropertiesSelector :: Selector
+playerPropertiesSelector = mkSelector "playerProperties"
 

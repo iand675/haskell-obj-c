@@ -14,12 +14,16 @@ module ObjC.Accessibility.AXDataPointValue
   , new
   , number
   , setNumber
+  , category
+  , setCategory
   , valueWithNumberSelector
   , valueWithCategorySelector
   , initSelector
   , newSelector
   , numberSelector
   , setNumberSelector
+  , categorySelector
+  , setCategorySelector
 
 
   ) where
@@ -76,6 +80,17 @@ setNumber :: IsAXDataPointValue axDataPointValue => axDataPointValue -> CDouble 
 setNumber axDataPointValue  value =
     sendMsg axDataPointValue (mkSelector "setNumber:") retVoid [argCDouble value]
 
+-- | @- category@
+category :: IsAXDataPointValue axDataPointValue => axDataPointValue -> IO (Id NSString)
+category axDataPointValue  =
+    sendMsg axDataPointValue (mkSelector "category") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setCategory:@
+setCategory :: (IsAXDataPointValue axDataPointValue, IsNSString value) => axDataPointValue -> value -> IO ()
+setCategory axDataPointValue  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg axDataPointValue (mkSelector "setCategory:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -103,4 +118,12 @@ numberSelector = mkSelector "number"
 -- | @Selector@ for @setNumber:@
 setNumberSelector :: Selector
 setNumberSelector = mkSelector "setNumber:"
+
+-- | @Selector@ for @category@
+categorySelector :: Selector
+categorySelector = mkSelector "category"
+
+-- | @Selector@ for @setCategory:@
+setCategorySelector :: Selector
+setCategorySelector = mkSelector "setCategory:"
 

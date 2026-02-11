@@ -11,11 +11,13 @@
 module ObjC.MetalPerformanceShaders.MPSImageNormalizedHistogram
   ( MPSImageNormalizedHistogram
   , IsMPSImageNormalizedHistogram(..)
+  , initWithDevice_histogramInfo
   , initWithCoder_device
   , encodeToCommandBuffer_sourceTexture_minmaxTexture_histogram_histogramOffset
   , histogramSizeForSourceFormat
   , zeroHistogram
   , setZeroHistogram
+  , initWithDevice_histogramInfoSelector
   , initWithCoder_deviceSelector
   , encodeToCommandBuffer_sourceTexture_minmaxTexture_histogram_histogramOffsetSelector
   , histogramSizeForSourceFormatSelector
@@ -183,6 +185,19 @@ import ObjC.MetalPerformanceShaders.Internal.Classes
 import ObjC.Metal.Internal.Enums
 import ObjC.Foundation.Internal.Classes
 
+-- | Specifies information to compute the histogram for channels of an image.
+--
+-- @device@ — The device the filter will run on
+--
+-- @histogramInfo@ — Pointer to the MPSImageHistogramInfo struct
+--
+-- Returns: A valid MPSImageNormalizedHistogram object or nil, if failure.
+--
+-- ObjC selector: @- initWithDevice:histogramInfo:@
+initWithDevice_histogramInfo :: IsMPSImageNormalizedHistogram mpsImageNormalizedHistogram => mpsImageNormalizedHistogram -> RawId -> Const RawId -> IO (Id MPSImageNormalizedHistogram)
+initWithDevice_histogramInfo mpsImageNormalizedHistogram  device histogramInfo =
+    sendMsg mpsImageNormalizedHistogram (mkSelector "initWithDevice:histogramInfo:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr (unRawId (unConst histogramInfo)) :: Ptr ())] >>= ownedObject . castPtr
+
 -- | NSSecureCoding compatability
 --
 -- While the standard NSSecureCoding/NSCoding method              -initWithCoder: should work, since the file can't              know which device your data is allocated on, we              have to guess and may guess incorrectly.  To avoid              that problem, use initWithCoder:device instead.
@@ -258,6 +273,10 @@ setZeroHistogram mpsImageNormalizedHistogram  value =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @initWithDevice:histogramInfo:@
+initWithDevice_histogramInfoSelector :: Selector
+initWithDevice_histogramInfoSelector = mkSelector "initWithDevice:histogramInfo:"
 
 -- | @Selector@ for @initWithCoder:device:@
 initWithCoder_deviceSelector :: Selector

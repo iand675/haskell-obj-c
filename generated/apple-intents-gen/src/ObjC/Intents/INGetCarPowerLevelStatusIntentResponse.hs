@@ -12,8 +12,16 @@ module ObjC.Intents.INGetCarPowerLevelStatusIntentResponse
   , code
   , carIdentifier
   , setCarIdentifier
+  , fuelPercentRemaining
+  , setFuelPercentRemaining
+  , chargePercentRemaining
+  , setChargePercentRemaining
   , distanceRemaining
   , setDistanceRemaining
+  , charging
+  , setCharging
+  , minutesToFull
+  , setMinutesToFull
   , maximumDistance
   , setMaximumDistance
   , distanceRemainingElectric
@@ -43,8 +51,16 @@ module ObjC.Intents.INGetCarPowerLevelStatusIntentResponse
   , codeSelector
   , carIdentifierSelector
   , setCarIdentifierSelector
+  , fuelPercentRemainingSelector
+  , setFuelPercentRemainingSelector
+  , chargePercentRemainingSelector
+  , setChargePercentRemainingSelector
   , distanceRemainingSelector
   , setDistanceRemainingSelector
+  , chargingSelector
+  , setChargingSelector
+  , minutesToFullSelector
+  , setMinutesToFullSelector
   , maximumDistanceSelector
   , setMaximumDistanceSelector
   , distanceRemainingElectricSelector
@@ -124,6 +140,28 @@ setCarIdentifier inGetCarPowerLevelStatusIntentResponse  value =
   withObjCPtr value $ \raw_value ->
       sendMsg inGetCarPowerLevelStatusIntentResponse (mkSelector "setCarIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- fuelPercentRemaining@
+fuelPercentRemaining :: IsINGetCarPowerLevelStatusIntentResponse inGetCarPowerLevelStatusIntentResponse => inGetCarPowerLevelStatusIntentResponse -> IO (Id NSNumber)
+fuelPercentRemaining inGetCarPowerLevelStatusIntentResponse  =
+    sendMsg inGetCarPowerLevelStatusIntentResponse (mkSelector "fuelPercentRemaining") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setFuelPercentRemaining:@
+setFuelPercentRemaining :: (IsINGetCarPowerLevelStatusIntentResponse inGetCarPowerLevelStatusIntentResponse, IsNSNumber value) => inGetCarPowerLevelStatusIntentResponse -> value -> IO ()
+setFuelPercentRemaining inGetCarPowerLevelStatusIntentResponse  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg inGetCarPowerLevelStatusIntentResponse (mkSelector "setFuelPercentRemaining:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- chargePercentRemaining@
+chargePercentRemaining :: IsINGetCarPowerLevelStatusIntentResponse inGetCarPowerLevelStatusIntentResponse => inGetCarPowerLevelStatusIntentResponse -> IO (Id NSNumber)
+chargePercentRemaining inGetCarPowerLevelStatusIntentResponse  =
+    sendMsg inGetCarPowerLevelStatusIntentResponse (mkSelector "chargePercentRemaining") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setChargePercentRemaining:@
+setChargePercentRemaining :: (IsINGetCarPowerLevelStatusIntentResponse inGetCarPowerLevelStatusIntentResponse, IsNSNumber value) => inGetCarPowerLevelStatusIntentResponse -> value -> IO ()
+setChargePercentRemaining inGetCarPowerLevelStatusIntentResponse  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg inGetCarPowerLevelStatusIntentResponse (mkSelector "setChargePercentRemaining:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- distanceRemaining@
 distanceRemaining :: IsINGetCarPowerLevelStatusIntentResponse inGetCarPowerLevelStatusIntentResponse => inGetCarPowerLevelStatusIntentResponse -> IO (Id NSMeasurement)
 distanceRemaining inGetCarPowerLevelStatusIntentResponse  =
@@ -134,6 +172,28 @@ setDistanceRemaining :: (IsINGetCarPowerLevelStatusIntentResponse inGetCarPowerL
 setDistanceRemaining inGetCarPowerLevelStatusIntentResponse  value =
   withObjCPtr value $ \raw_value ->
       sendMsg inGetCarPowerLevelStatusIntentResponse (mkSelector "setDistanceRemaining:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- charging@
+charging :: IsINGetCarPowerLevelStatusIntentResponse inGetCarPowerLevelStatusIntentResponse => inGetCarPowerLevelStatusIntentResponse -> IO (Id NSNumber)
+charging inGetCarPowerLevelStatusIntentResponse  =
+    sendMsg inGetCarPowerLevelStatusIntentResponse (mkSelector "charging") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setCharging:@
+setCharging :: (IsINGetCarPowerLevelStatusIntentResponse inGetCarPowerLevelStatusIntentResponse, IsNSNumber value) => inGetCarPowerLevelStatusIntentResponse -> value -> IO ()
+setCharging inGetCarPowerLevelStatusIntentResponse  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg inGetCarPowerLevelStatusIntentResponse (mkSelector "setCharging:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- minutesToFull@
+minutesToFull :: IsINGetCarPowerLevelStatusIntentResponse inGetCarPowerLevelStatusIntentResponse => inGetCarPowerLevelStatusIntentResponse -> IO (Id NSNumber)
+minutesToFull inGetCarPowerLevelStatusIntentResponse  =
+    sendMsg inGetCarPowerLevelStatusIntentResponse (mkSelector "minutesToFull") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setMinutesToFull:@
+setMinutesToFull :: (IsINGetCarPowerLevelStatusIntentResponse inGetCarPowerLevelStatusIntentResponse, IsNSNumber value) => inGetCarPowerLevelStatusIntentResponse -> value -> IO ()
+setMinutesToFull inGetCarPowerLevelStatusIntentResponse  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg inGetCarPowerLevelStatusIntentResponse (mkSelector "setMinutesToFull:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- maximumDistance@
 maximumDistance :: IsINGetCarPowerLevelStatusIntentResponse inGetCarPowerLevelStatusIntentResponse => inGetCarPowerLevelStatusIntentResponse -> IO (Id NSMeasurement)
@@ -291,6 +351,22 @@ carIdentifierSelector = mkSelector "carIdentifier"
 setCarIdentifierSelector :: Selector
 setCarIdentifierSelector = mkSelector "setCarIdentifier:"
 
+-- | @Selector@ for @fuelPercentRemaining@
+fuelPercentRemainingSelector :: Selector
+fuelPercentRemainingSelector = mkSelector "fuelPercentRemaining"
+
+-- | @Selector@ for @setFuelPercentRemaining:@
+setFuelPercentRemainingSelector :: Selector
+setFuelPercentRemainingSelector = mkSelector "setFuelPercentRemaining:"
+
+-- | @Selector@ for @chargePercentRemaining@
+chargePercentRemainingSelector :: Selector
+chargePercentRemainingSelector = mkSelector "chargePercentRemaining"
+
+-- | @Selector@ for @setChargePercentRemaining:@
+setChargePercentRemainingSelector :: Selector
+setChargePercentRemainingSelector = mkSelector "setChargePercentRemaining:"
+
 -- | @Selector@ for @distanceRemaining@
 distanceRemainingSelector :: Selector
 distanceRemainingSelector = mkSelector "distanceRemaining"
@@ -298,6 +374,22 @@ distanceRemainingSelector = mkSelector "distanceRemaining"
 -- | @Selector@ for @setDistanceRemaining:@
 setDistanceRemainingSelector :: Selector
 setDistanceRemainingSelector = mkSelector "setDistanceRemaining:"
+
+-- | @Selector@ for @charging@
+chargingSelector :: Selector
+chargingSelector = mkSelector "charging"
+
+-- | @Selector@ for @setCharging:@
+setChargingSelector :: Selector
+setChargingSelector = mkSelector "setCharging:"
+
+-- | @Selector@ for @minutesToFull@
+minutesToFullSelector :: Selector
+minutesToFullSelector = mkSelector "minutesToFull"
+
+-- | @Selector@ for @setMinutesToFull:@
+setMinutesToFullSelector :: Selector
+setMinutesToFullSelector = mkSelector "setMinutesToFull:"
 
 -- | @Selector@ for @maximumDistance@
 maximumDistanceSelector :: Selector

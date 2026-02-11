@@ -21,6 +21,8 @@ module ObjC.AppKit.NSTextSelection
   , setAnchorPositionOffset
   , logical
   , setLogical
+  , secondarySelectionLocation
+  , setSecondarySelectionLocation
   , typingAttributes
   , setTypingAttributes
   , initWithRanges_affinity_granularitySelector
@@ -37,6 +39,8 @@ module ObjC.AppKit.NSTextSelection
   , setAnchorPositionOffsetSelector
   , logicalSelector
   , setLogicalSelector
+  , secondarySelectionLocationSelector
+  , setSecondarySelectionLocationSelector
   , typingAttributesSelector
   , setTypingAttributesSelector
 
@@ -143,6 +147,16 @@ setLogical :: IsNSTextSelection nsTextSelection => nsTextSelection -> Bool -> IO
 setLogical nsTextSelection  value =
     sendMsg nsTextSelection (mkSelector "setLogical:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @- secondarySelectionLocation@
+secondarySelectionLocation :: IsNSTextSelection nsTextSelection => nsTextSelection -> IO RawId
+secondarySelectionLocation nsTextSelection  =
+    fmap (RawId . castPtr) $ sendMsg nsTextSelection (mkSelector "secondarySelectionLocation") (retPtr retVoid) []
+
+-- | @- setSecondarySelectionLocation:@
+setSecondarySelectionLocation :: IsNSTextSelection nsTextSelection => nsTextSelection -> RawId -> IO ()
+setSecondarySelectionLocation nsTextSelection  value =
+    sendMsg nsTextSelection (mkSelector "setSecondarySelectionLocation:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- typingAttributes@
 typingAttributes :: IsNSTextSelection nsTextSelection => nsTextSelection -> IO (Id NSDictionary)
 typingAttributes nsTextSelection  =
@@ -213,6 +227,14 @@ logicalSelector = mkSelector "logical"
 -- | @Selector@ for @setLogical:@
 setLogicalSelector :: Selector
 setLogicalSelector = mkSelector "setLogical:"
+
+-- | @Selector@ for @secondarySelectionLocation@
+secondarySelectionLocationSelector :: Selector
+secondarySelectionLocationSelector = mkSelector "secondarySelectionLocation"
+
+-- | @Selector@ for @setSecondarySelectionLocation:@
+setSecondarySelectionLocationSelector :: Selector
+setSecondarySelectionLocationSelector = mkSelector "setSecondarySelectionLocation:"
 
 -- | @Selector@ for @typingAttributes@
 typingAttributesSelector :: Selector

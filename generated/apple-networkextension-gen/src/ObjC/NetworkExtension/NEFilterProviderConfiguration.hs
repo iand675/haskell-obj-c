@@ -28,6 +28,10 @@ module ObjC.NetworkExtension.NEFilterProviderConfiguration
   , setPasswordReference
   , identityReference
   , setIdentityReference
+  , filterDataProviderBundleIdentifier
+  , setFilterDataProviderBundleIdentifier
+  , filterPacketProviderBundleIdentifier
+  , setFilterPacketProviderBundleIdentifier
   , filterBrowsersSelector
   , setFilterBrowsersSelector
   , filterSocketsSelector
@@ -46,6 +50,10 @@ module ObjC.NetworkExtension.NEFilterProviderConfiguration
   , setPasswordReferenceSelector
   , identityReferenceSelector
   , setIdentityReferenceSelector
+  , filterDataProviderBundleIdentifierSelector
+  , setFilterDataProviderBundleIdentifierSelector
+  , filterPacketProviderBundleIdentifierSelector
+  , setFilterPacketProviderBundleIdentifierSelector
 
 
   ) where
@@ -233,6 +241,44 @@ setIdentityReference neFilterProviderConfiguration  value =
   withObjCPtr value $ \raw_value ->
       sendMsg neFilterProviderConfiguration (mkSelector "setIdentityReference:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | filterDataProviderBundleIdentifier
+--
+-- A string containing the bundle identifier of the NEFilterDataProvider app extension or system extension.     If this property is nil, then the bundle identifier of the NEFilterDataProvider extension in the calling app's     bundle is used, and if the calling app's bundle contains more than one NEFilterDataProvider extension then which one will     be used is undefined.
+--
+-- ObjC selector: @- filterDataProviderBundleIdentifier@
+filterDataProviderBundleIdentifier :: IsNEFilterProviderConfiguration neFilterProviderConfiguration => neFilterProviderConfiguration -> IO (Id NSString)
+filterDataProviderBundleIdentifier neFilterProviderConfiguration  =
+    sendMsg neFilterProviderConfiguration (mkSelector "filterDataProviderBundleIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | filterDataProviderBundleIdentifier
+--
+-- A string containing the bundle identifier of the NEFilterDataProvider app extension or system extension.     If this property is nil, then the bundle identifier of the NEFilterDataProvider extension in the calling app's     bundle is used, and if the calling app's bundle contains more than one NEFilterDataProvider extension then which one will     be used is undefined.
+--
+-- ObjC selector: @- setFilterDataProviderBundleIdentifier:@
+setFilterDataProviderBundleIdentifier :: (IsNEFilterProviderConfiguration neFilterProviderConfiguration, IsNSString value) => neFilterProviderConfiguration -> value -> IO ()
+setFilterDataProviderBundleIdentifier neFilterProviderConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neFilterProviderConfiguration (mkSelector "setFilterDataProviderBundleIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | filterPacketProviderBundleIdentifier
+--
+-- A string containing the bundle identifier of the NEFilterPacketProvider app extension or system extension.     If this property is nil, then the bundle identifier of the NEFilterPacketProvider extension in the calling app's     bundle is used, and if the calling app's bundle contains more than one NEFilterPacketProvider extension then which one will     be used is undefined.
+--
+-- ObjC selector: @- filterPacketProviderBundleIdentifier@
+filterPacketProviderBundleIdentifier :: IsNEFilterProviderConfiguration neFilterProviderConfiguration => neFilterProviderConfiguration -> IO (Id NSString)
+filterPacketProviderBundleIdentifier neFilterProviderConfiguration  =
+    sendMsg neFilterProviderConfiguration (mkSelector "filterPacketProviderBundleIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | filterPacketProviderBundleIdentifier
+--
+-- A string containing the bundle identifier of the NEFilterPacketProvider app extension or system extension.     If this property is nil, then the bundle identifier of the NEFilterPacketProvider extension in the calling app's     bundle is used, and if the calling app's bundle contains more than one NEFilterPacketProvider extension then which one will     be used is undefined.
+--
+-- ObjC selector: @- setFilterPacketProviderBundleIdentifier:@
+setFilterPacketProviderBundleIdentifier :: (IsNEFilterProviderConfiguration neFilterProviderConfiguration, IsNSString value) => neFilterProviderConfiguration -> value -> IO ()
+setFilterPacketProviderBundleIdentifier neFilterProviderConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neFilterProviderConfiguration (mkSelector "setFilterPacketProviderBundleIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -308,4 +354,20 @@ identityReferenceSelector = mkSelector "identityReference"
 -- | @Selector@ for @setIdentityReference:@
 setIdentityReferenceSelector :: Selector
 setIdentityReferenceSelector = mkSelector "setIdentityReference:"
+
+-- | @Selector@ for @filterDataProviderBundleIdentifier@
+filterDataProviderBundleIdentifierSelector :: Selector
+filterDataProviderBundleIdentifierSelector = mkSelector "filterDataProviderBundleIdentifier"
+
+-- | @Selector@ for @setFilterDataProviderBundleIdentifier:@
+setFilterDataProviderBundleIdentifierSelector :: Selector
+setFilterDataProviderBundleIdentifierSelector = mkSelector "setFilterDataProviderBundleIdentifier:"
+
+-- | @Selector@ for @filterPacketProviderBundleIdentifier@
+filterPacketProviderBundleIdentifierSelector :: Selector
+filterPacketProviderBundleIdentifierSelector = mkSelector "filterPacketProviderBundleIdentifier"
+
+-- | @Selector@ for @setFilterPacketProviderBundleIdentifier:@
+setFilterPacketProviderBundleIdentifierSelector :: Selector
+setFilterPacketProviderBundleIdentifierSelector = mkSelector "setFilterPacketProviderBundleIdentifier:"
 

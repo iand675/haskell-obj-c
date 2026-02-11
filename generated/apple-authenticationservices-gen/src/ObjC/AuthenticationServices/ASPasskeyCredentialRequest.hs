@@ -16,7 +16,10 @@ module ObjC.AuthenticationServices.ASPasskeyCredentialRequest
   , clientDataHash
   , userVerificationPreference
   , setUserVerificationPreference
+  , supportedAlgorithms
   , excludedCredentials
+  , assertionExtensionInput
+  , registrationExtensionInput
   , initSelector
   , initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithmsSelector
   , initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms_assertionExtensionInputSelector
@@ -25,7 +28,10 @@ module ObjC.AuthenticationServices.ASPasskeyCredentialRequest
   , clientDataHashSelector
   , userVerificationPreferenceSelector
   , setUserVerificationPreferenceSelector
+  , supportedAlgorithmsSelector
   , excludedCredentialsSelector
+  , assertionExtensionInputSelector
+  , registrationExtensionInputSelector
 
 
   ) where
@@ -152,10 +158,31 @@ setUserVerificationPreference asPasskeyCredentialRequest  value =
   withObjCPtr value $ \raw_value ->
       sendMsg asPasskeyCredentialRequest (mkSelector "setUserVerificationPreference:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | A list of signing algorithms supported by the relying party. Will be empty for assertion requests.
+--
+-- ObjC selector: @- supportedAlgorithms@
+supportedAlgorithms :: IsASPasskeyCredentialRequest asPasskeyCredentialRequest => asPasskeyCredentialRequest -> IO (Id NSArray)
+supportedAlgorithms asPasskeyCredentialRequest  =
+    sendMsg asPasskeyCredentialRequest (mkSelector "supportedAlgorithms") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- excludedCredentials@
 excludedCredentials :: IsASPasskeyCredentialRequest asPasskeyCredentialRequest => asPasskeyCredentialRequest -> IO (Id NSArray)
 excludedCredentials asPasskeyCredentialRequest  =
     sendMsg asPasskeyCredentialRequest (mkSelector "excludedCredentials") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Inputs for WebAuthn extensions used for passkey assertion. Will be nil for registration requests.
+--
+-- ObjC selector: @- assertionExtensionInput@
+assertionExtensionInput :: IsASPasskeyCredentialRequest asPasskeyCredentialRequest => asPasskeyCredentialRequest -> IO (Id ASPasskeyAssertionCredentialExtensionInput)
+assertionExtensionInput asPasskeyCredentialRequest  =
+    sendMsg asPasskeyCredentialRequest (mkSelector "assertionExtensionInput") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Inputs for WebAuthn extensions used for passkey registration. Will be nil for assertion requests.
+--
+-- ObjC selector: @- registrationExtensionInput@
+registrationExtensionInput :: IsASPasskeyCredentialRequest asPasskeyCredentialRequest => asPasskeyCredentialRequest -> IO (Id ASPasskeyRegistrationCredentialExtensionInput)
+registrationExtensionInput asPasskeyCredentialRequest  =
+    sendMsg asPasskeyCredentialRequest (mkSelector "registrationExtensionInput") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -193,7 +220,19 @@ userVerificationPreferenceSelector = mkSelector "userVerificationPreference"
 setUserVerificationPreferenceSelector :: Selector
 setUserVerificationPreferenceSelector = mkSelector "setUserVerificationPreference:"
 
+-- | @Selector@ for @supportedAlgorithms@
+supportedAlgorithmsSelector :: Selector
+supportedAlgorithmsSelector = mkSelector "supportedAlgorithms"
+
 -- | @Selector@ for @excludedCredentials@
 excludedCredentialsSelector :: Selector
 excludedCredentialsSelector = mkSelector "excludedCredentials"
+
+-- | @Selector@ for @assertionExtensionInput@
+assertionExtensionInputSelector :: Selector
+assertionExtensionInputSelector = mkSelector "assertionExtensionInput"
+
+-- | @Selector@ for @registrationExtensionInput@
+registrationExtensionInputSelector :: Selector
+registrationExtensionInputSelector = mkSelector "registrationExtensionInput"
 

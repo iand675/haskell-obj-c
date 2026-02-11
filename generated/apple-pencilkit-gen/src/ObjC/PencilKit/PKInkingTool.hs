@@ -21,6 +21,7 @@ module ObjC.PencilKit.PKInkingTool
   , color
   , width
   , azimuth
+  , ink
   , requiredContentVersion
   , initWithInkType_color_widthSelector
   , initWithInkType_color_width_azimuthSelector
@@ -34,6 +35,7 @@ module ObjC.PencilKit.PKInkingTool
   , colorSelector
   , widthSelector
   , azimuthSelector
+  , inkSelector
   , requiredContentVersionSelector
 
   -- * Enum types
@@ -167,6 +169,13 @@ azimuth :: IsPKInkingTool pkInkingTool => pkInkingTool -> IO CDouble
 azimuth pkInkingTool  =
     sendMsg pkInkingTool (mkSelector "azimuth") retCDouble []
 
+-- | The ink that this tool will create strokes with.
+--
+-- ObjC selector: @- ink@
+ink :: IsPKInkingTool pkInkingTool => pkInkingTool -> IO (Id PKInk)
+ink pkInkingTool  =
+    sendMsg pkInkingTool (mkSelector "ink") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | The PencilKit version required to use this inking tool.
 --
 -- ObjC selector: @- requiredContentVersion@
@@ -225,6 +234,10 @@ widthSelector = mkSelector "width"
 -- | @Selector@ for @azimuth@
 azimuthSelector :: Selector
 azimuthSelector = mkSelector "azimuth"
+
+-- | @Selector@ for @ink@
+inkSelector :: Selector
+inkSelector = mkSelector "ink"
 
 -- | @Selector@ for @requiredContentVersion@
 requiredContentVersionSelector :: Selector

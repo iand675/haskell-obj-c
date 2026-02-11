@@ -24,6 +24,9 @@ library
       ObjC.CoreMediaIO.CMIOExtensionStreamCustomClockConfiguration
       ObjC.CoreMediaIO.CMIOExtensionStreamFormat
       ObjC.CoreMediaIO.CMIOExtensionStreamProperties
+      ObjC.CoreMediaIO.Delegate.CMIOExtensionDeviceSource
+      ObjC.CoreMediaIO.Delegate.CMIOExtensionProviderSource
+      ObjC.CoreMediaIO.Delegate.CMIOExtensionStreamSource
       ObjC.CoreMediaIO.Enums
       ObjC.CoreMediaIO.Internal.Classes
       ObjC.CoreMediaIO.Internal.Enums

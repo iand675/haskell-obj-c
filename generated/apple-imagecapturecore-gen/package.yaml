@@ -16,6 +16,10 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.ImageCaptureCore.Delegate.ICCameraDeviceDelegate
+  - ObjC.ImageCaptureCore.Delegate.ICCameraDeviceDownloadDelegate
+  - ObjC.ImageCaptureCore.Delegate.ICDeviceBrowserDelegate
+  - ObjC.ImageCaptureCore.Delegate.ICScannerDeviceDelegate
   - ObjC.ImageCaptureCore.Enums
   - ObjC.ImageCaptureCore.ICCameraDevice
   - ObjC.ImageCaptureCore.ICCameraFile

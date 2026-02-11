@@ -28,7 +28,6 @@ module ObjC.AudioVideoBridging.AVB17221AECPMessage
   , sourceMAC
   , setSourceMAC
   , errorForStatusCodeSelector
-  , errorForStatusCodeSelector
   , messageTypeSelector
   , setMessageTypeSelector
   , statusSelector
@@ -232,10 +231,6 @@ setSourceMAC avB17221AECPMessage  value =
 -- | @Selector@ for @errorForStatusCode:@
 errorForStatusCodeSelector :: Selector
 errorForStatusCodeSelector = mkSelector "errorForStatusCode:"
-
--- | @Selector@ for @errorForStatusCode@
-errorForStatusCodeSelector :: Selector
-errorForStatusCodeSelector = mkSelector "errorForStatusCode"
 
 -- | @Selector@ for @messageType@
 messageTypeSelector :: Selector

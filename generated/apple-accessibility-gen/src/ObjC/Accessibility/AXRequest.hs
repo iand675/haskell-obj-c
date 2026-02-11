@@ -8,8 +8,10 @@ module ObjC.Accessibility.AXRequest
   , IsAXRequest(..)
   , init_
   , new
+  , currentRequest
   , initSelector
   , newSelector
+  , currentRequestSelector
 
 
   ) where
@@ -41,6 +43,13 @@ new  =
     cls' <- getRequiredClass "AXRequest"
     sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | @+ currentRequest@
+currentRequest :: IO (Id AXRequest)
+currentRequest  =
+  do
+    cls' <- getRequiredClass "AXRequest"
+    sendClassMsg cls' (mkSelector "currentRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -52,4 +61,8 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @new@
 newSelector :: Selector
 newSelector = mkSelector "new"
+
+-- | @Selector@ for @currentRequest@
+currentRequestSelector :: Selector
+currentRequestSelector = mkSelector "currentRequest"
 

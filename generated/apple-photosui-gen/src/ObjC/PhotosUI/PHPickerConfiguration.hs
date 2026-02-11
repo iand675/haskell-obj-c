@@ -17,6 +17,10 @@ module ObjC.PhotosUI.PHPickerConfiguration
   , setSelection
   , selectionLimit
   , setSelectionLimit
+  , filter_
+  , setFilter
+  , preselectedAssetIdentifiers
+  , setPreselectedAssetIdentifiers
   , mode
   , setMode
   , edgesWithoutContentMargins
@@ -31,6 +35,10 @@ module ObjC.PhotosUI.PHPickerConfiguration
   , setSelectionSelector
   , selectionLimitSelector
   , setSelectionLimitSelector
+  , filterSelector
+  , setFilterSelector
+  , preselectedAssetIdentifiersSelector
+  , setPreselectedAssetIdentifiersSelector
   , modeSelector
   , setModeSelector
   , edgesWithoutContentMarginsSelector
@@ -151,6 +159,44 @@ setSelectionLimit :: IsPHPickerConfiguration phPickerConfiguration => phPickerCo
 setSelectionLimit phPickerConfiguration  value =
     sendMsg phPickerConfiguration (mkSelector "setSelectionLimit:") retVoid [argCLong value]
 
+-- | Types of assets that can be shown. Default is @nil.@
+--
+-- Setting @filter@ to @nil@ means all asset types can be shown.
+--
+-- ObjC selector: @- filter@
+filter_ :: IsPHPickerConfiguration phPickerConfiguration => phPickerConfiguration -> IO (Id PHPickerFilter)
+filter_ phPickerConfiguration  =
+    sendMsg phPickerConfiguration (mkSelector "filter") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Types of assets that can be shown. Default is @nil.@
+--
+-- Setting @filter@ to @nil@ means all asset types can be shown.
+--
+-- ObjC selector: @- setFilter:@
+setFilter :: (IsPHPickerConfiguration phPickerConfiguration, IsPHPickerFilter value) => phPickerConfiguration -> value -> IO ()
+setFilter phPickerConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg phPickerConfiguration (mkSelector "setFilter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | Local identifiers of assets to be shown as selected when the picker is presented. Default is an empty array.
+--
+-- @preselectedAssetIdentifiers@ should be an empty array if @selectionLimit@ is 1 or @photoLibrary@ is not specified. Returned item providers for preselected assets are always empty.
+--
+-- ObjC selector: @- preselectedAssetIdentifiers@
+preselectedAssetIdentifiers :: IsPHPickerConfiguration phPickerConfiguration => phPickerConfiguration -> IO (Id NSArray)
+preselectedAssetIdentifiers phPickerConfiguration  =
+    sendMsg phPickerConfiguration (mkSelector "preselectedAssetIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Local identifiers of assets to be shown as selected when the picker is presented. Default is an empty array.
+--
+-- @preselectedAssetIdentifiers@ should be an empty array if @selectionLimit@ is 1 or @photoLibrary@ is not specified. Returned item providers for preselected assets are always empty.
+--
+-- ObjC selector: @- setPreselectedAssetIdentifiers:@
+setPreselectedAssetIdentifiers :: (IsPHPickerConfiguration phPickerConfiguration, IsNSArray value) => phPickerConfiguration -> value -> IO ()
+setPreselectedAssetIdentifiers phPickerConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg phPickerConfiguration (mkSelector "setPreselectedAssetIdentifiers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | The mode of the picker. Default is @PHPickerModeDefault.@
 --
 -- ObjC selector: @- mode@
@@ -228,6 +274,22 @@ selectionLimitSelector = mkSelector "selectionLimit"
 -- | @Selector@ for @setSelectionLimit:@
 setSelectionLimitSelector :: Selector
 setSelectionLimitSelector = mkSelector "setSelectionLimit:"
+
+-- | @Selector@ for @filter@
+filterSelector :: Selector
+filterSelector = mkSelector "filter"
+
+-- | @Selector@ for @setFilter:@
+setFilterSelector :: Selector
+setFilterSelector = mkSelector "setFilter:"
+
+-- | @Selector@ for @preselectedAssetIdentifiers@
+preselectedAssetIdentifiersSelector :: Selector
+preselectedAssetIdentifiersSelector = mkSelector "preselectedAssetIdentifiers"
+
+-- | @Selector@ for @setPreselectedAssetIdentifiers:@
+setPreselectedAssetIdentifiersSelector :: Selector
+setPreselectedAssetIdentifiersSelector = mkSelector "setPreselectedAssetIdentifiers:"
 
 -- | @Selector@ for @mode@
 modeSelector :: Selector

@@ -18,6 +18,8 @@ module ObjC.SharedWithYou.SWHighlightCenter
   , postNoticeForHighlightEvent
   , clearNoticesForHighlight
   , getSignedIdentityProofForCollaborationHighlight_usingData_completionHandler
+  , delegate
+  , setDelegate
   , highlights
   , highlightCollectionTitle
   , systemCollaborationSupportAvailable
@@ -27,6 +29,8 @@ module ObjC.SharedWithYou.SWHighlightCenter
   , postNoticeForHighlightEventSelector
   , clearNoticesForHighlightSelector
   , getSignedIdentityProofForCollaborationHighlight_usingData_completionHandlerSelector
+  , delegateSelector
+  , setDelegateSelector
   , highlightsSelector
   , highlightCollectionTitleSelector
   , systemCollaborationSupportAvailableSelector
@@ -114,6 +118,20 @@ getSignedIdentityProofForCollaborationHighlight_usingData_completionHandler swHi
     withObjCPtr data_ $ \raw_data_ ->
         sendMsg swHighlightCenter (mkSelector "getSignedIdentityProofForCollaborationHighlight:usingData:completionHandler:") retVoid [argPtr (castPtr raw_collaborationHighlight :: Ptr ()), argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
 
+-- | The highlight center's delegate
+--
+-- ObjC selector: @- delegate@
+delegate :: IsSWHighlightCenter swHighlightCenter => swHighlightCenter -> IO RawId
+delegate swHighlightCenter  =
+    fmap (RawId . castPtr) $ sendMsg swHighlightCenter (mkSelector "delegate") (retPtr retVoid) []
+
+-- | The highlight center's delegate
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsSWHighlightCenter swHighlightCenter => swHighlightCenter -> RawId -> IO ()
+setDelegate swHighlightCenter  value =
+    sendMsg swHighlightCenter (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- highlights@
 highlights :: IsSWHighlightCenter swHighlightCenter => swHighlightCenter -> IO (Id NSArray)
 highlights swHighlightCenter  =
@@ -168,6 +186,14 @@ clearNoticesForHighlightSelector = mkSelector "clearNoticesForHighlight:"
 -- | @Selector@ for @getSignedIdentityProofForCollaborationHighlight:usingData:completionHandler:@
 getSignedIdentityProofForCollaborationHighlight_usingData_completionHandlerSelector :: Selector
 getSignedIdentityProofForCollaborationHighlight_usingData_completionHandlerSelector = mkSelector "getSignedIdentityProofForCollaborationHighlight:usingData:completionHandler:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @highlights@
 highlightsSelector :: Selector

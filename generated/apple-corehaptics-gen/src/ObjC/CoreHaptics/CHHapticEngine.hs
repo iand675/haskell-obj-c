@@ -39,6 +39,8 @@ module ObjC.CoreHaptics.CHHapticEngine
   , setIsMutedForHaptics
   , autoShutdownEnabled
   , setAutoShutdownEnabled
+  , intendedSpatialExperience
+  , setIntendedSpatialExperience
   , capabilitiesForHardwareSelector
   , initSelector
   , initAndReturnErrorSelector
@@ -68,6 +70,8 @@ module ObjC.CoreHaptics.CHHapticEngine
   , setIsMutedForHapticsSelector
   , autoShutdownEnabledSelector
   , setAutoShutdownEnabledSelector
+  , intendedSpatialExperienceSelector
+  , setIntendedSpatialExperienceSelector
 
 
   ) where
@@ -437,6 +441,28 @@ setAutoShutdownEnabled :: IsCHHapticEngine chHapticEngine => chHapticEngine -> B
 setAutoShutdownEnabled chHapticEngine  value =
     sendMsg chHapticEngine (mkSelector "setAutoShutdownEnabled:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | intendedSpatialExperience
+--
+-- The CHHapticEngine's intended @CASpatialAudioExperience@.
+--
+-- Only useful for engines that have audio output. If unspecified, the        property value defaults to @CAAutomaticSpatialAudio@.
+--
+-- ObjC selector: @- intendedSpatialExperience@
+intendedSpatialExperience :: IsCHHapticEngine chHapticEngine => chHapticEngine -> IO RawId
+intendedSpatialExperience chHapticEngine  =
+    fmap (RawId . castPtr) $ sendMsg chHapticEngine (mkSelector "intendedSpatialExperience") (retPtr retVoid) []
+
+-- | intendedSpatialExperience
+--
+-- The CHHapticEngine's intended @CASpatialAudioExperience@.
+--
+-- Only useful for engines that have audio output. If unspecified, the        property value defaults to @CAAutomaticSpatialAudio@.
+--
+-- ObjC selector: @- setIntendedSpatialExperience:@
+setIntendedSpatialExperience :: IsCHHapticEngine chHapticEngine => chHapticEngine -> RawId -> IO ()
+setIntendedSpatialExperience chHapticEngine  value =
+    sendMsg chHapticEngine (mkSelector "setIntendedSpatialExperience:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -556,4 +582,12 @@ autoShutdownEnabledSelector = mkSelector "autoShutdownEnabled"
 -- | @Selector@ for @setAutoShutdownEnabled:@
 setAutoShutdownEnabledSelector :: Selector
 setAutoShutdownEnabledSelector = mkSelector "setAutoShutdownEnabled:"
+
+-- | @Selector@ for @intendedSpatialExperience@
+intendedSpatialExperienceSelector :: Selector
+intendedSpatialExperienceSelector = mkSelector "intendedSpatialExperience"
+
+-- | @Selector@ for @setIntendedSpatialExperience:@
+setIntendedSpatialExperienceSelector :: Selector
+setIntendedSpatialExperienceSelector = mkSelector "setIntendedSpatialExperience:"
 

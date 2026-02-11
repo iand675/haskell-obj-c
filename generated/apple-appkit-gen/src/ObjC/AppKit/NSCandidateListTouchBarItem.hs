@@ -10,6 +10,8 @@ module ObjC.AppKit.NSCandidateListTouchBarItem
   , setCandidates_forSelectedRange_inString
   , client
   , setClient
+  , delegate
+  , setDelegate
   , collapsed
   , setCollapsed
   , allowsCollapsing
@@ -19,10 +21,15 @@ module ObjC.AppKit.NSCandidateListTouchBarItem
   , setAllowsTextInputContextCandidates
   , attributedStringForCandidate
   , setAttributedStringForCandidate
+  , candidates
+  , customizationLabel
+  , setCustomizationLabel
   , updateWithInsertionPointVisibilitySelector
   , setCandidates_forSelectedRange_inStringSelector
   , clientSelector
   , setClientSelector
+  , delegateSelector
+  , setDelegateSelector
   , collapsedSelector
   , setCollapsedSelector
   , allowsCollapsingSelector
@@ -32,6 +39,9 @@ module ObjC.AppKit.NSCandidateListTouchBarItem
   , setAllowsTextInputContextCandidatesSelector
   , attributedStringForCandidateSelector
   , setAttributedStringForCandidateSelector
+  , candidatesSelector
+  , customizationLabelSelector
+  , setCustomizationLabelSelector
 
 
   ) where
@@ -74,6 +84,16 @@ setClient :: (IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem, IsNSVie
 setClient nsCandidateListTouchBarItem  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsCandidateListTouchBarItem (mkSelector "setClient:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- delegate@
+delegate :: IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem => nsCandidateListTouchBarItem -> IO RawId
+delegate nsCandidateListTouchBarItem  =
+    fmap (RawId . castPtr) $ sendMsg nsCandidateListTouchBarItem (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem => nsCandidateListTouchBarItem -> RawId -> IO ()
+setDelegate nsCandidateListTouchBarItem  value =
+    sendMsg nsCandidateListTouchBarItem (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- collapsed@
 collapsed :: IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem => nsCandidateListTouchBarItem -> IO Bool
@@ -120,6 +140,22 @@ setAttributedStringForCandidate :: IsNSCandidateListTouchBarItem nsCandidateList
 setAttributedStringForCandidate nsCandidateListTouchBarItem  value =
     sendMsg nsCandidateListTouchBarItem (mkSelector "setAttributedStringForCandidate:") retVoid [argPtr (castPtr value :: Ptr ())]
 
+-- | @- candidates@
+candidates :: IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem => nsCandidateListTouchBarItem -> IO (Id NSArray)
+candidates nsCandidateListTouchBarItem  =
+    sendMsg nsCandidateListTouchBarItem (mkSelector "candidates") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- customizationLabel@
+customizationLabel :: IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem => nsCandidateListTouchBarItem -> IO (Id NSString)
+customizationLabel nsCandidateListTouchBarItem  =
+    sendMsg nsCandidateListTouchBarItem (mkSelector "customizationLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setCustomizationLabel:@
+setCustomizationLabel :: (IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem, IsNSString value) => nsCandidateListTouchBarItem -> value -> IO ()
+setCustomizationLabel nsCandidateListTouchBarItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsCandidateListTouchBarItem (mkSelector "setCustomizationLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -139,6 +175,14 @@ clientSelector = mkSelector "client"
 -- | @Selector@ for @setClient:@
 setClientSelector :: Selector
 setClientSelector = mkSelector "setClient:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @collapsed@
 collapsedSelector :: Selector
@@ -175,4 +219,16 @@ attributedStringForCandidateSelector = mkSelector "attributedStringForCandidate"
 -- | @Selector@ for @setAttributedStringForCandidate:@
 setAttributedStringForCandidateSelector :: Selector
 setAttributedStringForCandidateSelector = mkSelector "setAttributedStringForCandidate:"
+
+-- | @Selector@ for @candidates@
+candidatesSelector :: Selector
+candidatesSelector = mkSelector "candidates"
+
+-- | @Selector@ for @customizationLabel@
+customizationLabelSelector :: Selector
+customizationLabelSelector = mkSelector "customizationLabel"
+
+-- | @Selector@ for @setCustomizationLabel:@
+setCustomizationLabelSelector :: Selector
+setCustomizationLabelSelector = mkSelector "setCustomizationLabel:"
 

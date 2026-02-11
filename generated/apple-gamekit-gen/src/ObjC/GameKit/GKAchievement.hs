@@ -26,6 +26,7 @@ module ObjC.GameKit.GKAchievement
   , showsCompletionBanner
   , setShowsCompletionBanner
   , player
+  , playerID
   , hidden
   , resetAchievementsWithCompletionHandlerSelector
   , initWithIdentifierSelector
@@ -47,6 +48,7 @@ module ObjC.GameKit.GKAchievement
   , showsCompletionBannerSelector
   , setShowsCompletionBannerSelector
   , playerSelector
+  , playerIDSelector
   , hiddenSelector
 
 
@@ -225,6 +227,13 @@ player :: IsGKAchievement gkAchievement => gkAchievement -> IO (Id GKPlayer)
 player gkAchievement  =
     sendMsg gkAchievement (mkSelector "player") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | * This property is obsolete. **
+--
+-- ObjC selector: @- playerID@
+playerID :: IsGKAchievement gkAchievement => gkAchievement -> IO (Id NSString)
+playerID gkAchievement  =
+    sendMsg gkAchievement (mkSelector "playerID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- hidden@
 hidden :: IsGKAchievement gkAchievement => gkAchievement -> IO Bool
 hidden gkAchievement  =
@@ -313,6 +322,10 @@ setShowsCompletionBannerSelector = mkSelector "setShowsCompletionBanner:"
 -- | @Selector@ for @player@
 playerSelector :: Selector
 playerSelector = mkSelector "player"
+
+-- | @Selector@ for @playerID@
+playerIDSelector :: Selector
+playerIDSelector = mkSelector "playerID"
 
 -- | @Selector@ for @hidden@
 hiddenSelector :: Selector

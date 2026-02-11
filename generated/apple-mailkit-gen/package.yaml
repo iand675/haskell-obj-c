@@ -17,6 +17,12 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.MailKit.Delegate.MEComposeSessionHandler
+  - ObjC.MailKit.Delegate.MEContentBlocker
+  - ObjC.MailKit.Delegate.MEExtension
+  - ObjC.MailKit.Delegate.MEMessageActionHandler
+  - ObjC.MailKit.Delegate.MEMessageDecoder
+  - ObjC.MailKit.Delegate.MEMessageSecurityHandler
   - ObjC.MailKit.Enums
   - ObjC.MailKit.Internal.Classes
   - ObjC.MailKit.Internal.Enums

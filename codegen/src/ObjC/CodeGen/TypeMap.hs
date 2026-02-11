@@ -321,17 +321,10 @@ isTypeSupported kt = go
     go ObjCSEL               = True
     go ObjCInstancetype      = True
     go (ObjCClassType _)     = True
-    go (ObjCId Nothing _)    = True
-    go (ObjCId (Just n) _)   = Set.member n known
-                              || Set.member baseName known
-                              || isKnownTypedef n || isKnownTypedef baseName
-                              || baseName == "Protocol"
-                              || baseName == "ObjectType" || baseName == "KeyType"
-                              || baseName == "ValueType"
-                              || (T.length baseName == 1 && T.all Char.isUpper baseName)
-                              || baseName == "void"
-                              || baseName == "const char" || baseName == "char"
-      where baseName = extractClassName n
+    go (ObjCId _ _)          = True
+    -- ObjCId is always supported: known class names map to @Id ClassName@,
+    -- and everything else (protocols, type params, unknown names) maps to
+    -- @RawId@ — see the fallback in 'mapType'.
     go (ObjCGeneric n _ _)   = Set.member n known || Set.member bn known
                               || n == "id" || bn == "id"
                               || n == "Class" || bn == "Class"

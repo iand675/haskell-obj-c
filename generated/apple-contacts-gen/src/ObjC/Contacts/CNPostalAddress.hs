@@ -12,14 +12,18 @@ module ObjC.Contacts.CNPostalAddress
   , IsCNPostalAddress(..)
   , localizedStringForKey
   , street
+  , subLocality
   , city
+  , subAdministrativeArea
   , state
   , postalCode
   , country
   , isoCountryCode
   , localizedStringForKeySelector
   , streetSelector
+  , subLocalitySelector
   , citySelector
+  , subAdministrativeAreaSelector
   , stateSelector
   , postalCodeSelector
   , countrySelector
@@ -60,10 +64,20 @@ street :: IsCNPostalAddress cnPostalAddress => cnPostalAddress -> IO (Id NSStrin
 street cnPostalAddress  =
     sendMsg cnPostalAddress (mkSelector "street") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- subLocality@
+subLocality :: IsCNPostalAddress cnPostalAddress => cnPostalAddress -> IO RawId
+subLocality cnPostalAddress  =
+    fmap (RawId . castPtr) $ sendMsg cnPostalAddress (mkSelector "subLocality") (retPtr retVoid) []
+
 -- | @- city@
 city :: IsCNPostalAddress cnPostalAddress => cnPostalAddress -> IO (Id NSString)
 city cnPostalAddress  =
     sendMsg cnPostalAddress (mkSelector "city") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- subAdministrativeArea@
+subAdministrativeArea :: IsCNPostalAddress cnPostalAddress => cnPostalAddress -> IO RawId
+subAdministrativeArea cnPostalAddress  =
+    fmap (RawId . castPtr) $ sendMsg cnPostalAddress (mkSelector "subAdministrativeArea") (retPtr retVoid) []
 
 -- | @- state@
 state :: IsCNPostalAddress cnPostalAddress => cnPostalAddress -> IO (Id NSString)
@@ -97,9 +111,17 @@ localizedStringForKeySelector = mkSelector "localizedStringForKey:"
 streetSelector :: Selector
 streetSelector = mkSelector "street"
 
+-- | @Selector@ for @subLocality@
+subLocalitySelector :: Selector
+subLocalitySelector = mkSelector "subLocality"
+
 -- | @Selector@ for @city@
 citySelector :: Selector
 citySelector = mkSelector "city"
+
+-- | @Selector@ for @subAdministrativeArea@
+subAdministrativeAreaSelector :: Selector
+subAdministrativeAreaSelector = mkSelector "subAdministrativeArea"
 
 -- | @Selector@ for @state@
 stateSelector :: Selector

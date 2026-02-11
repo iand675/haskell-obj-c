@@ -45,11 +45,13 @@ module ObjC.AppKit.NSBezierPath
   , appendBezierPathWithArcWithCenter_radius_startAngle_endAngle
   , appendBezierPathWithArcFromPoint_toPoint_radius
   , appendBezierPathWithCGGlyph_inFont
+  , appendBezierPathWithCGGlyphs_count_inFont
   , appendBezierPathWithRoundedRect_xRadius_yRadius
   , containsPoint
   , cachesBezierPath
   , setCachesBezierPath
   , appendBezierPathWithGlyph_inFont
+  , appendBezierPathWithGlyphs_count_inFont
   , appendBezierPathWithPackedGlyphs
   , cgPath
   , setCGPath
@@ -122,11 +124,13 @@ module ObjC.AppKit.NSBezierPath
   , appendBezierPathWithArcWithCenter_radius_startAngle_endAngleSelector
   , appendBezierPathWithArcFromPoint_toPoint_radiusSelector
   , appendBezierPathWithCGGlyph_inFontSelector
+  , appendBezierPathWithCGGlyphs_count_inFontSelector
   , appendBezierPathWithRoundedRect_xRadius_yRadiusSelector
   , containsPointSelector
   , cachesBezierPathSelector
   , setCachesBezierPathSelector
   , appendBezierPathWithGlyph_inFontSelector
+  , appendBezierPathWithGlyphs_count_inFontSelector
   , appendBezierPathWithPackedGlyphsSelector
   , cgPathSelector
   , setCGPathSelector
@@ -414,6 +418,12 @@ appendBezierPathWithCGGlyph_inFont nsBezierPath  glyph font =
   withObjCPtr font $ \raw_font ->
       sendMsg nsBezierPath (mkSelector "appendBezierPathWithCGGlyph:inFont:") retVoid [argCUInt (fromIntegral glyph), argPtr (castPtr raw_font :: Ptr ())]
 
+-- | @- appendBezierPathWithCGGlyphs:count:inFont:@
+appendBezierPathWithCGGlyphs_count_inFont :: (IsNSBezierPath nsBezierPath, IsNSFont font) => nsBezierPath -> Const RawId -> CLong -> font -> IO ()
+appendBezierPathWithCGGlyphs_count_inFont nsBezierPath  glyphs count font =
+  withObjCPtr font $ \raw_font ->
+      sendMsg nsBezierPath (mkSelector "appendBezierPathWithCGGlyphs:count:inFont:") retVoid [argPtr (castPtr (unRawId (unConst glyphs)) :: Ptr ()), argCLong count, argPtr (castPtr raw_font :: Ptr ())]
+
 -- | @- appendBezierPathWithRoundedRect:xRadius:yRadius:@
 appendBezierPathWithRoundedRect_xRadius_yRadius :: IsNSBezierPath nsBezierPath => nsBezierPath -> NSRect -> CDouble -> CDouble -> IO ()
 appendBezierPathWithRoundedRect_xRadius_yRadius nsBezierPath  rect xRadius yRadius =
@@ -439,6 +449,12 @@ appendBezierPathWithGlyph_inFont :: (IsNSBezierPath nsBezierPath, IsNSFont font)
 appendBezierPathWithGlyph_inFont nsBezierPath  glyph font =
   withObjCPtr font $ \raw_font ->
       sendMsg nsBezierPath (mkSelector "appendBezierPathWithGlyph:inFont:") retVoid [argCUInt glyph, argPtr (castPtr raw_font :: Ptr ())]
+
+-- | @- appendBezierPathWithGlyphs:count:inFont:@
+appendBezierPathWithGlyphs_count_inFont :: (IsNSBezierPath nsBezierPath, IsNSFont font) => nsBezierPath -> RawId -> CLong -> font -> IO ()
+appendBezierPathWithGlyphs_count_inFont nsBezierPath  glyphs count font =
+  withObjCPtr font $ \raw_font ->
+      sendMsg nsBezierPath (mkSelector "appendBezierPathWithGlyphs:count:inFont:") retVoid [argPtr (castPtr (unRawId glyphs) :: Ptr ()), argCLong count, argPtr (castPtr raw_font :: Ptr ())]
 
 -- | @- appendBezierPathWithPackedGlyphs:@
 appendBezierPathWithPackedGlyphs :: IsNSBezierPath nsBezierPath => nsBezierPath -> Const (Ptr CChar) -> IO ()
@@ -790,6 +806,10 @@ appendBezierPathWithArcFromPoint_toPoint_radiusSelector = mkSelector "appendBezi
 appendBezierPathWithCGGlyph_inFontSelector :: Selector
 appendBezierPathWithCGGlyph_inFontSelector = mkSelector "appendBezierPathWithCGGlyph:inFont:"
 
+-- | @Selector@ for @appendBezierPathWithCGGlyphs:count:inFont:@
+appendBezierPathWithCGGlyphs_count_inFontSelector :: Selector
+appendBezierPathWithCGGlyphs_count_inFontSelector = mkSelector "appendBezierPathWithCGGlyphs:count:inFont:"
+
 -- | @Selector@ for @appendBezierPathWithRoundedRect:xRadius:yRadius:@
 appendBezierPathWithRoundedRect_xRadius_yRadiusSelector :: Selector
 appendBezierPathWithRoundedRect_xRadius_yRadiusSelector = mkSelector "appendBezierPathWithRoundedRect:xRadius:yRadius:"
@@ -809,6 +829,10 @@ setCachesBezierPathSelector = mkSelector "setCachesBezierPath:"
 -- | @Selector@ for @appendBezierPathWithGlyph:inFont:@
 appendBezierPathWithGlyph_inFontSelector :: Selector
 appendBezierPathWithGlyph_inFontSelector = mkSelector "appendBezierPathWithGlyph:inFont:"
+
+-- | @Selector@ for @appendBezierPathWithGlyphs:count:inFont:@
+appendBezierPathWithGlyphs_count_inFontSelector :: Selector
+appendBezierPathWithGlyphs_count_inFontSelector = mkSelector "appendBezierPathWithGlyphs:count:inFont:"
 
 -- | @Selector@ for @appendBezierPathWithPackedGlyphs:@
 appendBezierPathWithPackedGlyphsSelector :: Selector

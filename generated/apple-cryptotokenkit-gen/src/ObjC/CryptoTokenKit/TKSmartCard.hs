@@ -16,6 +16,7 @@ module ObjC.CryptoTokenKit.TKSmartCard
   , userInteractionForSecurePINChangeWithPINFormat_APDU_currentPINByteOffset_newPINByteOffset
   , sendIns_p1_p2_data_le_reply
   , inSessionWithError_executeBlock
+  , sendIns_p1_p2_data_le_sw_error
   , slot
   , valid
   , allowedProtocols
@@ -38,6 +39,7 @@ module ObjC.CryptoTokenKit.TKSmartCard
   , userInteractionForSecurePINChangeWithPINFormat_APDU_currentPINByteOffset_newPINByteOffsetSelector
   , sendIns_p1_p2_data_le_replySelector
   , inSessionWithError_executeBlockSelector
+  , sendIns_p1_p2_data_le_sw_errorSelector
   , slotSelector
   , validSelector
   , allowedProtocolsSelector
@@ -195,6 +197,34 @@ inSessionWithError_executeBlock tkSmartCard  error_ block =
   withObjCPtr error_ $ \raw_error_ ->
       fmap ((/= 0) :: CULong -> Bool) $ sendMsg tkSmartCard (mkSelector "inSessionWithError:executeBlock:") retCULong [argPtr (castPtr raw_error_ :: Ptr ()), argPtr (castPtr block :: Ptr ())]
 
+-- | Transmits APDU to the card and returns response.
+--
+-- Synchronous high level variant of command for transmitting APDU to the card.  Handles all ISO7816-4 APDU cases translation to proper sequences according to used protocol.  Should be used in block passed to -[TKSmartCard inSessionWithError:executeBlock:] method.
+--
+-- @ins@ — INS code of the APDU
+--
+-- @p1@ — P1 code of the APDU
+--
+-- @p2@ — P2 code of the APDU
+--
+-- @data@ — Data field of the APDU.  Length of the data serves as Lc field of the APDU
+--
+-- @le@ — Expected number of bytes to be returned, or nil if no output data are expected (i.e. case1 or case3 APDUs). To get as much bytes as card provides, pass \@0.
+--
+-- @sw@ — On output, filled with SW1SW2 result code
+--
+-- @error@ — Contains error details when nil is returned.  Specific error is also filled in if there was no communication error, but card returned other SW code than 0x9000.
+--
+-- Returns: Returned data field, excluding SW status bytes.  If an error occured, returns nil.
+--
+-- ObjC selector: @- sendIns:p1:p2:data:le:sw:error:@
+sendIns_p1_p2_data_le_sw_error :: (IsTKSmartCard tkSmartCard, IsNSData requestData, IsNSNumber le, IsNSError error_) => tkSmartCard -> CUChar -> CUChar -> CUChar -> requestData -> le -> RawId -> error_ -> IO (Id NSData)
+sendIns_p1_p2_data_le_sw_error tkSmartCard  ins p1 p2 requestData le sw error_ =
+  withObjCPtr requestData $ \raw_requestData ->
+    withObjCPtr le $ \raw_le ->
+      withObjCPtr error_ $ \raw_error_ ->
+          sendMsg tkSmartCard (mkSelector "sendIns:p1:p2:data:le:sw:error:") (retPtr retVoid) [argCUChar ins, argCUChar p1, argCUChar p2, argPtr (castPtr raw_requestData :: Ptr ()), argPtr (castPtr raw_le :: Ptr ()), argPtr (castPtr (unRawId sw) :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+
 -- | Slot in which is this card inserted.
 --
 -- ObjC selector: @- slot@
@@ -331,6 +361,10 @@ sendIns_p1_p2_data_le_replySelector = mkSelector "sendIns:p1:p2:data:le:reply:"
 -- | @Selector@ for @inSessionWithError:executeBlock:@
 inSessionWithError_executeBlockSelector :: Selector
 inSessionWithError_executeBlockSelector = mkSelector "inSessionWithError:executeBlock:"
+
+-- | @Selector@ for @sendIns:p1:p2:data:le:sw:error:@
+sendIns_p1_p2_data_le_sw_errorSelector :: Selector
+sendIns_p1_p2_data_le_sw_errorSelector = mkSelector "sendIns:p1:p2:data:le:sw:error:"
 
 -- | @Selector@ for @slot@
 slotSelector :: Selector

@@ -10,9 +10,13 @@ module ObjC.Intents.INGetCarLockStatusIntentResponse
   , init_
   , initWithCode_userActivity
   , code
+  , locked
+  , setLocked
   , initSelector
   , initWithCode_userActivitySelector
   , codeSelector
+  , lockedSelector
+  , setLockedSelector
 
   -- * Enum types
   , INGetCarLockStatusIntentResponseCode(INGetCarLockStatusIntentResponseCode)
@@ -57,6 +61,17 @@ code :: IsINGetCarLockStatusIntentResponse inGetCarLockStatusIntentResponse => i
 code inGetCarLockStatusIntentResponse  =
     fmap (coerce :: CLong -> INGetCarLockStatusIntentResponseCode) $ sendMsg inGetCarLockStatusIntentResponse (mkSelector "code") retCLong []
 
+-- | @- locked@
+locked :: IsINGetCarLockStatusIntentResponse inGetCarLockStatusIntentResponse => inGetCarLockStatusIntentResponse -> IO (Id NSNumber)
+locked inGetCarLockStatusIntentResponse  =
+    sendMsg inGetCarLockStatusIntentResponse (mkSelector "locked") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setLocked:@
+setLocked :: (IsINGetCarLockStatusIntentResponse inGetCarLockStatusIntentResponse, IsNSNumber value) => inGetCarLockStatusIntentResponse -> value -> IO ()
+setLocked inGetCarLockStatusIntentResponse  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg inGetCarLockStatusIntentResponse (mkSelector "setLocked:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -72,4 +87,12 @@ initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 -- | @Selector@ for @code@
 codeSelector :: Selector
 codeSelector = mkSelector "code"
+
+-- | @Selector@ for @locked@
+lockedSelector :: Selector
+lockedSelector = mkSelector "locked"
+
+-- | @Selector@ for @setLocked:@
+setLockedSelector :: Selector
+setLockedSelector = mkSelector "setLocked:"
 

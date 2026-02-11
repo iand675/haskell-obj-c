@@ -11,6 +11,8 @@
 module ObjC.AudioToolbox.AUAudioUnitBus
   ( AUAudioUnitBus
   , IsAUAudioUnitBus(..)
+  , setFormat_error
+  , initWithFormat_error
   , shouldAllocateBuffer
   , setShouldAllocateBuffer
   , enabled
@@ -27,6 +29,8 @@ module ObjC.AudioToolbox.AUAudioUnitBus
   , setSupportedChannelCounts
   , maximumChannelCount
   , setMaximumChannelCount
+  , setFormat_errorSelector
+  , initWithFormat_errorSelector
   , shouldAllocateBufferSelector
   , setShouldAllocateBufferSelector
   , enabledSelector
@@ -66,6 +70,32 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.AudioToolbox.Internal.Classes
 import ObjC.AudioToolbox.Internal.Enums
 import ObjC.Foundation.Internal.Classes
+
+-- | setFormat:error:
+--
+-- Sets the bus's audio format.
+--
+-- Audio units can generally be expected to support AVAudioFormat's standard format		(deinterleaved 32-bit float), at any sample rate. Channel counts can be more complex;		see AUAudioUnit.channelCapabilities.
+--
+-- ObjC selector: @- setFormat:error:@
+setFormat_error :: (IsAUAudioUnitBus auAudioUnitBus, IsNSError outError) => auAudioUnitBus -> RawId -> outError -> IO Bool
+setFormat_error auAudioUnitBus  format outError =
+  withObjCPtr outError $ \raw_outError ->
+      fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnitBus (mkSelector "setFormat:error:") retCULong [argPtr (castPtr (unRawId format) :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+
+-- | initWithFormat:error:
+--
+-- initialize with a default format.
+--
+-- @format@ — The initial format for the bus.
+--
+-- @outError@ — An error if the format is unsupported for the bus.
+--
+-- ObjC selector: @- initWithFormat:error:@
+initWithFormat_error :: (IsAUAudioUnitBus auAudioUnitBus, IsNSError outError) => auAudioUnitBus -> RawId -> outError -> IO (Id AUAudioUnitBus)
+initWithFormat_error auAudioUnitBus  format outError =
+  withObjCPtr outError $ \raw_outError ->
+      sendMsg auAudioUnitBus (mkSelector "initWithFormat:error:") (retPtr retVoid) [argPtr (castPtr (unRawId format) :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
 
 -- | shouldAllocateBuffer
 --
@@ -284,6 +314,14 @@ setMaximumChannelCount auAudioUnitBus  value =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @setFormat:error:@
+setFormat_errorSelector :: Selector
+setFormat_errorSelector = mkSelector "setFormat:error:"
+
+-- | @Selector@ for @initWithFormat:error:@
+initWithFormat_errorSelector :: Selector
+initWithFormat_errorSelector = mkSelector "initWithFormat:error:"
 
 -- | @Selector@ for @shouldAllocateBuffer@
 shouldAllocateBufferSelector :: Selector

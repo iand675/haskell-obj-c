@@ -35,6 +35,8 @@ library
       ObjC.CoreLocation.CLServiceSessionDiagnostic
       ObjC.CoreLocation.CLUpdate
       ObjC.CoreLocation.CLVisit
+      ObjC.CoreLocation.Delegate.CLLocationManagerDelegate
+      ObjC.CoreLocation.Delegate.CLLocationPushServiceExtension
       ObjC.CoreLocation.Enums
       ObjC.CoreLocation.Internal.Classes
       ObjC.CoreLocation.Internal.Enums

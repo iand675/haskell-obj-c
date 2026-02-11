@@ -16,6 +16,8 @@ module ObjC.MetalPerformanceShaders.MPSNNForwardLoss
   , initWithDevice
   , initWithDevice_lossDescriptor
   , initWithCoder_device
+  , encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationImages
+  , encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationStateIsTemporary
   , lossType
   , reductionType
   , reduceAcrossBatch
@@ -31,6 +33,8 @@ module ObjC.MetalPerformanceShaders.MPSNNForwardLoss
   , initWithDeviceSelector
   , initWithDevice_lossDescriptorSelector
   , initWithCoder_deviceSelector
+  , encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationImagesSelector
+  , encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationStateIsTemporarySelector
   , lossTypeSelector
   , reductionTypeSelector
   , reduceAcrossBatchSelector
@@ -109,6 +113,48 @@ initWithCoder_device mpsnnForwardLoss  aDecoder device =
   withObjCPtr aDecoder $ \raw_aDecoder ->
       sendMsg mpsnnForwardLoss (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
 
+-- | Encode a MPSNNForwardLoss filter and return the result in the destinationImage.
+--
+-- @commandBuffer@ — The MTLCommandBuffer on which to encode.
+--
+-- @sourceImages@ — The source images that contains the network prediction (logits).
+--
+-- @labels@ — The source images that contains the labels (targets).
+--
+-- @weights@ — The object containing weights for the labels. Optional.
+--
+-- @destinationStates@ — Optional gradient state - carries dynamical property values to the gradient pass                                  (weight, labelSmoothing, epsilon, delta). Create state using resultStateBatchForSourceImage: or                                  temporaryResultStateBatchForCommandBuffer:.
+--
+-- @destinationImages@ — The MPSImages into which to write the loss results.
+--
+-- ObjC selector: @- encodeBatchToCommandBuffer:sourceImages:labels:weights:destinationStates:destinationImages:@
+encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationImages :: IsMPSNNForwardLoss mpsnnForwardLoss => mpsnnForwardLoss -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> IO ()
+encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationImages mpsnnForwardLoss  commandBuffer sourceImages labels weights destinationStates destinationImages =
+    sendMsg mpsnnForwardLoss (mkSelector "encodeBatchToCommandBuffer:sourceImages:labels:weights:destinationStates:destinationImages:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr (unRawId labels) :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ()), argPtr (castPtr (unRawId destinationStates) :: Ptr ()), argPtr (castPtr (unRawId destinationImages) :: Ptr ())]
+
+-- | Encode a MPSNNForwardLoss filter and return the loss result image(s).
+--
+-- This -encode call is similar to the encodeBatchToCommandBuffer:sourceImages:labels:destinationImages: above,              except that it creates and returns the MPSImages with the loss result.
+--
+-- @commandBuffer@ — The MTLCommandBuffer on which to encode.
+--
+-- @sourceImages@ — The source images that contains the network prediction (logits).
+--
+-- @labels@ — The source images that contains the labels (targets).
+--
+-- @weights@ — The object containing weights for the labels. Optional.
+--
+-- @outStates@ — Optional gradient state - carries dynamical property values to the gradient pass                                  (weight, labelSmoothing, epsilon, delta).
+--
+-- @isTemporary@ — Whether the returned state (if any) should be temporary or not.
+--
+-- Returns: The MPSImages containing the loss computation results.
+--
+-- ObjC selector: @- encodeBatchToCommandBuffer:sourceImages:labels:weights:destinationStates:destinationStateIsTemporary:@
+encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationStateIsTemporary :: IsMPSNNForwardLoss mpsnnForwardLoss => mpsnnForwardLoss -> RawId -> RawId -> RawId -> RawId -> RawId -> Bool -> IO RawId
+encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationStateIsTemporary mpsnnForwardLoss  commandBuffer sourceImages labels weights outStates isTemporary =
+    fmap (RawId . castPtr) $ sendMsg mpsnnForwardLoss (mkSelector "encodeBatchToCommandBuffer:sourceImages:labels:weights:destinationStates:destinationStateIsTemporary:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr (unRawId labels) :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ()), argPtr (castPtr (unRawId outStates) :: Ptr ()), argCULong (if isTemporary then 1 else 0)]
+
 -- | See MPSCNNLossDescriptor for information about the following properties.
 --
 -- ObjC selector: @- lossType@
@@ -186,6 +232,14 @@ initWithDevice_lossDescriptorSelector = mkSelector "initWithDevice:lossDescripto
 -- | @Selector@ for @initWithCoder:device:@
 initWithCoder_deviceSelector :: Selector
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
+
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:labels:weights:destinationStates:destinationImages:@
+encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationImagesSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationImagesSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:labels:weights:destinationStates:destinationImages:"
+
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:labels:weights:destinationStates:destinationStateIsTemporary:@
+encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationStateIsTemporarySelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationStateIsTemporarySelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:labels:weights:destinationStates:destinationStateIsTemporary:"
 
 -- | @Selector@ for @lossType@
 lossTypeSelector :: Selector

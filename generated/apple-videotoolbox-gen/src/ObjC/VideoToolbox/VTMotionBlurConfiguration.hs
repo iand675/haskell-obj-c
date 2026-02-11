@@ -21,6 +21,7 @@ module ObjC.VideoToolbox.VTMotionBlurConfiguration
   , revision
   , supportedRevisions
   , defaultRevision
+  , frameSupportedPixelFormats
   , sourcePixelBufferAttributes
   , destinationPixelBufferAttributes
   , supported
@@ -35,6 +36,7 @@ module ObjC.VideoToolbox.VTMotionBlurConfiguration
   , revisionSelector
   , supportedRevisionsSelector
   , defaultRevisionSelector
+  , frameSupportedPixelFormatsSelector
   , sourcePixelBufferAttributesSelector
   , destinationPixelBufferAttributesSelector
   , supportedSelector
@@ -145,6 +147,13 @@ defaultRevision  =
     cls' <- getRequiredClass "VTMotionBlurConfiguration"
     fmap (coerce :: CLong -> VTMotionBlurConfigurationRevision) $ sendClassMsg cls' (mkSelector "defaultRevision") retCLong []
 
+-- | Available supported pixel formats for source frames for current configuration.
+--
+-- ObjC selector: @- frameSupportedPixelFormats@
+frameSupportedPixelFormats :: IsVTMotionBlurConfiguration vtMotionBlurConfiguration => vtMotionBlurConfiguration -> IO (Id NSArray)
+frameSupportedPixelFormats vtMotionBlurConfiguration  =
+    sendMsg vtMotionBlurConfiguration (mkSelector "frameSupportedPixelFormats") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Pixel buffer attributes dictionary that describes requirements for pixel buffers which represent source frames and reference frames.
 --
 -- Use ``CVPixelBufferCreateResolvedAttributesDictionary`` to combine this dictionary with your pixel buffer attributes dictionary.
@@ -222,6 +231,10 @@ supportedRevisionsSelector = mkSelector "supportedRevisions"
 -- | @Selector@ for @defaultRevision@
 defaultRevisionSelector :: Selector
 defaultRevisionSelector = mkSelector "defaultRevision"
+
+-- | @Selector@ for @frameSupportedPixelFormats@
+frameSupportedPixelFormatsSelector :: Selector
+frameSupportedPixelFormatsSelector = mkSelector "frameSupportedPixelFormats"
 
 -- | @Selector@ for @sourcePixelBufferAttributes@
 sourcePixelBufferAttributesSelector :: Selector

@@ -11,7 +11,9 @@ module ObjC.MLCompute.MLCReshapeLayer
   ( MLCReshapeLayer
   , IsMLCReshapeLayer(..)
   , layerWithShape
+  , shape
   , layerWithShapeSelector
+  , shapeSelector
 
 
   ) where
@@ -45,6 +47,15 @@ layerWithShape shape =
     withObjCPtr shape $ \raw_shape ->
       sendClassMsg cls' (mkSelector "layerWithShape:") (retPtr retVoid) [argPtr (castPtr raw_shape :: Ptr ())] >>= retainedObject . castPtr
 
+-- | shape
+--
+-- The target shape.
+--
+-- ObjC selector: @- shape@
+shape :: IsMLCReshapeLayer mlcReshapeLayer => mlcReshapeLayer -> IO (Id NSArray)
+shape mlcReshapeLayer  =
+    sendMsg mlcReshapeLayer (mkSelector "shape") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -52,4 +63,8 @@ layerWithShape shape =
 -- | @Selector@ for @layerWithShape:@
 layerWithShapeSelector :: Selector
 layerWithShapeSelector = mkSelector "layerWithShape:"
+
+-- | @Selector@ for @shape@
+shapeSelector :: Selector
+shapeSelector = mkSelector "shape"
 

@@ -13,11 +13,13 @@ module ObjC.HealthKit.HKGAD7Assessment
   , assessmentWithDate_answers_metadata
   , init_
   , new
+  , answers
   , risk
   , assessmentWithDate_answersSelector
   , assessmentWithDate_answers_metadataSelector
   , initSelector
   , newSelector
+  , answersSelector
   , riskSelector
 
   -- * Enum types
@@ -80,6 +82,13 @@ new  =
     cls' <- getRequiredClass "HKGAD7Assessment"
     sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | Answers on the GAD-7 assessment. There are exactly 7 answers, one for each multiple choice question. Each answer is of type @HKGAD7AssessmentAnswer@.
+--
+-- ObjC selector: @- answers@
+answers :: IsHKGAD7Assessment hkgaD7Assessment => hkgaD7Assessment -> IO (Id NSArray)
+answers hkgaD7Assessment  =
+    sendMsg hkgaD7Assessment (mkSelector "answers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | risk
 --
 -- The risk determined by the score on a GAD-7 assessment.
@@ -108,6 +117,10 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @new@
 newSelector :: Selector
 newSelector = mkSelector "new"
+
+-- | @Selector@ for @answers@
+answersSelector :: Selector
+answersSelector = mkSelector "answers"
 
 -- | @Selector@ for @risk@
 riskSelector :: Selector

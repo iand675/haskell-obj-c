@@ -22,6 +22,7 @@ module ObjC.AppKit.NSWritingToolsCoordinator
   , updateRange_withText_reason_forContextWithIdentifier
   , updateForReflowedTextInContextWithIdentifier
   , isWritingToolsAvailable
+  , delegate
   , view
   , effectContainerView
   , setEffectContainerView
@@ -41,6 +42,7 @@ module ObjC.AppKit.NSWritingToolsCoordinator
   , updateRange_withText_reason_forContextWithIdentifierSelector
   , updateForReflowedTextInContextWithIdentifierSelector
   , isWritingToolsAvailableSelector
+  , delegateSelector
   , viewSelector
   , effectContainerViewSelector
   , setEffectContainerViewSelector
@@ -158,6 +160,15 @@ isWritingToolsAvailable  =
   do
     cls' <- getRequiredClass "NSWritingToolsCoordinator"
     fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isWritingToolsAvailable") retCULong []
+
+-- | The object that handles Writing Tools interactions for your view.
+--
+-- Specify this object at initialization time when creating your @NSWritingToolsCoordinator@ object. The object must adopt the ``NSWritingToolsCoordinator/Delegate`` protocol, and be capable of modifying your view’s text storage and refreshing the view’s layout and appearance.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsNSWritingToolsCoordinator nsWritingToolsCoordinator => nsWritingToolsCoordinator -> IO RawId
+delegate nsWritingToolsCoordinator  =
+    fmap (RawId . castPtr) $ sendMsg nsWritingToolsCoordinator (mkSelector "delegate") (retPtr retVoid) []
 
 -- | The view that currently uses the writing tools coordinator.
 --
@@ -310,6 +321,10 @@ updateForReflowedTextInContextWithIdentifierSelector = mkSelector "updateForRefl
 -- | @Selector@ for @isWritingToolsAvailable@
 isWritingToolsAvailableSelector :: Selector
 isWritingToolsAvailableSelector = mkSelector "isWritingToolsAvailable"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @view@
 viewSelector :: Selector

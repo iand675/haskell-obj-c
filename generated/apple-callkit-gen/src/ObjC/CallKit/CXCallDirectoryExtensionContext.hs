@@ -14,6 +14,8 @@ module ObjC.CallKit.CXCallDirectoryExtensionContext
   , removeAllIdentificationEntries
   , completeRequestWithCompletionHandler
   , completeRequestReturningItems_completionHandler
+  , delegate
+  , setDelegate
   , incremental
   , addBlockingEntryWithNextSequentialPhoneNumberSelector
   , removeBlockingEntryWithPhoneNumberSelector
@@ -23,6 +25,8 @@ module ObjC.CallKit.CXCallDirectoryExtensionContext
   , removeAllIdentificationEntriesSelector
   , completeRequestWithCompletionHandlerSelector
   , completeRequestReturningItems_completionHandlerSelector
+  , delegateSelector
+  , setDelegateSelector
   , incrementalSelector
 
 
@@ -105,6 +109,16 @@ completeRequestReturningItems_completionHandler cxCallDirectoryExtensionContext 
   withObjCPtr items $ \raw_items ->
       sendMsg cxCallDirectoryExtensionContext (mkSelector "completeRequestReturningItems:completionHandler:") retVoid [argPtr (castPtr raw_items :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsCXCallDirectoryExtensionContext cxCallDirectoryExtensionContext => cxCallDirectoryExtensionContext -> IO RawId
+delegate cxCallDirectoryExtensionContext  =
+    fmap (RawId . castPtr) $ sendMsg cxCallDirectoryExtensionContext (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsCXCallDirectoryExtensionContext cxCallDirectoryExtensionContext => cxCallDirectoryExtensionContext -> RawId -> IO ()
+setDelegate cxCallDirectoryExtensionContext  value =
+    sendMsg cxCallDirectoryExtensionContext (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Whether the request should provide incremental data.
 --
 -- If this is called at the beginning of the request (before any entries have been added or removed) and the result is YES, then the request must only provide an "incremental" set of entries, i.e. only add or remove entries relative to the last time data was loaded for the extension. Otherwise, if this method is not called OR is called and returns NO, then the request must provide a "complete" set of entries, adding the full list of entries from scratch (and removing none), regardless of whether data has ever been successfully loaded in the past.
@@ -149,6 +163,14 @@ completeRequestWithCompletionHandlerSelector = mkSelector "completeRequestWithCo
 -- | @Selector@ for @completeRequestReturningItems:completionHandler:@
 completeRequestReturningItems_completionHandlerSelector :: Selector
 completeRequestReturningItems_completionHandlerSelector = mkSelector "completeRequestReturningItems:completionHandler:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @incremental@
 incrementalSelector :: Selector

@@ -22,6 +22,8 @@ module ObjC.WebKit.WKWebsiteDataStore
   , persistent
   , httpCookieStore
   , identifier
+  , proxyConfigurations
+  , setProxyConfigurations
   , defaultDataStoreSelector
   , nonPersistentDataStoreSelector
   , newSelector
@@ -36,6 +38,8 @@ module ObjC.WebKit.WKWebsiteDataStore
   , persistentSelector
   , httpCookieStoreSelector
   , identifierSelector
+  , proxyConfigurationsSelector
+  , setProxyConfigurationsSelector
 
 
   ) where
@@ -187,6 +191,17 @@ identifier :: IsWKWebsiteDataStore wkWebsiteDataStore => wkWebsiteDataStore -> I
 identifier wkWebsiteDataStore  =
     sendMsg wkWebsiteDataStore (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- proxyConfigurations@
+proxyConfigurations :: IsWKWebsiteDataStore wkWebsiteDataStore => wkWebsiteDataStore -> IO (Id NSArray)
+proxyConfigurations wkWebsiteDataStore  =
+    sendMsg wkWebsiteDataStore (mkSelector "proxyConfigurations") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setProxyConfigurations:@
+setProxyConfigurations :: (IsWKWebsiteDataStore wkWebsiteDataStore, IsNSArray value) => wkWebsiteDataStore -> value -> IO ()
+setProxyConfigurations wkWebsiteDataStore  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg wkWebsiteDataStore (mkSelector "setProxyConfigurations:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -246,4 +261,12 @@ httpCookieStoreSelector = mkSelector "httpCookieStore"
 -- | @Selector@ for @identifier@
 identifierSelector :: Selector
 identifierSelector = mkSelector "identifier"
+
+-- | @Selector@ for @proxyConfigurations@
+proxyConfigurationsSelector :: Selector
+proxyConfigurationsSelector = mkSelector "proxyConfigurations"
+
+-- | @Selector@ for @setProxyConfigurations:@
+setProxyConfigurationsSelector :: Selector
+setProxyConfigurationsSelector = mkSelector "setProxyConfigurations:"
 

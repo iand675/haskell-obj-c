@@ -16,6 +16,9 @@ module ObjC.AVFoundation.AVSampleBufferRenderSynchronizer
   , setRate
   , delaysRateChangeUntilHasSufficientMediaData
   , setDelaysRateChangeUntilHasSufficientMediaData
+  , intendedSpatialAudioExperience
+  , setIntendedSpatialAudioExperience
+  , renderers
   , addBoundaryTimeObserverForTimes_queue_usingBlockSelector
   , removeTimeObserverSelector
   , addRendererSelector
@@ -24,6 +27,9 @@ module ObjC.AVFoundation.AVSampleBufferRenderSynchronizer
   , setRateSelector
   , delaysRateChangeUntilHasSufficientMediaDataSelector
   , setDelaysRateChangeUntilHasSufficientMediaDataSelector
+  , intendedSpatialAudioExperienceSelector
+  , setIntendedSpatialAudioExperienceSelector
+  , renderersSelector
 
 
   ) where
@@ -133,6 +139,35 @@ setDelaysRateChangeUntilHasSufficientMediaData :: IsAVSampleBufferRenderSynchron
 setDelaysRateChangeUntilHasSufficientMediaData avSampleBufferRenderSynchronizer  value =
     sendMsg avSampleBufferRenderSynchronizer (mkSelector "setDelaysRateChangeUntilHasSufficientMediaData:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | The intended spatial audio experience applied to all AVSampleBufferAudioRenderers within this synchronizer.
+--
+-- The default value of CAAutomaticSpatialAudio means the renderers use their AVAudioSession's intended spatial experience. If the anchoring strategy is impossible (e.g. it uses a destroyed UIScene's identifier), the renderers follow a "front" anchoring strategy instead.
+--
+-- ObjC selector: @- intendedSpatialAudioExperience@
+intendedSpatialAudioExperience :: IsAVSampleBufferRenderSynchronizer avSampleBufferRenderSynchronizer => avSampleBufferRenderSynchronizer -> IO RawId
+intendedSpatialAudioExperience avSampleBufferRenderSynchronizer  =
+    fmap (RawId . castPtr) $ sendMsg avSampleBufferRenderSynchronizer (mkSelector "intendedSpatialAudioExperience") (retPtr retVoid) []
+
+-- | The intended spatial audio experience applied to all AVSampleBufferAudioRenderers within this synchronizer.
+--
+-- The default value of CAAutomaticSpatialAudio means the renderers use their AVAudioSession's intended spatial experience. If the anchoring strategy is impossible (e.g. it uses a destroyed UIScene's identifier), the renderers follow a "front" anchoring strategy instead.
+--
+-- ObjC selector: @- setIntendedSpatialAudioExperience:@
+setIntendedSpatialAudioExperience :: IsAVSampleBufferRenderSynchronizer avSampleBufferRenderSynchronizer => avSampleBufferRenderSynchronizer -> RawId -> IO ()
+setIntendedSpatialAudioExperience avSampleBufferRenderSynchronizer  value =
+    sendMsg avSampleBufferRenderSynchronizer (mkSelector "setIntendedSpatialAudioExperience:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | Array of id<AVQueuedSampleBufferRendering> currently attached to the synchronizer.
+--
+-- A list of renderers added to and not removed from the synchronizer. The list also includes renderers that have been scheduled to be removed but have not yet been removed.
+--
+-- This property is not KVO observable.
+--
+-- ObjC selector: @- renderers@
+renderers :: IsAVSampleBufferRenderSynchronizer avSampleBufferRenderSynchronizer => avSampleBufferRenderSynchronizer -> IO (Id NSArray)
+renderers avSampleBufferRenderSynchronizer  =
+    sendMsg avSampleBufferRenderSynchronizer (mkSelector "renderers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -168,4 +203,16 @@ delaysRateChangeUntilHasSufficientMediaDataSelector = mkSelector "delaysRateChan
 -- | @Selector@ for @setDelaysRateChangeUntilHasSufficientMediaData:@
 setDelaysRateChangeUntilHasSufficientMediaDataSelector :: Selector
 setDelaysRateChangeUntilHasSufficientMediaDataSelector = mkSelector "setDelaysRateChangeUntilHasSufficientMediaData:"
+
+-- | @Selector@ for @intendedSpatialAudioExperience@
+intendedSpatialAudioExperienceSelector :: Selector
+intendedSpatialAudioExperienceSelector = mkSelector "intendedSpatialAudioExperience"
+
+-- | @Selector@ for @setIntendedSpatialAudioExperience:@
+setIntendedSpatialAudioExperienceSelector :: Selector
+setIntendedSpatialAudioExperienceSelector = mkSelector "setIntendedSpatialAudioExperience:"
+
+-- | @Selector@ for @renderers@
+renderersSelector :: Selector
+renderersSelector = mkSelector "renderers"
 

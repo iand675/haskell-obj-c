@@ -24,6 +24,11 @@ module ObjC.AVFoundation.AVCapturePhoto
   , rawPhoto
   , pixelBuffer
   , previewPixelBuffer
+  , embeddedThumbnailPhotoFormat
+  , depthData
+  , portraitEffectsMatte
+  , metadata
+  , cameraCalibrationData
   , resolvedSettings
   , photoCount
   , sourceDeviceType
@@ -44,6 +49,11 @@ module ObjC.AVFoundation.AVCapturePhoto
   , rawPhotoSelector
   , pixelBufferSelector
   , previewPixelBufferSelector
+  , embeddedThumbnailPhotoFormatSelector
+  , depthDataSelector
+  , portraitEffectsMatteSelector
+  , metadataSelector
+  , cameraCalibrationDataSelector
   , resolvedSettingsSelector
   , photoCountSelector
   , sourceDeviceTypeSelector
@@ -213,6 +223,61 @@ previewPixelBuffer :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (P
 previewPixelBuffer avCapturePhoto  =
     fmap castPtr $ sendMsg avCapturePhoto (mkSelector "previewPixelBuffer") (retPtr retVoid) []
 
+-- | embeddedThumbnailPhotoFormat
+--
+-- The format of the embedded thumbnail contained in this AVCapturePhoto.
+--
+-- If you requested an embedded thumbnail image by calling -[AVCapturePhotoSettings setEmbeddedThumbnailPhotoFormat:] with a non-nil value, this property offers access to the resolved embedded thumbnail AVVideoSettings dictionary. Nil is returned if you did not request an embedded thumbnail image.
+--
+-- ObjC selector: @- embeddedThumbnailPhotoFormat@
+embeddedThumbnailPhotoFormat :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (Id NSDictionary)
+embeddedThumbnailPhotoFormat avCapturePhoto  =
+    sendMsg avCapturePhoto (mkSelector "embeddedThumbnailPhotoFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | depthData
+--
+-- An AVDepthData object wrapping a disparity/depth map associated with this photo.
+--
+-- If you requested depth data delivery by calling -[AVCapturePhotoSettings setDepthDataDeliveryEnabled:YES], this property offers access to the resulting AVDepthData object. Nil is returned if you did not request depth data delivery. Note that the depth data is only embedded in the photo's internal file format container if you set -[AVCapturePhotoSettings setEmbedsDepthDataInPhoto:YES].
+--
+-- ObjC selector: @- depthData@
+depthData :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (Id AVDepthData)
+depthData avCapturePhoto  =
+    sendMsg avCapturePhoto (mkSelector "depthData") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | portraitEffectsMatte
+--
+-- An AVPortraitEffectsMatte object wrapping a matte associated with this photo.
+--
+-- If you requested portrait effects matte delivery by calling -[AVCapturePhotoSettings setPortraitEffectsMatteDeliveryEnabled:YES], this property offers access to the resulting AVPortraitEffectsMatte object. Nil is returned if you did not request portrait effects matte delivery. Note that the portrait effects matte is only embedded in the photo's internal file format container if you set -[AVCapturePhotoSettings setEmbedsPortraitEffectsMatteInPhoto:YES].
+--
+-- ObjC selector: @- portraitEffectsMatte@
+portraitEffectsMatte :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (Id AVPortraitEffectsMatte)
+portraitEffectsMatte avCapturePhoto  =
+    sendMsg avCapturePhoto (mkSelector "portraitEffectsMatte") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | metadata
+--
+-- An ImageIO property style dictionary of metadata associated with this photo.
+--
+-- Valid metadata keys are found in <ImageIO/CGImageProperties.h>, such as kCGImagePropertyOrientation, kCGImagePropertyExifDictionary, kCGImagePropertyMakerAppleDictionary, etc.
+--
+-- ObjC selector: @- metadata@
+metadata :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (Id NSDictionary)
+metadata avCapturePhoto  =
+    sendMsg avCapturePhoto (mkSelector "metadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | cameraCalibrationData
+--
+-- An AVCameraCalibrationData object representing the calibration information for the camera providing the photo.
+--
+-- Camera calibration data is only present if you set AVCapturePhotoSettings.setCameraCalibrationDataDeliveryEnabled to YES. When requesting virtual device constituent photo delivery plus cameraCalibrationDataDeliveryEnabled, camera calibration information is delivered with all resultant photos and is specific to the constituent device producing that photo.
+--
+-- ObjC selector: @- cameraCalibrationData@
+cameraCalibrationData :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (Id AVCameraCalibrationData)
+cameraCalibrationData avCapturePhoto  =
+    sendMsg avCapturePhoto (mkSelector "cameraCalibrationData") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | resolvedSettings
 --
 -- The AVCaptureResolvedPhotoSettings associated with all photo results for a given -[AVCapturePhotoOutput capturePhotoWithSettings:delegate:] request.
@@ -361,6 +426,26 @@ pixelBufferSelector = mkSelector "pixelBuffer"
 -- | @Selector@ for @previewPixelBuffer@
 previewPixelBufferSelector :: Selector
 previewPixelBufferSelector = mkSelector "previewPixelBuffer"
+
+-- | @Selector@ for @embeddedThumbnailPhotoFormat@
+embeddedThumbnailPhotoFormatSelector :: Selector
+embeddedThumbnailPhotoFormatSelector = mkSelector "embeddedThumbnailPhotoFormat"
+
+-- | @Selector@ for @depthData@
+depthDataSelector :: Selector
+depthDataSelector = mkSelector "depthData"
+
+-- | @Selector@ for @portraitEffectsMatte@
+portraitEffectsMatteSelector :: Selector
+portraitEffectsMatteSelector = mkSelector "portraitEffectsMatte"
+
+-- | @Selector@ for @metadata@
+metadataSelector :: Selector
+metadataSelector = mkSelector "metadata"
+
+-- | @Selector@ for @cameraCalibrationData@
+cameraCalibrationDataSelector :: Selector
+cameraCalibrationDataSelector = mkSelector "cameraCalibrationData"
 
 -- | @Selector@ for @resolvedSettings@
 resolvedSettingsSelector :: Selector

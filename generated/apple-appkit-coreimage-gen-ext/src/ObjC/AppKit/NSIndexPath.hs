@@ -6,8 +6,10 @@
 module ObjC.AppKit.NSIndexPath
   ( NSIndexPath
   , IsNSIndexPath(..)
+  , indexPathForItem_inSection
   , item
   , section
+  , indexPathForItem_inSectionSelector
   , itemSelector
   , sectionSelector
 
@@ -28,6 +30,13 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.AppKit.Internal.Classes
 
+-- | @+ indexPathForItem:inSection:@
+indexPathForItem_inSection :: CLong -> CLong -> IO RawId
+indexPathForItem_inSection item section =
+  do
+    cls' <- getRequiredClass "NSIndexPath"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "indexPathForItem:inSection:") (retPtr retVoid) [argCLong item, argCLong section]
+
 -- | @- item@
 item :: IsNSIndexPath nsIndexPath => nsIndexPath -> IO CLong
 item nsIndexPath  =
@@ -41,6 +50,10 @@ section nsIndexPath  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @indexPathForItem:inSection:@
+indexPathForItem_inSectionSelector :: Selector
+indexPathForItem_inSectionSelector = mkSelector "indexPathForItem:inSection:"
 
 -- | @Selector@ for @item@
 itemSelector :: Selector

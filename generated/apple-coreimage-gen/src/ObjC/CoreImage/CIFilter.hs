@@ -29,6 +29,7 @@ module ObjC.CoreImage.CIFilter
   , localizedNameForCategory
   , localizedDescriptionForFilterName
   , localizedReferenceDocumentationForFilterName
+  , outputImage
   , enabled
   , setEnabled
   , inputKeys
@@ -53,6 +54,7 @@ module ObjC.CoreImage.CIFilter
   , localizedNameForCategorySelector
   , localizedDescriptionForFilterNameSelector
   , localizedReferenceDocumentationForFilterNameSelector
+  , outputImageSelector
   , enabledSelector
   , setEnabledSelector
   , inputKeysSelector
@@ -275,6 +277,11 @@ localizedReferenceDocumentationForFilterName filterName =
     withObjCPtr filterName $ \raw_filterName ->
       sendClassMsg cls' (mkSelector "localizedReferenceDocumentationForFilterName:") (retPtr retVoid) [argPtr (castPtr raw_filterName :: Ptr ())] >>= retainedObject . castPtr
 
+-- | @- outputImage@
+outputImage :: IsCIFilter ciFilter => ciFilter -> IO RawId
+outputImage ciFilter  =
+    fmap (RawId . castPtr) $ sendMsg ciFilter (mkSelector "outputImage") (retPtr retVoid) []
+
 -- | @- enabled@
 enabled :: IsCIFilter ciFilter => ciFilter -> IO Bool
 enabled ciFilter  =
@@ -385,6 +392,10 @@ localizedDescriptionForFilterNameSelector = mkSelector "localizedDescriptionForF
 -- | @Selector@ for @localizedReferenceDocumentationForFilterName:@
 localizedReferenceDocumentationForFilterNameSelector :: Selector
 localizedReferenceDocumentationForFilterNameSelector = mkSelector "localizedReferenceDocumentationForFilterName:"
+
+-- | @Selector@ for @outputImage@
+outputImageSelector :: Selector
+outputImageSelector = mkSelector "outputImage"
 
 -- | @Selector@ for @enabled@
 enabledSelector :: Selector

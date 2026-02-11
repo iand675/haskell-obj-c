@@ -12,6 +12,8 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.SystemExtensions.Delegate.OSSystemExtensionRequestDelegate
+      ObjC.SystemExtensions.Delegate.OSSystemExtensionsWorkspaceObserver
       ObjC.SystemExtensions.Enums
       ObjC.SystemExtensions.Internal.Classes
       ObjC.SystemExtensions.Internal.Enums

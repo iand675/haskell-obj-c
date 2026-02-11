@@ -27,13 +27,18 @@ module ObjC.AppKit.NSWindowController
   , setWindowFrameAutosaveName
   , shouldCascadeWindows
   , setShouldCascadeWindows
+  , previewRepresentableActivityItems
+  , setPreviewRepresentableActivityItems
   , document
   , setDocument
   , shouldCloseDocument
   , setShouldCloseDocument
+  , contentViewController
+  , setContentViewController
   , window
   , setWindow
   , windowLoaded
+  , storyboard
   , initWithWindowSelector
   , initWithCoderSelector
   , initWithWindowNibNameSelector
@@ -55,13 +60,18 @@ module ObjC.AppKit.NSWindowController
   , setWindowFrameAutosaveNameSelector
   , shouldCascadeWindowsSelector
   , setShouldCascadeWindowsSelector
+  , previewRepresentableActivityItemsSelector
+  , setPreviewRepresentableActivityItemsSelector
   , documentSelector
   , setDocumentSelector
   , shouldCloseDocumentSelector
   , setShouldCloseDocumentSelector
+  , contentViewControllerSelector
+  , setContentViewControllerSelector
   , windowSelector
   , setWindowSelector
   , windowLoadedSelector
+  , storyboardSelector
 
 
   ) where
@@ -193,6 +203,17 @@ setShouldCascadeWindows :: IsNSWindowController nsWindowController => nsWindowCo
 setShouldCascadeWindows nsWindowController  value =
     sendMsg nsWindowController (mkSelector "setShouldCascadeWindows:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @- previewRepresentableActivityItems@
+previewRepresentableActivityItems :: IsNSWindowController nsWindowController => nsWindowController -> IO (Id NSArray)
+previewRepresentableActivityItems nsWindowController  =
+    sendMsg nsWindowController (mkSelector "previewRepresentableActivityItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setPreviewRepresentableActivityItems:@
+setPreviewRepresentableActivityItems :: (IsNSWindowController nsWindowController, IsNSArray value) => nsWindowController -> value -> IO ()
+setPreviewRepresentableActivityItems nsWindowController  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsWindowController (mkSelector "setPreviewRepresentableActivityItems:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- document@
 document :: IsNSWindowController nsWindowController => nsWindowController -> IO RawId
 document nsWindowController  =
@@ -213,6 +234,17 @@ setShouldCloseDocument :: IsNSWindowController nsWindowController => nsWindowCon
 setShouldCloseDocument nsWindowController  value =
     sendMsg nsWindowController (mkSelector "setShouldCloseDocument:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @- contentViewController@
+contentViewController :: IsNSWindowController nsWindowController => nsWindowController -> IO (Id NSViewController)
+contentViewController nsWindowController  =
+    sendMsg nsWindowController (mkSelector "contentViewController") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setContentViewController:@
+setContentViewController :: (IsNSWindowController nsWindowController, IsNSViewController value) => nsWindowController -> value -> IO ()
+setContentViewController nsWindowController  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsWindowController (mkSelector "setContentViewController:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- window@
 window :: IsNSWindowController nsWindowController => nsWindowController -> IO (Id NSWindow)
 window nsWindowController  =
@@ -228,6 +260,11 @@ setWindow nsWindowController  value =
 windowLoaded :: IsNSWindowController nsWindowController => nsWindowController -> IO Bool
 windowLoaded nsWindowController  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindowController (mkSelector "windowLoaded") retCULong []
+
+-- | @- storyboard@
+storyboard :: IsNSWindowController nsWindowController => nsWindowController -> IO (Id NSStoryboard)
+storyboard nsWindowController  =
+    sendMsg nsWindowController (mkSelector "storyboard") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -317,6 +354,14 @@ shouldCascadeWindowsSelector = mkSelector "shouldCascadeWindows"
 setShouldCascadeWindowsSelector :: Selector
 setShouldCascadeWindowsSelector = mkSelector "setShouldCascadeWindows:"
 
+-- | @Selector@ for @previewRepresentableActivityItems@
+previewRepresentableActivityItemsSelector :: Selector
+previewRepresentableActivityItemsSelector = mkSelector "previewRepresentableActivityItems"
+
+-- | @Selector@ for @setPreviewRepresentableActivityItems:@
+setPreviewRepresentableActivityItemsSelector :: Selector
+setPreviewRepresentableActivityItemsSelector = mkSelector "setPreviewRepresentableActivityItems:"
+
 -- | @Selector@ for @document@
 documentSelector :: Selector
 documentSelector = mkSelector "document"
@@ -333,6 +378,14 @@ shouldCloseDocumentSelector = mkSelector "shouldCloseDocument"
 setShouldCloseDocumentSelector :: Selector
 setShouldCloseDocumentSelector = mkSelector "setShouldCloseDocument:"
 
+-- | @Selector@ for @contentViewController@
+contentViewControllerSelector :: Selector
+contentViewControllerSelector = mkSelector "contentViewController"
+
+-- | @Selector@ for @setContentViewController:@
+setContentViewControllerSelector :: Selector
+setContentViewControllerSelector = mkSelector "setContentViewController:"
+
 -- | @Selector@ for @window@
 windowSelector :: Selector
 windowSelector = mkSelector "window"
@@ -344,4 +397,8 @@ setWindowSelector = mkSelector "setWindow:"
 -- | @Selector@ for @windowLoaded@
 windowLoadedSelector :: Selector
 windowLoadedSelector = mkSelector "windowLoaded"
+
+-- | @Selector@ for @storyboard@
+storyboardSelector :: Selector
+storyboardSelector = mkSelector "storyboard"
 

@@ -17,6 +17,10 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.ReplayKit.Delegate.RPBroadcastActivityControllerDelegate
+  - ObjC.ReplayKit.Delegate.RPBroadcastControllerDelegate
+  - ObjC.ReplayKit.Delegate.RPPreviewViewControllerDelegate
+  - ObjC.ReplayKit.Delegate.RPScreenRecorderDelegate
   - ObjC.ReplayKit.Enums
   - ObjC.ReplayKit.Internal.Classes
   - ObjC.ReplayKit.Internal.Enums

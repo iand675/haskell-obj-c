@@ -10,14 +10,18 @@ module ObjC.StoreKit.SKPaymentTransaction
   , error_
   , originalTransaction
   , payment
+  , downloads
   , transactionDate
   , transactionIdentifier
+  , transactionReceipt
   , transactionState
   , errorSelector
   , originalTransactionSelector
   , paymentSelector
+  , downloadsSelector
   , transactionDateSelector
   , transactionIdentifierSelector
+  , transactionReceiptSelector
   , transactionStateSelector
 
   -- * Enum types
@@ -61,6 +65,11 @@ payment :: IsSKPaymentTransaction skPaymentTransaction => skPaymentTransaction -
 payment skPaymentTransaction  =
     sendMsg skPaymentTransaction (mkSelector "payment") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- downloads@
+downloads :: IsSKPaymentTransaction skPaymentTransaction => skPaymentTransaction -> IO (Id NSArray)
+downloads skPaymentTransaction  =
+    sendMsg skPaymentTransaction (mkSelector "downloads") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- transactionDate@
 transactionDate :: IsSKPaymentTransaction skPaymentTransaction => skPaymentTransaction -> IO (Id NSDate)
 transactionDate skPaymentTransaction  =
@@ -70,6 +79,11 @@ transactionDate skPaymentTransaction  =
 transactionIdentifier :: IsSKPaymentTransaction skPaymentTransaction => skPaymentTransaction -> IO (Id NSString)
 transactionIdentifier skPaymentTransaction  =
     sendMsg skPaymentTransaction (mkSelector "transactionIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- transactionReceipt@
+transactionReceipt :: IsSKPaymentTransaction skPaymentTransaction => skPaymentTransaction -> IO (Id NSData)
+transactionReceipt skPaymentTransaction  =
+    sendMsg skPaymentTransaction (mkSelector "transactionReceipt") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- transactionState@
 transactionState :: IsSKPaymentTransaction skPaymentTransaction => skPaymentTransaction -> IO SKPaymentTransactionState
@@ -92,6 +106,10 @@ originalTransactionSelector = mkSelector "originalTransaction"
 paymentSelector :: Selector
 paymentSelector = mkSelector "payment"
 
+-- | @Selector@ for @downloads@
+downloadsSelector :: Selector
+downloadsSelector = mkSelector "downloads"
+
 -- | @Selector@ for @transactionDate@
 transactionDateSelector :: Selector
 transactionDateSelector = mkSelector "transactionDate"
@@ -99,6 +117,10 @@ transactionDateSelector = mkSelector "transactionDate"
 -- | @Selector@ for @transactionIdentifier@
 transactionIdentifierSelector :: Selector
 transactionIdentifierSelector = mkSelector "transactionIdentifier"
+
+-- | @Selector@ for @transactionReceipt@
+transactionReceiptSelector :: Selector
+transactionReceiptSelector = mkSelector "transactionReceipt"
 
 -- | @Selector@ for @transactionState@
 transactionStateSelector :: Selector

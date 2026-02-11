@@ -21,6 +21,7 @@ module ObjC.ITunesLibrary.ITLibrary
   , features
   , apiMajorVersion
   , apiMinorVersion
+  , mediaFolderLocation
   , musicFolderLocation
   , showContentRating
   , allMediaItems
@@ -37,6 +38,7 @@ module ObjC.ITunesLibrary.ITLibrary
   , featuresSelector
   , apiMajorVersionSelector
   , apiMinorVersionSelector
+  , mediaFolderLocationSelector
   , musicFolderLocationSelector
   , showContentRatingSelector
   , allMediaItemsSelector
@@ -204,6 +206,13 @@ apiMinorVersion :: IsITLibrary itLibrary => itLibrary -> IO CULong
 apiMinorVersion itLibrary  =
     sendMsg itLibrary (mkSelector "apiMinorVersion") retCULong []
 
+-- | The location of the iTunes music folder.
+--
+-- ObjC selector: @- mediaFolderLocation@
+mediaFolderLocation :: IsITLibrary itLibrary => itLibrary -> IO RawId
+mediaFolderLocation itLibrary  =
+    fmap (RawId . castPtr) $ sendMsg itLibrary (mkSelector "mediaFolderLocation") (retPtr retVoid) []
+
 -- | The location of the iTunes music folder. Replaced by mediaFolderLocation.
 --
 -- ObjC selector: @- musicFolderLocation@
@@ -283,6 +292,10 @@ apiMajorVersionSelector = mkSelector "apiMajorVersion"
 -- | @Selector@ for @apiMinorVersion@
 apiMinorVersionSelector :: Selector
 apiMinorVersionSelector = mkSelector "apiMinorVersion"
+
+-- | @Selector@ for @mediaFolderLocation@
+mediaFolderLocationSelector :: Selector
+mediaFolderLocationSelector = mkSelector "mediaFolderLocation"
 
 -- | @Selector@ for @musicFolderLocation@
 musicFolderLocationSelector :: Selector

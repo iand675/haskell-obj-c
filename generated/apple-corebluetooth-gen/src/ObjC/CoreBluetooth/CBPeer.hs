@@ -7,7 +7,9 @@ module ObjC.CoreBluetooth.CBPeer
   ( CBPeer
   , IsCBPeer(..)
   , init_
+  , identifier
   , initSelector
+  , identifierSelector
 
 
   ) where
@@ -32,6 +34,15 @@ init_ :: IsCBPeer cbPeer => cbPeer -> IO (Id CBPeer)
 init_ cbPeer  =
     sendMsg cbPeer (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | identifier
+--
+-- The unique, persistent identifier associated with the peer.
+--
+-- ObjC selector: @- identifier@
+identifier :: IsCBPeer cbPeer => cbPeer -> IO RawId
+identifier cbPeer  =
+    fmap (RawId . castPtr) $ sendMsg cbPeer (mkSelector "identifier") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -39,4 +50,8 @@ init_ cbPeer  =
 -- | @Selector@ for @init@
 initSelector :: Selector
 initSelector = mkSelector "init"
+
+-- | @Selector@ for @identifier@
+identifierSelector :: Selector
+identifierSelector = mkSelector "identifier"
 

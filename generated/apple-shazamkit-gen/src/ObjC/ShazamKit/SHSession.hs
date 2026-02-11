@@ -35,11 +35,15 @@ module ObjC.ShazamKit.SHSession
   , matchStreamingBuffer_atTime
   , matchSignature
   , catalog
+  , delegate
+  , setDelegate
   , initSelector
   , initWithCatalogSelector
   , matchStreamingBuffer_atTimeSelector
   , matchSignatureSelector
   , catalogSelector
+  , delegateSelector
+  , setDelegateSelector
 
 
   ) where
@@ -113,6 +117,20 @@ catalog :: IsSHSession shSession => shSession -> IO (Id SHCatalog)
 catalog shSession  =
     sendMsg shSession (mkSelector "catalog") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The object that the session calls with the result of a match request.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsSHSession shSession => shSession -> IO RawId
+delegate shSession  =
+    fmap (RawId . castPtr) $ sendMsg shSession (mkSelector "delegate") (retPtr retVoid) []
+
+-- | The object that the session calls with the result of a match request.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsSHSession shSession => shSession -> RawId -> IO ()
+setDelegate shSession  value =
+    sendMsg shSession (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -136,4 +154,12 @@ matchSignatureSelector = mkSelector "matchSignature:"
 -- | @Selector@ for @catalog@
 catalogSelector :: Selector
 catalogSelector = mkSelector "catalog"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

@@ -33,10 +33,12 @@ module ObjC.AVFoundation.AVContentKeySession
   , removePendingExpiredSessionReports_withAppIdentifier_storageDirectoryAtURL
   , addContentKeyRecipient
   , removeContentKeyRecipient
+  , delegate
   , delegateQueue
   , storageURL
   , keySystem
   , contentProtectionSessionIdentifier
+  , contentKeyRecipients
   , initSelector
   , newSelector
   , contentKeySessionWithKeySystemSelector
@@ -52,10 +54,12 @@ module ObjC.AVFoundation.AVContentKeySession
   , removePendingExpiredSessionReports_withAppIdentifier_storageDirectoryAtURLSelector
   , addContentKeyRecipientSelector
   , removeContentKeyRecipientSelector
+  , delegateSelector
   , delegateQueueSelector
   , storageURLSelector
   , keySystemSelector
   , contentProtectionSessionIdentifierSelector
+  , contentKeyRecipientsSelector
 
 
   ) where
@@ -249,6 +253,15 @@ removeContentKeyRecipient :: IsAVContentKeySession avContentKeySession => avCont
 removeContentKeyRecipient avContentKeySession  recipient =
     sendMsg avContentKeySession (mkSelector "removeContentKeyRecipient:") retVoid [argPtr (castPtr (unRawId recipient) :: Ptr ())]
 
+-- | The receiver's delegate.
+--
+-- The value of this property is an object conforming to the AVContentKeySessionDelegate protocol. The delegate is set using the setDelegate:queue: method.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsAVContentKeySession avContentKeySession => avContentKeySession -> IO RawId
+delegate avContentKeySession  =
+    fmap (RawId . castPtr) $ sendMsg avContentKeySession (mkSelector "delegate") (retPtr retVoid) []
+
 -- | The dispatch queue on which all delegate methods will be invoked whenever processes requiring content keys are executed asynchronously.
 --
 -- The value of this property is a dispatch_queue_t. The queue is set using the setDelegate:queue: method.
@@ -282,6 +295,13 @@ keySystem avContentKeySession  =
 contentProtectionSessionIdentifier :: IsAVContentKeySession avContentKeySession => avContentKeySession -> IO (Id NSData)
 contentProtectionSessionIdentifier avContentKeySession  =
     sendMsg avContentKeySession (mkSelector "contentProtectionSessionIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The array of recipients of content keys currently associated with the AVContentKeySession.
+--
+-- ObjC selector: @- contentKeyRecipients@
+contentKeyRecipients :: IsAVContentKeySession avContentKeySession => avContentKeySession -> IO (Id NSArray)
+contentKeyRecipients avContentKeySession  =
+    sendMsg avContentKeySession (mkSelector "contentKeyRecipients") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -347,6 +367,10 @@ addContentKeyRecipientSelector = mkSelector "addContentKeyRecipient:"
 removeContentKeyRecipientSelector :: Selector
 removeContentKeyRecipientSelector = mkSelector "removeContentKeyRecipient:"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
 -- | @Selector@ for @delegateQueue@
 delegateQueueSelector :: Selector
 delegateQueueSelector = mkSelector "delegateQueue"
@@ -362,4 +386,8 @@ keySystemSelector = mkSelector "keySystem"
 -- | @Selector@ for @contentProtectionSessionIdentifier@
 contentProtectionSessionIdentifierSelector :: Selector
 contentProtectionSessionIdentifierSelector = mkSelector "contentProtectionSessionIdentifier"
+
+-- | @Selector@ for @contentKeyRecipients@
+contentKeyRecipientsSelector :: Selector
+contentKeyRecipientsSelector = mkSelector "contentKeyRecipients"
 

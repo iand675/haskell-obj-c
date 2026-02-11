@@ -20,6 +20,8 @@ module ObjC.AVFAudio.AVAudioCompressedBuffer
   , byteCapacity
   , byteLength
   , setByteLength
+  , packetDescriptions
+  , packetDependencies
   , initWithFormat_packetCapacity_maximumPacketSizeSelector
   , initWithFormat_packetCapacitySelector
   , packetCapacitySelector
@@ -30,6 +32,8 @@ module ObjC.AVFAudio.AVAudioCompressedBuffer
   , byteCapacitySelector
   , byteLengthSelector
   , setByteLengthSelector
+  , packetDescriptionsSelector
+  , packetDependenciesSelector
 
 
   ) where
@@ -163,6 +167,28 @@ setByteLength :: IsAVAudioCompressedBuffer avAudioCompressedBuffer => avAudioCom
 setByteLength avAudioCompressedBuffer  value =
     sendMsg avAudioCompressedBuffer (mkSelector "setByteLength:") retVoid [argCUInt value]
 
+-- | packetDescriptions
+--
+-- Access the buffer's array of packet descriptions, if any.
+--
+-- If the format has constant bytes per packet (format.streamDescription->mBytesPerPacket != 0), then this will return nil.
+--
+-- ObjC selector: @- packetDescriptions@
+packetDescriptions :: IsAVAudioCompressedBuffer avAudioCompressedBuffer => avAudioCompressedBuffer -> IO RawId
+packetDescriptions avAudioCompressedBuffer  =
+    fmap (RawId . castPtr) $ sendMsg avAudioCompressedBuffer (mkSelector "packetDescriptions") (retPtr retVoid) []
+
+-- | packetDependencies
+--
+-- Access the buffer's array of packet dependencies, if any.
+--
+-- If the format doesn't employ packet dependencies, this will be nil.
+--
+-- ObjC selector: @- packetDependencies@
+packetDependencies :: IsAVAudioCompressedBuffer avAudioCompressedBuffer => avAudioCompressedBuffer -> IO RawId
+packetDependencies avAudioCompressedBuffer  =
+    fmap (RawId . castPtr) $ sendMsg avAudioCompressedBuffer (mkSelector "packetDependencies") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -206,4 +232,12 @@ byteLengthSelector = mkSelector "byteLength"
 -- | @Selector@ for @setByteLength:@
 setByteLengthSelector :: Selector
 setByteLengthSelector = mkSelector "setByteLength:"
+
+-- | @Selector@ for @packetDescriptions@
+packetDescriptionsSelector :: Selector
+packetDescriptionsSelector = mkSelector "packetDescriptions"
+
+-- | @Selector@ for @packetDependencies@
+packetDependenciesSelector :: Selector
+packetDependenciesSelector = mkSelector "packetDependencies"
 

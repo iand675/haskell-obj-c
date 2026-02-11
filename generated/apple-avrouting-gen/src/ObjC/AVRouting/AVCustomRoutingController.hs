@@ -13,9 +13,23 @@ module ObjC.AVRouting.AVCustomRoutingController
   , invalidateAuthorizationForRoute
   , setActive_forRoute
   , isRouteActive
+  , delegate
+  , setDelegate
+  , authorizedRoutes
+  , knownRouteIPs
+  , setKnownRouteIPs
+  , customActionItems
+  , setCustomActionItems
   , invalidateAuthorizationForRouteSelector
   , setActive_forRouteSelector
   , isRouteActiveSelector
+  , delegateSelector
+  , setDelegateSelector
+  , authorizedRoutesSelector
+  , knownRouteIPsSelector
+  , setKnownRouteIPsSelector
+  , customActionItemsSelector
+  , setCustomActionItemsSelector
 
 
   ) where
@@ -73,6 +87,59 @@ isRouteActive avCustomRoutingController  route =
   withObjCPtr route $ \raw_route ->
       fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCustomRoutingController (mkSelector "isRouteActive:") retCULong [argPtr (castPtr raw_route :: Ptr ())]
 
+-- | A delegate object for a routing controller.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsAVCustomRoutingController avCustomRoutingController => avCustomRoutingController -> IO RawId
+delegate avCustomRoutingController  =
+    fmap (RawId . castPtr) $ sendMsg avCustomRoutingController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | A delegate object for a routing controller.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsAVCustomRoutingController avCustomRoutingController => avCustomRoutingController -> RawId -> IO ()
+setDelegate avCustomRoutingController  value =
+    sendMsg avCustomRoutingController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | A list of authorized routes.
+--
+-- After a user activates a route, it remains authorized for a certain amount of time even if the connection to the route is temporarily unavailable. Your app may reactivate any one of these routes when appropriate, but it needs to inform the system by calling ``AVCustomRoutingController/setActive:forRoute:``.
+--
+-- ObjC selector: @- authorizedRoutes@
+authorizedRoutes :: IsAVCustomRoutingController avCustomRoutingController => avCustomRoutingController -> IO (Id NSArray)
+authorizedRoutes avCustomRoutingController  =
+    sendMsg avCustomRoutingController (mkSelector "authorizedRoutes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | An array of route addresses known to be on the local network.
+--
+-- ObjC selector: @- knownRouteIPs@
+knownRouteIPs :: IsAVCustomRoutingController avCustomRoutingController => avCustomRoutingController -> IO (Id NSArray)
+knownRouteIPs avCustomRoutingController  =
+    sendMsg avCustomRoutingController (mkSelector "knownRouteIPs") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | An array of route addresses known to be on the local network.
+--
+-- ObjC selector: @- setKnownRouteIPs:@
+setKnownRouteIPs :: (IsAVCustomRoutingController avCustomRoutingController, IsNSArray value) => avCustomRoutingController -> value -> IO ()
+setKnownRouteIPs avCustomRoutingController  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avCustomRoutingController (mkSelector "setKnownRouteIPs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | An array of custom action items to add to a route picker.
+--
+-- ObjC selector: @- customActionItems@
+customActionItems :: IsAVCustomRoutingController avCustomRoutingController => avCustomRoutingController -> IO (Id NSArray)
+customActionItems avCustomRoutingController  =
+    sendMsg avCustomRoutingController (mkSelector "customActionItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | An array of custom action items to add to a route picker.
+--
+-- ObjC selector: @- setCustomActionItems:@
+setCustomActionItems :: (IsAVCustomRoutingController avCustomRoutingController, IsNSArray value) => avCustomRoutingController -> value -> IO ()
+setCustomActionItems avCustomRoutingController  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avCustomRoutingController (mkSelector "setCustomActionItems:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -88,4 +155,32 @@ setActive_forRouteSelector = mkSelector "setActive:forRoute:"
 -- | @Selector@ for @isRouteActive:@
 isRouteActiveSelector :: Selector
 isRouteActiveSelector = mkSelector "isRouteActive:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @authorizedRoutes@
+authorizedRoutesSelector :: Selector
+authorizedRoutesSelector = mkSelector "authorizedRoutes"
+
+-- | @Selector@ for @knownRouteIPs@
+knownRouteIPsSelector :: Selector
+knownRouteIPsSelector = mkSelector "knownRouteIPs"
+
+-- | @Selector@ for @setKnownRouteIPs:@
+setKnownRouteIPsSelector :: Selector
+setKnownRouteIPsSelector = mkSelector "setKnownRouteIPs:"
+
+-- | @Selector@ for @customActionItems@
+customActionItemsSelector :: Selector
+customActionItemsSelector = mkSelector "customActionItems"
+
+-- | @Selector@ for @setCustomActionItems:@
+setCustomActionItemsSelector :: Selector
+setCustomActionItemsSelector = mkSelector "setCustomActionItems:"
 

@@ -64,6 +64,15 @@ module ObjC.Runtime
     -- * Dynamic class helpers (vtable-based)
   , module ObjC.Runtime.DynClass
 
+    -- * StablePtr-based class helpers
+  , module ObjC.Runtime.StableIvar
+
+    -- * Target/action helper
+  , module ObjC.Runtime.ActionTarget
+
+    -- * Multi-protocol delegate proxy
+  , module ObjC.Runtime.DelegateProxy
+
     -- * Objective-C blocks
   , module ObjC.Runtime.Block
 
@@ -93,6 +102,9 @@ import ObjC.Runtime.Protocol
 import ObjC.Runtime.Association
 import ObjC.Runtime.ClassBuilder
 import ObjC.Runtime.DynClass
+import ObjC.Runtime.StableIvar
+import ObjC.Runtime.ActionTarget
+import ObjC.Runtime.DelegateProxy
 import ObjC.Runtime.Block
 import ObjC.Runtime.MsgSend
 import ObjC.Runtime.AutoreleasePool

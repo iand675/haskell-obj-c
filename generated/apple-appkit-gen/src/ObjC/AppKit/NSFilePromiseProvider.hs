@@ -10,12 +10,16 @@ module ObjC.AppKit.NSFilePromiseProvider
   , init_
   , fileType
   , setFileType
+  , delegate
+  , setDelegate
   , userInfo
   , setUserInfo
   , initWithFileType_delegateSelector
   , initSelector
   , fileTypeSelector
   , setFileTypeSelector
+  , delegateSelector
+  , setDelegateSelector
   , userInfoSelector
   , setUserInfoSelector
 
@@ -59,6 +63,16 @@ setFileType nsFilePromiseProvider  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsFilePromiseProvider (mkSelector "setFileType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsNSFilePromiseProvider nsFilePromiseProvider => nsFilePromiseProvider -> IO RawId
+delegate nsFilePromiseProvider  =
+    fmap (RawId . castPtr) $ sendMsg nsFilePromiseProvider (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSFilePromiseProvider nsFilePromiseProvider => nsFilePromiseProvider -> RawId -> IO ()
+setDelegate nsFilePromiseProvider  value =
+    sendMsg nsFilePromiseProvider (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- userInfo@
 userInfo :: IsNSFilePromiseProvider nsFilePromiseProvider => nsFilePromiseProvider -> IO RawId
 userInfo nsFilePromiseProvider  =
@@ -88,6 +102,14 @@ fileTypeSelector = mkSelector "fileType"
 -- | @Selector@ for @setFileType:@
 setFileTypeSelector :: Selector
 setFileTypeSelector = mkSelector "setFileType:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @userInfo@
 userInfoSelector :: Selector

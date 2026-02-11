@@ -14,10 +14,12 @@ module ObjC.MLCompute.MLCSplitLayer
   , layerWithSplitSectionLengths_dimension
   , dimension
   , splitCount
+  , splitSectionLengths
   , layerWithSplitCount_dimensionSelector
   , layerWithSplitSectionLengths_dimensionSelector
   , dimensionSelector
   , splitCountSelector
+  , splitSectionLengthsSelector
 
 
   ) where
@@ -88,6 +90,17 @@ splitCount :: IsMLCSplitLayer mlcSplitLayer => mlcSplitLayer -> IO CULong
 splitCount mlcSplitLayer  =
     sendMsg mlcSplitLayer (mkSelector "splitCount") retCULong []
 
+-- | splitSectionLengths
+--
+-- Lengths of each split section.
+--
+-- The tensor will be split into chunks along dimensions with sizes given in @splitSectionLengths@ .
+--
+-- ObjC selector: @- splitSectionLengths@
+splitSectionLengths :: IsMLCSplitLayer mlcSplitLayer => mlcSplitLayer -> IO (Id NSArray)
+splitSectionLengths mlcSplitLayer  =
+    sendMsg mlcSplitLayer (mkSelector "splitSectionLengths") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -107,4 +120,8 @@ dimensionSelector = mkSelector "dimension"
 -- | @Selector@ for @splitCount@
 splitCountSelector :: Selector
 splitCountSelector = mkSelector "splitCount"
+
+-- | @Selector@ for @splitSectionLengths@
+splitSectionLengthsSelector :: Selector
+splitSectionLengthsSelector = mkSelector "splitSectionLengths"
 

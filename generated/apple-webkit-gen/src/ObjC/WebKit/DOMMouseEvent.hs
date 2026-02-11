@@ -17,6 +17,7 @@ module ObjC.WebKit.DOMMouseEvent
   , altKey
   , metaKey
   , button
+  , relatedTarget
   , offsetX
   , offsetY
   , x
@@ -34,6 +35,7 @@ module ObjC.WebKit.DOMMouseEvent
   , altKeySelector
   , metaKeySelector
   , buttonSelector
+  , relatedTargetSelector
   , offsetXSelector
   , offsetYSelector
   , xSelector
@@ -118,6 +120,11 @@ button :: IsDOMMouseEvent domMouseEvent => domMouseEvent -> IO CShort
 button domMouseEvent  =
     fmap fromIntegral $ sendMsg domMouseEvent (mkSelector "button") retCInt []
 
+-- | @- relatedTarget@
+relatedTarget :: IsDOMMouseEvent domMouseEvent => domMouseEvent -> IO RawId
+relatedTarget domMouseEvent  =
+    fmap (RawId . castPtr) $ sendMsg domMouseEvent (mkSelector "relatedTarget") (retPtr retVoid) []
+
 -- | @- offsetX@
 offsetX :: IsDOMMouseEvent domMouseEvent => domMouseEvent -> IO CInt
 offsetX domMouseEvent  =
@@ -195,6 +202,10 @@ metaKeySelector = mkSelector "metaKey"
 -- | @Selector@ for @button@
 buttonSelector :: Selector
 buttonSelector = mkSelector "button"
+
+-- | @Selector@ for @relatedTarget@
+relatedTargetSelector :: Selector
+relatedTargetSelector = mkSelector "relatedTarget"
 
 -- | @Selector@ for @offsetX@
 offsetXSelector :: Selector

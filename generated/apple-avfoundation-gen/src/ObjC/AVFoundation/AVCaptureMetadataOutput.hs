@@ -15,17 +15,21 @@ module ObjC.AVFoundation.AVCaptureMetadataOutput
   , init_
   , new
   , setMetadataObjectsDelegate_queue
+  , metadataObjectsDelegate
   , metadataObjectsCallbackQueue
   , availableMetadataObjectTypes
   , metadataObjectTypes
   , setMetadataObjectTypes
+  , requiredMetadataObjectTypesForCinematicVideoCapture
   , initSelector
   , newSelector
   , setMetadataObjectsDelegate_queueSelector
+  , metadataObjectsDelegateSelector
   , metadataObjectsCallbackQueueSelector
   , availableMetadataObjectTypesSelector
   , metadataObjectTypesSelector
   , setMetadataObjectTypesSelector
+  , requiredMetadataObjectTypesForCinematicVideoCaptureSelector
 
 
   ) where
@@ -77,6 +81,17 @@ setMetadataObjectsDelegate_queue avCaptureMetadataOutput  objectsDelegate object
   withObjCPtr objectsCallbackQueue $ \raw_objectsCallbackQueue ->
       sendMsg avCaptureMetadataOutput (mkSelector "setMetadataObjectsDelegate:queue:") retVoid [argPtr (castPtr (unRawId objectsDelegate) :: Ptr ()), argPtr (castPtr raw_objectsCallbackQueue :: Ptr ())]
 
+-- | metadataObjectsDelegate
+--
+-- The receiver's delegate.
+--
+-- The value of this property is an object conforming to the AVCaptureMetadataOutputObjectsDelegate protocol that will receive metadata objects after they are captured. The delegate is set using the setMetadataObjectsDelegate:queue: method.
+--
+-- ObjC selector: @- metadataObjectsDelegate@
+metadataObjectsDelegate :: IsAVCaptureMetadataOutput avCaptureMetadataOutput => avCaptureMetadataOutput -> IO RawId
+metadataObjectsDelegate avCaptureMetadataOutput  =
+    fmap (RawId . castPtr) $ sendMsg avCaptureMetadataOutput (mkSelector "metadataObjectsDelegate") (retPtr retVoid) []
+
 -- | metadataObjectsCallbackQueue
 --
 -- The dispatch queue on which all metadata object delegate methods will be called.
@@ -126,6 +141,15 @@ setMetadataObjectTypes avCaptureMetadataOutput  value =
   withObjCPtr value $ \raw_value ->
       sendMsg avCaptureMetadataOutput (mkSelector "setMetadataObjectTypes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | The required metadata object types when Cinematic Video capture is enabled.
+--
+-- Since the Cinematic Video algorithm requires a particular set of metadata objects to function optimally, you must set your ``metadataObjectTypes`` property to this property's returned value if you've set ``AVCaptureDeviceInput/cinematicVideoCaptureEnabled`` to @true@ on the connected device input, otherwise an @NSInvalidArgumentException@ is thrown.
+--
+-- ObjC selector: @- requiredMetadataObjectTypesForCinematicVideoCapture@
+requiredMetadataObjectTypesForCinematicVideoCapture :: IsAVCaptureMetadataOutput avCaptureMetadataOutput => avCaptureMetadataOutput -> IO (Id NSArray)
+requiredMetadataObjectTypesForCinematicVideoCapture avCaptureMetadataOutput  =
+    sendMsg avCaptureMetadataOutput (mkSelector "requiredMetadataObjectTypesForCinematicVideoCapture") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -142,6 +166,10 @@ newSelector = mkSelector "new"
 setMetadataObjectsDelegate_queueSelector :: Selector
 setMetadataObjectsDelegate_queueSelector = mkSelector "setMetadataObjectsDelegate:queue:"
 
+-- | @Selector@ for @metadataObjectsDelegate@
+metadataObjectsDelegateSelector :: Selector
+metadataObjectsDelegateSelector = mkSelector "metadataObjectsDelegate"
+
 -- | @Selector@ for @metadataObjectsCallbackQueue@
 metadataObjectsCallbackQueueSelector :: Selector
 metadataObjectsCallbackQueueSelector = mkSelector "metadataObjectsCallbackQueue"
@@ -157,4 +185,8 @@ metadataObjectTypesSelector = mkSelector "metadataObjectTypes"
 -- | @Selector@ for @setMetadataObjectTypes:@
 setMetadataObjectTypesSelector :: Selector
 setMetadataObjectTypesSelector = mkSelector "setMetadataObjectTypes:"
+
+-- | @Selector@ for @requiredMetadataObjectTypesForCinematicVideoCapture@
+requiredMetadataObjectTypesForCinematicVideoCaptureSelector :: Selector
+requiredMetadataObjectTypesForCinematicVideoCaptureSelector = mkSelector "requiredMetadataObjectTypesForCinematicVideoCapture"
 

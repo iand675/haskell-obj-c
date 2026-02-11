@@ -9,9 +9,13 @@ module ObjC.Foundation.NSSpellServer
   , registerLanguage_byVendor
   , isWordInUserDictionaries_caseSensitive
   , run
+  , delegate
+  , setDelegate
   , registerLanguage_byVendorSelector
   , isWordInUserDictionaries_caseSensitiveSelector
   , runSelector
+  , delegateSelector
+  , setDelegateSelector
 
 
   ) where
@@ -48,6 +52,16 @@ run :: IsNSSpellServer nsSpellServer => nsSpellServer -> IO ()
 run nsSpellServer  =
     sendMsg nsSpellServer (mkSelector "run") retVoid []
 
+-- | @- delegate@
+delegate :: IsNSSpellServer nsSpellServer => nsSpellServer -> IO RawId
+delegate nsSpellServer  =
+    fmap (RawId . castPtr) $ sendMsg nsSpellServer (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSSpellServer nsSpellServer => nsSpellServer -> RawId -> IO ()
+setDelegate nsSpellServer  value =
+    sendMsg nsSpellServer (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -63,4 +77,12 @@ isWordInUserDictionaries_caseSensitiveSelector = mkSelector "isWordInUserDiction
 -- | @Selector@ for @run@
 runSelector :: Selector
 runSelector = mkSelector "run"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

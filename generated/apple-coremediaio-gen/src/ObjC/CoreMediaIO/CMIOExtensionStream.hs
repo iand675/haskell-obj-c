@@ -26,6 +26,7 @@ module ObjC.CoreMediaIO.CMIOExtensionStream
   , direction
   , clockType
   , customClockConfiguration
+  , source
   , streamingClients
   , initSelector
   , newSelector
@@ -42,6 +43,7 @@ module ObjC.CoreMediaIO.CMIOExtensionStream
   , directionSelector
   , clockTypeSelector
   , customClockConfigurationSelector
+  , sourceSelector
   , streamingClientsSelector
 
   -- * Enum types
@@ -294,6 +296,15 @@ customClockConfiguration :: IsCMIOExtensionStream cmioExtensionStream => cmioExt
 customClockConfiguration cmioExtensionStream  =
     sendMsg cmioExtensionStream (mkSelector "customClockConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | source
+--
+-- The stream source.
+--
+-- ObjC selector: @- source@
+source :: IsCMIOExtensionStream cmioExtensionStream => cmioExtensionStream -> IO RawId
+source cmioExtensionStream  =
+    fmap (RawId . castPtr) $ sendMsg cmioExtensionStream (mkSelector "source") (retPtr retVoid) []
+
 -- | streamingClients
 --
 -- The array of streaming clients.
@@ -368,6 +379,10 @@ clockTypeSelector = mkSelector "clockType"
 -- | @Selector@ for @customClockConfiguration@
 customClockConfigurationSelector :: Selector
 customClockConfigurationSelector = mkSelector "customClockConfiguration"
+
+-- | @Selector@ for @source@
+sourceSelector :: Selector
+sourceSelector = mkSelector "source"
 
 -- | @Selector@ for @streamingClients@
 streamingClientsSelector :: Selector

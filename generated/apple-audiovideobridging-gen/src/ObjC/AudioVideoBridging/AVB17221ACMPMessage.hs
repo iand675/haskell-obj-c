@@ -49,9 +49,12 @@ module ObjC.AudioVideoBridging.AVB17221ACMPMessage
   , setSourcePort
   , destinationPort
   , setDestinationPort
+  , sourceIPAddress
+  , setSourceIPAddress
+  , destinationIPAddress
+  , setDestinationIPAddress
   , sourceMAC
   , setSourceMAC
-  , errorForStatusCodeSelector
   , errorForStatusCodeSelector
   , messageTypeSelector
   , setMessageTypeSelector
@@ -87,6 +90,10 @@ module ObjC.AudioVideoBridging.AVB17221ACMPMessage
   , setSourcePortSelector
   , destinationPortSelector
   , setDestinationPortSelector
+  , sourceIPAddressSelector
+  , setSourceIPAddressSelector
+  , destinationIPAddressSelector
+  , setDestinationIPAddressSelector
   , sourceMACSelector
   , setSourceMACSelector
 
@@ -492,6 +499,44 @@ setDestinationPort :: IsAVB17221ACMPMessage avB17221ACMPMessage => avB17221ACMPM
 setDestinationPort avB17221ACMPMessage  value =
     sendMsg avB17221ACMPMessage (mkSelector "setDestinationPort:") retVoid [argCUInt (fromIntegral value)]
 
+-- | sourceAddress
+--
+-- The source_ip_address field of the ACMP message.
+--
+-- ObjC selector: @- sourceIPAddress@
+sourceIPAddress :: IsAVB17221ACMPMessage avB17221ACMPMessage => avB17221ACMPMessage -> IO (Id AVBIPAddress)
+sourceIPAddress avB17221ACMPMessage  =
+    sendMsg avB17221ACMPMessage (mkSelector "sourceIPAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | sourceAddress
+--
+-- The source_ip_address field of the ACMP message.
+--
+-- ObjC selector: @- setSourceIPAddress:@
+setSourceIPAddress :: (IsAVB17221ACMPMessage avB17221ACMPMessage, IsAVBIPAddress value) => avB17221ACMPMessage -> value -> IO ()
+setSourceIPAddress avB17221ACMPMessage  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avB17221ACMPMessage (mkSelector "setSourceIPAddress:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | destinationAddress
+--
+-- The destination_ip_address field of the ACMP message.
+--
+-- ObjC selector: @- destinationIPAddress@
+destinationIPAddress :: IsAVB17221ACMPMessage avB17221ACMPMessage => avB17221ACMPMessage -> IO (Id AVBIPAddress)
+destinationIPAddress avB17221ACMPMessage  =
+    sendMsg avB17221ACMPMessage (mkSelector "destinationIPAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | destinationAddress
+--
+-- The destination_ip_address field of the ACMP message.
+--
+-- ObjC selector: @- setDestinationIPAddress:@
+setDestinationIPAddress :: (IsAVB17221ACMPMessage avB17221ACMPMessage, IsAVBIPAddress value) => avB17221ACMPMessage -> value -> IO ()
+setDestinationIPAddress avB17221ACMPMessage  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avB17221ACMPMessage (mkSelector "setDestinationIPAddress:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | sourceMAC
 --
 -- The source_mac field of the ACMP message.
@@ -518,10 +563,6 @@ setSourceMAC avB17221ACMPMessage  value =
 -- | @Selector@ for @errorForStatusCode:@
 errorForStatusCodeSelector :: Selector
 errorForStatusCodeSelector = mkSelector "errorForStatusCode:"
-
--- | @Selector@ for @errorForStatusCode@
-errorForStatusCodeSelector :: Selector
-errorForStatusCodeSelector = mkSelector "errorForStatusCode"
 
 -- | @Selector@ for @messageType@
 messageTypeSelector :: Selector
@@ -658,6 +699,22 @@ destinationPortSelector = mkSelector "destinationPort"
 -- | @Selector@ for @setDestinationPort:@
 setDestinationPortSelector :: Selector
 setDestinationPortSelector = mkSelector "setDestinationPort:"
+
+-- | @Selector@ for @sourceIPAddress@
+sourceIPAddressSelector :: Selector
+sourceIPAddressSelector = mkSelector "sourceIPAddress"
+
+-- | @Selector@ for @setSourceIPAddress:@
+setSourceIPAddressSelector :: Selector
+setSourceIPAddressSelector = mkSelector "setSourceIPAddress:"
+
+-- | @Selector@ for @destinationIPAddress@
+destinationIPAddressSelector :: Selector
+destinationIPAddressSelector = mkSelector "destinationIPAddress"
+
+-- | @Selector@ for @setDestinationIPAddress:@
+setDestinationIPAddressSelector :: Selector
+setDestinationIPAddressSelector = mkSelector "setDestinationIPAddress:"
 
 -- | @Selector@ for @sourceMAC@
 sourceMACSelector :: Selector

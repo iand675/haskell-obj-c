@@ -6,12 +6,14 @@
 module ObjC.Matter.MTRControllerFactoryParams
   ( MTRControllerFactoryParams
   , IsMTRControllerFactoryParams(..)
+  , storageDelegate
   , startServer
   , setStartServer
   , paaCerts
   , setPaaCerts
   , cdCerts
   , setCdCerts
+  , storageDelegateSelector
   , startServerSelector
   , setStartServerSelector
   , paaCertsSelector
@@ -36,6 +38,11 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.Matter.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | @- storageDelegate@
+storageDelegate :: IsMTRControllerFactoryParams mtrControllerFactoryParams => mtrControllerFactoryParams -> IO RawId
+storageDelegate mtrControllerFactoryParams  =
+    fmap (RawId . castPtr) $ sendMsg mtrControllerFactoryParams (mkSelector "storageDelegate") (retPtr retVoid) []
 
 -- | @- startServer@
 startServer :: IsMTRControllerFactoryParams mtrControllerFactoryParams => mtrControllerFactoryParams -> IO Bool
@@ -72,6 +79,10 @@ setCdCerts mtrControllerFactoryParams  value =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @storageDelegate@
+storageDelegateSelector :: Selector
+storageDelegateSelector = mkSelector "storageDelegate"
 
 -- | @Selector@ for @startServer@
 startServerSelector :: Selector

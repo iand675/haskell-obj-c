@@ -21,12 +21,14 @@ module ObjC.AVFoundation.AVCaptureDataOutputSynchronizer
   , initWithDataOutputs
   , setDelegate_queue
   , dataOutputs
+  , delegate
   , delegateCallbackQueue
   , initSelector
   , newSelector
   , initWithDataOutputsSelector
   , setDelegate_queueSelector
   , dataOutputsSelector
+  , delegateSelector
   , delegateCallbackQueueSelector
 
 
@@ -100,6 +102,17 @@ dataOutputs :: IsAVCaptureDataOutputSynchronizer avCaptureDataOutputSynchronizer
 dataOutputs avCaptureDataOutputSynchronizer  =
     sendMsg avCaptureDataOutputSynchronizer (mkSelector "dataOutputs") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | delegate
+--
+-- The receiver's delegate.
+--
+-- The value of this property is an object conforming to the AVCaptureDataOutputSynchronizerDelegate protocol that will receive synchronized data output. The delegate is set using the -setDelegate:queue: method. This property is key-value observable.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsAVCaptureDataOutputSynchronizer avCaptureDataOutputSynchronizer => avCaptureDataOutputSynchronizer -> IO RawId
+delegate avCaptureDataOutputSynchronizer  =
+    fmap (RawId . castPtr) $ sendMsg avCaptureDataOutputSynchronizer (mkSelector "delegate") (retPtr retVoid) []
+
 -- | delegateCallbackQueue
 --
 -- The dispatch queue on which all AVCaptureDataOutputSynchronizerDelegate methods will be called.
@@ -134,6 +147,10 @@ setDelegate_queueSelector = mkSelector "setDelegate:queue:"
 -- | @Selector@ for @dataOutputs@
 dataOutputsSelector :: Selector
 dataOutputsSelector = mkSelector "dataOutputs"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @delegateCallbackQueue@
 delegateCallbackQueueSelector :: Selector

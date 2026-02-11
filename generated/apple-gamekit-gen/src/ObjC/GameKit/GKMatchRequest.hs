@@ -30,8 +30,14 @@ module ObjC.GameKit.GKMatchRequest
   , setRecipientResponseHandler
   , inviteeResponseHandler
   , setInviteeResponseHandler
+  , playersToInvite
+  , setPlayersToInvite
   , queueName
   , setQueueName
+  , properties
+  , setProperties
+  , recipientProperties
+  , setRecipientProperties
   , maxPlayersAllowedForMatchOfTypeSelector
   , minPlayersSelector
   , setMinPlayersSelector
@@ -53,8 +59,14 @@ module ObjC.GameKit.GKMatchRequest
   , setRecipientResponseHandlerSelector
   , inviteeResponseHandlerSelector
   , setInviteeResponseHandlerSelector
+  , playersToInviteSelector
+  , setPlayersToInviteSelector
   , queueNameSelector
   , setQueueNameSelector
+  , propertiesSelector
+  , setPropertiesSelector
+  , recipientPropertiesSelector
+  , setRecipientPropertiesSelector
 
   -- * Enum types
   , GKMatchType(GKMatchType)
@@ -227,6 +239,17 @@ setInviteeResponseHandler :: IsGKMatchRequest gkMatchRequest => gkMatchRequest -
 setInviteeResponseHandler gkMatchRequest  value =
     sendMsg gkMatchRequest (mkSelector "setInviteeResponseHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
 
+-- | @- playersToInvite@
+playersToInvite :: IsGKMatchRequest gkMatchRequest => gkMatchRequest -> IO (Id NSArray)
+playersToInvite gkMatchRequest  =
+    sendMsg gkMatchRequest (mkSelector "playersToInvite") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setPlayersToInvite:@
+setPlayersToInvite :: (IsGKMatchRequest gkMatchRequest, IsNSArray value) => gkMatchRequest -> value -> IO ()
+setPlayersToInvite gkMatchRequest  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg gkMatchRequest (mkSelector "setPlayersToInvite:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | The name of the queue, if rule-based matchmaking is used.
 --
 -- ObjC selector: @- queueName@
@@ -241,6 +264,35 @@ setQueueName :: (IsGKMatchRequest gkMatchRequest, IsNSString value) => gkMatchRe
 setQueueName gkMatchRequest  value =
   withObjCPtr value $ \raw_value ->
       sendMsg gkMatchRequest (mkSelector "setQueueName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The match properties, if rule-based matchmaking is used.
+--
+-- ObjC selector: @- properties@
+properties :: IsGKMatchRequest gkMatchRequest => gkMatchRequest -> IO RawId
+properties gkMatchRequest  =
+    fmap (RawId . castPtr) $ sendMsg gkMatchRequest (mkSelector "properties") (retPtr retVoid) []
+
+-- | The match properties, if rule-based matchmaking is used.
+--
+-- ObjC selector: @- setProperties:@
+setProperties :: IsGKMatchRequest gkMatchRequest => gkMatchRequest -> RawId -> IO ()
+setProperties gkMatchRequest  value =
+    sendMsg gkMatchRequest (mkSelector "setProperties:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | The recipient specific match properties, if rule-based matchmaking is used when inviting players.
+--
+-- ObjC selector: @- recipientProperties@
+recipientProperties :: IsGKMatchRequest gkMatchRequest => gkMatchRequest -> IO (Id NSDictionary)
+recipientProperties gkMatchRequest  =
+    sendMsg gkMatchRequest (mkSelector "recipientProperties") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The recipient specific match properties, if rule-based matchmaking is used when inviting players.
+--
+-- ObjC selector: @- setRecipientProperties:@
+setRecipientProperties :: (IsGKMatchRequest gkMatchRequest, IsNSDictionary value) => gkMatchRequest -> value -> IO ()
+setRecipientProperties gkMatchRequest  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg gkMatchRequest (mkSelector "setRecipientProperties:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -330,6 +382,14 @@ inviteeResponseHandlerSelector = mkSelector "inviteeResponseHandler"
 setInviteeResponseHandlerSelector :: Selector
 setInviteeResponseHandlerSelector = mkSelector "setInviteeResponseHandler:"
 
+-- | @Selector@ for @playersToInvite@
+playersToInviteSelector :: Selector
+playersToInviteSelector = mkSelector "playersToInvite"
+
+-- | @Selector@ for @setPlayersToInvite:@
+setPlayersToInviteSelector :: Selector
+setPlayersToInviteSelector = mkSelector "setPlayersToInvite:"
+
 -- | @Selector@ for @queueName@
 queueNameSelector :: Selector
 queueNameSelector = mkSelector "queueName"
@@ -337,4 +397,20 @@ queueNameSelector = mkSelector "queueName"
 -- | @Selector@ for @setQueueName:@
 setQueueNameSelector :: Selector
 setQueueNameSelector = mkSelector "setQueueName:"
+
+-- | @Selector@ for @properties@
+propertiesSelector :: Selector
+propertiesSelector = mkSelector "properties"
+
+-- | @Selector@ for @setProperties:@
+setPropertiesSelector :: Selector
+setPropertiesSelector = mkSelector "setProperties:"
+
+-- | @Selector@ for @recipientProperties@
+recipientPropertiesSelector :: Selector
+recipientPropertiesSelector = mkSelector "recipientProperties"
+
+-- | @Selector@ for @setRecipientProperties:@
+setRecipientPropertiesSelector :: Selector
+setRecipientPropertiesSelector = mkSelector "setRecipientProperties:"
 

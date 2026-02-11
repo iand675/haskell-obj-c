@@ -11,9 +11,11 @@ module ObjC.PassKit.PKIdentityAnyOfDescriptor
   , initWithDescriptors
   , init_
   , new
+  , descriptors
   , initWithDescriptorsSelector
   , initSelector
   , newSelector
+  , descriptorsSelector
 
 
   ) where
@@ -53,6 +55,13 @@ new  =
     cls' <- getRequiredClass "PKIdentityAnyOfDescriptor"
     sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | Set of requested descriptors for the composite document descriptor.
+--
+-- ObjC selector: @- descriptors@
+descriptors :: IsPKIdentityAnyOfDescriptor pkIdentityAnyOfDescriptor => pkIdentityAnyOfDescriptor -> IO (Id NSArray)
+descriptors pkIdentityAnyOfDescriptor  =
+    sendMsg pkIdentityAnyOfDescriptor (mkSelector "descriptors") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -68,4 +77,8 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @new@
 newSelector :: Selector
 newSelector = mkSelector "new"
+
+-- | @Selector@ for @descriptors@
+descriptorsSelector :: Selector
+descriptorsSelector = mkSelector "descriptors"
 

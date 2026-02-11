@@ -105,6 +105,7 @@ library:
   - ObjC.CloudKit.CKSystemSharingUIObserver
   - ObjC.CloudKit.CKUserIdentity
   - ObjC.CloudKit.CKUserIdentityLookupInfo
+  - ObjC.CloudKit.Delegate.CKRecordKeyValueSetting
   - ObjC.CloudKit.Enums
   - ObjC.CloudKit.Internal.Classes
   - ObjC.CloudKit.Internal.Enums

@@ -14,8 +14,10 @@ module ObjC.AVFoundation.AVCaptureInput
   , IsAVCaptureInput(..)
   , init_
   , new
+  , ports
   , initSelector
   , newSelector
+  , portsSelector
 
 
   ) where
@@ -47,6 +49,17 @@ new  =
     cls' <- getRequiredClass "AVCaptureInput"
     sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | ports
+--
+-- The ports owned by the receiver.
+--
+-- The value of this property is an array of AVCaptureInputPort objects, each exposing an interface to a single stream of media data provided by an input.
+--
+-- ObjC selector: @- ports@
+ports :: IsAVCaptureInput avCaptureInput => avCaptureInput -> IO (Id NSArray)
+ports avCaptureInput  =
+    sendMsg avCaptureInput (mkSelector "ports") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -58,4 +71,8 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @new@
 newSelector :: Selector
 newSelector = mkSelector "new"
+
+-- | @Selector@ for @ports@
+portsSelector :: Selector
+portsSelector = mkSelector "ports"
 

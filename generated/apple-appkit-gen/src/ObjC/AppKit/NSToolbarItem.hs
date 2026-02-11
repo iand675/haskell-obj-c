@@ -15,8 +15,12 @@ module ObjC.AppKit.NSToolbarItem
   , setLabel
   , paletteLabel
   , setPaletteLabel
+  , possibleLabels
+  , setPossibleLabels
   , toolTip
   , setToolTip
+  , menuFormRepresentation
+  , setMenuFormRepresentation
   , tag
   , setTag
   , target
@@ -31,10 +35,14 @@ module ObjC.AppKit.NSToolbarItem
   , setTitle
   , bordered
   , setBordered
+  , backgroundTintColor
+  , setBackgroundTintColor
   , style
   , setStyle
   , navigational
   , setNavigational
+  , view
+  , setView
   , visible
   , hidden
   , setHidden
@@ -44,6 +52,8 @@ module ObjC.AppKit.NSToolbarItem
   , setMaxSize
   , visibilityPriority
   , setVisibilityPriority
+  , badge
+  , setBadge
   , autovalidates
   , setAutovalidates
   , allowsDuplicatesInToolbar
@@ -55,8 +65,12 @@ module ObjC.AppKit.NSToolbarItem
   , setLabelSelector
   , paletteLabelSelector
   , setPaletteLabelSelector
+  , possibleLabelsSelector
+  , setPossibleLabelsSelector
   , toolTipSelector
   , setToolTipSelector
+  , menuFormRepresentationSelector
+  , setMenuFormRepresentationSelector
   , tagSelector
   , setTagSelector
   , targetSelector
@@ -71,10 +85,14 @@ module ObjC.AppKit.NSToolbarItem
   , setTitleSelector
   , borderedSelector
   , setBorderedSelector
+  , backgroundTintColorSelector
+  , setBackgroundTintColorSelector
   , styleSelector
   , setStyleSelector
   , navigationalSelector
   , setNavigationalSelector
+  , viewSelector
+  , setViewSelector
   , visibleSelector
   , hiddenSelector
   , setHiddenSelector
@@ -84,6 +102,8 @@ module ObjC.AppKit.NSToolbarItem
   , setMaxSizeSelector
   , visibilityPrioritySelector
   , setVisibilityPrioritySelector
+  , badgeSelector
+  , setBadgeSelector
   , autovalidatesSelector
   , setAutovalidatesSelector
   , allowsDuplicatesInToolbarSelector
@@ -169,6 +189,21 @@ setPaletteLabel nsToolbarItem  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsToolbarItem (mkSelector "setPaletteLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | An array of all alternate labels this item may display. The item will use the size of the longest label to prevent resizing when the label is changed.
+--
+-- ObjC selector: @- possibleLabels@
+possibleLabels :: IsNSToolbarItem nsToolbarItem => nsToolbarItem -> IO (Id NSSet)
+possibleLabels nsToolbarItem  =
+    sendMsg nsToolbarItem (mkSelector "possibleLabels") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | An array of all alternate labels this item may display. The item will use the size of the longest label to prevent resizing when the label is changed.
+--
+-- ObjC selector: @- setPossibleLabels:@
+setPossibleLabels :: (IsNSToolbarItem nsToolbarItem, IsNSSet value) => nsToolbarItem -> value -> IO ()
+setPossibleLabels nsToolbarItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsToolbarItem (mkSelector "setPossibleLabels:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | Use this to set a tooltip to be used when the item is displayed in the toolbar. (forwards to @-view@ if it responds)
 --
 -- ObjC selector: @- toolTip@
@@ -183,6 +218,21 @@ setToolTip :: (IsNSToolbarItem nsToolbarItem, IsNSString value) => nsToolbarItem
 setToolTip nsToolbarItem  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsToolbarItem (mkSelector "setToolTip:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The menu form of a toolbar item's purpose is twofold. First, when the window is too small to display an item, it will be clipped but remain accessible from a "clipped items" menu containing the menu item returned here. Second, in text only mode, the menu returned will be used to create the displayed items. Singleton menu items will be clickable, while submenu items will be represented as a pull down. For instance, say you want a button that allows you to switch between modes A, B, and C. You could represent this as a menu by: a menu item "mode" with three submenu items "A", "B", and "C". By default, this method returns a singleton menu item with item label as the title. For standard items, the target, action is set.
+--
+-- ObjC selector: @- menuFormRepresentation@
+menuFormRepresentation :: IsNSToolbarItem nsToolbarItem => nsToolbarItem -> IO (Id NSMenuItem)
+menuFormRepresentation nsToolbarItem  =
+    sendMsg nsToolbarItem (mkSelector "menuFormRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The menu form of a toolbar item's purpose is twofold. First, when the window is too small to display an item, it will be clipped but remain accessible from a "clipped items" menu containing the menu item returned here. Second, in text only mode, the menu returned will be used to create the displayed items. Singleton menu items will be clickable, while submenu items will be represented as a pull down. For instance, say you want a button that allows you to switch between modes A, B, and C. You could represent this as a menu by: a menu item "mode" with three submenu items "A", "B", and "C". By default, this method returns a singleton menu item with item label as the title. For standard items, the target, action is set.
+--
+-- ObjC selector: @- setMenuFormRepresentation:@
+setMenuFormRepresentation :: (IsNSToolbarItem nsToolbarItem, IsNSMenuItem value) => nsToolbarItem -> value -> IO ()
+setMenuFormRepresentation nsToolbarItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsToolbarItem (mkSelector "setMenuFormRepresentation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | Tag for your own custom purpose. (forwards to @-view@ if it responds)
 --
@@ -280,6 +330,17 @@ setBordered :: IsNSToolbarItem nsToolbarItem => nsToolbarItem -> Bool -> IO ()
 setBordered nsToolbarItem  value =
     sendMsg nsToolbarItem (mkSelector "setBordered:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @- backgroundTintColor@
+backgroundTintColor :: IsNSToolbarItem nsToolbarItem => nsToolbarItem -> IO (Id NSColor)
+backgroundTintColor nsToolbarItem  =
+    sendMsg nsToolbarItem (mkSelector "backgroundTintColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setBackgroundTintColor:@
+setBackgroundTintColor :: (IsNSToolbarItem nsToolbarItem, IsNSColor value) => nsToolbarItem -> value -> IO ()
+setBackgroundTintColor nsToolbarItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsToolbarItem (mkSelector "setBackgroundTintColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | Defines the toolbar item’s appearance. The default style is plain. Prominent style tints the background. If a background tint color is set, it uses it; otherwise, it uses the app’s or system’s accent color. If grouped with other items, it moves to its own to avoid tinting other items' background.
 --
 -- ObjC selector: @- style@
@@ -307,6 +368,21 @@ navigational nsToolbarItem  =
 setNavigational :: IsNSToolbarItem nsToolbarItem => nsToolbarItem -> Bool -> IO ()
 setNavigational nsToolbarItem  value =
     sendMsg nsToolbarItem (mkSelector "setNavigational:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | Items with automatically generated views will return nil from this getter. Custom views may be provided but not all @NSToolbarItem@ subclasses support custom views. Note that, by default, many of the set/get methods will be implemented by calls forwarded to the view you set, if it responds to it.
+--
+-- ObjC selector: @- view@
+view :: IsNSToolbarItem nsToolbarItem => nsToolbarItem -> IO (Id NSView)
+view nsToolbarItem  =
+    sendMsg nsToolbarItem (mkSelector "view") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Items with automatically generated views will return nil from this getter. Custom views may be provided but not all @NSToolbarItem@ subclasses support custom views. Note that, by default, many of the set/get methods will be implemented by calls forwarded to the view you set, if it responds to it.
+--
+-- ObjC selector: @- setView:@
+setView :: (IsNSToolbarItem nsToolbarItem, IsNSView value) => nsToolbarItem -> value -> IO ()
+setView nsToolbarItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsToolbarItem (mkSelector "setView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | An item is visible if it is present in the NSToolbar and not in the overflow menu. This property is key value observable.
 --
@@ -367,6 +443,21 @@ setVisibilityPriority :: IsNSToolbarItem nsToolbarItem => nsToolbarItem -> CLong
 setVisibilityPriority nsToolbarItem  value =
     sendMsg nsToolbarItem (mkSelector "setVisibilityPriority:") retVoid [argCLong value]
 
+-- | A badge that can be attached to an NSToolbarItem. This provides a way to display small visual indicators that can be used to highlight important information, such as unread notifications or status indicators.
+--
+-- ObjC selector: @- badge@
+badge :: IsNSToolbarItem nsToolbarItem => nsToolbarItem -> IO (Id NSItemBadge)
+badge nsToolbarItem  =
+    sendMsg nsToolbarItem (mkSelector "badge") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | A badge that can be attached to an NSToolbarItem. This provides a way to display small visual indicators that can be used to highlight important information, such as unread notifications or status indicators.
+--
+-- ObjC selector: @- setBadge:@
+setBadge :: (IsNSToolbarItem nsToolbarItem, IsNSItemBadge value) => nsToolbarItem -> value -> IO ()
+setBadge nsToolbarItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsToolbarItem (mkSelector "setBadge:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | This property only affects automatic validation performed by NSToolbar. Explicit validation requests, such as the @-[NSToolbar validateVisibleItems]@ method, will invoke the @-validate@ method even if @autovalidates@ is @NO@. Defaults to YES.
 --
 -- ObjC selector: @- autovalidates@
@@ -424,6 +515,14 @@ paletteLabelSelector = mkSelector "paletteLabel"
 setPaletteLabelSelector :: Selector
 setPaletteLabelSelector = mkSelector "setPaletteLabel:"
 
+-- | @Selector@ for @possibleLabels@
+possibleLabelsSelector :: Selector
+possibleLabelsSelector = mkSelector "possibleLabels"
+
+-- | @Selector@ for @setPossibleLabels:@
+setPossibleLabelsSelector :: Selector
+setPossibleLabelsSelector = mkSelector "setPossibleLabels:"
+
 -- | @Selector@ for @toolTip@
 toolTipSelector :: Selector
 toolTipSelector = mkSelector "toolTip"
@@ -431,6 +530,14 @@ toolTipSelector = mkSelector "toolTip"
 -- | @Selector@ for @setToolTip:@
 setToolTipSelector :: Selector
 setToolTipSelector = mkSelector "setToolTip:"
+
+-- | @Selector@ for @menuFormRepresentation@
+menuFormRepresentationSelector :: Selector
+menuFormRepresentationSelector = mkSelector "menuFormRepresentation"
+
+-- | @Selector@ for @setMenuFormRepresentation:@
+setMenuFormRepresentationSelector :: Selector
+setMenuFormRepresentationSelector = mkSelector "setMenuFormRepresentation:"
 
 -- | @Selector@ for @tag@
 tagSelector :: Selector
@@ -488,6 +595,14 @@ borderedSelector = mkSelector "bordered"
 setBorderedSelector :: Selector
 setBorderedSelector = mkSelector "setBordered:"
 
+-- | @Selector@ for @backgroundTintColor@
+backgroundTintColorSelector :: Selector
+backgroundTintColorSelector = mkSelector "backgroundTintColor"
+
+-- | @Selector@ for @setBackgroundTintColor:@
+setBackgroundTintColorSelector :: Selector
+setBackgroundTintColorSelector = mkSelector "setBackgroundTintColor:"
+
 -- | @Selector@ for @style@
 styleSelector :: Selector
 styleSelector = mkSelector "style"
@@ -503,6 +618,14 @@ navigationalSelector = mkSelector "navigational"
 -- | @Selector@ for @setNavigational:@
 setNavigationalSelector :: Selector
 setNavigationalSelector = mkSelector "setNavigational:"
+
+-- | @Selector@ for @view@
+viewSelector :: Selector
+viewSelector = mkSelector "view"
+
+-- | @Selector@ for @setView:@
+setViewSelector :: Selector
+setViewSelector = mkSelector "setView:"
 
 -- | @Selector@ for @visible@
 visibleSelector :: Selector
@@ -539,6 +662,14 @@ visibilityPrioritySelector = mkSelector "visibilityPriority"
 -- | @Selector@ for @setVisibilityPriority:@
 setVisibilityPrioritySelector :: Selector
 setVisibilityPrioritySelector = mkSelector "setVisibilityPriority:"
+
+-- | @Selector@ for @badge@
+badgeSelector :: Selector
+badgeSelector = mkSelector "badge"
+
+-- | @Selector@ for @setBadge:@
+setBadgeSelector :: Selector
+setBadgeSelector = mkSelector "setBadge:"
 
 -- | @Selector@ for @autovalidates@
 autovalidatesSelector :: Selector

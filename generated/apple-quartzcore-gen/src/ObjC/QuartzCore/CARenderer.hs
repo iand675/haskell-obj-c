@@ -8,6 +8,7 @@ module ObjC.QuartzCore.CARenderer
   , IsCARenderer(..)
   , rendererWithCGLContext_options
   , rendererWithMTLTexture_options
+  , beginFrameAtTime_timeStamp
   , render
   , nextFrameTime
   , endFrame
@@ -16,6 +17,7 @@ module ObjC.QuartzCore.CARenderer
   , setLayer
   , rendererWithCGLContext_optionsSelector
   , rendererWithMTLTexture_optionsSelector
+  , beginFrameAtTime_timeStampSelector
   , renderSelector
   , nextFrameTimeSelector
   , endFrameSelector
@@ -56,6 +58,11 @@ rendererWithMTLTexture_options tex dict =
     cls' <- getRequiredClass "CARenderer"
     withObjCPtr dict $ \raw_dict ->
       sendClassMsg cls' (mkSelector "rendererWithMTLTexture:options:") (retPtr retVoid) [argPtr (castPtr (unRawId tex) :: Ptr ()), argPtr (castPtr raw_dict :: Ptr ())] >>= retainedObject . castPtr
+
+-- | @- beginFrameAtTime:timeStamp:@
+beginFrameAtTime_timeStamp :: IsCARenderer caRenderer => caRenderer -> CDouble -> RawId -> IO ()
+beginFrameAtTime_timeStamp caRenderer  t ts =
+    sendMsg caRenderer (mkSelector "beginFrameAtTime:timeStamp:") retVoid [argCDouble t, argPtr (castPtr (unRawId ts) :: Ptr ())]
 
 -- | @- render@
 render :: IsCARenderer caRenderer => caRenderer -> IO ()
@@ -99,6 +106,10 @@ rendererWithCGLContext_optionsSelector = mkSelector "rendererWithCGLContext:opti
 -- | @Selector@ for @rendererWithMTLTexture:options:@
 rendererWithMTLTexture_optionsSelector :: Selector
 rendererWithMTLTexture_optionsSelector = mkSelector "rendererWithMTLTexture:options:"
+
+-- | @Selector@ for @beginFrameAtTime:timeStamp:@
+beginFrameAtTime_timeStampSelector :: Selector
+beginFrameAtTime_timeStampSelector = mkSelector "beginFrameAtTime:timeStamp:"
 
 -- | @Selector@ for @render@
 renderSelector :: Selector

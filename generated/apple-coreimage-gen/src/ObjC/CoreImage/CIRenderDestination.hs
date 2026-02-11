@@ -29,6 +29,8 @@ module ObjC.CoreImage.CIRenderDestination
   , setBlendKernel
   , blendsInDestinationColorSpace
   , setBlendsInDestinationColorSpace
+  , captureTraceURL
+  , setCaptureTraceURL
   , initWithPixelBufferSelector
   , initWithIOSurfaceSelector
   , initWithMTLTexture_commandBufferSelector
@@ -51,6 +53,8 @@ module ObjC.CoreImage.CIRenderDestination
   , setBlendKernelSelector
   , blendsInDestinationColorSpaceSelector
   , setBlendsInDestinationColorSpaceSelector
+  , captureTraceURLSelector
+  , setCaptureTraceURLSelector
 
   -- * Enum types
   , CIRenderDestinationAlphaMode(CIRenderDestinationAlphaMode)
@@ -189,6 +193,24 @@ setBlendsInDestinationColorSpace :: IsCIRenderDestination ciRenderDestination =>
 setBlendsInDestinationColorSpace ciRenderDestination  value =
     sendMsg ciRenderDestination (mkSelector "setBlendsInDestinationColorSpace:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | Tell the next render using this destination to capture a Metal trace.
+--
+-- If this property is set to a file-based URL, then the next render using this  destination will capture a Metal trace, deleting any existing file if present. This property is nil by default.
+--
+-- ObjC selector: @- captureTraceURL@
+captureTraceURL :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> IO RawId
+captureTraceURL ciRenderDestination  =
+    fmap (RawId . castPtr) $ sendMsg ciRenderDestination (mkSelector "captureTraceURL") (retPtr retVoid) []
+
+-- | Tell the next render using this destination to capture a Metal trace.
+--
+-- If this property is set to a file-based URL, then the next render using this  destination will capture a Metal trace, deleting any existing file if present. This property is nil by default.
+--
+-- ObjC selector: @- setCaptureTraceURL:@
+setCaptureTraceURL :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> RawId -> IO ()
+setCaptureTraceURL ciRenderDestination  value =
+    sendMsg ciRenderDestination (mkSelector "setCaptureTraceURL:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -280,4 +302,12 @@ blendsInDestinationColorSpaceSelector = mkSelector "blendsInDestinationColorSpac
 -- | @Selector@ for @setBlendsInDestinationColorSpace:@
 setBlendsInDestinationColorSpaceSelector :: Selector
 setBlendsInDestinationColorSpaceSelector = mkSelector "setBlendsInDestinationColorSpace:"
+
+-- | @Selector@ for @captureTraceURL@
+captureTraceURLSelector :: Selector
+captureTraceURLSelector = mkSelector "captureTraceURL"
+
+-- | @Selector@ for @setCaptureTraceURL:@
+setCaptureTraceURLSelector :: Selector
+setCaptureTraceURLSelector = mkSelector "setCaptureTraceURL:"
 

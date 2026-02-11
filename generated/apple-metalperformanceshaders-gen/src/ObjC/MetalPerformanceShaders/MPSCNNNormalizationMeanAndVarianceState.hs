@@ -12,8 +12,12 @@ module ObjC.MetalPerformanceShaders.MPSCNNNormalizationMeanAndVarianceState
   , IsMPSCNNNormalizationMeanAndVarianceState(..)
   , initWithMean_variance
   , temporaryStateWithCommandBuffer_numberOfFeatureChannels
+  , mean
+  , variance
   , initWithMean_varianceSelector
   , temporaryStateWithCommandBuffer_numberOfFeatureChannelsSelector
+  , meanSelector
+  , varianceSelector
 
 
   ) where
@@ -57,6 +61,24 @@ temporaryStateWithCommandBuffer_numberOfFeatureChannels commandBuffer numberOfFe
     cls' <- getRequiredClass "MPSCNNNormalizationMeanAndVarianceState"
     sendClassMsg cls' (mkSelector "temporaryStateWithCommandBuffer:numberOfFeatureChannels:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argCULong numberOfFeatureChannels] >>= retainedObject . castPtr
 
+-- | mean
+--
+-- A MTLBuffer containing the mean terms.
+--
+-- ObjC selector: @- mean@
+mean :: IsMPSCNNNormalizationMeanAndVarianceState mpscnnNormalizationMeanAndVarianceState => mpscnnNormalizationMeanAndVarianceState -> IO RawId
+mean mpscnnNormalizationMeanAndVarianceState  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnNormalizationMeanAndVarianceState (mkSelector "mean") (retPtr retVoid) []
+
+-- | variance
+--
+-- A MTLBuffer containing the variance terms.
+--
+-- ObjC selector: @- variance@
+variance :: IsMPSCNNNormalizationMeanAndVarianceState mpscnnNormalizationMeanAndVarianceState => mpscnnNormalizationMeanAndVarianceState -> IO RawId
+variance mpscnnNormalizationMeanAndVarianceState  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnNormalizationMeanAndVarianceState (mkSelector "variance") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -68,4 +90,12 @@ initWithMean_varianceSelector = mkSelector "initWithMean:variance:"
 -- | @Selector@ for @temporaryStateWithCommandBuffer:numberOfFeatureChannels:@
 temporaryStateWithCommandBuffer_numberOfFeatureChannelsSelector :: Selector
 temporaryStateWithCommandBuffer_numberOfFeatureChannelsSelector = mkSelector "temporaryStateWithCommandBuffer:numberOfFeatureChannels:"
+
+-- | @Selector@ for @mean@
+meanSelector :: Selector
+meanSelector = mkSelector "mean"
+
+-- | @Selector@ for @variance@
+varianceSelector :: Selector
+varianceSelector = mkSelector "variance"
 

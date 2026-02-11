@@ -6,7 +6,9 @@
 module ObjC.AppKit.NSURL
   ( NSURL
   , IsNSURL(..)
+  , urlFromPasteboard
   , writeToPasteboard
+  , urlFromPasteboardSelector
   , writeToPasteboardSelector
 
 
@@ -26,6 +28,14 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.AppKit.Internal.Classes
 
+-- | @+ URLFromPasteboard:@
+urlFromPasteboard :: IsNSPasteboard pasteBoard => pasteBoard -> IO RawId
+urlFromPasteboard pasteBoard =
+  do
+    cls' <- getRequiredClass "NSURL"
+    withObjCPtr pasteBoard $ \raw_pasteBoard ->
+      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "URLFromPasteboard:") (retPtr retVoid) [argPtr (castPtr raw_pasteBoard :: Ptr ())]
+
 -- | @- writeToPasteboard:@
 writeToPasteboard :: (IsNSURL nsurl, IsNSPasteboard pasteBoard) => nsurl -> pasteBoard -> IO ()
 writeToPasteboard nsurl  pasteBoard =
@@ -35,6 +45,10 @@ writeToPasteboard nsurl  pasteBoard =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @URLFromPasteboard:@
+urlFromPasteboardSelector :: Selector
+urlFromPasteboardSelector = mkSelector "URLFromPasteboard:"
 
 -- | @Selector@ for @writeToPasteboard:@
 writeToPasteboardSelector :: Selector

@@ -18,19 +18,37 @@ module ObjC.ImageCaptureCore.ICScannerDevice
   , requestOverviewScan
   , requestScan
   , cancelScan
+  , selectedFunctionalUnit
   , transferMode
   , setTransferMode
   , maxMemoryBandSize
   , setMaxMemoryBandSize
+  , downloadsDirectory
+  , setDownloadsDirectory
+  , documentName
+  , setDocumentName
+  , documentUTI
+  , setDocumentUTI
+  , defaultUsername
+  , setDefaultUsername
   , requestOpenSessionWithCredentials_passwordSelector
   , requestSelectFunctionalUnitSelector
   , requestOverviewScanSelector
   , requestScanSelector
   , cancelScanSelector
+  , selectedFunctionalUnitSelector
   , transferModeSelector
   , setTransferModeSelector
   , maxMemoryBandSizeSelector
   , setMaxMemoryBandSizeSelector
+  , downloadsDirectorySelector
+  , setDownloadsDirectorySelector
+  , documentNameSelector
+  , setDocumentNameSelector
+  , documentUTISelector
+  , setDocumentUTISelector
+  , defaultUsernameSelector
+  , setDefaultUsernameSelector
 
   -- * Enum types
   , ICScannerFunctionalUnitType(ICScannerFunctionalUnitType)
@@ -115,6 +133,15 @@ cancelScan :: IsICScannerDevice icScannerDevice => icScannerDevice -> IO ()
 cancelScan icScannerDevice  =
     sendMsg icScannerDevice (mkSelector "cancelScan") retVoid []
 
+-- | selectedFunctionalUnit
+--
+-- ￼The currently selected functional unit on the scanner device.
+--
+-- ObjC selector: @- selectedFunctionalUnit@
+selectedFunctionalUnit :: IsICScannerDevice icScannerDevice => icScannerDevice -> IO RawId
+selectedFunctionalUnit icScannerDevice  =
+    fmap (RawId . castPtr) $ sendMsg icScannerDevice (mkSelector "selectedFunctionalUnit") (retPtr retVoid) []
+
 -- | transferMode
 --
 -- ￼The transfer mode for scanned document.
@@ -151,6 +178,78 @@ setMaxMemoryBandSize :: IsICScannerDevice icScannerDevice => icScannerDevice -> 
 setMaxMemoryBandSize icScannerDevice  value =
     sendMsg icScannerDevice (mkSelector "setMaxMemoryBandSize:") retVoid [argCUInt value]
 
+-- | downloadsDirectory
+--
+-- ￼The downloads directory.
+--
+-- ObjC selector: @- downloadsDirectory@
+downloadsDirectory :: IsICScannerDevice icScannerDevice => icScannerDevice -> IO RawId
+downloadsDirectory icScannerDevice  =
+    fmap (RawId . castPtr) $ sendMsg icScannerDevice (mkSelector "downloadsDirectory") (retPtr retVoid) []
+
+-- | downloadsDirectory
+--
+-- ￼The downloads directory.
+--
+-- ObjC selector: @- setDownloadsDirectory:@
+setDownloadsDirectory :: IsICScannerDevice icScannerDevice => icScannerDevice -> RawId -> IO ()
+setDownloadsDirectory icScannerDevice  value =
+    sendMsg icScannerDevice (mkSelector "setDownloadsDirectory:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | documentName
+--
+-- ￼The document name.
+--
+-- ObjC selector: @- documentName@
+documentName :: IsICScannerDevice icScannerDevice => icScannerDevice -> IO RawId
+documentName icScannerDevice  =
+    fmap (RawId . castPtr) $ sendMsg icScannerDevice (mkSelector "documentName") (retPtr retVoid) []
+
+-- | documentName
+--
+-- ￼The document name.
+--
+-- ObjC selector: @- setDocumentName:@
+setDocumentName :: IsICScannerDevice icScannerDevice => icScannerDevice -> RawId -> IO ()
+setDocumentName icScannerDevice  value =
+    sendMsg icScannerDevice (mkSelector "setDocumentName:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | documentUTI
+--
+-- ￼The document UTI. Currently supported UTIs are: kUTTypeJPEG, kUTTypeJPEG2000, kUTTypeTIFF, kUTTypePNG etc.
+--
+-- ObjC selector: @- documentUTI@
+documentUTI :: IsICScannerDevice icScannerDevice => icScannerDevice -> IO RawId
+documentUTI icScannerDevice  =
+    fmap (RawId . castPtr) $ sendMsg icScannerDevice (mkSelector "documentUTI") (retPtr retVoid) []
+
+-- | documentUTI
+--
+-- ￼The document UTI. Currently supported UTIs are: kUTTypeJPEG, kUTTypeJPEG2000, kUTTypeTIFF, kUTTypePNG etc.
+--
+-- ObjC selector: @- setDocumentUTI:@
+setDocumentUTI :: IsICScannerDevice icScannerDevice => icScannerDevice -> RawId -> IO ()
+setDocumentUTI icScannerDevice  value =
+    sendMsg icScannerDevice (mkSelector "setDocumentUTI:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | defaultUsername
+--
+-- If the device is protected, instead of prompting the user for a username, this property        can be set to default to a specific username as a convience.  The value will persist until        reset by setting it to nil.
+--
+-- ObjC selector: @- defaultUsername@
+defaultUsername :: IsICScannerDevice icScannerDevice => icScannerDevice -> IO RawId
+defaultUsername icScannerDevice  =
+    fmap (RawId . castPtr) $ sendMsg icScannerDevice (mkSelector "defaultUsername") (retPtr retVoid) []
+
+-- | defaultUsername
+--
+-- If the device is protected, instead of prompting the user for a username, this property        can be set to default to a specific username as a convience.  The value will persist until        reset by setting it to nil.
+--
+-- ObjC selector: @- setDefaultUsername:@
+setDefaultUsername :: IsICScannerDevice icScannerDevice => icScannerDevice -> RawId -> IO ()
+setDefaultUsername icScannerDevice  value =
+    sendMsg icScannerDevice (mkSelector "setDefaultUsername:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -175,6 +274,10 @@ requestScanSelector = mkSelector "requestScan"
 cancelScanSelector :: Selector
 cancelScanSelector = mkSelector "cancelScan"
 
+-- | @Selector@ for @selectedFunctionalUnit@
+selectedFunctionalUnitSelector :: Selector
+selectedFunctionalUnitSelector = mkSelector "selectedFunctionalUnit"
+
 -- | @Selector@ for @transferMode@
 transferModeSelector :: Selector
 transferModeSelector = mkSelector "transferMode"
@@ -190,4 +293,36 @@ maxMemoryBandSizeSelector = mkSelector "maxMemoryBandSize"
 -- | @Selector@ for @setMaxMemoryBandSize:@
 setMaxMemoryBandSizeSelector :: Selector
 setMaxMemoryBandSizeSelector = mkSelector "setMaxMemoryBandSize:"
+
+-- | @Selector@ for @downloadsDirectory@
+downloadsDirectorySelector :: Selector
+downloadsDirectorySelector = mkSelector "downloadsDirectory"
+
+-- | @Selector@ for @setDownloadsDirectory:@
+setDownloadsDirectorySelector :: Selector
+setDownloadsDirectorySelector = mkSelector "setDownloadsDirectory:"
+
+-- | @Selector@ for @documentName@
+documentNameSelector :: Selector
+documentNameSelector = mkSelector "documentName"
+
+-- | @Selector@ for @setDocumentName:@
+setDocumentNameSelector :: Selector
+setDocumentNameSelector = mkSelector "setDocumentName:"
+
+-- | @Selector@ for @documentUTI@
+documentUTISelector :: Selector
+documentUTISelector = mkSelector "documentUTI"
+
+-- | @Selector@ for @setDocumentUTI:@
+setDocumentUTISelector :: Selector
+setDocumentUTISelector = mkSelector "setDocumentUTI:"
+
+-- | @Selector@ for @defaultUsername@
+defaultUsernameSelector :: Selector
+defaultUsernameSelector = mkSelector "defaultUsername"
+
+-- | @Selector@ for @setDefaultUsername:@
+setDefaultUsernameSelector :: Selector
+setDefaultUsernameSelector = mkSelector "setDefaultUsername:"
 

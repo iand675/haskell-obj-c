@@ -14,12 +14,16 @@ module ObjC.AVFoundation.AVVideoCompositionInstruction
   , backgroundColor
   , layerInstructions
   , enablePostProcessing
+  , requiredSourceTrackIDs
   , passthroughTrackID
+  , requiredSourceSampleDataTrackIDs
   , videoCompositionInstructionWithInstructionSelector
   , backgroundColorSelector
   , layerInstructionsSelector
   , enablePostProcessingSelector
+  , requiredSourceTrackIDsSelector
   , passthroughTrackIDSelector
+  , requiredSourceSampleDataTrackIDsSelector
 
 
   ) where
@@ -76,12 +80,26 @@ enablePostProcessing :: IsAVVideoCompositionInstruction avVideoCompositionInstru
 enablePostProcessing avVideoCompositionInstruction  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avVideoCompositionInstruction (mkSelector "enablePostProcessing") retCULong []
 
+-- | List of video track IDs required to compose frames for this instruction. The value of this property is computed from the layer instructions.
+--
+-- ObjC selector: @- requiredSourceTrackIDs@
+requiredSourceTrackIDs :: IsAVVideoCompositionInstruction avVideoCompositionInstruction => avVideoCompositionInstruction -> IO (Id NSArray)
+requiredSourceTrackIDs avVideoCompositionInstruction  =
+    sendMsg avVideoCompositionInstruction (mkSelector "requiredSourceTrackIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | If the video composition result is one of the source frames for the duration of the instruction, this property returns the corresponding track ID. The compositor won't be run for the duration of the instruction and the proper source frame will be used instead. The value of this property is computed from the layer instructions
 --
 -- ObjC selector: @- passthroughTrackID@
 passthroughTrackID :: IsAVVideoCompositionInstruction avVideoCompositionInstruction => avVideoCompositionInstruction -> IO CInt
 passthroughTrackID avVideoCompositionInstruction  =
     sendMsg avVideoCompositionInstruction (mkSelector "passthroughTrackID") retCInt []
+
+-- | List of track IDs for which sample data should be presented to the compositor for this instruction.
+--
+-- ObjC selector: @- requiredSourceSampleDataTrackIDs@
+requiredSourceSampleDataTrackIDs :: IsAVVideoCompositionInstruction avVideoCompositionInstruction => avVideoCompositionInstruction -> IO (Id NSArray)
+requiredSourceSampleDataTrackIDs avVideoCompositionInstruction  =
+    sendMsg avVideoCompositionInstruction (mkSelector "requiredSourceSampleDataTrackIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -103,7 +121,15 @@ layerInstructionsSelector = mkSelector "layerInstructions"
 enablePostProcessingSelector :: Selector
 enablePostProcessingSelector = mkSelector "enablePostProcessing"
 
+-- | @Selector@ for @requiredSourceTrackIDs@
+requiredSourceTrackIDsSelector :: Selector
+requiredSourceTrackIDsSelector = mkSelector "requiredSourceTrackIDs"
+
 -- | @Selector@ for @passthroughTrackID@
 passthroughTrackIDSelector :: Selector
 passthroughTrackIDSelector = mkSelector "passthroughTrackID"
+
+-- | @Selector@ for @requiredSourceSampleDataTrackIDs@
+requiredSourceSampleDataTrackIDsSelector :: Selector
+requiredSourceSampleDataTrackIDsSelector = mkSelector "requiredSourceSampleDataTrackIDs"
 

@@ -13,6 +13,7 @@ module ObjC.CoreImage.CIKernel
   , kernelWithFunctionName_fromMetalLibraryData_outputPixelFormat_error
   , kernelNamesFromMetalLibraryData
   , setROISelector
+  , name
   , kernelsWithStringSelector
   , kernelsWithMetalString_errorSelector
   , kernelWithStringSelector
@@ -20,6 +21,7 @@ module ObjC.CoreImage.CIKernel
   , kernelWithFunctionName_fromMetalLibraryData_outputPixelFormat_errorSelector
   , kernelNamesFromMetalLibraryDataSelector
   , setROISelectorSelector
+  , nameSelector
 
 
   ) where
@@ -97,6 +99,11 @@ setROISelector :: IsCIKernel ciKernel => ciKernel -> Selector -> IO ()
 setROISelector ciKernel  method =
     sendMsg ciKernel (mkSelector "setROISelector:") retVoid [argPtr (unSelector method)]
 
+-- | @- name@
+name :: IsCIKernel ciKernel => ciKernel -> IO RawId
+name ciKernel  =
+    fmap (RawId . castPtr) $ sendMsg ciKernel (mkSelector "name") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -128,4 +135,8 @@ kernelNamesFromMetalLibraryDataSelector = mkSelector "kernelNamesFromMetalLibrar
 -- | @Selector@ for @setROISelector:@
 setROISelectorSelector :: Selector
 setROISelectorSelector = mkSelector "setROISelector:"
+
+-- | @Selector@ for @name@
+nameSelector :: Selector
+nameSelector = mkSelector "name"
 

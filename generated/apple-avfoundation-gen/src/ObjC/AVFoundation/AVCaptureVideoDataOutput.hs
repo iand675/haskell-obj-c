@@ -20,11 +20,13 @@ module ObjC.AVFoundation.AVCaptureVideoDataOutput
   , recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileType
   , recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileType_outputFileURL
   , recommendedMovieMetadataForVideoCodecType_assetWriterOutputFileType
+  , sampleBufferDelegate
   , sampleBufferCallbackQueue
   , videoSettings
   , setVideoSettings
   , recommendedMediaTimeScaleForAssetWriter
   , availableVideoCVPixelFormatTypes
+  , availableVideoCodecTypes
   , alwaysDiscardsLateVideoFrames
   , setAlwaysDiscardsLateVideoFrames
   , automaticallyConfiguresOutputBufferDimensions
@@ -43,11 +45,13 @@ module ObjC.AVFoundation.AVCaptureVideoDataOutput
   , recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileTypeSelector
   , recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileType_outputFileURLSelector
   , recommendedMovieMetadataForVideoCodecType_assetWriterOutputFileTypeSelector
+  , sampleBufferDelegateSelector
   , sampleBufferCallbackQueueSelector
   , videoSettingsSelector
   , setVideoSettingsSelector
   , recommendedMediaTimeScaleForAssetWriterSelector
   , availableVideoCVPixelFormatTypesSelector
+  , availableVideoCodecTypesSelector
   , alwaysDiscardsLateVideoFramesSelector
   , setAlwaysDiscardsLateVideoFramesSelector
   , automaticallyConfiguresOutputBufferDimensionsSelector
@@ -227,6 +231,17 @@ recommendedMovieMetadataForVideoCodecType_assetWriterOutputFileType avCaptureVid
     withObjCPtr outputFileType $ \raw_outputFileType ->
         sendMsg avCaptureVideoDataOutput (mkSelector "recommendedMovieMetadataForVideoCodecType:assetWriterOutputFileType:") (retPtr retVoid) [argPtr (castPtr raw_videoCodecType :: Ptr ()), argPtr (castPtr raw_outputFileType :: Ptr ())] >>= retainedObject . castPtr
 
+-- | sampleBufferDelegate
+--
+-- The receiver's delegate.
+--
+-- The value of this property is an object conforming to the AVCaptureVideoDataOutputSampleBufferDelegate protocol that will receive sample buffers after they are captured. The delegate is set using the setSampleBufferDelegate:queue: method.
+--
+-- ObjC selector: @- sampleBufferDelegate@
+sampleBufferDelegate :: IsAVCaptureVideoDataOutput avCaptureVideoDataOutput => avCaptureVideoDataOutput -> IO RawId
+sampleBufferDelegate avCaptureVideoDataOutput  =
+    fmap (RawId . castPtr) $ sendMsg avCaptureVideoDataOutput (mkSelector "sampleBufferDelegate") (retPtr retVoid) []
+
 -- | sampleBufferCallbackQueue
 --
 -- The dispatch queue on which all sample buffer delegate methods will be called.
@@ -284,6 +299,17 @@ recommendedMediaTimeScaleForAssetWriter avCaptureVideoDataOutput  =
 availableVideoCVPixelFormatTypes :: IsAVCaptureVideoDataOutput avCaptureVideoDataOutput => avCaptureVideoDataOutput -> IO (Id NSArray)
 availableVideoCVPixelFormatTypes avCaptureVideoDataOutput  =
     sendMsg avCaptureVideoDataOutput (mkSelector "availableVideoCVPixelFormatTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | availableVideoCodecTypes
+--
+-- Indicates the supported video codec formats that can be specified in videoSettings.
+--
+-- The value of this property is an NSArray of AVVideoCodecTypes that can be used as values for the AVVideoCodecKey in the receiver's videoSettings property.
+--
+-- ObjC selector: @- availableVideoCodecTypes@
+availableVideoCodecTypes :: IsAVCaptureVideoDataOutput avCaptureVideoDataOutput => avCaptureVideoDataOutput -> IO (Id NSArray)
+availableVideoCodecTypes avCaptureVideoDataOutput  =
+    sendMsg avCaptureVideoDataOutput (mkSelector "availableVideoCodecTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | alwaysDiscardsLateVideoFrames
 --
@@ -431,6 +457,10 @@ recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileType_outputFileUR
 recommendedMovieMetadataForVideoCodecType_assetWriterOutputFileTypeSelector :: Selector
 recommendedMovieMetadataForVideoCodecType_assetWriterOutputFileTypeSelector = mkSelector "recommendedMovieMetadataForVideoCodecType:assetWriterOutputFileType:"
 
+-- | @Selector@ for @sampleBufferDelegate@
+sampleBufferDelegateSelector :: Selector
+sampleBufferDelegateSelector = mkSelector "sampleBufferDelegate"
+
 -- | @Selector@ for @sampleBufferCallbackQueue@
 sampleBufferCallbackQueueSelector :: Selector
 sampleBufferCallbackQueueSelector = mkSelector "sampleBufferCallbackQueue"
@@ -450,6 +480,10 @@ recommendedMediaTimeScaleForAssetWriterSelector = mkSelector "recommendedMediaTi
 -- | @Selector@ for @availableVideoCVPixelFormatTypes@
 availableVideoCVPixelFormatTypesSelector :: Selector
 availableVideoCVPixelFormatTypesSelector = mkSelector "availableVideoCVPixelFormatTypes"
+
+-- | @Selector@ for @availableVideoCodecTypes@
+availableVideoCodecTypesSelector :: Selector
+availableVideoCodecTypesSelector = mkSelector "availableVideoCodecTypes"
 
 -- | @Selector@ for @alwaysDiscardsLateVideoFrames@
 alwaysDiscardsLateVideoFramesSelector :: Selector

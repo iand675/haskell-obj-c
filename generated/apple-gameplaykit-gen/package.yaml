@@ -18,6 +18,12 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.GameplayKit.Delegate.GKAgentDelegate
+  - ObjC.GameplayKit.Delegate.GKGameModel
+  - ObjC.GameplayKit.Delegate.GKGameModelPlayer
+  - ObjC.GameplayKit.Delegate.GKGameModelUpdate
+  - ObjC.GameplayKit.Delegate.GKRandom
+  - ObjC.GameplayKit.Delegate.GKStrategist
   - ObjC.GameplayKit.Enums
   - ObjC.GameplayKit.GKARC4RandomSource
   - ObjC.GameplayKit.GKAgent

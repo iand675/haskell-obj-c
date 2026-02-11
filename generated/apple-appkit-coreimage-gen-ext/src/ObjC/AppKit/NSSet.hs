@@ -8,7 +8,9 @@
 module ObjC.AppKit.NSSet
   ( NSSet
   , IsNSSet(..)
+  , setWithCollectionViewIndexPath
   , enumerateIndexPathsWithOptions_usingBlock
+  , setWithCollectionViewIndexPathSelector
   , enumerateIndexPathsWithOptions_usingBlockSelector
 
 
@@ -28,6 +30,13 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.AppKit.Internal.Classes
 
+-- | @+ setWithCollectionViewIndexPath:@
+setWithCollectionViewIndexPath :: RawId -> IO (Id NSSet)
+setWithCollectionViewIndexPath indexPath =
+  do
+    cls' <- getRequiredClass "NSSet"
+    sendClassMsg cls' (mkSelector "setWithCollectionViewIndexPath:") (retPtr retVoid) [argPtr (castPtr (unRawId indexPath) :: Ptr ())] >>= retainedObject . castPtr
+
 -- | @- enumerateIndexPathsWithOptions:usingBlock:@
 enumerateIndexPathsWithOptions_usingBlock :: IsNSSet nsSet => nsSet -> CInt -> Ptr () -> IO ()
 enumerateIndexPathsWithOptions_usingBlock nsSet  opts block =
@@ -36,6 +45,10 @@ enumerateIndexPathsWithOptions_usingBlock nsSet  opts block =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @setWithCollectionViewIndexPath:@
+setWithCollectionViewIndexPathSelector :: Selector
+setWithCollectionViewIndexPathSelector = mkSelector "setWithCollectionViewIndexPath:"
 
 -- | @Selector@ for @enumerateIndexPathsWithOptions:usingBlock:@
 enumerateIndexPathsWithOptions_usingBlockSelector :: Selector

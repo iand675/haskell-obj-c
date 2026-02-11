@@ -11,11 +11,15 @@ module ObjC.MapKit.MKETAResponse
   , destination
   , expectedTravelTime
   , distance
+  , expectedArrivalDate
+  , expectedDepartureDate
   , transportType
   , sourceSelector
   , destinationSelector
   , expectedTravelTimeSelector
   , distanceSelector
+  , expectedArrivalDateSelector
+  , expectedDepartureDateSelector
   , transportTypeSelector
 
   -- * Enum types
@@ -64,6 +68,16 @@ distance :: IsMKETAResponse mketaResponse => mketaResponse -> IO CDouble
 distance mketaResponse  =
     sendMsg mketaResponse (mkSelector "distance") retCDouble []
 
+-- | @- expectedArrivalDate@
+expectedArrivalDate :: IsMKETAResponse mketaResponse => mketaResponse -> IO RawId
+expectedArrivalDate mketaResponse  =
+    fmap (RawId . castPtr) $ sendMsg mketaResponse (mkSelector "expectedArrivalDate") (retPtr retVoid) []
+
+-- | @- expectedDepartureDate@
+expectedDepartureDate :: IsMKETAResponse mketaResponse => mketaResponse -> IO RawId
+expectedDepartureDate mketaResponse  =
+    fmap (RawId . castPtr) $ sendMsg mketaResponse (mkSelector "expectedDepartureDate") (retPtr retVoid) []
+
 -- | @- transportType@
 transportType :: IsMKETAResponse mketaResponse => mketaResponse -> IO MKDirectionsTransportType
 transportType mketaResponse  =
@@ -88,6 +102,14 @@ expectedTravelTimeSelector = mkSelector "expectedTravelTime"
 -- | @Selector@ for @distance@
 distanceSelector :: Selector
 distanceSelector = mkSelector "distance"
+
+-- | @Selector@ for @expectedArrivalDate@
+expectedArrivalDateSelector :: Selector
+expectedArrivalDateSelector = mkSelector "expectedArrivalDate"
+
+-- | @Selector@ for @expectedDepartureDate@
+expectedDepartureDateSelector :: Selector
+expectedDepartureDateSelector = mkSelector "expectedDepartureDate"
 
 -- | @Selector@ for @transportType@
 transportTypeSelector :: Selector

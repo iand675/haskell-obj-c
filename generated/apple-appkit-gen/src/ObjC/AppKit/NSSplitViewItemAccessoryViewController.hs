@@ -14,6 +14,8 @@ module ObjC.AppKit.NSSplitViewItemAccessoryViewController
   , setHidden
   , automaticallyAppliesContentInsets
   , setAutomaticallyAppliesContentInsets
+  , preferredScrollEdgeEffectStyle
+  , setPreferredScrollEdgeEffectStyle
   , viewWillAppearSelector
   , viewDidAppearSelector
   , viewWillDisappearSelector
@@ -22,6 +24,8 @@ module ObjC.AppKit.NSSplitViewItemAccessoryViewController
   , setHiddenSelector
   , automaticallyAppliesContentInsetsSelector
   , setAutomaticallyAppliesContentInsetsSelector
+  , preferredScrollEdgeEffectStyleSelector
+  , setPreferredScrollEdgeEffectStyleSelector
 
 
   ) where
@@ -89,6 +93,29 @@ setAutomaticallyAppliesContentInsets :: IsNSSplitViewItemAccessoryViewController
 setAutomaticallyAppliesContentInsets nsSplitViewItemAccessoryViewController  value =
     sendMsg nsSplitViewItemAccessoryViewController (mkSelector "setAutomaticallyAppliesContentInsets:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | The split view item accessory’s preferred effect for content scrolling behind it.
+--
+-- To allow for a soft edge on the interior edge of a titlebar accessory:
+--
+-- splitViewItemAccessoryViewController.preferredScrollEdgeEffectStyle = NSScrollEdgeEffectStyle.softStyle;
+--
+-- ObjC selector: @- preferredScrollEdgeEffectStyle@
+preferredScrollEdgeEffectStyle :: IsNSSplitViewItemAccessoryViewController nsSplitViewItemAccessoryViewController => nsSplitViewItemAccessoryViewController -> IO (Id NSScrollEdgeEffectStyle)
+preferredScrollEdgeEffectStyle nsSplitViewItemAccessoryViewController  =
+    sendMsg nsSplitViewItemAccessoryViewController (mkSelector "preferredScrollEdgeEffectStyle") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The split view item accessory’s preferred effect for content scrolling behind it.
+--
+-- To allow for a soft edge on the interior edge of a titlebar accessory:
+--
+-- splitViewItemAccessoryViewController.preferredScrollEdgeEffectStyle = NSScrollEdgeEffectStyle.softStyle;
+--
+-- ObjC selector: @- setPreferredScrollEdgeEffectStyle:@
+setPreferredScrollEdgeEffectStyle :: (IsNSSplitViewItemAccessoryViewController nsSplitViewItemAccessoryViewController, IsNSScrollEdgeEffectStyle value) => nsSplitViewItemAccessoryViewController -> value -> IO ()
+setPreferredScrollEdgeEffectStyle nsSplitViewItemAccessoryViewController  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsSplitViewItemAccessoryViewController (mkSelector "setPreferredScrollEdgeEffectStyle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -124,4 +151,12 @@ automaticallyAppliesContentInsetsSelector = mkSelector "automaticallyAppliesCont
 -- | @Selector@ for @setAutomaticallyAppliesContentInsets:@
 setAutomaticallyAppliesContentInsetsSelector :: Selector
 setAutomaticallyAppliesContentInsetsSelector = mkSelector "setAutomaticallyAppliesContentInsets:"
+
+-- | @Selector@ for @preferredScrollEdgeEffectStyle@
+preferredScrollEdgeEffectStyleSelector :: Selector
+preferredScrollEdgeEffectStyleSelector = mkSelector "preferredScrollEdgeEffectStyle"
+
+-- | @Selector@ for @setPreferredScrollEdgeEffectStyle:@
+setPreferredScrollEdgeEffectStyleSelector :: Selector
+setPreferredScrollEdgeEffectStyleSelector = mkSelector "setPreferredScrollEdgeEffectStyle:"
 

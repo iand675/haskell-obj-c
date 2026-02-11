@@ -19,6 +19,7 @@ module ObjC.VideoToolbox.VTFrameRateConversionParameters
   , sourceFrame
   , nextFrame
   , opticalFlow
+  , interpolationPhase
   , submissionMode
   , destinationFrames
   , initWithSourceFrame_nextFrame_opticalFlow_interpolationPhase_submissionMode_destinationFramesSelector
@@ -27,6 +28,7 @@ module ObjC.VideoToolbox.VTFrameRateConversionParameters
   , sourceFrameSelector
   , nextFrameSelector
   , opticalFlowSelector
+  , interpolationPhaseSelector
   , submissionModeSelector
   , destinationFramesSelector
 
@@ -105,6 +107,15 @@ opticalFlow :: IsVTFrameRateConversionParameters vtFrameRateConversionParameters
 opticalFlow vtFrameRateConversionParameters  =
     sendMsg vtFrameRateConversionParameters (mkSelector "opticalFlow") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | Array of float numbers that indicate intervals at which the processor inserts a frame between the current and next frame.
+--
+-- Array size indicates how many frames to interpolate and must match @destinationFrames@ size, one interval for each destination frame. Use float number values between 0 and 1, for example, to insert one frame in the middle use a value of 0.5.
+--
+-- ObjC selector: @- interpolationPhase@
+interpolationPhase :: IsVTFrameRateConversionParameters vtFrameRateConversionParameters => vtFrameRateConversionParameters -> IO (Id NSArray)
+interpolationPhase vtFrameRateConversionParameters  =
+    sendMsg vtFrameRateConversionParameters (mkSelector "interpolationPhase") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Ordering of the input frames in this submission relative to the previous submission.
 --
 -- ObjC selector: @- submissionMode@
@@ -148,6 +159,10 @@ nextFrameSelector = mkSelector "nextFrame"
 -- | @Selector@ for @opticalFlow@
 opticalFlowSelector :: Selector
 opticalFlowSelector = mkSelector "opticalFlow"
+
+-- | @Selector@ for @interpolationPhase@
+interpolationPhaseSelector :: Selector
+interpolationPhaseSelector = mkSelector "interpolationPhase"
 
 -- | @Selector@ for @submissionMode@
 submissionModeSelector :: Selector

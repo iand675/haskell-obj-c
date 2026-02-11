@@ -43,27 +43,32 @@ import ObjC.CodeGen.Generate.Enums (enumRetFunction, enumRetFunctionType, enumAr
 -- ---------------------------------------------------------------------------
 
 -- | Generate all method bindings for a class.
-generateMethods :: KnownTypes -> ClassHierarchy -> ObjCClass -> Set Text -> (ObjCMethod -> Bool) -> [Text]
-generateMethods allKnown _hierarchy cls importable originFilter =
+generateMethods :: KnownTypes -> ClassHierarchy -> ObjCClass -> Set Text -> Set Text -> (ObjCMethod -> Bool) -> [Text]
+generateMethods allKnown _hierarchy cls importable allKnownClasses originFilter =
   let methods = filter (\m -> not (methodIsImplicit m) && originFilter m
                               && isMethodSupported allKnown m)
-                       (allClassMethods importable cls)
+                       (allClassMethods importable allKnownClasses cls)
       dedupedByName = dedupByHsName cls methods
       instNames = instanceMethodNameSet cls dedupedByName
   in concatMap (generateMethod allKnown cls instNames) dedupedByName
 
 -- | Generate top-level @Selector@ bindings.
-generateSelectors :: KnownTypes -> ObjCClass -> Set Text -> (ObjCMethod -> Bool) -> [Text]
-generateSelectors allKnown cls importable originFilter =
+generateSelectors :: KnownTypes -> ObjCClass -> Set Text -> Set Text -> (ObjCMethod -> Bool) -> [Text]
+generateSelectors allKnown cls importable allKnownClasses originFilter =
   let methods = filter (\m -> not (methodIsImplicit m) && originFilter m
                               && isMethodSupported allKnown m)
-                       (allClassMethods importable cls)
+                       (allClassMethods importable allKnownClasses cls)
       dedupedByName = dedupByHsName cls methods
-      uniqueSels = dedup Set.empty (fmap methodSelector dedupedByName)
-      dedup _ [] = []
-      dedup seen (s:ss)
-        | Set.member s seen = dedup seen ss
-        | otherwise         = s : dedup (Set.insert s seen) ss
+      -- Dedup by both the raw ObjC selector AND the generated Haskell name,
+      -- since different selectors (e.g. "foo:" and "foo") can map to the
+      -- same Haskell name ("fooSelector").
+      uniqueSels = dedup Set.empty Set.empty (fmap methodSelector dedupedByName)
+      dedup _ _ [] = []
+      dedup seenSel seenHs (s:ss)
+        | Set.member s seenSel = dedup seenSel seenHs ss
+        | Set.member hs seenHs = dedup seenSel seenHs ss
+        | otherwise            = s : dedup (Set.insert s seenSel) (Set.insert hs seenHs) ss
+        where hs = selectorHaskellName s
   in concatMap genSel uniqueSels
   where
     genSel sel =
@@ -293,6 +298,12 @@ mkRetExprs kt selector retTy = case retTy of
     | let bn = extractClassName n
     , Set.member n classes || Set.member bn classes ->
         ("", "(retPtr retVoid)", managed)
+  -- "const char", "char", "void" appearing in ObjCId context map to Ptr types,
+  -- not RawId — see mapType in TypeMap.hs.
+  ObjCId (Just n) _
+    | let bn = extractClassName n
+    , bn == "const char" || bn == "char" || bn == "void" ->
+        ("fmap castPtr $", "(retPtr retVoid)", "")
   ObjCId _ _        -> ("fmap (RawId . castPtr) $", "(retPtr retVoid)", "")
   ObjCGeneric n _ _
     | n == "Class" || extractClassName n == "Class"
@@ -401,6 +412,10 @@ mkArgExpr kt ty paramName =
   ObjCId (Just n2) _
     | Set.member n2 classes || Set.member (extractClassName n2) classes
       -> "argPtr (castPtr " <> paramName <> " :: Ptr ())"
+    -- "const char", "char", "void" in ObjCId context map to Ptr types.
+    | let bn2 = extractClassName n2
+    , bn2 == "const char" || bn2 == "char" || bn2 == "void"
+      -> "argPtr " <> paramName
     | otherwise
       -> "argPtr (castPtr (unRawId " <> paramName <> ") :: Ptr ())"
   ObjCId Nothing _    -> "argPtr (castPtr (unRawId " <> paramName <> ") :: Ptr ())"

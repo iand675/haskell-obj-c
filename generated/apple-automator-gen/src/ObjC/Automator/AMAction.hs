@@ -24,7 +24,12 @@ module ObjC.Automator.AMAction
   , updateParameters
   , parametersUpdated
   , logMessageWithLevel_format
+  , name
   , ignoresInput
+  , selectedInputType
+  , setSelectedInputType
+  , selectedOutputType
+  , setSelectedOutputType
   , progressValue
   , setProgressValue
   , output
@@ -47,7 +52,12 @@ module ObjC.Automator.AMAction
   , updateParametersSelector
   , parametersUpdatedSelector
   , logMessageWithLevel_formatSelector
+  , nameSelector
   , ignoresInputSelector
+  , selectedInputTypeSelector
+  , setSelectedInputTypeSelector
+  , selectedOutputTypeSelector
+  , setSelectedOutputTypeSelector
   , progressValueSelector
   , setProgressValueSelector
   , outputSelector
@@ -174,10 +184,35 @@ logMessageWithLevel_format amAction  level format =
   withObjCPtr format $ \raw_format ->
       sendMsg amAction (mkSelector "logMessageWithLevel:format:") retVoid [argCULong (coerce level), argPtr (castPtr raw_format :: Ptr ())]
 
+-- | @- name@
+name :: IsAMAction amAction => amAction -> IO RawId
+name amAction  =
+    fmap (RawId . castPtr) $ sendMsg amAction (mkSelector "name") (retPtr retVoid) []
+
 -- | @- ignoresInput@
 ignoresInput :: IsAMAction amAction => amAction -> IO Bool
 ignoresInput amAction  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg amAction (mkSelector "ignoresInput") retCULong []
+
+-- | @- selectedInputType@
+selectedInputType :: IsAMAction amAction => amAction -> IO RawId
+selectedInputType amAction  =
+    fmap (RawId . castPtr) $ sendMsg amAction (mkSelector "selectedInputType") (retPtr retVoid) []
+
+-- | @- setSelectedInputType:@
+setSelectedInputType :: IsAMAction amAction => amAction -> RawId -> IO ()
+setSelectedInputType amAction  value =
+    sendMsg amAction (mkSelector "setSelectedInputType:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- selectedOutputType@
+selectedOutputType :: IsAMAction amAction => amAction -> IO RawId
+selectedOutputType amAction  =
+    fmap (RawId . castPtr) $ sendMsg amAction (mkSelector "selectedOutputType") (retPtr retVoid) []
+
+-- | @- setSelectedOutputType:@
+setSelectedOutputType :: IsAMAction amAction => amAction -> RawId -> IO ()
+setSelectedOutputType amAction  value =
+    sendMsg amAction (mkSelector "setSelectedOutputType:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- progressValue@
 progressValue :: IsAMAction amAction => amAction -> IO CDouble
@@ -276,9 +311,29 @@ parametersUpdatedSelector = mkSelector "parametersUpdated"
 logMessageWithLevel_formatSelector :: Selector
 logMessageWithLevel_formatSelector = mkSelector "logMessageWithLevel:format:"
 
+-- | @Selector@ for @name@
+nameSelector :: Selector
+nameSelector = mkSelector "name"
+
 -- | @Selector@ for @ignoresInput@
 ignoresInputSelector :: Selector
 ignoresInputSelector = mkSelector "ignoresInput"
+
+-- | @Selector@ for @selectedInputType@
+selectedInputTypeSelector :: Selector
+selectedInputTypeSelector = mkSelector "selectedInputType"
+
+-- | @Selector@ for @setSelectedInputType:@
+setSelectedInputTypeSelector :: Selector
+setSelectedInputTypeSelector = mkSelector "setSelectedInputType:"
+
+-- | @Selector@ for @selectedOutputType@
+selectedOutputTypeSelector :: Selector
+selectedOutputTypeSelector = mkSelector "selectedOutputType"
+
+-- | @Selector@ for @setSelectedOutputType:@
+setSelectedOutputTypeSelector :: Selector
+setSelectedOutputTypeSelector = mkSelector "setSelectedOutputType:"
 
 -- | @Selector@ for @progressValue@
 progressValueSelector :: Selector

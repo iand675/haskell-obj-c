@@ -16,6 +16,8 @@ module ObjC.MultipeerConnectivity.MCSession
   , nearbyConnectionDataForPeer_withCompletionHandler
   , connectPeer_withNearbyConnectionData
   , cancelConnectPeer
+  , delegate
+  , setDelegate
   , myPeerID
   , securityIdentity
   , encryptionPreference
@@ -29,6 +31,8 @@ module ObjC.MultipeerConnectivity.MCSession
   , nearbyConnectionDataForPeer_withCompletionHandlerSelector
   , connectPeer_withNearbyConnectionDataSelector
   , cancelConnectPeerSelector
+  , delegateSelector
+  , setDelegateSelector
   , myPeerIDSelector
   , securityIdentitySelector
   , encryptionPreferenceSelector
@@ -122,6 +126,16 @@ cancelConnectPeer mcSession  peerID =
   withObjCPtr peerID $ \raw_peerID ->
       sendMsg mcSession (mkSelector "cancelConnectPeer:") retVoid [argPtr (castPtr raw_peerID :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsMCSession mcSession => mcSession -> IO RawId
+delegate mcSession  =
+    fmap (RawId . castPtr) $ sendMsg mcSession (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsMCSession mcSession => mcSession -> RawId -> IO ()
+setDelegate mcSession  value =
+    sendMsg mcSession (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- myPeerID@
 myPeerID :: IsMCSession mcSession => mcSession -> IO (Id MCPeerID)
 myPeerID mcSession  =
@@ -181,6 +195,14 @@ connectPeer_withNearbyConnectionDataSelector = mkSelector "connectPeer:withNearb
 -- | @Selector@ for @cancelConnectPeer:@
 cancelConnectPeerSelector :: Selector
 cancelConnectPeerSelector = mkSelector "cancelConnectPeer:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @myPeerID@
 myPeerIDSelector :: Selector

@@ -29,6 +29,7 @@ module ObjC.IOSurface.IOSurface
   , allocationSize
   , width
   , height
+  , baseAddress
   , pixelFormat
   , bytesPerRow
   , bytesPerElement
@@ -62,6 +63,7 @@ module ObjC.IOSurface.IOSurface
   , allocationSizeSelector
   , widthSelector
   , heightSelector
+  , baseAddressSelector
   , pixelFormatSelector
   , bytesPerRowSelector
   , bytesPerElementSelector
@@ -217,6 +219,11 @@ height :: IsIOSurface ioSurface => ioSurface -> IO CLong
 height ioSurface  =
     sendMsg ioSurface (mkSelector "height") retCLong []
 
+-- | @- baseAddress@
+baseAddress :: IsIOSurface ioSurface => ioSurface -> IO (Ptr ())
+baseAddress ioSurface  =
+    fmap castPtr $ sendMsg ioSurface (mkSelector "baseAddress") (retPtr retVoid) []
+
 -- | @- pixelFormat@
 pixelFormat :: IsIOSurface ioSurface => ioSurface -> IO CUInt
 pixelFormat ioSurface  =
@@ -363,6 +370,10 @@ widthSelector = mkSelector "width"
 -- | @Selector@ for @height@
 heightSelector :: Selector
 heightSelector = mkSelector "height"
+
+-- | @Selector@ for @baseAddress@
+baseAddressSelector :: Selector
+baseAddressSelector = mkSelector "baseAddress"
 
 -- | @Selector@ for @pixelFormat@
 pixelFormatSelector :: Selector

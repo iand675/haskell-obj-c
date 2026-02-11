@@ -16,6 +16,8 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.ExternalAccessory.Delegate.EAAccessoryDelegate
+  - ObjC.ExternalAccessory.Delegate.EAWiFiUnconfiguredAccessoryBrowserDelegate
   - ObjC.ExternalAccessory.EAAccessory
   - ObjC.ExternalAccessory.EAAccessoryManager
   - ObjC.ExternalAccessory.EASession

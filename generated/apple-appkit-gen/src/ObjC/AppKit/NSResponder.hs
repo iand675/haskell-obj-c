@@ -79,6 +79,11 @@ module ObjC.AppKit.NSResponder
   , acceptsFirstResponder
   , menu
   , setMenu
+  , restorableStateKeyPaths
+  , touchBar
+  , setTouchBar
+  , userActivity
+  , setUserActivity
   , undoManager
   , initSelector
   , initWithCoderSelector
@@ -152,6 +157,11 @@ module ObjC.AppKit.NSResponder
   , acceptsFirstResponderSelector
   , menuSelector
   , setMenuSelector
+  , restorableStateKeyPathsSelector
+  , touchBarSelector
+  , setTouchBarSelector
+  , userActivitySelector
+  , setUserActivitySelector
   , undoManagerSelector
 
   -- * Enum types
@@ -614,6 +624,35 @@ setMenu nsResponder  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsResponder (mkSelector "setMenu:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @+ restorableStateKeyPaths@
+restorableStateKeyPaths :: IO (Id NSArray)
+restorableStateKeyPaths  =
+  do
+    cls' <- getRequiredClass "NSResponder"
+    sendClassMsg cls' (mkSelector "restorableStateKeyPaths") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- touchBar@
+touchBar :: IsNSResponder nsResponder => nsResponder -> IO (Id NSTouchBar)
+touchBar nsResponder  =
+    sendMsg nsResponder (mkSelector "touchBar") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setTouchBar:@
+setTouchBar :: (IsNSResponder nsResponder, IsNSTouchBar value) => nsResponder -> value -> IO ()
+setTouchBar nsResponder  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsResponder (mkSelector "setTouchBar:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- userActivity@
+userActivity :: IsNSResponder nsResponder => nsResponder -> IO (Id NSUserActivity)
+userActivity nsResponder  =
+    sendMsg nsResponder (mkSelector "userActivity") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setUserActivity:@
+setUserActivity :: (IsNSResponder nsResponder, IsNSUserActivity value) => nsResponder -> value -> IO ()
+setUserActivity nsResponder  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsResponder (mkSelector "setUserActivity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- undoManager@
 undoManager :: IsNSResponder nsResponder => nsResponder -> IO (Id NSUndoManager)
 undoManager nsResponder  =
@@ -910,6 +949,26 @@ menuSelector = mkSelector "menu"
 -- | @Selector@ for @setMenu:@
 setMenuSelector :: Selector
 setMenuSelector = mkSelector "setMenu:"
+
+-- | @Selector@ for @restorableStateKeyPaths@
+restorableStateKeyPathsSelector :: Selector
+restorableStateKeyPathsSelector = mkSelector "restorableStateKeyPaths"
+
+-- | @Selector@ for @touchBar@
+touchBarSelector :: Selector
+touchBarSelector = mkSelector "touchBar"
+
+-- | @Selector@ for @setTouchBar:@
+setTouchBarSelector :: Selector
+setTouchBarSelector = mkSelector "setTouchBar:"
+
+-- | @Selector@ for @userActivity@
+userActivitySelector :: Selector
+userActivitySelector = mkSelector "userActivity"
+
+-- | @Selector@ for @setUserActivity:@
+setUserActivitySelector :: Selector
+setUserActivitySelector = mkSelector "setUserActivity:"
 
 -- | @Selector@ for @undoManager@
 undoManagerSelector :: Selector

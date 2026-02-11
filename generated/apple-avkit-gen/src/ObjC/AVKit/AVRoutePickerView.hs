@@ -9,20 +9,36 @@ module ObjC.AVKit.AVRoutePickerView
   , IsAVRoutePickerView(..)
   , routePickerButtonColorForState
   , setRoutePickerButtonColor_forState
+  , delegate
+  , setDelegate
+  , player
+  , setPlayer
   , routePickerButtonBordered
   , setRoutePickerButtonBordered
+  , activeTintColor
+  , setActiveTintColor
   , routePickerButtonStyle
   , setRoutePickerButtonStyle
   , prioritizesVideoDevices
   , setPrioritizesVideoDevices
+  , customRoutingController
+  , setCustomRoutingController
   , routePickerButtonColorForStateSelector
   , setRoutePickerButtonColor_forStateSelector
+  , delegateSelector
+  , setDelegateSelector
+  , playerSelector
+  , setPlayerSelector
   , routePickerButtonBorderedSelector
   , setRoutePickerButtonBorderedSelector
+  , activeTintColorSelector
+  , setActiveTintColorSelector
   , routePickerButtonStyleSelector
   , setRoutePickerButtonStyleSelector
   , prioritizesVideoDevicesSelector
   , setPrioritizesVideoDevicesSelector
+  , customRoutingControllerSelector
+  , setCustomRoutingControllerSelector
 
   -- * Enum types
   , AVRoutePickerViewButtonState(AVRoutePickerViewButtonState)
@@ -81,6 +97,43 @@ setRoutePickerButtonColor_forState avRoutePickerView  color state =
   withObjCPtr color $ \raw_color ->
       sendMsg avRoutePickerView (mkSelector "setRoutePickerButtonColor:forState:") retVoid [argPtr (castPtr raw_color :: Ptr ()), argCLong (coerce state)]
 
+-- | delegate
+--
+-- The route picker view's delegate.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsAVRoutePickerView avRoutePickerView => avRoutePickerView -> IO RawId
+delegate avRoutePickerView  =
+    fmap (RawId . castPtr) $ sendMsg avRoutePickerView (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- The route picker view's delegate.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsAVRoutePickerView avRoutePickerView => avRoutePickerView -> RawId -> IO ()
+setDelegate avRoutePickerView  value =
+    sendMsg avRoutePickerView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | player
+--
+-- The player for which to perform routing operations.
+--
+-- ObjC selector: @- player@
+player :: IsAVRoutePickerView avRoutePickerView => avRoutePickerView -> IO (Id AVPlayer)
+player avRoutePickerView  =
+    sendMsg avRoutePickerView (mkSelector "player") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | player
+--
+-- The player for which to perform routing operations.
+--
+-- ObjC selector: @- setPlayer:@
+setPlayer :: (IsAVRoutePickerView avRoutePickerView, IsAVPlayer value) => avRoutePickerView -> value -> IO ()
+setPlayer avRoutePickerView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avRoutePickerView (mkSelector "setPlayer:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | routePickerButtonBordered
 --
 -- Whether or not the picker button has a border. Default is YES.
@@ -98,6 +151,25 @@ routePickerButtonBordered avRoutePickerView  =
 setRoutePickerButtonBordered :: IsAVRoutePickerView avRoutePickerView => avRoutePickerView -> Bool -> IO ()
 setRoutePickerButtonBordered avRoutePickerView  value =
     sendMsg avRoutePickerView (mkSelector "setRoutePickerButtonBordered:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | activeTintColor
+--
+-- The view's tint color when AirPlay is active.
+--
+-- ObjC selector: @- activeTintColor@
+activeTintColor :: IsAVRoutePickerView avRoutePickerView => avRoutePickerView -> IO (Id NSColor)
+activeTintColor avRoutePickerView  =
+    sendMsg avRoutePickerView (mkSelector "activeTintColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | activeTintColor
+--
+-- The view's tint color when AirPlay is active.
+--
+-- ObjC selector: @- setActiveTintColor:@
+setActiveTintColor :: (IsAVRoutePickerView avRoutePickerView, IsNSColor value) => avRoutePickerView -> value -> IO ()
+setActiveTintColor avRoutePickerView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avRoutePickerView (mkSelector "setActiveTintColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | routePickerButtonStyle
 --
@@ -135,6 +207,24 @@ setPrioritizesVideoDevices :: IsAVRoutePickerView avRoutePickerView => avRoutePi
 setPrioritizesVideoDevices avRoutePickerView  value =
     sendMsg avRoutePickerView (mkSelector "setPrioritizesVideoDevices:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | customRoutingController
+--
+-- A controller which enables connection to 3rd party devices (non-airplay) via the picker.
+--
+-- ObjC selector: @- customRoutingController@
+customRoutingController :: IsAVRoutePickerView avRoutePickerView => avRoutePickerView -> IO RawId
+customRoutingController avRoutePickerView  =
+    fmap (RawId . castPtr) $ sendMsg avRoutePickerView (mkSelector "customRoutingController") (retPtr retVoid) []
+
+-- | customRoutingController
+--
+-- A controller which enables connection to 3rd party devices (non-airplay) via the picker.
+--
+-- ObjC selector: @- setCustomRoutingController:@
+setCustomRoutingController :: IsAVRoutePickerView avRoutePickerView => avRoutePickerView -> RawId -> IO ()
+setCustomRoutingController avRoutePickerView  value =
+    sendMsg avRoutePickerView (mkSelector "setCustomRoutingController:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -147,6 +237,22 @@ routePickerButtonColorForStateSelector = mkSelector "routePickerButtonColorForSt
 setRoutePickerButtonColor_forStateSelector :: Selector
 setRoutePickerButtonColor_forStateSelector = mkSelector "setRoutePickerButtonColor:forState:"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @player@
+playerSelector :: Selector
+playerSelector = mkSelector "player"
+
+-- | @Selector@ for @setPlayer:@
+setPlayerSelector :: Selector
+setPlayerSelector = mkSelector "setPlayer:"
+
 -- | @Selector@ for @routePickerButtonBordered@
 routePickerButtonBorderedSelector :: Selector
 routePickerButtonBorderedSelector = mkSelector "routePickerButtonBordered"
@@ -154,6 +260,14 @@ routePickerButtonBorderedSelector = mkSelector "routePickerButtonBordered"
 -- | @Selector@ for @setRoutePickerButtonBordered:@
 setRoutePickerButtonBorderedSelector :: Selector
 setRoutePickerButtonBorderedSelector = mkSelector "setRoutePickerButtonBordered:"
+
+-- | @Selector@ for @activeTintColor@
+activeTintColorSelector :: Selector
+activeTintColorSelector = mkSelector "activeTintColor"
+
+-- | @Selector@ for @setActiveTintColor:@
+setActiveTintColorSelector :: Selector
+setActiveTintColorSelector = mkSelector "setActiveTintColor:"
 
 -- | @Selector@ for @routePickerButtonStyle@
 routePickerButtonStyleSelector :: Selector
@@ -170,4 +284,12 @@ prioritizesVideoDevicesSelector = mkSelector "prioritizesVideoDevices"
 -- | @Selector@ for @setPrioritizesVideoDevices:@
 setPrioritizesVideoDevicesSelector :: Selector
 setPrioritizesVideoDevicesSelector = mkSelector "setPrioritizesVideoDevices:"
+
+-- | @Selector@ for @customRoutingController@
+customRoutingControllerSelector :: Selector
+customRoutingControllerSelector = mkSelector "customRoutingController"
+
+-- | @Selector@ for @setCustomRoutingController:@
+setCustomRoutingControllerSelector :: Selector
+setCustomRoutingControllerSelector = mkSelector "setCustomRoutingController:"
 

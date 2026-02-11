@@ -9,8 +9,10 @@ module ObjC.QuickLookThumbnailing.QLThumbnailRepresentation
   , IsQLThumbnailRepresentation(..)
   , type_
   , cgImage
+  , uiImage
   , typeSelector
   , cgImageSelector
+  , uiImageSelector
 
   -- * Enum types
   , QLThumbnailRepresentationType(QLThumbnailRepresentationType)
@@ -48,6 +50,13 @@ cgImage :: IsQLThumbnailRepresentation qlThumbnailRepresentation => qlThumbnailR
 cgImage qlThumbnailRepresentation  =
     fmap castPtr $ sendMsg qlThumbnailRepresentation (mkSelector "CGImage") (retPtr retVoid) []
 
+-- | Returns the UIImage representation of the thumbnail. You need to explicitly link against UIKit to use this property.
+--
+-- ObjC selector: @- UIImage@
+uiImage :: IsQLThumbnailRepresentation qlThumbnailRepresentation => qlThumbnailRepresentation -> IO RawId
+uiImage qlThumbnailRepresentation  =
+    fmap (RawId . castPtr) $ sendMsg qlThumbnailRepresentation (mkSelector "UIImage") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -59,4 +68,8 @@ typeSelector = mkSelector "type"
 -- | @Selector@ for @CGImage@
 cgImageSelector :: Selector
 cgImageSelector = mkSelector "CGImage"
+
+-- | @Selector@ for @UIImage@
+uiImageSelector :: Selector
+uiImageSelector = mkSelector "UIImage"
 

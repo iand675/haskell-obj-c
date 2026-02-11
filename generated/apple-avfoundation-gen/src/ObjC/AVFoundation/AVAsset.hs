@@ -42,6 +42,7 @@ module ObjC.AVFoundation.AVAsset
   , cancelLoading
   , preferredRate
   , preferredVolume
+  , preferredDisplayCriteria
   , playable
   , exportable
   , readable
@@ -79,6 +80,7 @@ module ObjC.AVFoundation.AVAsset
   , cancelLoadingSelector
   , preferredRateSelector
   , preferredVolumeSelector
+  , preferredDisplayCriteriaSelector
   , playableSelector
   , exportableSelector
   , readableSelector
@@ -318,6 +320,13 @@ preferredVolume :: IsAVAsset avAsset => avAsset -> IO CFloat
 preferredVolume avAsset  =
     sendMsg avAsset (mkSelector "preferredVolume") retCFloat []
 
+-- | Guides to a display mode that is optimal for playing this particular asset.
+--
+-- ObjC selector: @- preferredDisplayCriteria@
+preferredDisplayCriteria :: IsAVAsset avAsset => avAsset -> IO RawId
+preferredDisplayCriteria avAsset  =
+    fmap (RawId . castPtr) $ sendMsg avAsset (mkSelector "preferredDisplayCriteria") (retPtr retVoid) []
+
 -- | Indicates whether an AVPlayer can play the contents of the asset in a manner that meets user expectations.
 --
 -- A client can attempt playback when playable is NO, this however may lead to a substandard playback experience.
@@ -549,6 +558,10 @@ preferredRateSelector = mkSelector "preferredRate"
 -- | @Selector@ for @preferredVolume@
 preferredVolumeSelector :: Selector
 preferredVolumeSelector = mkSelector "preferredVolume"
+
+-- | @Selector@ for @preferredDisplayCriteria@
+preferredDisplayCriteriaSelector :: Selector
+preferredDisplayCriteriaSelector = mkSelector "preferredDisplayCriteria"
 
 -- | @Selector@ for @playable@
 playableSelector :: Selector

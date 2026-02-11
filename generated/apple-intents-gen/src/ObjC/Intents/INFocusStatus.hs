@@ -8,8 +8,10 @@ module ObjC.Intents.INFocusStatus
   , IsINFocusStatus(..)
   , init_
   , initWithIsFocused
+  , isFocused
   , initSelector
   , initWithIsFocusedSelector
+  , isFocusedSelector
 
 
   ) where
@@ -40,6 +42,11 @@ initWithIsFocused inFocusStatus  isFocused =
   withObjCPtr isFocused $ \raw_isFocused ->
       sendMsg inFocusStatus (mkSelector "initWithIsFocused:") (retPtr retVoid) [argPtr (castPtr raw_isFocused :: Ptr ())] >>= ownedObject . castPtr
 
+-- | @- isFocused@
+isFocused :: IsINFocusStatus inFocusStatus => inFocusStatus -> IO (Id NSNumber)
+isFocused inFocusStatus  =
+    sendMsg inFocusStatus (mkSelector "isFocused") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -51,4 +58,8 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @initWithIsFocused:@
 initWithIsFocusedSelector :: Selector
 initWithIsFocusedSelector = mkSelector "initWithIsFocused:"
+
+-- | @Selector@ for @isFocused@
+isFocusedSelector :: Selector
+isFocusedSelector = mkSelector "isFocused"
 

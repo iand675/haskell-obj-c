@@ -22,7 +22,9 @@ module ObjC.Intents.INSearchForMessagesIntent
   , identifiersOperator
   , notificationIdentifiers
   , notificationIdentifiersOperator
+  , speakableGroupNames
   , speakableGroupNamesOperator
+  , conversationIdentifiers
   , conversationIdentifiersOperator
   , groupNames
   , groupNamesOperator
@@ -41,7 +43,9 @@ module ObjC.Intents.INSearchForMessagesIntent
   , identifiersOperatorSelector
   , notificationIdentifiersSelector
   , notificationIdentifiersOperatorSelector
+  , speakableGroupNamesSelector
   , speakableGroupNamesOperatorSelector
+  , conversationIdentifiersSelector
   , conversationIdentifiersOperatorSelector
   , groupNamesSelector
   , groupNamesOperatorSelector
@@ -173,10 +177,20 @@ notificationIdentifiersOperator :: IsINSearchForMessagesIntent inSearchForMessag
 notificationIdentifiersOperator inSearchForMessagesIntent  =
     fmap (coerce :: CLong -> INConditionalOperator) $ sendMsg inSearchForMessagesIntent (mkSelector "notificationIdentifiersOperator") retCLong []
 
+-- | @- speakableGroupNames@
+speakableGroupNames :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO (Id NSArray)
+speakableGroupNames inSearchForMessagesIntent  =
+    sendMsg inSearchForMessagesIntent (mkSelector "speakableGroupNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- speakableGroupNamesOperator@
 speakableGroupNamesOperator :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO INConditionalOperator
 speakableGroupNamesOperator inSearchForMessagesIntent  =
     fmap (coerce :: CLong -> INConditionalOperator) $ sendMsg inSearchForMessagesIntent (mkSelector "speakableGroupNamesOperator") retCLong []
+
+-- | @- conversationIdentifiers@
+conversationIdentifiers :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO (Id NSArray)
+conversationIdentifiers inSearchForMessagesIntent  =
+    sendMsg inSearchForMessagesIntent (mkSelector "conversationIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- conversationIdentifiersOperator@
 conversationIdentifiersOperator :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO INConditionalOperator
@@ -257,9 +271,17 @@ notificationIdentifiersSelector = mkSelector "notificationIdentifiers"
 notificationIdentifiersOperatorSelector :: Selector
 notificationIdentifiersOperatorSelector = mkSelector "notificationIdentifiersOperator"
 
+-- | @Selector@ for @speakableGroupNames@
+speakableGroupNamesSelector :: Selector
+speakableGroupNamesSelector = mkSelector "speakableGroupNames"
+
 -- | @Selector@ for @speakableGroupNamesOperator@
 speakableGroupNamesOperatorSelector :: Selector
 speakableGroupNamesOperatorSelector = mkSelector "speakableGroupNamesOperator"
+
+-- | @Selector@ for @conversationIdentifiers@
+conversationIdentifiersSelector :: Selector
+conversationIdentifiersSelector = mkSelector "conversationIdentifiers"
 
 -- | @Selector@ for @conversationIdentifiersOperator@
 conversationIdentifiersOperatorSelector :: Selector

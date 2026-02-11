@@ -8,9 +8,11 @@ module ObjC.CloudKit.CKLocationSortDescriptor
   , IsCKLocationSortDescriptor(..)
   , init_
   , new
+  , initWithKey_relativeLocation
   , initWithCoder
   , initSelector
   , newSelector
+  , initWithKey_relativeLocationSelector
   , initWithCoderSelector
 
 
@@ -43,6 +45,12 @@ new  =
     cls' <- getRequiredClass "CKLocationSortDescriptor"
     sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | @- initWithKey:relativeLocation:@
+initWithKey_relativeLocation :: (IsCKLocationSortDescriptor ckLocationSortDescriptor, IsNSString key) => ckLocationSortDescriptor -> key -> RawId -> IO (Id CKLocationSortDescriptor)
+initWithKey_relativeLocation ckLocationSortDescriptor  key relativeLocation =
+  withObjCPtr key $ \raw_key ->
+      sendMsg ckLocationSortDescriptor (mkSelector "initWithKey:relativeLocation:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr (unRawId relativeLocation) :: Ptr ())] >>= ownedObject . castPtr
+
 -- | @- initWithCoder:@
 initWithCoder :: (IsCKLocationSortDescriptor ckLocationSortDescriptor, IsNSCoder aDecoder) => ckLocationSortDescriptor -> aDecoder -> IO (Id CKLocationSortDescriptor)
 initWithCoder ckLocationSortDescriptor  aDecoder =
@@ -60,6 +68,10 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @new@
 newSelector :: Selector
 newSelector = mkSelector "new"
+
+-- | @Selector@ for @initWithKey:relativeLocation:@
+initWithKey_relativeLocationSelector :: Selector
+initWithKey_relativeLocationSelector = mkSelector "initWithKey:relativeLocation:"
 
 -- | @Selector@ for @initWithCoder:@
 initWithCoderSelector :: Selector

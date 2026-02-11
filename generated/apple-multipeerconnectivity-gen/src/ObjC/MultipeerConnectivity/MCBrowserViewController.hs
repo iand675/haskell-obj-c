@@ -8,6 +8,8 @@ module ObjC.MultipeerConnectivity.MCBrowserViewController
   , IsMCBrowserViewController(..)
   , initWithServiceType_session
   , initWithBrowser_session
+  , delegate
+  , setDelegate
   , browser
   , session
   , minimumNumberOfPeers
@@ -16,6 +18,8 @@ module ObjC.MultipeerConnectivity.MCBrowserViewController
   , setMaximumNumberOfPeers
   , initWithServiceType_sessionSelector
   , initWithBrowser_sessionSelector
+  , delegateSelector
+  , setDelegateSelector
   , browserSelector
   , sessionSelector
   , minimumNumberOfPeersSelector
@@ -55,6 +59,16 @@ initWithBrowser_session mcBrowserViewController  browser session =
   withObjCPtr browser $ \raw_browser ->
     withObjCPtr session $ \raw_session ->
         sendMsg mcBrowserViewController (mkSelector "initWithBrowser:session:") (retPtr retVoid) [argPtr (castPtr raw_browser :: Ptr ()), argPtr (castPtr raw_session :: Ptr ())] >>= ownedObject . castPtr
+
+-- | @- delegate@
+delegate :: IsMCBrowserViewController mcBrowserViewController => mcBrowserViewController -> IO RawId
+delegate mcBrowserViewController  =
+    fmap (RawId . castPtr) $ sendMsg mcBrowserViewController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsMCBrowserViewController mcBrowserViewController => mcBrowserViewController -> RawId -> IO ()
+setDelegate mcBrowserViewController  value =
+    sendMsg mcBrowserViewController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- browser@
 browser :: IsMCBrowserViewController mcBrowserViewController => mcBrowserViewController -> IO (Id MCNearbyServiceBrowser)
@@ -97,6 +111,14 @@ initWithServiceType_sessionSelector = mkSelector "initWithServiceType:session:"
 -- | @Selector@ for @initWithBrowser:session:@
 initWithBrowser_sessionSelector :: Selector
 initWithBrowser_sessionSelector = mkSelector "initWithBrowser:session:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @browser@
 browserSelector :: Selector

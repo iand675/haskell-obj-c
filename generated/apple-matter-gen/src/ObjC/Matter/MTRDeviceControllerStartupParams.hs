@@ -12,6 +12,7 @@ module ObjC.Matter.MTRDeviceControllerStartupParams
   , initWithIPK_operationalKeypair_operationalCertificate_intermediateCertificate_rootCertificate
   , initWithSigningKeypair_fabricId_ipk
   , initWithOperationalKeypair_operationalCertificate_intermediateCertificate_rootCertificate_ipk
+  , nocSigner
   , fabricID
   , ipk
   , vendorID
@@ -25,6 +26,10 @@ module ObjC.Matter.MTRDeviceControllerStartupParams
   , intermediateCertificate
   , setIntermediateCertificate
   , operationalCertificate
+  , operationalKeypair
+  , setOperationalKeypair
+  , operationalCertificateIssuer
+  , setOperationalCertificateIssuer
   , operationalCertificateIssuerQueue
   , setOperationalCertificateIssuerQueue
   , fabricId
@@ -38,6 +43,7 @@ module ObjC.Matter.MTRDeviceControllerStartupParams
   , initWithIPK_operationalKeypair_operationalCertificate_intermediateCertificate_rootCertificateSelector
   , initWithSigningKeypair_fabricId_ipkSelector
   , initWithOperationalKeypair_operationalCertificate_intermediateCertificate_rootCertificate_ipkSelector
+  , nocSignerSelector
   , fabricIDSelector
   , ipkSelector
   , vendorIDSelector
@@ -51,6 +57,10 @@ module ObjC.Matter.MTRDeviceControllerStartupParams
   , intermediateCertificateSelector
   , setIntermediateCertificateSelector
   , operationalCertificateSelector
+  , operationalKeypairSelector
+  , setOperationalKeypairSelector
+  , operationalCertificateIssuerSelector
+  , setOperationalCertificateIssuerSelector
   , operationalCertificateIssuerQueueSelector
   , setOperationalCertificateIssuerQueueSelector
   , fabricIdSelector
@@ -137,6 +147,15 @@ initWithOperationalKeypair_operationalCertificate_intermediateCertificate_rootCe
       withObjCPtr rootCertificate $ \raw_rootCertificate ->
         withObjCPtr ipk $ \raw_ipk ->
             sendMsg mtrDeviceControllerStartupParams (mkSelector "initWithOperationalKeypair:operationalCertificate:intermediateCertificate:rootCertificate:ipk:") (retPtr retVoid) [argPtr (castPtr (unRawId operationalKeypair) :: Ptr ()), argPtr (castPtr raw_operationalCertificate :: Ptr ()), argPtr (castPtr raw_intermediateCertificate :: Ptr ()), argPtr (castPtr raw_rootCertificate :: Ptr ()), argPtr (castPtr raw_ipk :: Ptr ())] >>= ownedObject . castPtr
+
+-- | Keypair used to sign operational certificates.  This is the root CA keypair if not using an intermediate CA, the intermediate CA's keypair otherwise.
+--
+-- Allowed to be nil if this controller will not be issuing internally-generated operational certificates.  In that case, the MTRDeviceControllerStartupParams object must be initialized using initWithIPK:operationalKeypair:operationalCertificate:intermediateCertificate:rootCertificate: (to provide the operational credentials for t2he controller itself).
+--
+-- ObjC selector: @- nocSigner@
+nocSigner :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> IO RawId
+nocSigner mtrDeviceControllerStartupParams  =
+    fmap (RawId . castPtr) $ sendMsg mtrDeviceControllerStartupParams (mkSelector "nocSigner") (retPtr retVoid) []
 
 -- | Fabric id for the controller.  Must be set to a nonzero value.  This is scoped by the root public key, which is determined as follows:
 --
@@ -374,6 +393,38 @@ operationalCertificate :: IsMTRDeviceControllerStartupParams mtrDeviceController
 operationalCertificate mtrDeviceControllerStartupParams  =
     sendMsg mtrDeviceControllerStartupParams (mkSelector "operationalCertificate") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | Operational keypair to use.  If operationalCertificate is not nil, the public key must match operationalCertificate.
+--
+-- If not nil, and if operationalCertificate is nil, a new operational certificate will be generated for the given operationalKeypair.  The node id for that certificate will be determined as described in the documentation for nodeID.
+--
+-- ObjC selector: @- operationalKeypair@
+operationalKeypair :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> IO RawId
+operationalKeypair mtrDeviceControllerStartupParams  =
+    fmap (RawId . castPtr) $ sendMsg mtrDeviceControllerStartupParams (mkSelector "operationalKeypair") (retPtr retVoid) []
+
+-- | Operational keypair to use.  If operationalCertificate is not nil, the public key must match operationalCertificate.
+--
+-- If not nil, and if operationalCertificate is nil, a new operational certificate will be generated for the given operationalKeypair.  The node id for that certificate will be determined as described in the documentation for nodeID.
+--
+-- ObjC selector: @- setOperationalKeypair:@
+setOperationalKeypair :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> RawId -> IO ()
+setOperationalKeypair mtrDeviceControllerStartupParams  value =
+    sendMsg mtrDeviceControllerStartupParams (mkSelector "setOperationalKeypair:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | The certificate issuer delegate to use for issuing operational certificates when commissioning devices.  Allowed to be nil if this controller either does not issue operational certificates at all or internally generates the certificates to be issued.  In the latter case, nocSigner must not be nil.
+--
+-- ObjC selector: @- operationalCertificateIssuer@
+operationalCertificateIssuer :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> IO RawId
+operationalCertificateIssuer mtrDeviceControllerStartupParams  =
+    fmap (RawId . castPtr) $ sendMsg mtrDeviceControllerStartupParams (mkSelector "operationalCertificateIssuer") (retPtr retVoid) []
+
+-- | The certificate issuer delegate to use for issuing operational certificates when commissioning devices.  Allowed to be nil if this controller either does not issue operational certificates at all or internally generates the certificates to be issued.  In the latter case, nocSigner must not be nil.
+--
+-- ObjC selector: @- setOperationalCertificateIssuer:@
+setOperationalCertificateIssuer :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> RawId -> IO ()
+setOperationalCertificateIssuer mtrDeviceControllerStartupParams  value =
+    sendMsg mtrDeviceControllerStartupParams (mkSelector "setOperationalCertificateIssuer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | The dispatch queue on which operationalCertificateIssuer should be called. Allowed to be nil if and only if operationalCertificateIssuer is nil.
 --
 -- ObjC selector: @- operationalCertificateIssuerQueue@
@@ -444,6 +495,10 @@ initWithSigningKeypair_fabricId_ipkSelector = mkSelector "initWithSigningKeypair
 initWithOperationalKeypair_operationalCertificate_intermediateCertificate_rootCertificate_ipkSelector :: Selector
 initWithOperationalKeypair_operationalCertificate_intermediateCertificate_rootCertificate_ipkSelector = mkSelector "initWithOperationalKeypair:operationalCertificate:intermediateCertificate:rootCertificate:ipk:"
 
+-- | @Selector@ for @nocSigner@
+nocSignerSelector :: Selector
+nocSignerSelector = mkSelector "nocSigner"
+
 -- | @Selector@ for @fabricID@
 fabricIDSelector :: Selector
 fabricIDSelector = mkSelector "fabricID"
@@ -495,6 +550,22 @@ setIntermediateCertificateSelector = mkSelector "setIntermediateCertificate:"
 -- | @Selector@ for @operationalCertificate@
 operationalCertificateSelector :: Selector
 operationalCertificateSelector = mkSelector "operationalCertificate"
+
+-- | @Selector@ for @operationalKeypair@
+operationalKeypairSelector :: Selector
+operationalKeypairSelector = mkSelector "operationalKeypair"
+
+-- | @Selector@ for @setOperationalKeypair:@
+setOperationalKeypairSelector :: Selector
+setOperationalKeypairSelector = mkSelector "setOperationalKeypair:"
+
+-- | @Selector@ for @operationalCertificateIssuer@
+operationalCertificateIssuerSelector :: Selector
+operationalCertificateIssuerSelector = mkSelector "operationalCertificateIssuer"
+
+-- | @Selector@ for @setOperationalCertificateIssuer:@
+setOperationalCertificateIssuerSelector :: Selector
+setOperationalCertificateIssuerSelector = mkSelector "setOperationalCertificateIssuer:"
 
 -- | @Selector@ for @operationalCertificateIssuerQueue@
 operationalCertificateIssuerQueueSelector :: Selector

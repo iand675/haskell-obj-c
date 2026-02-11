@@ -8,8 +8,10 @@ module ObjC.MapKit.MKGeoJSONFeature
   , IsMKGeoJSONFeature(..)
   , identifier
   , properties
+  , geometry
   , identifierSelector
   , propertiesSelector
+  , geometrySelector
 
 
   ) where
@@ -39,6 +41,11 @@ properties :: IsMKGeoJSONFeature mkGeoJSONFeature => mkGeoJSONFeature -> IO (Id 
 properties mkGeoJSONFeature  =
     sendMsg mkGeoJSONFeature (mkSelector "properties") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- geometry@
+geometry :: IsMKGeoJSONFeature mkGeoJSONFeature => mkGeoJSONFeature -> IO (Id NSArray)
+geometry mkGeoJSONFeature  =
+    sendMsg mkGeoJSONFeature (mkSelector "geometry") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -50,4 +57,8 @@ identifierSelector = mkSelector "identifier"
 -- | @Selector@ for @properties@
 propertiesSelector :: Selector
 propertiesSelector = mkSelector "properties"
+
+-- | @Selector@ for @geometry@
+geometrySelector :: Selector
+geometrySelector = mkSelector "geometry"
 

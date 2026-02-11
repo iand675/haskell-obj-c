@@ -8,8 +8,12 @@ module ObjC.Metal.MTLCommandQueueDescriptor
   , IsMTLCommandQueueDescriptor(..)
   , maxCommandBufferCount
   , setMaxCommandBufferCount
+  , logState
+  , setLogState
   , maxCommandBufferCountSelector
   , setMaxCommandBufferCountSelector
+  , logStateSelector
+  , setLogStateSelector
 
 
   ) where
@@ -47,6 +51,24 @@ setMaxCommandBufferCount :: IsMTLCommandQueueDescriptor mtlCommandQueueDescripto
 setMaxCommandBufferCount mtlCommandQueueDescriptor  value =
     sendMsg mtlCommandQueueDescriptor (mkSelector "setMaxCommandBufferCount:") retVoid [argCULong value]
 
+-- | logState
+--
+-- \@ Specify the MTLLogState to enable shader logging
+--
+-- ObjC selector: @- logState@
+logState :: IsMTLCommandQueueDescriptor mtlCommandQueueDescriptor => mtlCommandQueueDescriptor -> IO RawId
+logState mtlCommandQueueDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlCommandQueueDescriptor (mkSelector "logState") (retPtr retVoid) []
+
+-- | logState
+--
+-- \@ Specify the MTLLogState to enable shader logging
+--
+-- ObjC selector: @- setLogState:@
+setLogState :: IsMTLCommandQueueDescriptor mtlCommandQueueDescriptor => mtlCommandQueueDescriptor -> RawId -> IO ()
+setLogState mtlCommandQueueDescriptor  value =
+    sendMsg mtlCommandQueueDescriptor (mkSelector "setLogState:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -58,4 +80,12 @@ maxCommandBufferCountSelector = mkSelector "maxCommandBufferCount"
 -- | @Selector@ for @setMaxCommandBufferCount:@
 setMaxCommandBufferCountSelector :: Selector
 setMaxCommandBufferCountSelector = mkSelector "setMaxCommandBufferCount:"
+
+-- | @Selector@ for @logState@
+logStateSelector :: Selector
+logStateSelector = mkSelector "logState"
+
+-- | @Selector@ for @setLogState:@
+setLogStateSelector :: Selector
+setLogStateSelector = mkSelector "setLogState:"
 

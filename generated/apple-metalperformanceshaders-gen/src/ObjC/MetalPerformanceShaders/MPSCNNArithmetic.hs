@@ -26,6 +26,7 @@ module ObjC.MetalPerformanceShaders.MPSCNNArithmetic
   , IsMPSCNNArithmetic(..)
   , initWithDevice
   , encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationImage
+  , encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationImages
   , primaryScale
   , setPrimaryScale
   , secondaryScale
@@ -42,6 +43,7 @@ module ObjC.MetalPerformanceShaders.MPSCNNArithmetic
   , setMaximumValue
   , initWithDeviceSelector
   , encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationImageSelector
+  , encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationImagesSelector
   , primaryScaleSelector
   , setPrimaryScaleSelector
   , secondaryScaleSelector
@@ -102,6 +104,25 @@ encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationIm
       withObjCPtr destinationState $ \raw_destinationState ->
         withObjCPtr destinationImage $ \raw_destinationImage ->
             sendMsg mpscnnArithmetic (mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:destinationState:destinationImage:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_primaryImage :: Ptr ()), argPtr (castPtr raw_secondaryImage :: Ptr ()), argPtr (castPtr raw_destinationState :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())]
+
+-- | Encode call that operates on a state for later consumption by a gradient kernel in training
+--
+-- This is the older style of encode which reads the offset, doesn't change it,              and ignores the padding method. Multiple images are processed concurrently.              All images must have MPSImage.numberOfImages = 1.
+--
+-- @commandBuffer@ — A valid MTLCommandBuffer to receive the encoded filter
+--
+-- @primaryImages@ — An array of MPSImage objects containing the primary source images.
+--
+-- @secondaryImages@ — An array MPSImage objects containing the secondary source images.
+--
+-- @destinationStates@ — An array of MPSCNNArithmeticGradientStateBatch to be consumed by the gradient layer
+--
+-- @destinationImages@ — An array of MPSImage objects to contain the result images.                                    destinationImages may not alias primarySourceImages or secondarySourceImages                                    in any manner.
+--
+-- ObjC selector: @- encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationStates:destinationImages:@
+encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationImages :: IsMPSCNNArithmetic mpscnnArithmetic => mpscnnArithmetic -> RawId -> RawId -> RawId -> RawId -> RawId -> IO ()
+encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationImages mpscnnArithmetic  commandBuffer primaryImages secondaryImages destinationStates destinationImages =
+    sendMsg mpscnnArithmetic (mkSelector "encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationStates:destinationImages:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId primaryImages) :: Ptr ()), argPtr (castPtr (unRawId secondaryImages) :: Ptr ()), argPtr (castPtr (unRawId destinationStates) :: Ptr ()), argPtr (castPtr (unRawId destinationImages) :: Ptr ())]
 
 -- | @- primaryScale@
 primaryScale :: IsMPSCNNArithmetic mpscnnArithmetic => mpscnnArithmetic -> IO CFloat
@@ -216,6 +237,10 @@ initWithDeviceSelector = mkSelector "initWithDevice:"
 -- | @Selector@ for @encodeToCommandBuffer:primaryImage:secondaryImage:destinationState:destinationImage:@
 encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationImageSelector :: Selector
 encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationImageSelector = mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:destinationState:destinationImage:"
+
+-- | @Selector@ for @encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationStates:destinationImages:@
+encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationImagesSelector :: Selector
+encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationImagesSelector = mkSelector "encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationStates:destinationImages:"
 
 -- | @Selector@ for @primaryScale@
 primaryScaleSelector :: Selector

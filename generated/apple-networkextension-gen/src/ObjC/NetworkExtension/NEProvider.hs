@@ -20,12 +20,14 @@ module ObjC.NetworkExtension.NEProvider
   , createUDPSessionToEndpoint_fromEndpoint
   , displayMessage_completionHandler
   , startSystemExtensionMode
+  , defaultPath
   , sleepWithCompletionHandlerSelector
   , wakeSelector
   , createTCPConnectionToEndpoint_enableTLS_TLSParameters_delegateSelector
   , createUDPSessionToEndpoint_fromEndpointSelector
   , displayMessage_completionHandlerSelector
   , startSystemExtensionModeSelector
+  , defaultPathSelector
 
 
   ) where
@@ -136,6 +138,15 @@ startSystemExtensionMode  =
     cls' <- getRequiredClass "NEProvider"
     sendClassMsg cls' (mkSelector "startSystemExtensionMode") retVoid []
 
+-- | defaultPath
+--
+-- The current default path for connections created by the provider. Use KVO to watch for network changes.
+--
+-- ObjC selector: @- defaultPath@
+defaultPath :: IsNEProvider neProvider => neProvider -> IO (Id NWPath)
+defaultPath neProvider  =
+    sendMsg neProvider (mkSelector "defaultPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -163,4 +174,8 @@ displayMessage_completionHandlerSelector = mkSelector "displayMessage:completion
 -- | @Selector@ for @startSystemExtensionMode@
 startSystemExtensionModeSelector :: Selector
 startSystemExtensionModeSelector = mkSelector "startSystemExtensionMode"
+
+-- | @Selector@ for @defaultPath@
+defaultPathSelector :: Selector
+defaultPathSelector = mkSelector "defaultPath"
 

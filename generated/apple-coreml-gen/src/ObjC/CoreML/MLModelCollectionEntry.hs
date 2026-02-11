@@ -11,9 +11,13 @@ module ObjC.CoreML.MLModelCollectionEntry
   , isEqualToModelCollectionEntry
   , init_
   , new
+  , modelIdentifier
+  , modelURL
   , isEqualToModelCollectionEntrySelector
   , initSelector
   , newSelector
+  , modelIdentifierSelector
+  , modelURLSelector
 
 
   ) where
@@ -51,6 +55,16 @@ new  =
     cls' <- getRequiredClass "MLModelCollectionEntry"
     fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "new") (retPtr retVoid) []
 
+-- | @- modelIdentifier@
+modelIdentifier :: IsMLModelCollectionEntry mlModelCollectionEntry => mlModelCollectionEntry -> IO RawId
+modelIdentifier mlModelCollectionEntry  =
+    fmap (RawId . castPtr) $ sendMsg mlModelCollectionEntry (mkSelector "modelIdentifier") (retPtr retVoid) []
+
+-- | @- modelURL@
+modelURL :: IsMLModelCollectionEntry mlModelCollectionEntry => mlModelCollectionEntry -> IO RawId
+modelURL mlModelCollectionEntry  =
+    fmap (RawId . castPtr) $ sendMsg mlModelCollectionEntry (mkSelector "modelURL") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -66,4 +80,12 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @new@
 newSelector :: Selector
 newSelector = mkSelector "new"
+
+-- | @Selector@ for @modelIdentifier@
+modelIdentifierSelector :: Selector
+modelIdentifierSelector = mkSelector "modelIdentifier"
+
+-- | @Selector@ for @modelURL@
+modelURLSelector :: Selector
+modelURLSelector = mkSelector "modelURL"
 

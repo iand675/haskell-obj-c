@@ -12,6 +12,9 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.Vision.Delegate.VNFaceObservationAccepting
+      ObjC.Vision.Delegate.VNRequestProgressProviding
+      ObjC.Vision.Delegate.VNRequestRevisionProviding
       ObjC.Vision.Enums
       ObjC.Vision.Internal.Classes
       ObjC.Vision.Internal.Enums

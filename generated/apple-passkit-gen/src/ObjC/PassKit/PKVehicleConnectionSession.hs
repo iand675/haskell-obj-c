@@ -12,12 +12,14 @@ module ObjC.PassKit.PKVehicleConnectionSession
   , sessionForPass_delegate_completion
   , sendData_error
   , invalidate
+  , delegate
   , connectionStatus
   , initSelector
   , newSelector
   , sessionForPass_delegate_completionSelector
   , sendData_errorSelector
   , invalidateSelector
+  , delegateSelector
   , connectionStatusSelector
 
   -- * Enum types
@@ -77,6 +79,11 @@ invalidate :: IsPKVehicleConnectionSession pkVehicleConnectionSession => pkVehic
 invalidate pkVehicleConnectionSession  =
     sendMsg pkVehicleConnectionSession (mkSelector "invalidate") retVoid []
 
+-- | @- delegate@
+delegate :: IsPKVehicleConnectionSession pkVehicleConnectionSession => pkVehicleConnectionSession -> IO RawId
+delegate pkVehicleConnectionSession  =
+    fmap (RawId . castPtr) $ sendMsg pkVehicleConnectionSession (mkSelector "delegate") (retPtr retVoid) []
+
 -- | @- connectionStatus@
 connectionStatus :: IsPKVehicleConnectionSession pkVehicleConnectionSession => pkVehicleConnectionSession -> IO PKVehicleConnectionSessionConnectionState
 connectionStatus pkVehicleConnectionSession  =
@@ -105,6 +112,10 @@ sendData_errorSelector = mkSelector "sendData:error:"
 -- | @Selector@ for @invalidate@
 invalidateSelector :: Selector
 invalidateSelector = mkSelector "invalidate"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @connectionStatus@
 connectionStatusSelector :: Selector

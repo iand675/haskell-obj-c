@@ -19,14 +19,22 @@ module ObjC.Intents.INMessage
   , initWithIdentifier_conversationIdentifier_content_dateSent_sender_recipients_groupName_serviceName_messageType_referencedMessage_reaction
   , initWithIdentifier_conversationIdentifier_content_dateSent_sender_recipients_groupName_serviceName_messageType_referencedMessage_sticker_reaction
   , identifier
+  , conversationIdentifier
   , content
   , dateSent
   , sender
   , recipients
+  , groupName
   , messageType
+  , serviceName
+  , attachmentFiles
+  , numberOfAttachments
   , audioMessageFile
+  , linkMetadata
   , sticker
   , setSticker
+  , reaction
+  , setReaction
   , initSelector
   , initWithIdentifier_conversationIdentifier_content_dateSent_sender_recipients_groupName_messageType_serviceName_attachmentFilesSelector
   , initWithIdentifier_conversationIdentifier_content_dateSent_sender_recipients_groupName_messageType_serviceName_audioMessageFileSelector
@@ -39,14 +47,22 @@ module ObjC.Intents.INMessage
   , initWithIdentifier_conversationIdentifier_content_dateSent_sender_recipients_groupName_serviceName_messageType_referencedMessage_reactionSelector
   , initWithIdentifier_conversationIdentifier_content_dateSent_sender_recipients_groupName_serviceName_messageType_referencedMessage_sticker_reactionSelector
   , identifierSelector
+  , conversationIdentifierSelector
   , contentSelector
   , dateSentSelector
   , senderSelector
   , recipientsSelector
+  , groupNameSelector
   , messageTypeSelector
+  , serviceNameSelector
+  , attachmentFilesSelector
+  , numberOfAttachmentsSelector
   , audioMessageFileSelector
+  , linkMetadataSelector
   , stickerSelector
   , setStickerSelector
+  , reactionSelector
+  , setReactionSelector
 
   -- * Enum types
   , INMessageType(INMessageType)
@@ -245,6 +261,11 @@ identifier :: IsINMessage inMessage => inMessage -> IO (Id NSString)
 identifier inMessage  =
     sendMsg inMessage (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- conversationIdentifier@
+conversationIdentifier :: IsINMessage inMessage => inMessage -> IO (Id NSString)
+conversationIdentifier inMessage  =
+    sendMsg inMessage (mkSelector "conversationIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- content@
 content :: IsINMessage inMessage => inMessage -> IO (Id NSString)
 content inMessage  =
@@ -265,15 +286,40 @@ recipients :: IsINMessage inMessage => inMessage -> IO (Id NSArray)
 recipients inMessage  =
     sendMsg inMessage (mkSelector "recipients") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- groupName@
+groupName :: IsINMessage inMessage => inMessage -> IO (Id INSpeakableString)
+groupName inMessage  =
+    sendMsg inMessage (mkSelector "groupName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- messageType@
 messageType :: IsINMessage inMessage => inMessage -> IO INMessageType
 messageType inMessage  =
     fmap (coerce :: CLong -> INMessageType) $ sendMsg inMessage (mkSelector "messageType") retCLong []
 
+-- | @- serviceName@
+serviceName :: IsINMessage inMessage => inMessage -> IO (Id NSString)
+serviceName inMessage  =
+    sendMsg inMessage (mkSelector "serviceName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- attachmentFiles@
+attachmentFiles :: IsINMessage inMessage => inMessage -> IO (Id NSArray)
+attachmentFiles inMessage  =
+    sendMsg inMessage (mkSelector "attachmentFiles") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- numberOfAttachments@
+numberOfAttachments :: IsINMessage inMessage => inMessage -> IO (Id NSNumber)
+numberOfAttachments inMessage  =
+    sendMsg inMessage (mkSelector "numberOfAttachments") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- audioMessageFile@
 audioMessageFile :: IsINMessage inMessage => inMessage -> IO (Id INFile)
 audioMessageFile inMessage  =
     sendMsg inMessage (mkSelector "audioMessageFile") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- linkMetadata@
+linkMetadata :: IsINMessage inMessage => inMessage -> IO (Id INMessageLinkMetadata)
+linkMetadata inMessage  =
+    sendMsg inMessage (mkSelector "linkMetadata") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | The sticker that this message contains.
 --
@@ -289,6 +335,21 @@ setSticker :: (IsINMessage inMessage, IsINSticker value) => inMessage -> value -
 setSticker inMessage  value =
   withObjCPtr value $ \raw_value ->
       sendMsg inMessage (mkSelector "setSticker:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The message reaction that this message contains.
+--
+-- ObjC selector: @- reaction@
+reaction :: IsINMessage inMessage => inMessage -> IO (Id INMessageReaction)
+reaction inMessage  =
+    sendMsg inMessage (mkSelector "reaction") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The message reaction that this message contains.
+--
+-- ObjC selector: @- setReaction:@
+setReaction :: (IsINMessage inMessage, IsINMessageReaction value) => inMessage -> value -> IO ()
+setReaction inMessage  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg inMessage (mkSelector "setReaction:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -342,6 +403,10 @@ initWithIdentifier_conversationIdentifier_content_dateSent_sender_recipients_gro
 identifierSelector :: Selector
 identifierSelector = mkSelector "identifier"
 
+-- | @Selector@ for @conversationIdentifier@
+conversationIdentifierSelector :: Selector
+conversationIdentifierSelector = mkSelector "conversationIdentifier"
+
 -- | @Selector@ for @content@
 contentSelector :: Selector
 contentSelector = mkSelector "content"
@@ -358,13 +423,33 @@ senderSelector = mkSelector "sender"
 recipientsSelector :: Selector
 recipientsSelector = mkSelector "recipients"
 
+-- | @Selector@ for @groupName@
+groupNameSelector :: Selector
+groupNameSelector = mkSelector "groupName"
+
 -- | @Selector@ for @messageType@
 messageTypeSelector :: Selector
 messageTypeSelector = mkSelector "messageType"
 
+-- | @Selector@ for @serviceName@
+serviceNameSelector :: Selector
+serviceNameSelector = mkSelector "serviceName"
+
+-- | @Selector@ for @attachmentFiles@
+attachmentFilesSelector :: Selector
+attachmentFilesSelector = mkSelector "attachmentFiles"
+
+-- | @Selector@ for @numberOfAttachments@
+numberOfAttachmentsSelector :: Selector
+numberOfAttachmentsSelector = mkSelector "numberOfAttachments"
+
 -- | @Selector@ for @audioMessageFile@
 audioMessageFileSelector :: Selector
 audioMessageFileSelector = mkSelector "audioMessageFile"
+
+-- | @Selector@ for @linkMetadata@
+linkMetadataSelector :: Selector
+linkMetadataSelector = mkSelector "linkMetadata"
 
 -- | @Selector@ for @sticker@
 stickerSelector :: Selector
@@ -373,4 +458,12 @@ stickerSelector = mkSelector "sticker"
 -- | @Selector@ for @setSticker:@
 setStickerSelector :: Selector
 setStickerSelector = mkSelector "setSticker:"
+
+-- | @Selector@ for @reaction@
+reactionSelector :: Selector
+reactionSelector = mkSelector "reaction"
+
+-- | @Selector@ for @setReaction:@
+setReactionSelector :: Selector
+setReactionSelector = mkSelector "setReaction:"
 

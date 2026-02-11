@@ -10,6 +10,8 @@
 module ObjC.GameplayKit.GKAgent
   ( GKAgent
   , IsGKAgent(..)
+  , delegate
+  , setDelegate
   , behavior
   , setBehavior
   , mass
@@ -22,6 +24,8 @@ module ObjC.GameplayKit.GKAgent
   , setMaxAcceleration
   , maxSpeed
   , setMaxSpeed
+  , delegateSelector
+  , setDelegateSelector
   , behaviorSelector
   , setBehaviorSelector
   , massSelector
@@ -52,6 +56,20 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.GameplayKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | Object which has agentDidUpdate called on it during this agent's behavior updatekbeha
+--
+-- ObjC selector: @- delegate@
+delegate :: IsGKAgent gkAgent => gkAgent -> IO RawId
+delegate gkAgent  =
+    fmap (RawId . castPtr) $ sendMsg gkAgent (mkSelector "delegate") (retPtr retVoid) []
+
+-- | Object which has agentDidUpdate called on it during this agent's behavior updatekbeha
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsGKAgent gkAgent => gkAgent -> RawId -> IO ()
+setDelegate gkAgent  value =
+    sendMsg gkAgent (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | The behavior to apply when updateWithDeltaTime is called. All forces from the goals in the behavior are summed and then applied.
 --
@@ -161,6 +179,14 @@ setMaxSpeed gkAgent  value =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @behavior@
 behaviorSelector :: Selector

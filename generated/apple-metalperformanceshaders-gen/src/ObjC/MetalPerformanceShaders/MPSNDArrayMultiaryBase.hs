@@ -15,6 +15,8 @@ module ObjC.MetalPerformanceShaders.MPSNDArrayMultiaryBase
   , copyWithZone_device
   , resultStateForSourceArrays_sourceStates_destinationArray
   , destinationArrayDescriptorForSourceArrays_sourceState
+  , destinationArrayAllocator
+  , setDestinationArrayAllocator
   , edgeModeAtSourceIndexSelector
   , initWithDeviceSelector
   , initWithDevice_sourceCountSelector
@@ -23,6 +25,8 @@ module ObjC.MetalPerformanceShaders.MPSNDArrayMultiaryBase
   , copyWithZone_deviceSelector
   , resultStateForSourceArrays_sourceStates_destinationArraySelector
   , destinationArrayDescriptorForSourceArrays_sourceStateSelector
+  , destinationArrayAllocatorSelector
+  , setDestinationArrayAllocatorSelector
 
   -- * Enum types
   , MPSImageEdgeMode(MPSImageEdgeMode)
@@ -141,6 +145,24 @@ destinationArrayDescriptorForSourceArrays_sourceState mpsndArrayMultiaryBase  so
     withObjCPtr state $ \raw_state ->
         sendMsg mpsndArrayMultiaryBase (mkSelector "destinationArrayDescriptorForSourceArrays:sourceState:") (retPtr retVoid) [argPtr (castPtr raw_sources :: Ptr ()), argPtr (castPtr raw_state :: Ptr ())] >>= retainedObject . castPtr
 
+-- | Method to allocate the result image for -encodeToCommandBuffer:sourceImage:
+--
+-- Default: MPSTemporaryImage.defaultAllocator
+--
+-- ObjC selector: @- destinationArrayAllocator@
+destinationArrayAllocator :: IsMPSNDArrayMultiaryBase mpsndArrayMultiaryBase => mpsndArrayMultiaryBase -> IO RawId
+destinationArrayAllocator mpsndArrayMultiaryBase  =
+    fmap (RawId . castPtr) $ sendMsg mpsndArrayMultiaryBase (mkSelector "destinationArrayAllocator") (retPtr retVoid) []
+
+-- | Method to allocate the result image for -encodeToCommandBuffer:sourceImage:
+--
+-- Default: MPSTemporaryImage.defaultAllocator
+--
+-- ObjC selector: @- setDestinationArrayAllocator:@
+setDestinationArrayAllocator :: IsMPSNDArrayMultiaryBase mpsndArrayMultiaryBase => mpsndArrayMultiaryBase -> RawId -> IO ()
+setDestinationArrayAllocator mpsndArrayMultiaryBase  value =
+    sendMsg mpsndArrayMultiaryBase (mkSelector "setDestinationArrayAllocator:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -176,4 +198,12 @@ resultStateForSourceArrays_sourceStates_destinationArraySelector = mkSelector "r
 -- | @Selector@ for @destinationArrayDescriptorForSourceArrays:sourceState:@
 destinationArrayDescriptorForSourceArrays_sourceStateSelector :: Selector
 destinationArrayDescriptorForSourceArrays_sourceStateSelector = mkSelector "destinationArrayDescriptorForSourceArrays:sourceState:"
+
+-- | @Selector@ for @destinationArrayAllocator@
+destinationArrayAllocatorSelector :: Selector
+destinationArrayAllocatorSelector = mkSelector "destinationArrayAllocator"
+
+-- | @Selector@ for @setDestinationArrayAllocator:@
+setDestinationArrayAllocatorSelector :: Selector
+setDestinationArrayAllocatorSelector = mkSelector "setDestinationArrayAllocator:"
 

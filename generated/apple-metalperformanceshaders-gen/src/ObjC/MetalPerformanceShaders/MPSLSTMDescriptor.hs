@@ -42,6 +42,30 @@ module ObjC.MetalPerformanceShaders.MPSLSTMDescriptor
   , createLSTMDescriptorWithInputFeatureChannels_outputFeatureChannels
   , memoryWeightsAreDiagonal
   , setMemoryWeightsAreDiagonal
+  , inputGateInputWeights
+  , setInputGateInputWeights
+  , inputGateRecurrentWeights
+  , setInputGateRecurrentWeights
+  , inputGateMemoryWeights
+  , setInputGateMemoryWeights
+  , forgetGateInputWeights
+  , setForgetGateInputWeights
+  , forgetGateRecurrentWeights
+  , setForgetGateRecurrentWeights
+  , forgetGateMemoryWeights
+  , setForgetGateMemoryWeights
+  , outputGateInputWeights
+  , setOutputGateInputWeights
+  , outputGateRecurrentWeights
+  , setOutputGateRecurrentWeights
+  , outputGateMemoryWeights
+  , setOutputGateMemoryWeights
+  , cellGateInputWeights
+  , setCellGateInputWeights
+  , cellGateRecurrentWeights
+  , setCellGateRecurrentWeights
+  , cellGateMemoryWeights
+  , setCellGateMemoryWeights
   , cellToOutputNeuronType
   , setCellToOutputNeuronType
   , cellToOutputNeuronParamA
@@ -53,6 +77,30 @@ module ObjC.MetalPerformanceShaders.MPSLSTMDescriptor
   , createLSTMDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector
   , memoryWeightsAreDiagonalSelector
   , setMemoryWeightsAreDiagonalSelector
+  , inputGateInputWeightsSelector
+  , setInputGateInputWeightsSelector
+  , inputGateRecurrentWeightsSelector
+  , setInputGateRecurrentWeightsSelector
+  , inputGateMemoryWeightsSelector
+  , setInputGateMemoryWeightsSelector
+  , forgetGateInputWeightsSelector
+  , setForgetGateInputWeightsSelector
+  , forgetGateRecurrentWeightsSelector
+  , setForgetGateRecurrentWeightsSelector
+  , forgetGateMemoryWeightsSelector
+  , setForgetGateMemoryWeightsSelector
+  , outputGateInputWeightsSelector
+  , setOutputGateInputWeightsSelector
+  , outputGateRecurrentWeightsSelector
+  , setOutputGateRecurrentWeightsSelector
+  , outputGateMemoryWeightsSelector
+  , setOutputGateMemoryWeightsSelector
+  , cellGateInputWeightsSelector
+  , setCellGateInputWeightsSelector
+  , cellGateRecurrentWeightsSelector
+  , setCellGateRecurrentWeightsSelector
+  , cellGateMemoryWeightsSelector
+  , setCellGateMemoryWeightsSelector
   , cellToOutputNeuronTypeSelector
   , setCellToOutputNeuronTypeSelector
   , cellToOutputNeuronParamASelector
@@ -132,6 +180,222 @@ memoryWeightsAreDiagonal mpslstmDescriptor  =
 setMemoryWeightsAreDiagonal :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> Bool -> IO ()
 setMemoryWeightsAreDiagonal mpslstmDescriptor  value =
     sendMsg mpslstmDescriptor (mkSelector "setMemoryWeightsAreDiagonal:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | inputGateInputWeights
+--
+-- Contains weights 'Wi_ij', bias 'bi_i' and neuron 'gi' from the LSTM formula.              If nil then assumed zero weights, bias and no neuron (identity mapping). Defaults to nil.
+--
+-- ObjC selector: @- inputGateInputWeights@
+inputGateInputWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
+inputGateInputWeights mpslstmDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "inputGateInputWeights") (retPtr retVoid) []
+
+-- | inputGateInputWeights
+--
+-- Contains weights 'Wi_ij', bias 'bi_i' and neuron 'gi' from the LSTM formula.              If nil then assumed zero weights, bias and no neuron (identity mapping). Defaults to nil.
+--
+-- ObjC selector: @- setInputGateInputWeights:@
+setInputGateInputWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
+setInputGateInputWeights mpslstmDescriptor  value =
+    sendMsg mpslstmDescriptor (mkSelector "setInputGateInputWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | inputGateRecurrentWeights
+--
+-- Contains weights 'Ui_ij' from the LSTM formula.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- inputGateRecurrentWeights@
+inputGateRecurrentWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
+inputGateRecurrentWeights mpslstmDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "inputGateRecurrentWeights") (retPtr retVoid) []
+
+-- | inputGateRecurrentWeights
+--
+-- Contains weights 'Ui_ij' from the LSTM formula.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- setInputGateRecurrentWeights:@
+setInputGateRecurrentWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
+setInputGateRecurrentWeights mpslstmDescriptor  value =
+    sendMsg mpslstmDescriptor (mkSelector "setInputGateRecurrentWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | inputGateMemoryWeights
+--
+-- Contains weights 'Vi_ij' - the 'peephole' weights - from the LSTM formula.              if YES == memoryWeightsAreDiagonal, then the number of weights used is the number of features                  in the memory cell image/matrix.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- inputGateMemoryWeights@
+inputGateMemoryWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
+inputGateMemoryWeights mpslstmDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "inputGateMemoryWeights") (retPtr retVoid) []
+
+-- | inputGateMemoryWeights
+--
+-- Contains weights 'Vi_ij' - the 'peephole' weights - from the LSTM formula.              if YES == memoryWeightsAreDiagonal, then the number of weights used is the number of features                  in the memory cell image/matrix.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- setInputGateMemoryWeights:@
+setInputGateMemoryWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
+setInputGateMemoryWeights mpslstmDescriptor  value =
+    sendMsg mpslstmDescriptor (mkSelector "setInputGateMemoryWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | forgetGateInputWeights
+--
+-- Contains weights 'Wf_ij', bias 'bf_i' and neuron 'gf' from the LSTM formula.              If nil then assumed zero weights, bias and no neuron (identity mapping).Defaults to nil.
+--
+-- ObjC selector: @- forgetGateInputWeights@
+forgetGateInputWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
+forgetGateInputWeights mpslstmDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "forgetGateInputWeights") (retPtr retVoid) []
+
+-- | forgetGateInputWeights
+--
+-- Contains weights 'Wf_ij', bias 'bf_i' and neuron 'gf' from the LSTM formula.              If nil then assumed zero weights, bias and no neuron (identity mapping).Defaults to nil.
+--
+-- ObjC selector: @- setForgetGateInputWeights:@
+setForgetGateInputWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
+setForgetGateInputWeights mpslstmDescriptor  value =
+    sendMsg mpslstmDescriptor (mkSelector "setForgetGateInputWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | forgetGateRecurrentWeights
+--
+-- Contains weights 'Uf_ij' from the LSTM formula.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- forgetGateRecurrentWeights@
+forgetGateRecurrentWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
+forgetGateRecurrentWeights mpslstmDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "forgetGateRecurrentWeights") (retPtr retVoid) []
+
+-- | forgetGateRecurrentWeights
+--
+-- Contains weights 'Uf_ij' from the LSTM formula.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- setForgetGateRecurrentWeights:@
+setForgetGateRecurrentWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
+setForgetGateRecurrentWeights mpslstmDescriptor  value =
+    sendMsg mpslstmDescriptor (mkSelector "setForgetGateRecurrentWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | forgetGateMemoryWeights
+--
+-- Contains weights 'Vf_ij' - the 'peephole' weights - from the LSTM formula.              if YES == memoryWeightsAreDiagonal, then the number of weights used is the number of features                  in the memory cell image/matrix.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- forgetGateMemoryWeights@
+forgetGateMemoryWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
+forgetGateMemoryWeights mpslstmDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "forgetGateMemoryWeights") (retPtr retVoid) []
+
+-- | forgetGateMemoryWeights
+--
+-- Contains weights 'Vf_ij' - the 'peephole' weights - from the LSTM formula.              if YES == memoryWeightsAreDiagonal, then the number of weights used is the number of features                  in the memory cell image/matrix.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- setForgetGateMemoryWeights:@
+setForgetGateMemoryWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
+setForgetGateMemoryWeights mpslstmDescriptor  value =
+    sendMsg mpslstmDescriptor (mkSelector "setForgetGateMemoryWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | outputGateInputWeights
+--
+-- Contains weights 'Wo_ij', bias 'bo_i' and neuron 'go' from the LSTM formula.              If nil then assumed zero weights, bias and no neuron (identity mapping). Defaults to nil.
+--
+-- ObjC selector: @- outputGateInputWeights@
+outputGateInputWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
+outputGateInputWeights mpslstmDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "outputGateInputWeights") (retPtr retVoid) []
+
+-- | outputGateInputWeights
+--
+-- Contains weights 'Wo_ij', bias 'bo_i' and neuron 'go' from the LSTM formula.              If nil then assumed zero weights, bias and no neuron (identity mapping). Defaults to nil.
+--
+-- ObjC selector: @- setOutputGateInputWeights:@
+setOutputGateInputWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
+setOutputGateInputWeights mpslstmDescriptor  value =
+    sendMsg mpslstmDescriptor (mkSelector "setOutputGateInputWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | outputGateRecurrentWeights
+--
+-- Contains weights 'Uo_ij' from the LSTM formula.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- outputGateRecurrentWeights@
+outputGateRecurrentWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
+outputGateRecurrentWeights mpslstmDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "outputGateRecurrentWeights") (retPtr retVoid) []
+
+-- | outputGateRecurrentWeights
+--
+-- Contains weights 'Uo_ij' from the LSTM formula.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- setOutputGateRecurrentWeights:@
+setOutputGateRecurrentWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
+setOutputGateRecurrentWeights mpslstmDescriptor  value =
+    sendMsg mpslstmDescriptor (mkSelector "setOutputGateRecurrentWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | outputGateMemoryWeights
+--
+-- Contains weights 'Vo_ij' - the 'peephole' weights - from the LSTM.              if YES == memoryWeightsAreDiagonal, then the number of weights used is the number of features                  in the memory cell image/matrix.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- outputGateMemoryWeights@
+outputGateMemoryWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
+outputGateMemoryWeights mpslstmDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "outputGateMemoryWeights") (retPtr retVoid) []
+
+-- | outputGateMemoryWeights
+--
+-- Contains weights 'Vo_ij' - the 'peephole' weights - from the LSTM.              if YES == memoryWeightsAreDiagonal, then the number of weights used is the number of features                  in the memory cell image/matrix.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- setOutputGateMemoryWeights:@
+setOutputGateMemoryWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
+setOutputGateMemoryWeights mpslstmDescriptor  value =
+    sendMsg mpslstmDescriptor (mkSelector "setOutputGateMemoryWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | cellGateInputWeights
+--
+-- Contains weights 'Wc_ij', bias 'bc_i' and neuron 'gc' from the LSTM formula.              If nil then assumed zero weights, bias and no neuron (identity mapping). Defaults to nil.
+--
+-- ObjC selector: @- cellGateInputWeights@
+cellGateInputWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
+cellGateInputWeights mpslstmDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "cellGateInputWeights") (retPtr retVoid) []
+
+-- | cellGateInputWeights
+--
+-- Contains weights 'Wc_ij', bias 'bc_i' and neuron 'gc' from the LSTM formula.              If nil then assumed zero weights, bias and no neuron (identity mapping). Defaults to nil.
+--
+-- ObjC selector: @- setCellGateInputWeights:@
+setCellGateInputWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
+setCellGateInputWeights mpslstmDescriptor  value =
+    sendMsg mpslstmDescriptor (mkSelector "setCellGateInputWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | cellGateRecurrentWeights
+--
+-- Contains weights 'Uc_ij' from the LSTM formula.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- cellGateRecurrentWeights@
+cellGateRecurrentWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
+cellGateRecurrentWeights mpslstmDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "cellGateRecurrentWeights") (retPtr retVoid) []
+
+-- | cellGateRecurrentWeights
+--
+-- Contains weights 'Uc_ij' from the LSTM formula.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- setCellGateRecurrentWeights:@
+setCellGateRecurrentWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
+setCellGateRecurrentWeights mpslstmDescriptor  value =
+    sendMsg mpslstmDescriptor (mkSelector "setCellGateRecurrentWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | cellGateMemoryWeights
+--
+-- Contains weights 'Vc_ij' - the 'peephole' weights - from the LSTM formula.              if YES == memoryWeightsAreDiagonal, then the number of weights used is the number of features                  in the memory cell image/matrix.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- cellGateMemoryWeights@
+cellGateMemoryWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
+cellGateMemoryWeights mpslstmDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "cellGateMemoryWeights") (retPtr retVoid) []
+
+-- | cellGateMemoryWeights
+--
+-- Contains weights 'Vc_ij' - the 'peephole' weights - from the LSTM formula.              if YES == memoryWeightsAreDiagonal, then the number of weights used is the number of features                  in the memory cell image/matrix.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- setCellGateMemoryWeights:@
+setCellGateMemoryWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
+setCellGateMemoryWeights mpslstmDescriptor  value =
+    sendMsg mpslstmDescriptor (mkSelector "setCellGateMemoryWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | cellToOutputNeuronType
 --
@@ -220,6 +484,102 @@ memoryWeightsAreDiagonalSelector = mkSelector "memoryWeightsAreDiagonal"
 -- | @Selector@ for @setMemoryWeightsAreDiagonal:@
 setMemoryWeightsAreDiagonalSelector :: Selector
 setMemoryWeightsAreDiagonalSelector = mkSelector "setMemoryWeightsAreDiagonal:"
+
+-- | @Selector@ for @inputGateInputWeights@
+inputGateInputWeightsSelector :: Selector
+inputGateInputWeightsSelector = mkSelector "inputGateInputWeights"
+
+-- | @Selector@ for @setInputGateInputWeights:@
+setInputGateInputWeightsSelector :: Selector
+setInputGateInputWeightsSelector = mkSelector "setInputGateInputWeights:"
+
+-- | @Selector@ for @inputGateRecurrentWeights@
+inputGateRecurrentWeightsSelector :: Selector
+inputGateRecurrentWeightsSelector = mkSelector "inputGateRecurrentWeights"
+
+-- | @Selector@ for @setInputGateRecurrentWeights:@
+setInputGateRecurrentWeightsSelector :: Selector
+setInputGateRecurrentWeightsSelector = mkSelector "setInputGateRecurrentWeights:"
+
+-- | @Selector@ for @inputGateMemoryWeights@
+inputGateMemoryWeightsSelector :: Selector
+inputGateMemoryWeightsSelector = mkSelector "inputGateMemoryWeights"
+
+-- | @Selector@ for @setInputGateMemoryWeights:@
+setInputGateMemoryWeightsSelector :: Selector
+setInputGateMemoryWeightsSelector = mkSelector "setInputGateMemoryWeights:"
+
+-- | @Selector@ for @forgetGateInputWeights@
+forgetGateInputWeightsSelector :: Selector
+forgetGateInputWeightsSelector = mkSelector "forgetGateInputWeights"
+
+-- | @Selector@ for @setForgetGateInputWeights:@
+setForgetGateInputWeightsSelector :: Selector
+setForgetGateInputWeightsSelector = mkSelector "setForgetGateInputWeights:"
+
+-- | @Selector@ for @forgetGateRecurrentWeights@
+forgetGateRecurrentWeightsSelector :: Selector
+forgetGateRecurrentWeightsSelector = mkSelector "forgetGateRecurrentWeights"
+
+-- | @Selector@ for @setForgetGateRecurrentWeights:@
+setForgetGateRecurrentWeightsSelector :: Selector
+setForgetGateRecurrentWeightsSelector = mkSelector "setForgetGateRecurrentWeights:"
+
+-- | @Selector@ for @forgetGateMemoryWeights@
+forgetGateMemoryWeightsSelector :: Selector
+forgetGateMemoryWeightsSelector = mkSelector "forgetGateMemoryWeights"
+
+-- | @Selector@ for @setForgetGateMemoryWeights:@
+setForgetGateMemoryWeightsSelector :: Selector
+setForgetGateMemoryWeightsSelector = mkSelector "setForgetGateMemoryWeights:"
+
+-- | @Selector@ for @outputGateInputWeights@
+outputGateInputWeightsSelector :: Selector
+outputGateInputWeightsSelector = mkSelector "outputGateInputWeights"
+
+-- | @Selector@ for @setOutputGateInputWeights:@
+setOutputGateInputWeightsSelector :: Selector
+setOutputGateInputWeightsSelector = mkSelector "setOutputGateInputWeights:"
+
+-- | @Selector@ for @outputGateRecurrentWeights@
+outputGateRecurrentWeightsSelector :: Selector
+outputGateRecurrentWeightsSelector = mkSelector "outputGateRecurrentWeights"
+
+-- | @Selector@ for @setOutputGateRecurrentWeights:@
+setOutputGateRecurrentWeightsSelector :: Selector
+setOutputGateRecurrentWeightsSelector = mkSelector "setOutputGateRecurrentWeights:"
+
+-- | @Selector@ for @outputGateMemoryWeights@
+outputGateMemoryWeightsSelector :: Selector
+outputGateMemoryWeightsSelector = mkSelector "outputGateMemoryWeights"
+
+-- | @Selector@ for @setOutputGateMemoryWeights:@
+setOutputGateMemoryWeightsSelector :: Selector
+setOutputGateMemoryWeightsSelector = mkSelector "setOutputGateMemoryWeights:"
+
+-- | @Selector@ for @cellGateInputWeights@
+cellGateInputWeightsSelector :: Selector
+cellGateInputWeightsSelector = mkSelector "cellGateInputWeights"
+
+-- | @Selector@ for @setCellGateInputWeights:@
+setCellGateInputWeightsSelector :: Selector
+setCellGateInputWeightsSelector = mkSelector "setCellGateInputWeights:"
+
+-- | @Selector@ for @cellGateRecurrentWeights@
+cellGateRecurrentWeightsSelector :: Selector
+cellGateRecurrentWeightsSelector = mkSelector "cellGateRecurrentWeights"
+
+-- | @Selector@ for @setCellGateRecurrentWeights:@
+setCellGateRecurrentWeightsSelector :: Selector
+setCellGateRecurrentWeightsSelector = mkSelector "setCellGateRecurrentWeights:"
+
+-- | @Selector@ for @cellGateMemoryWeights@
+cellGateMemoryWeightsSelector :: Selector
+cellGateMemoryWeightsSelector = mkSelector "cellGateMemoryWeights"
+
+-- | @Selector@ for @setCellGateMemoryWeights:@
+setCellGateMemoryWeightsSelector :: Selector
+setCellGateMemoryWeightsSelector = mkSelector "setCellGateMemoryWeights:"
 
 -- | @Selector@ for @cellToOutputNeuronType@
 cellToOutputNeuronTypeSelector :: Selector

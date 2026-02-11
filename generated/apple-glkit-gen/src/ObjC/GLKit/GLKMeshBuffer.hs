@@ -17,11 +17,13 @@ module ObjC.GLKit.GLKMeshBuffer
   , allocator
   , glBufferName
   , offset
+  , zone
   , type_
   , lengthSelector
   , allocatorSelector
   , glBufferNameSelector
   , offsetSelector
+  , zoneSelector
   , typeSelector
 
   -- * Enum types
@@ -88,6 +90,17 @@ offset :: IsGLKMeshBuffer glkMeshBuffer => glkMeshBuffer -> IO CULong
 offset glkMeshBuffer  =
     sendMsg glkMeshBuffer (mkSelector "offset") retCULong []
 
+-- | zone
+--
+-- Zone from which this buffer was created (if it was created witha zone)
+--
+-- A single GL buffer is allocated for each zone.  Each zone could have many GLKMeshBuffers, each with it's own offset.  If a GLKMeshBufferAllocator is used, Model I/O will attempt to load all vertex and indexData of a single model into a single zone.  So although there maybe many GLKMeshBuffers for a model they will be backed with the same contigous GL buffer.
+--
+-- ObjC selector: @- zone@
+zone :: IsGLKMeshBuffer glkMeshBuffer => glkMeshBuffer -> IO RawId
+zone glkMeshBuffer  =
+    fmap (RawId . castPtr) $ sendMsg glkMeshBuffer (mkSelector "zone") (retPtr retVoid) []
+
 -- | type
 --
 -- the intended type of the buffer
@@ -116,6 +129,10 @@ glBufferNameSelector = mkSelector "glBufferName"
 -- | @Selector@ for @offset@
 offsetSelector :: Selector
 offsetSelector = mkSelector "offset"
+
+-- | @Selector@ for @zone@
+zoneSelector :: Selector
+zoneSelector = mkSelector "zone"
 
 -- | @Selector@ for @type@
 typeSelector :: Selector

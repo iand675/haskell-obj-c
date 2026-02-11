@@ -240,6 +240,8 @@ module ObjC.AppKit.NSView
   , setLayerContentsPlacement
   , wantsLayer
   , setWantsLayer
+  , layer
+  , setLayer
   , wantsUpdateLayer
   , canDrawSubviewsIntoLayer
   , setCanDrawSubviewsIntoLayer
@@ -249,6 +251,14 @@ module ObjC.AppKit.NSView
   , setAlphaValue
   , layerUsesCoreImageFilters
   , setLayerUsesCoreImageFilters
+  , backgroundFilters
+  , setBackgroundFilters
+  , compositingFilter
+  , setCompositingFilter
+  , contentFilters
+  , setContentFilters
+  , shadow
+  , setShadow
   , clipsToBounds
   , setClipsToBounds
   , postsBoundsChangedNotifications
@@ -260,16 +270,20 @@ module ObjC.AppKit.NSView
   , inLiveResize
   , preservesContentDuringLiveResize
   , rectPreservedDuringLiveResize
+  , inputContext
   , userInterfaceLayoutDirection
   , setUserInterfaceLayoutDirection
   , compatibleWithResponsiveScrolling
   , preparedContentRect
   , setPreparedContentRect
   , allowsVibrancy
+  , pressureConfiguration
+  , setPressureConfiguration
   , wantsExtendedDynamicRangeOpenGLSurface
   , setWantsExtendedDynamicRangeOpenGLSurface
   , wantsBestResolutionOpenGLSurface
   , setWantsBestResolutionOpenGLSurface
+  , layoutGuides
   , hasAmbiguousLayout
   , fittingSize
   , alignmentRectInsets
@@ -286,16 +300,36 @@ module ObjC.AppKit.NSView
   , requiresConstraintBasedLayout
   , needsUpdateConstraints
   , setNeedsUpdateConstraints
+  , leadingAnchor
+  , trailingAnchor
+  , leftAnchor
+  , rightAnchor
+  , topAnchor
+  , bottomAnchor
+  , widthAnchor
+  , heightAnchor
+  , centerXAnchor
+  , centerYAnchor
+  , firstBaselineAnchor
+  , lastBaselineAnchor
+  , constraints
+  , candidateListTouchBarItem
+  , enclosingMenuItem
   , writingToolsCoordinator
   , setWritingToolsCoordinator
+  , trackingAreas
   , prefersCompactControlSizeMetrics
   , setPrefersCompactControlSizeMetrics
   , safeAreaInsets
   , additionalSafeAreaInsets
   , setAdditionalSafeAreaInsets
+  , safeAreaLayoutGuide
   , safeAreaRect
+  , layoutMarginsGuide
   , allowedTouchTypes
   , setAllowedTouchTypes
+  , gestureRecognizers
+  , setGestureRecognizers
   , drawingFindIndicator
   , inFullScreenMode
   , registeredDraggedTypes
@@ -547,6 +581,8 @@ module ObjC.AppKit.NSView
   , setLayerContentsPlacementSelector
   , wantsLayerSelector
   , setWantsLayerSelector
+  , layerSelector
+  , setLayerSelector
   , wantsUpdateLayerSelector
   , canDrawSubviewsIntoLayerSelector
   , setCanDrawSubviewsIntoLayerSelector
@@ -556,6 +592,14 @@ module ObjC.AppKit.NSView
   , setAlphaValueSelector
   , layerUsesCoreImageFiltersSelector
   , setLayerUsesCoreImageFiltersSelector
+  , backgroundFiltersSelector
+  , setBackgroundFiltersSelector
+  , compositingFilterSelector
+  , setCompositingFilterSelector
+  , contentFiltersSelector
+  , setContentFiltersSelector
+  , shadowSelector
+  , setShadowSelector
   , clipsToBoundsSelector
   , setClipsToBoundsSelector
   , postsBoundsChangedNotificationsSelector
@@ -567,16 +611,20 @@ module ObjC.AppKit.NSView
   , inLiveResizeSelector
   , preservesContentDuringLiveResizeSelector
   , rectPreservedDuringLiveResizeSelector
+  , inputContextSelector
   , userInterfaceLayoutDirectionSelector
   , setUserInterfaceLayoutDirectionSelector
   , compatibleWithResponsiveScrollingSelector
   , preparedContentRectSelector
   , setPreparedContentRectSelector
   , allowsVibrancySelector
+  , pressureConfigurationSelector
+  , setPressureConfigurationSelector
   , wantsExtendedDynamicRangeOpenGLSurfaceSelector
   , setWantsExtendedDynamicRangeOpenGLSurfaceSelector
   , wantsBestResolutionOpenGLSurfaceSelector
   , setWantsBestResolutionOpenGLSurfaceSelector
+  , layoutGuidesSelector
   , hasAmbiguousLayoutSelector
   , fittingSizeSelector
   , alignmentRectInsetsSelector
@@ -593,16 +641,36 @@ module ObjC.AppKit.NSView
   , requiresConstraintBasedLayoutSelector
   , needsUpdateConstraintsSelector
   , setNeedsUpdateConstraintsSelector
+  , leadingAnchorSelector
+  , trailingAnchorSelector
+  , leftAnchorSelector
+  , rightAnchorSelector
+  , topAnchorSelector
+  , bottomAnchorSelector
+  , widthAnchorSelector
+  , heightAnchorSelector
+  , centerXAnchorSelector
+  , centerYAnchorSelector
+  , firstBaselineAnchorSelector
+  , lastBaselineAnchorSelector
+  , constraintsSelector
+  , candidateListTouchBarItemSelector
+  , enclosingMenuItemSelector
   , writingToolsCoordinatorSelector
   , setWritingToolsCoordinatorSelector
+  , trackingAreasSelector
   , prefersCompactControlSizeMetricsSelector
   , setPrefersCompactControlSizeMetricsSelector
   , safeAreaInsetsSelector
   , additionalSafeAreaInsetsSelector
   , setAdditionalSafeAreaInsetsSelector
+  , safeAreaLayoutGuideSelector
   , safeAreaRectSelector
+  , layoutMarginsGuideSelector
   , allowedTouchTypesSelector
   , setAllowedTouchTypesSelector
+  , gestureRecognizersSelector
+  , setGestureRecognizersSelector
   , drawingFindIndicatorSelector
   , inFullScreenModeSelector
   , registeredDraggedTypesSelector
@@ -1990,6 +2058,17 @@ setWantsLayer :: IsNSView nsView => nsView -> Bool -> IO ()
 setWantsLayer nsView  value =
     sendMsg nsView (mkSelector "setWantsLayer:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @- layer@
+layer :: IsNSView nsView => nsView -> IO (Id CALayer)
+layer nsView  =
+    sendMsg nsView (mkSelector "layer") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setLayer:@
+setLayer :: (IsNSView nsView, IsCALayer value) => nsView -> value -> IO ()
+setLayer nsView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsView (mkSelector "setLayer:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- wantsUpdateLayer@
 wantsUpdateLayer :: IsNSView nsView => nsView -> IO Bool
 wantsUpdateLayer nsView  =
@@ -2034,6 +2113,50 @@ layerUsesCoreImageFilters nsView  =
 setLayerUsesCoreImageFilters :: IsNSView nsView => nsView -> Bool -> IO ()
 setLayerUsesCoreImageFilters nsView  value =
     sendMsg nsView (mkSelector "setLayerUsesCoreImageFilters:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | @- backgroundFilters@
+backgroundFilters :: IsNSView nsView => nsView -> IO (Id NSArray)
+backgroundFilters nsView  =
+    sendMsg nsView (mkSelector "backgroundFilters") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setBackgroundFilters:@
+setBackgroundFilters :: (IsNSView nsView, IsNSArray value) => nsView -> value -> IO ()
+setBackgroundFilters nsView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsView (mkSelector "setBackgroundFilters:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- compositingFilter@
+compositingFilter :: IsNSView nsView => nsView -> IO (Id CIFilter)
+compositingFilter nsView  =
+    sendMsg nsView (mkSelector "compositingFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setCompositingFilter:@
+setCompositingFilter :: (IsNSView nsView, IsCIFilter value) => nsView -> value -> IO ()
+setCompositingFilter nsView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsView (mkSelector "setCompositingFilter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- contentFilters@
+contentFilters :: IsNSView nsView => nsView -> IO (Id NSArray)
+contentFilters nsView  =
+    sendMsg nsView (mkSelector "contentFilters") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setContentFilters:@
+setContentFilters :: (IsNSView nsView, IsNSArray value) => nsView -> value -> IO ()
+setContentFilters nsView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsView (mkSelector "setContentFilters:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- shadow@
+shadow :: IsNSView nsView => nsView -> IO (Id NSShadow)
+shadow nsView  =
+    sendMsg nsView (mkSelector "shadow") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setShadow:@
+setShadow :: (IsNSView nsView, IsNSShadow value) => nsView -> value -> IO ()
+setShadow nsView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsView (mkSelector "setShadow:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- clipsToBounds@
 clipsToBounds :: IsNSView nsView => nsView -> IO Bool
@@ -2093,6 +2216,11 @@ rectPreservedDuringLiveResize :: IsNSView nsView => nsView -> IO NSRect
 rectPreservedDuringLiveResize nsView  =
     sendMsgStret nsView (mkSelector "rectPreservedDuringLiveResize") retNSRect []
 
+-- | @- inputContext@
+inputContext :: IsNSView nsView => nsView -> IO (Id NSTextInputContext)
+inputContext nsView  =
+    sendMsg nsView (mkSelector "inputContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- userInterfaceLayoutDirection@
 userInterfaceLayoutDirection :: IsNSView nsView => nsView -> IO NSUserInterfaceLayoutDirection
 userInterfaceLayoutDirection nsView  =
@@ -2125,6 +2253,17 @@ allowsVibrancy :: IsNSView nsView => nsView -> IO Bool
 allowsVibrancy nsView  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "allowsVibrancy") retCULong []
 
+-- | @- pressureConfiguration@
+pressureConfiguration :: IsNSView nsView => nsView -> IO (Id NSPressureConfiguration)
+pressureConfiguration nsView  =
+    sendMsg nsView (mkSelector "pressureConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setPressureConfiguration:@
+setPressureConfiguration :: (IsNSView nsView, IsNSPressureConfiguration value) => nsView -> value -> IO ()
+setPressureConfiguration nsView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsView (mkSelector "setPressureConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- wantsExtendedDynamicRangeOpenGLSurface@
 wantsExtendedDynamicRangeOpenGLSurface :: IsNSView nsView => nsView -> IO Bool
 wantsExtendedDynamicRangeOpenGLSurface nsView  =
@@ -2144,6 +2283,11 @@ wantsBestResolutionOpenGLSurface nsView  =
 setWantsBestResolutionOpenGLSurface :: IsNSView nsView => nsView -> Bool -> IO ()
 setWantsBestResolutionOpenGLSurface nsView  value =
     sendMsg nsView (mkSelector "setWantsBestResolutionOpenGLSurface:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | @- layoutGuides@
+layoutGuides :: IsNSView nsView => nsView -> IO (Id NSArray)
+layoutGuides nsView  =
+    sendMsg nsView (mkSelector "layoutGuides") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- hasAmbiguousLayout@
 hasAmbiguousLayout :: IsNSView nsView => nsView -> IO Bool
@@ -2227,6 +2371,81 @@ setNeedsUpdateConstraints :: IsNSView nsView => nsView -> Bool -> IO ()
 setNeedsUpdateConstraints nsView  value =
     sendMsg nsView (mkSelector "setNeedsUpdateConstraints:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @- leadingAnchor@
+leadingAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutXAxisAnchor)
+leadingAnchor nsView  =
+    sendMsg nsView (mkSelector "leadingAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- trailingAnchor@
+trailingAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutXAxisAnchor)
+trailingAnchor nsView  =
+    sendMsg nsView (mkSelector "trailingAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- leftAnchor@
+leftAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutXAxisAnchor)
+leftAnchor nsView  =
+    sendMsg nsView (mkSelector "leftAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- rightAnchor@
+rightAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutXAxisAnchor)
+rightAnchor nsView  =
+    sendMsg nsView (mkSelector "rightAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- topAnchor@
+topAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutYAxisAnchor)
+topAnchor nsView  =
+    sendMsg nsView (mkSelector "topAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- bottomAnchor@
+bottomAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutYAxisAnchor)
+bottomAnchor nsView  =
+    sendMsg nsView (mkSelector "bottomAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- widthAnchor@
+widthAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutDimension)
+widthAnchor nsView  =
+    sendMsg nsView (mkSelector "widthAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- heightAnchor@
+heightAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutDimension)
+heightAnchor nsView  =
+    sendMsg nsView (mkSelector "heightAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- centerXAnchor@
+centerXAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutXAxisAnchor)
+centerXAnchor nsView  =
+    sendMsg nsView (mkSelector "centerXAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- centerYAnchor@
+centerYAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutYAxisAnchor)
+centerYAnchor nsView  =
+    sendMsg nsView (mkSelector "centerYAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- firstBaselineAnchor@
+firstBaselineAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutYAxisAnchor)
+firstBaselineAnchor nsView  =
+    sendMsg nsView (mkSelector "firstBaselineAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- lastBaselineAnchor@
+lastBaselineAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutYAxisAnchor)
+lastBaselineAnchor nsView  =
+    sendMsg nsView (mkSelector "lastBaselineAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- constraints@
+constraints :: IsNSView nsView => nsView -> IO (Id NSArray)
+constraints nsView  =
+    sendMsg nsView (mkSelector "constraints") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- candidateListTouchBarItem@
+candidateListTouchBarItem :: IsNSView nsView => nsView -> IO (Id NSCandidateListTouchBarItem)
+candidateListTouchBarItem nsView  =
+    sendMsg nsView (mkSelector "candidateListTouchBarItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- enclosingMenuItem@
+enclosingMenuItem :: IsNSView nsView => nsView -> IO (Id NSMenuItem)
+enclosingMenuItem nsView  =
+    sendMsg nsView (mkSelector "enclosingMenuItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- writingToolsCoordinator@
 writingToolsCoordinator :: IsNSView nsView => nsView -> IO (Id NSWritingToolsCoordinator)
 writingToolsCoordinator nsView  =
@@ -2237,6 +2456,11 @@ setWritingToolsCoordinator :: (IsNSView nsView, IsNSWritingToolsCoordinator valu
 setWritingToolsCoordinator nsView  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsView (mkSelector "setWritingToolsCoordinator:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- trackingAreas@
+trackingAreas :: IsNSView nsView => nsView -> IO (Id NSArray)
+trackingAreas nsView  =
+    sendMsg nsView (mkSelector "trackingAreas") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | When this property is true, any NSControls in the view or its descendants will be sized with compact metrics compatible with macOS 15 and earlier. Defaults to false
 --
@@ -2267,10 +2491,20 @@ setAdditionalSafeAreaInsets :: IsNSView nsView => nsView -> NSEdgeInsets -> IO (
 setAdditionalSafeAreaInsets nsView  value =
     sendMsg nsView (mkSelector "setAdditionalSafeAreaInsets:") retVoid [argNSEdgeInsets value]
 
+-- | @- safeAreaLayoutGuide@
+safeAreaLayoutGuide :: IsNSView nsView => nsView -> IO (Id NSLayoutGuide)
+safeAreaLayoutGuide nsView  =
+    sendMsg nsView (mkSelector "safeAreaLayoutGuide") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- safeAreaRect@
 safeAreaRect :: IsNSView nsView => nsView -> IO NSRect
 safeAreaRect nsView  =
     sendMsgStret nsView (mkSelector "safeAreaRect") retNSRect []
+
+-- | @- layoutMarginsGuide@
+layoutMarginsGuide :: IsNSView nsView => nsView -> IO (Id NSLayoutGuide)
+layoutMarginsGuide nsView  =
+    sendMsg nsView (mkSelector "layoutMarginsGuide") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- allowedTouchTypes@
 allowedTouchTypes :: IsNSView nsView => nsView -> IO NSTouchTypeMask
@@ -2281,6 +2515,17 @@ allowedTouchTypes nsView  =
 setAllowedTouchTypes :: IsNSView nsView => nsView -> NSTouchTypeMask -> IO ()
 setAllowedTouchTypes nsView  value =
     sendMsg nsView (mkSelector "setAllowedTouchTypes:") retVoid [argCULong (coerce value)]
+
+-- | @- gestureRecognizers@
+gestureRecognizers :: IsNSView nsView => nsView -> IO (Id NSArray)
+gestureRecognizers nsView  =
+    sendMsg nsView (mkSelector "gestureRecognizers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setGestureRecognizers:@
+setGestureRecognizers :: (IsNSView nsView, IsNSArray value) => nsView -> value -> IO ()
+setGestureRecognizers nsView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsView (mkSelector "setGestureRecognizers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- drawingFindIndicator@
 drawingFindIndicator :: IsNSView nsView => nsView -> IO Bool
@@ -3311,6 +3556,14 @@ wantsLayerSelector = mkSelector "wantsLayer"
 setWantsLayerSelector :: Selector
 setWantsLayerSelector = mkSelector "setWantsLayer:"
 
+-- | @Selector@ for @layer@
+layerSelector :: Selector
+layerSelector = mkSelector "layer"
+
+-- | @Selector@ for @setLayer:@
+setLayerSelector :: Selector
+setLayerSelector = mkSelector "setLayer:"
+
 -- | @Selector@ for @wantsUpdateLayer@
 wantsUpdateLayerSelector :: Selector
 wantsUpdateLayerSelector = mkSelector "wantsUpdateLayer"
@@ -3346,6 +3599,38 @@ layerUsesCoreImageFiltersSelector = mkSelector "layerUsesCoreImageFilters"
 -- | @Selector@ for @setLayerUsesCoreImageFilters:@
 setLayerUsesCoreImageFiltersSelector :: Selector
 setLayerUsesCoreImageFiltersSelector = mkSelector "setLayerUsesCoreImageFilters:"
+
+-- | @Selector@ for @backgroundFilters@
+backgroundFiltersSelector :: Selector
+backgroundFiltersSelector = mkSelector "backgroundFilters"
+
+-- | @Selector@ for @setBackgroundFilters:@
+setBackgroundFiltersSelector :: Selector
+setBackgroundFiltersSelector = mkSelector "setBackgroundFilters:"
+
+-- | @Selector@ for @compositingFilter@
+compositingFilterSelector :: Selector
+compositingFilterSelector = mkSelector "compositingFilter"
+
+-- | @Selector@ for @setCompositingFilter:@
+setCompositingFilterSelector :: Selector
+setCompositingFilterSelector = mkSelector "setCompositingFilter:"
+
+-- | @Selector@ for @contentFilters@
+contentFiltersSelector :: Selector
+contentFiltersSelector = mkSelector "contentFilters"
+
+-- | @Selector@ for @setContentFilters:@
+setContentFiltersSelector :: Selector
+setContentFiltersSelector = mkSelector "setContentFilters:"
+
+-- | @Selector@ for @shadow@
+shadowSelector :: Selector
+shadowSelector = mkSelector "shadow"
+
+-- | @Selector@ for @setShadow:@
+setShadowSelector :: Selector
+setShadowSelector = mkSelector "setShadow:"
 
 -- | @Selector@ for @clipsToBounds@
 clipsToBoundsSelector :: Selector
@@ -3391,6 +3676,10 @@ preservesContentDuringLiveResizeSelector = mkSelector "preservesContentDuringLiv
 rectPreservedDuringLiveResizeSelector :: Selector
 rectPreservedDuringLiveResizeSelector = mkSelector "rectPreservedDuringLiveResize"
 
+-- | @Selector@ for @inputContext@
+inputContextSelector :: Selector
+inputContextSelector = mkSelector "inputContext"
+
 -- | @Selector@ for @userInterfaceLayoutDirection@
 userInterfaceLayoutDirectionSelector :: Selector
 userInterfaceLayoutDirectionSelector = mkSelector "userInterfaceLayoutDirection"
@@ -3415,6 +3704,14 @@ setPreparedContentRectSelector = mkSelector "setPreparedContentRect:"
 allowsVibrancySelector :: Selector
 allowsVibrancySelector = mkSelector "allowsVibrancy"
 
+-- | @Selector@ for @pressureConfiguration@
+pressureConfigurationSelector :: Selector
+pressureConfigurationSelector = mkSelector "pressureConfiguration"
+
+-- | @Selector@ for @setPressureConfiguration:@
+setPressureConfigurationSelector :: Selector
+setPressureConfigurationSelector = mkSelector "setPressureConfiguration:"
+
 -- | @Selector@ for @wantsExtendedDynamicRangeOpenGLSurface@
 wantsExtendedDynamicRangeOpenGLSurfaceSelector :: Selector
 wantsExtendedDynamicRangeOpenGLSurfaceSelector = mkSelector "wantsExtendedDynamicRangeOpenGLSurface"
@@ -3430,6 +3727,10 @@ wantsBestResolutionOpenGLSurfaceSelector = mkSelector "wantsBestResolutionOpenGL
 -- | @Selector@ for @setWantsBestResolutionOpenGLSurface:@
 setWantsBestResolutionOpenGLSurfaceSelector :: Selector
 setWantsBestResolutionOpenGLSurfaceSelector = mkSelector "setWantsBestResolutionOpenGLSurface:"
+
+-- | @Selector@ for @layoutGuides@
+layoutGuidesSelector :: Selector
+layoutGuidesSelector = mkSelector "layoutGuides"
 
 -- | @Selector@ for @hasAmbiguousLayout@
 hasAmbiguousLayoutSelector :: Selector
@@ -3495,6 +3796,66 @@ needsUpdateConstraintsSelector = mkSelector "needsUpdateConstraints"
 setNeedsUpdateConstraintsSelector :: Selector
 setNeedsUpdateConstraintsSelector = mkSelector "setNeedsUpdateConstraints:"
 
+-- | @Selector@ for @leadingAnchor@
+leadingAnchorSelector :: Selector
+leadingAnchorSelector = mkSelector "leadingAnchor"
+
+-- | @Selector@ for @trailingAnchor@
+trailingAnchorSelector :: Selector
+trailingAnchorSelector = mkSelector "trailingAnchor"
+
+-- | @Selector@ for @leftAnchor@
+leftAnchorSelector :: Selector
+leftAnchorSelector = mkSelector "leftAnchor"
+
+-- | @Selector@ for @rightAnchor@
+rightAnchorSelector :: Selector
+rightAnchorSelector = mkSelector "rightAnchor"
+
+-- | @Selector@ for @topAnchor@
+topAnchorSelector :: Selector
+topAnchorSelector = mkSelector "topAnchor"
+
+-- | @Selector@ for @bottomAnchor@
+bottomAnchorSelector :: Selector
+bottomAnchorSelector = mkSelector "bottomAnchor"
+
+-- | @Selector@ for @widthAnchor@
+widthAnchorSelector :: Selector
+widthAnchorSelector = mkSelector "widthAnchor"
+
+-- | @Selector@ for @heightAnchor@
+heightAnchorSelector :: Selector
+heightAnchorSelector = mkSelector "heightAnchor"
+
+-- | @Selector@ for @centerXAnchor@
+centerXAnchorSelector :: Selector
+centerXAnchorSelector = mkSelector "centerXAnchor"
+
+-- | @Selector@ for @centerYAnchor@
+centerYAnchorSelector :: Selector
+centerYAnchorSelector = mkSelector "centerYAnchor"
+
+-- | @Selector@ for @firstBaselineAnchor@
+firstBaselineAnchorSelector :: Selector
+firstBaselineAnchorSelector = mkSelector "firstBaselineAnchor"
+
+-- | @Selector@ for @lastBaselineAnchor@
+lastBaselineAnchorSelector :: Selector
+lastBaselineAnchorSelector = mkSelector "lastBaselineAnchor"
+
+-- | @Selector@ for @constraints@
+constraintsSelector :: Selector
+constraintsSelector = mkSelector "constraints"
+
+-- | @Selector@ for @candidateListTouchBarItem@
+candidateListTouchBarItemSelector :: Selector
+candidateListTouchBarItemSelector = mkSelector "candidateListTouchBarItem"
+
+-- | @Selector@ for @enclosingMenuItem@
+enclosingMenuItemSelector :: Selector
+enclosingMenuItemSelector = mkSelector "enclosingMenuItem"
+
 -- | @Selector@ for @writingToolsCoordinator@
 writingToolsCoordinatorSelector :: Selector
 writingToolsCoordinatorSelector = mkSelector "writingToolsCoordinator"
@@ -3502,6 +3863,10 @@ writingToolsCoordinatorSelector = mkSelector "writingToolsCoordinator"
 -- | @Selector@ for @setWritingToolsCoordinator:@
 setWritingToolsCoordinatorSelector :: Selector
 setWritingToolsCoordinatorSelector = mkSelector "setWritingToolsCoordinator:"
+
+-- | @Selector@ for @trackingAreas@
+trackingAreasSelector :: Selector
+trackingAreasSelector = mkSelector "trackingAreas"
 
 -- | @Selector@ for @prefersCompactControlSizeMetrics@
 prefersCompactControlSizeMetricsSelector :: Selector
@@ -3523,9 +3888,17 @@ additionalSafeAreaInsetsSelector = mkSelector "additionalSafeAreaInsets"
 setAdditionalSafeAreaInsetsSelector :: Selector
 setAdditionalSafeAreaInsetsSelector = mkSelector "setAdditionalSafeAreaInsets:"
 
+-- | @Selector@ for @safeAreaLayoutGuide@
+safeAreaLayoutGuideSelector :: Selector
+safeAreaLayoutGuideSelector = mkSelector "safeAreaLayoutGuide"
+
 -- | @Selector@ for @safeAreaRect@
 safeAreaRectSelector :: Selector
 safeAreaRectSelector = mkSelector "safeAreaRect"
+
+-- | @Selector@ for @layoutMarginsGuide@
+layoutMarginsGuideSelector :: Selector
+layoutMarginsGuideSelector = mkSelector "layoutMarginsGuide"
 
 -- | @Selector@ for @allowedTouchTypes@
 allowedTouchTypesSelector :: Selector
@@ -3534,6 +3907,14 @@ allowedTouchTypesSelector = mkSelector "allowedTouchTypes"
 -- | @Selector@ for @setAllowedTouchTypes:@
 setAllowedTouchTypesSelector :: Selector
 setAllowedTouchTypesSelector = mkSelector "setAllowedTouchTypes:"
+
+-- | @Selector@ for @gestureRecognizers@
+gestureRecognizersSelector :: Selector
+gestureRecognizersSelector = mkSelector "gestureRecognizers"
+
+-- | @Selector@ for @setGestureRecognizers:@
+setGestureRecognizersSelector :: Selector
+setGestureRecognizersSelector = mkSelector "setGestureRecognizers:"
 
 -- | @Selector@ for @drawingFindIndicator@
 drawingFindIndicatorSelector :: Selector

@@ -13,6 +13,8 @@ module ObjC.AppKit.NSPopoverTouchBarItem
   , setPopoverTouchBar
   , customizationLabel
   , setCustomizationLabel
+  , collapsedRepresentation
+  , setCollapsedRepresentation
   , collapsedRepresentationImage
   , setCollapsedRepresentationImage
   , collapsedRepresentationLabel
@@ -28,6 +30,8 @@ module ObjC.AppKit.NSPopoverTouchBarItem
   , setPopoverTouchBarSelector
   , customizationLabelSelector
   , setCustomizationLabelSelector
+  , collapsedRepresentationSelector
+  , setCollapsedRepresentationSelector
   , collapsedRepresentationImageSelector
   , setCollapsedRepresentationImageSelector
   , collapsedRepresentationLabelSelector
@@ -91,6 +95,17 @@ setCustomizationLabel :: (IsNSPopoverTouchBarItem nsPopoverTouchBarItem, IsNSStr
 setCustomizationLabel nsPopoverTouchBarItem  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsPopoverTouchBarItem (mkSelector "setCustomizationLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- collapsedRepresentation@
+collapsedRepresentation :: IsNSPopoverTouchBarItem nsPopoverTouchBarItem => nsPopoverTouchBarItem -> IO (Id NSView)
+collapsedRepresentation nsPopoverTouchBarItem  =
+    sendMsg nsPopoverTouchBarItem (mkSelector "collapsedRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setCollapsedRepresentation:@
+setCollapsedRepresentation :: (IsNSPopoverTouchBarItem nsPopoverTouchBarItem, IsNSView value) => nsPopoverTouchBarItem -> value -> IO ()
+setCollapsedRepresentation nsPopoverTouchBarItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsPopoverTouchBarItem (mkSelector "setCollapsedRepresentation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- collapsedRepresentationImage@
 collapsedRepresentationImage :: IsNSPopoverTouchBarItem nsPopoverTouchBarItem => nsPopoverTouchBarItem -> IO (Id NSImage)
@@ -166,6 +181,14 @@ customizationLabelSelector = mkSelector "customizationLabel"
 -- | @Selector@ for @setCustomizationLabel:@
 setCustomizationLabelSelector :: Selector
 setCustomizationLabelSelector = mkSelector "setCustomizationLabel:"
+
+-- | @Selector@ for @collapsedRepresentation@
+collapsedRepresentationSelector :: Selector
+collapsedRepresentationSelector = mkSelector "collapsedRepresentation"
+
+-- | @Selector@ for @setCollapsedRepresentation:@
+setCollapsedRepresentationSelector :: Selector
+setCollapsedRepresentationSelector = mkSelector "setCollapsedRepresentation:"
 
 -- | @Selector@ for @collapsedRepresentationImage@
 collapsedRepresentationImageSelector :: Selector

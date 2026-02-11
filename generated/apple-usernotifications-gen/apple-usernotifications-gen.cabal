@@ -12,6 +12,7 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.UserNotifications.Delegate.UNUserNotificationCenterDelegate
       ObjC.UserNotifications.Enums
       ObjC.UserNotifications.Internal.Classes
       ObjC.UserNotifications.Internal.Enums

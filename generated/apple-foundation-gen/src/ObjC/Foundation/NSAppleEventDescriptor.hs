@@ -25,6 +25,7 @@ module ObjC.Foundation.NSAppleEventDescriptor
   , descriptorWithProcessIdentifier
   , descriptorWithBundleIdentifier
   , descriptorWithApplicationURL
+  , initWithAEDescNoCopy
   , initWithDescriptorType_bytes_length
   , initWithDescriptorType_data
   , initWithEventClass_eventID_targetDescriptor_returnID_transactionID
@@ -44,6 +45,7 @@ module ObjC.Foundation.NSAppleEventDescriptor
   , removeDescriptorWithKeyword
   , keywordForDescriptorAtIndex
   , coerceToDescriptorType
+  , aeDesc
   , descriptorType
   , data_
   , booleanValue
@@ -52,6 +54,8 @@ module ObjC.Foundation.NSAppleEventDescriptor
   , doubleValue
   , typeCodeValue
   , stringValue
+  , dateValue
+  , fileURLValue
   , eventClass
   , eventID
   , returnID
@@ -76,6 +80,7 @@ module ObjC.Foundation.NSAppleEventDescriptor
   , descriptorWithProcessIdentifierSelector
   , descriptorWithBundleIdentifierSelector
   , descriptorWithApplicationURLSelector
+  , initWithAEDescNoCopySelector
   , initWithDescriptorType_bytes_lengthSelector
   , initWithDescriptorType_dataSelector
   , initWithEventClass_eventID_targetDescriptor_returnID_transactionIDSelector
@@ -95,6 +100,7 @@ module ObjC.Foundation.NSAppleEventDescriptor
   , removeDescriptorWithKeywordSelector
   , keywordForDescriptorAtIndexSelector
   , coerceToDescriptorTypeSelector
+  , aeDescSelector
   , descriptorTypeSelector
   , dataSelector
   , booleanValueSelector
@@ -103,6 +109,8 @@ module ObjC.Foundation.NSAppleEventDescriptor
   , doubleValueSelector
   , typeCodeValueSelector
   , stringValueSelector
+  , dateValueSelector
+  , fileURLValueSelector
   , eventClassSelector
   , eventIDSelector
   , returnIDSelector
@@ -274,6 +282,11 @@ descriptorWithApplicationURL applicationURL =
     withObjCPtr applicationURL $ \raw_applicationURL ->
       sendClassMsg cls' (mkSelector "descriptorWithApplicationURL:") (retPtr retVoid) [argPtr (castPtr raw_applicationURL :: Ptr ())] >>= retainedObject . castPtr
 
+-- | @- initWithAEDescNoCopy:@
+initWithAEDescNoCopy :: IsNSAppleEventDescriptor nsAppleEventDescriptor => nsAppleEventDescriptor -> Const RawId -> IO (Id NSAppleEventDescriptor)
+initWithAEDescNoCopy nsAppleEventDescriptor  aeDesc =
+    sendMsg nsAppleEventDescriptor (mkSelector "initWithAEDescNoCopy:") (retPtr retVoid) [argPtr (castPtr (unRawId (unConst aeDesc)) :: Ptr ())] >>= ownedObject . castPtr
+
 -- | @- initWithDescriptorType:bytes:length:@
 initWithDescriptorType_bytes_length :: IsNSAppleEventDescriptor nsAppleEventDescriptor => nsAppleEventDescriptor -> CUInt -> Const (Ptr ()) -> CULong -> IO (Id NSAppleEventDescriptor)
 initWithDescriptorType_bytes_length nsAppleEventDescriptor  descriptorType bytes byteCount =
@@ -376,6 +389,11 @@ coerceToDescriptorType :: IsNSAppleEventDescriptor nsAppleEventDescriptor => nsA
 coerceToDescriptorType nsAppleEventDescriptor  descriptorType =
     sendMsg nsAppleEventDescriptor (mkSelector "coerceToDescriptorType:") (retPtr retVoid) [argCUInt descriptorType] >>= retainedObject . castPtr
 
+-- | @- aeDesc@
+aeDesc :: IsNSAppleEventDescriptor nsAppleEventDescriptor => nsAppleEventDescriptor -> IO RawId
+aeDesc nsAppleEventDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg nsAppleEventDescriptor (mkSelector "aeDesc") (retPtr retVoid) []
+
 -- | @- descriptorType@
 descriptorType :: IsNSAppleEventDescriptor nsAppleEventDescriptor => nsAppleEventDescriptor -> IO CUInt
 descriptorType nsAppleEventDescriptor  =
@@ -415,6 +433,16 @@ typeCodeValue nsAppleEventDescriptor  =
 stringValue :: IsNSAppleEventDescriptor nsAppleEventDescriptor => nsAppleEventDescriptor -> IO (Id NSString)
 stringValue nsAppleEventDescriptor  =
     sendMsg nsAppleEventDescriptor (mkSelector "stringValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- dateValue@
+dateValue :: IsNSAppleEventDescriptor nsAppleEventDescriptor => nsAppleEventDescriptor -> IO (Id NSDate)
+dateValue nsAppleEventDescriptor  =
+    sendMsg nsAppleEventDescriptor (mkSelector "dateValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- fileURLValue@
+fileURLValue :: IsNSAppleEventDescriptor nsAppleEventDescriptor => nsAppleEventDescriptor -> IO (Id NSURL)
+fileURLValue nsAppleEventDescriptor  =
+    sendMsg nsAppleEventDescriptor (mkSelector "fileURLValue") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- eventClass@
 eventClass :: IsNSAppleEventDescriptor nsAppleEventDescriptor => nsAppleEventDescriptor -> IO CUInt
@@ -522,6 +550,10 @@ descriptorWithBundleIdentifierSelector = mkSelector "descriptorWithBundleIdentif
 descriptorWithApplicationURLSelector :: Selector
 descriptorWithApplicationURLSelector = mkSelector "descriptorWithApplicationURL:"
 
+-- | @Selector@ for @initWithAEDescNoCopy:@
+initWithAEDescNoCopySelector :: Selector
+initWithAEDescNoCopySelector = mkSelector "initWithAEDescNoCopy:"
+
 -- | @Selector@ for @initWithDescriptorType:bytes:length:@
 initWithDescriptorType_bytes_lengthSelector :: Selector
 initWithDescriptorType_bytes_lengthSelector = mkSelector "initWithDescriptorType:bytes:length:"
@@ -598,6 +630,10 @@ keywordForDescriptorAtIndexSelector = mkSelector "keywordForDescriptorAtIndex:"
 coerceToDescriptorTypeSelector :: Selector
 coerceToDescriptorTypeSelector = mkSelector "coerceToDescriptorType:"
 
+-- | @Selector@ for @aeDesc@
+aeDescSelector :: Selector
+aeDescSelector = mkSelector "aeDesc"
+
 -- | @Selector@ for @descriptorType@
 descriptorTypeSelector :: Selector
 descriptorTypeSelector = mkSelector "descriptorType"
@@ -629,6 +665,14 @@ typeCodeValueSelector = mkSelector "typeCodeValue"
 -- | @Selector@ for @stringValue@
 stringValueSelector :: Selector
 stringValueSelector = mkSelector "stringValue"
+
+-- | @Selector@ for @dateValue@
+dateValueSelector :: Selector
+dateValueSelector = mkSelector "dateValue"
+
+-- | @Selector@ for @fileURLValue@
+fileURLValueSelector :: Selector
+fileURLValueSelector = mkSelector "fileURLValue"
 
 -- | @Selector@ for @eventClass@
 eventClassSelector :: Selector

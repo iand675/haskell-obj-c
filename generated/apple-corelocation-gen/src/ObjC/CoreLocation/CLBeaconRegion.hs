@@ -16,6 +16,7 @@ module ObjC.CoreLocation.CLBeaconRegion
   , peripheralDataWithMeasuredPower
   , beaconIdentityConstraint
   , uuid
+  , proximityUUID
   , major
   , minor
   , notifyEntryStateOnDisplay
@@ -30,6 +31,7 @@ module ObjC.CoreLocation.CLBeaconRegion
   , peripheralDataWithMeasuredPowerSelector
   , beaconIdentityConstraintSelector
   , uuidSelector
+  , proximityUUIDSelector
   , majorSelector
   , minorSelector
   , notifyEntryStateOnDisplaySelector
@@ -118,6 +120,11 @@ uuid :: IsCLBeaconRegion clBeaconRegion => clBeaconRegion -> IO (Id NSUUID)
 uuid clBeaconRegion  =
     sendMsg clBeaconRegion (mkSelector "UUID") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- proximityUUID@
+proximityUUID :: IsCLBeaconRegion clBeaconRegion => clBeaconRegion -> IO (Id NSUUID)
+proximityUUID clBeaconRegion  =
+    sendMsg clBeaconRegion (mkSelector "proximityUUID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- major@
 major :: IsCLBeaconRegion clBeaconRegion => clBeaconRegion -> IO (Id NSNumber)
 major clBeaconRegion  =
@@ -181,6 +188,10 @@ beaconIdentityConstraintSelector = mkSelector "beaconIdentityConstraint"
 -- | @Selector@ for @UUID@
 uuidSelector :: Selector
 uuidSelector = mkSelector "UUID"
+
+-- | @Selector@ for @proximityUUID@
+proximityUUIDSelector :: Selector
+proximityUUIDSelector = mkSelector "proximityUUID"
 
 -- | @Selector@ for @major@
 majorSelector :: Selector

@@ -9,7 +9,7 @@ module ObjC.CallKit.CXAction
   , init_
   , initWithCoder
   , fulfill
-  , fail
+  , fail_
   , uuid
   , complete
   , timeoutDate
@@ -60,8 +60,8 @@ fulfill cxAction  =
 -- | Report failed execution of the receiver.
 --
 -- ObjC selector: @- fail@
-fail :: IsCXAction cxAction => cxAction -> IO ()
-fail cxAction  =
+fail_ :: IsCXAction cxAction => cxAction -> IO ()
+fail_ cxAction  =
     sendMsg cxAction (mkSelector "fail") retVoid []
 
 -- | Unique ID

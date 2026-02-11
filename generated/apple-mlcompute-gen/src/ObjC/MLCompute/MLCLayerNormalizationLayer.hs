@@ -11,12 +11,14 @@ module ObjC.MLCompute.MLCLayerNormalizationLayer
   ( MLCLayerNormalizationLayer
   , IsMLCLayerNormalizationLayer(..)
   , layerWithNormalizedShape_beta_gamma_varianceEpsilon
+  , normalizedShape
   , beta
   , gamma
   , betaParameter
   , gammaParameter
   , varianceEpsilon
   , layerWithNormalizedShape_beta_gamma_varianceEpsilonSelector
+  , normalizedShapeSelector
   , betaSelector
   , gammaSelector
   , betaParameterSelector
@@ -62,6 +64,15 @@ layerWithNormalizedShape_beta_gamma_varianceEpsilon normalizedShape beta gamma v
       withObjCPtr beta $ \raw_beta ->
         withObjCPtr gamma $ \raw_gamma ->
           sendClassMsg cls' (mkSelector "layerWithNormalizedShape:beta:gamma:varianceEpsilon:") (retPtr retVoid) [argPtr (castPtr raw_normalizedShape :: Ptr ()), argPtr (castPtr raw_beta :: Ptr ()), argPtr (castPtr raw_gamma :: Ptr ()), argCFloat varianceEpsilon] >>= retainedObject . castPtr
+
+-- | normalizedShape
+--
+-- The shape of the axes over which normalization occurs, (W), (H,W) or (C,H,W)
+--
+-- ObjC selector: @- normalizedShape@
+normalizedShape :: IsMLCLayerNormalizationLayer mlcLayerNormalizationLayer => mlcLayerNormalizationLayer -> IO (Id NSArray)
+normalizedShape mlcLayerNormalizationLayer  =
+    sendMsg mlcLayerNormalizationLayer (mkSelector "normalizedShape") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | beta
 --
@@ -115,6 +126,10 @@ varianceEpsilon mlcLayerNormalizationLayer  =
 -- | @Selector@ for @layerWithNormalizedShape:beta:gamma:varianceEpsilon:@
 layerWithNormalizedShape_beta_gamma_varianceEpsilonSelector :: Selector
 layerWithNormalizedShape_beta_gamma_varianceEpsilonSelector = mkSelector "layerWithNormalizedShape:beta:gamma:varianceEpsilon:"
+
+-- | @Selector@ for @normalizedShape@
+normalizedShapeSelector :: Selector
+normalizedShapeSelector = mkSelector "normalizedShape"
 
 -- | @Selector@ for @beta@
 betaSelector :: Selector

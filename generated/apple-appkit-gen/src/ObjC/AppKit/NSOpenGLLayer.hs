@@ -8,6 +8,8 @@ module ObjC.AppKit.NSOpenGLLayer
   , IsNSOpenGLLayer(..)
   , openGLPixelFormatForDisplayMask
   , openGLContextForPixelFormat
+  , canDrawInOpenGLContext_pixelFormat_forLayerTime_displayTime
+  , drawInOpenGLContext_pixelFormat_forLayerTime_displayTime
   , view
   , setView
   , openGLPixelFormat
@@ -16,6 +18,8 @@ module ObjC.AppKit.NSOpenGLLayer
   , setOpenGLContext
   , openGLPixelFormatForDisplayMaskSelector
   , openGLContextForPixelFormatSelector
+  , canDrawInOpenGLContext_pixelFormat_forLayerTime_displayTimeSelector
+  , drawInOpenGLContext_pixelFormat_forLayerTime_displayTimeSelector
   , viewSelector
   , setViewSelector
   , openGLPixelFormatSelector
@@ -52,6 +56,20 @@ openGLContextForPixelFormat :: (IsNSOpenGLLayer nsOpenGLLayer, IsNSOpenGLPixelFo
 openGLContextForPixelFormat nsOpenGLLayer  pixelFormat =
   withObjCPtr pixelFormat $ \raw_pixelFormat ->
       sendMsg nsOpenGLLayer (mkSelector "openGLContextForPixelFormat:") (retPtr retVoid) [argPtr (castPtr raw_pixelFormat :: Ptr ())] >>= retainedObject . castPtr
+
+-- | @- canDrawInOpenGLContext:pixelFormat:forLayerTime:displayTime:@
+canDrawInOpenGLContext_pixelFormat_forLayerTime_displayTime :: (IsNSOpenGLLayer nsOpenGLLayer, IsNSOpenGLContext context, IsNSOpenGLPixelFormat pixelFormat) => nsOpenGLLayer -> context -> pixelFormat -> CDouble -> Const RawId -> IO Bool
+canDrawInOpenGLContext_pixelFormat_forLayerTime_displayTime nsOpenGLLayer  context pixelFormat t ts =
+  withObjCPtr context $ \raw_context ->
+    withObjCPtr pixelFormat $ \raw_pixelFormat ->
+        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsOpenGLLayer (mkSelector "canDrawInOpenGLContext:pixelFormat:forLayerTime:displayTime:") retCULong [argPtr (castPtr raw_context :: Ptr ()), argPtr (castPtr raw_pixelFormat :: Ptr ()), argCDouble t, argPtr (castPtr (unRawId (unConst ts)) :: Ptr ())]
+
+-- | @- drawInOpenGLContext:pixelFormat:forLayerTime:displayTime:@
+drawInOpenGLContext_pixelFormat_forLayerTime_displayTime :: (IsNSOpenGLLayer nsOpenGLLayer, IsNSOpenGLContext context, IsNSOpenGLPixelFormat pixelFormat) => nsOpenGLLayer -> context -> pixelFormat -> CDouble -> Const RawId -> IO ()
+drawInOpenGLContext_pixelFormat_forLayerTime_displayTime nsOpenGLLayer  context pixelFormat t ts =
+  withObjCPtr context $ \raw_context ->
+    withObjCPtr pixelFormat $ \raw_pixelFormat ->
+        sendMsg nsOpenGLLayer (mkSelector "drawInOpenGLContext:pixelFormat:forLayerTime:displayTime:") retVoid [argPtr (castPtr raw_context :: Ptr ()), argPtr (castPtr raw_pixelFormat :: Ptr ()), argCDouble t, argPtr (castPtr (unRawId (unConst ts)) :: Ptr ())]
 
 -- | @- view@
 view :: IsNSOpenGLLayer nsOpenGLLayer => nsOpenGLLayer -> IO (Id NSView)
@@ -97,6 +115,14 @@ openGLPixelFormatForDisplayMaskSelector = mkSelector "openGLPixelFormatForDispla
 -- | @Selector@ for @openGLContextForPixelFormat:@
 openGLContextForPixelFormatSelector :: Selector
 openGLContextForPixelFormatSelector = mkSelector "openGLContextForPixelFormat:"
+
+-- | @Selector@ for @canDrawInOpenGLContext:pixelFormat:forLayerTime:displayTime:@
+canDrawInOpenGLContext_pixelFormat_forLayerTime_displayTimeSelector :: Selector
+canDrawInOpenGLContext_pixelFormat_forLayerTime_displayTimeSelector = mkSelector "canDrawInOpenGLContext:pixelFormat:forLayerTime:displayTime:"
+
+-- | @Selector@ for @drawInOpenGLContext:pixelFormat:forLayerTime:displayTime:@
+drawInOpenGLContext_pixelFormat_forLayerTime_displayTimeSelector :: Selector
+drawInOpenGLContext_pixelFormat_forLayerTime_displayTimeSelector = mkSelector "drawInOpenGLContext:pixelFormat:forLayerTime:displayTime:"
 
 -- | @Selector@ for @view@
 viewSelector :: Selector

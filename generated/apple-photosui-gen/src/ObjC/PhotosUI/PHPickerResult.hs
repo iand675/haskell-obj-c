@@ -10,8 +10,12 @@ module ObjC.PhotosUI.PHPickerResult
   , IsPHPickerResult(..)
   , new
   , init_
+  , itemProvider
+  , assetIdentifier
   , newSelector
   , initSelector
+  , itemProviderSelector
+  , assetIdentifierSelector
 
 
   ) where
@@ -43,6 +47,20 @@ init_ :: IsPHPickerResult phPickerResult => phPickerResult -> IO (Id PHPickerRes
 init_ phPickerResult  =
     sendMsg phPickerResult (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | Representations of the selected asset.
+--
+-- ObjC selector: @- itemProvider@
+itemProvider :: IsPHPickerResult phPickerResult => phPickerResult -> IO (Id NSItemProvider)
+itemProvider phPickerResult  =
+    sendMsg phPickerResult (mkSelector "itemProvider") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The local identifier of the selected asset.
+--
+-- ObjC selector: @- assetIdentifier@
+assetIdentifier :: IsPHPickerResult phPickerResult => phPickerResult -> IO (Id NSString)
+assetIdentifier phPickerResult  =
+    sendMsg phPickerResult (mkSelector "assetIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -54,4 +72,12 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @init@
 initSelector :: Selector
 initSelector = mkSelector "init"
+
+-- | @Selector@ for @itemProvider@
+itemProviderSelector :: Selector
+itemProviderSelector = mkSelector "itemProvider"
+
+-- | @Selector@ for @assetIdentifier@
+assetIdentifierSelector :: Selector
+assetIdentifierSelector = mkSelector "assetIdentifier"
 

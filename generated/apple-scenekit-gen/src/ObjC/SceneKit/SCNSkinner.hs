@@ -13,13 +13,25 @@ module ObjC.SceneKit.SCNSkinner
   , skinnerWithBaseGeometry_bones_boneInverseBindTransforms_boneWeights_boneIndices
   , skeleton
   , setSkeleton
+  , baseGeometry
+  , setBaseGeometry
   , baseGeometryBindTransform
   , setBaseGeometryBindTransform
+  , boneInverseBindTransforms
+  , bones
+  , boneWeights
+  , boneIndices
   , skinnerWithBaseGeometry_bones_boneInverseBindTransforms_boneWeights_boneIndicesSelector
   , skeletonSelector
   , setSkeletonSelector
+  , baseGeometrySelector
+  , setBaseGeometrySelector
   , baseGeometryBindTransformSelector
   , setBaseGeometryBindTransformSelector
+  , boneInverseBindTransformsSelector
+  , bonesSelector
+  , boneWeightsSelector
+  , boneIndicesSelector
 
 
   ) where
@@ -89,6 +101,29 @@ setSkeleton scnSkinner  value =
   withObjCPtr value $ \raw_value ->
       sendMsg scnSkinner (mkSelector "setSkeleton:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | baseGeometry
+--
+-- Specifies the base geometry of the receiver.
+--
+-- Updating this will change the geometry of all the nodes sharing the skinner. Access the node's geometry if you want to update this specific skinner properties (materials for example). Access this property if you want a whole new geometry (which will necessarily be shared among the skinner instances), with different sources, for instance.
+--
+-- ObjC selector: @- baseGeometry@
+baseGeometry :: IsSCNSkinner scnSkinner => scnSkinner -> IO (Id SCNGeometry)
+baseGeometry scnSkinner  =
+    sendMsg scnSkinner (mkSelector "baseGeometry") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | baseGeometry
+--
+-- Specifies the base geometry of the receiver.
+--
+-- Updating this will change the geometry of all the nodes sharing the skinner. Access the node's geometry if you want to update this specific skinner properties (materials for example). Access this property if you want a whole new geometry (which will necessarily be shared among the skinner instances), with different sources, for instance.
+--
+-- ObjC selector: @- setBaseGeometry:@
+setBaseGeometry :: (IsSCNSkinner scnSkinner, IsSCNGeometry value) => scnSkinner -> value -> IO ()
+setBaseGeometry scnSkinner  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg scnSkinner (mkSelector "setBaseGeometry:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | baseGeometryBindTransform
 --
 -- Specifies the transform of the baseGeometry at the time when the mesh was bound to a skeleton. This transforms the baseGeometry from object space to a space on which the skinning then applies.
@@ -107,6 +142,44 @@ setBaseGeometryBindTransform :: IsSCNSkinner scnSkinner => scnSkinner -> SCNMatr
 setBaseGeometryBindTransform scnSkinner  value =
     sendMsg scnSkinner (mkSelector "setBaseGeometryBindTransform:") retVoid [argSCNMatrix4 value]
 
+-- | boneInverseBindTransforms
+--
+-- The inverse of the bone’s bind-space transformation matrix at the time the bind shape was bound to this bone.
+--
+-- boneInverseBindTransforms is an array of SCNMatrix4 wrapped into instances of NSValue.
+--
+-- ObjC selector: @- boneInverseBindTransforms@
+boneInverseBindTransforms :: IsSCNSkinner scnSkinner => scnSkinner -> IO (Id NSArray)
+boneInverseBindTransforms scnSkinner  =
+    sendMsg scnSkinner (mkSelector "boneInverseBindTransforms") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | bones
+--
+-- The bones of the skinner.
+--
+-- ObjC selector: @- bones@
+bones :: IsSCNSkinner scnSkinner => scnSkinner -> IO (Id NSArray)
+bones scnSkinner  =
+    sendMsg scnSkinner (mkSelector "bones") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | boneWeights
+--
+-- The bone weights of the receiver.
+--
+-- ObjC selector: @- boneWeights@
+boneWeights :: IsSCNSkinner scnSkinner => scnSkinner -> IO (Id SCNGeometrySource)
+boneWeights scnSkinner  =
+    sendMsg scnSkinner (mkSelector "boneWeights") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | boneIndices
+--
+-- The bone indices of the receiver.
+--
+-- ObjC selector: @- boneIndices@
+boneIndices :: IsSCNSkinner scnSkinner => scnSkinner -> IO (Id SCNGeometrySource)
+boneIndices scnSkinner  =
+    sendMsg scnSkinner (mkSelector "boneIndices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -123,6 +196,14 @@ skeletonSelector = mkSelector "skeleton"
 setSkeletonSelector :: Selector
 setSkeletonSelector = mkSelector "setSkeleton:"
 
+-- | @Selector@ for @baseGeometry@
+baseGeometrySelector :: Selector
+baseGeometrySelector = mkSelector "baseGeometry"
+
+-- | @Selector@ for @setBaseGeometry:@
+setBaseGeometrySelector :: Selector
+setBaseGeometrySelector = mkSelector "setBaseGeometry:"
+
 -- | @Selector@ for @baseGeometryBindTransform@
 baseGeometryBindTransformSelector :: Selector
 baseGeometryBindTransformSelector = mkSelector "baseGeometryBindTransform"
@@ -130,4 +211,20 @@ baseGeometryBindTransformSelector = mkSelector "baseGeometryBindTransform"
 -- | @Selector@ for @setBaseGeometryBindTransform:@
 setBaseGeometryBindTransformSelector :: Selector
 setBaseGeometryBindTransformSelector = mkSelector "setBaseGeometryBindTransform:"
+
+-- | @Selector@ for @boneInverseBindTransforms@
+boneInverseBindTransformsSelector :: Selector
+boneInverseBindTransformsSelector = mkSelector "boneInverseBindTransforms"
+
+-- | @Selector@ for @bones@
+bonesSelector :: Selector
+bonesSelector = mkSelector "bones"
+
+-- | @Selector@ for @boneWeights@
+boneWeightsSelector :: Selector
+boneWeightsSelector = mkSelector "boneWeights"
+
+-- | @Selector@ for @boneIndices@
+boneIndicesSelector :: Selector
+boneIndicesSelector = mkSelector "boneIndices"
 

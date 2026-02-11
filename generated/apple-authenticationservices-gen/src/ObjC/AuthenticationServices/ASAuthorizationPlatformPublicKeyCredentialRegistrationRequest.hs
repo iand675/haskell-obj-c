@@ -9,10 +9,18 @@ module ObjC.AuthenticationServices.ASAuthorizationPlatformPublicKeyCredentialReg
   , IsASAuthorizationPlatformPublicKeyCredentialRegistrationRequest(..)
   , new
   , init_
+  , largeBlob
+  , setLargeBlob
+  , prf
+  , setPrf
   , requestStyle
   , setRequestStyle
   , newSelector
   , initSelector
+  , largeBlobSelector
+  , setLargeBlobSelector
+  , prfSelector
+  , setPrfSelector
   , requestStyleSelector
   , setRequestStyleSelector
 
@@ -51,6 +59,28 @@ init_ :: IsASAuthorizationPlatformPublicKeyCredentialRegistrationRequest asAutho
 init_ asAuthorizationPlatformPublicKeyCredentialRegistrationRequest  =
     sendMsg asAuthorizationPlatformPublicKeyCredentialRegistrationRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | @- largeBlob@
+largeBlob :: IsASAuthorizationPlatformPublicKeyCredentialRegistrationRequest asAuthorizationPlatformPublicKeyCredentialRegistrationRequest => asAuthorizationPlatformPublicKeyCredentialRegistrationRequest -> IO (Id ASAuthorizationPublicKeyCredentialLargeBlobRegistrationInput)
+largeBlob asAuthorizationPlatformPublicKeyCredentialRegistrationRequest  =
+    sendMsg asAuthorizationPlatformPublicKeyCredentialRegistrationRequest (mkSelector "largeBlob") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setLargeBlob:@
+setLargeBlob :: (IsASAuthorizationPlatformPublicKeyCredentialRegistrationRequest asAuthorizationPlatformPublicKeyCredentialRegistrationRequest, IsASAuthorizationPublicKeyCredentialLargeBlobRegistrationInput value) => asAuthorizationPlatformPublicKeyCredentialRegistrationRequest -> value -> IO ()
+setLargeBlob asAuthorizationPlatformPublicKeyCredentialRegistrationRequest  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationPlatformPublicKeyCredentialRegistrationRequest (mkSelector "setLargeBlob:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- prf@
+prf :: IsASAuthorizationPlatformPublicKeyCredentialRegistrationRequest asAuthorizationPlatformPublicKeyCredentialRegistrationRequest => asAuthorizationPlatformPublicKeyCredentialRegistrationRequest -> IO (Id ASAuthorizationPublicKeyCredentialPRFRegistrationInput)
+prf asAuthorizationPlatformPublicKeyCredentialRegistrationRequest  =
+    sendMsg asAuthorizationPlatformPublicKeyCredentialRegistrationRequest (mkSelector "prf") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setPrf:@
+setPrf :: (IsASAuthorizationPlatformPublicKeyCredentialRegistrationRequest asAuthorizationPlatformPublicKeyCredentialRegistrationRequest, IsASAuthorizationPublicKeyCredentialPRFRegistrationInput value) => asAuthorizationPlatformPublicKeyCredentialRegistrationRequest -> value -> IO ()
+setPrf asAuthorizationPlatformPublicKeyCredentialRegistrationRequest  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationPlatformPublicKeyCredentialRegistrationRequest (mkSelector "setPrf:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- requestStyle@
 requestStyle :: IsASAuthorizationPlatformPublicKeyCredentialRegistrationRequest asAuthorizationPlatformPublicKeyCredentialRegistrationRequest => asAuthorizationPlatformPublicKeyCredentialRegistrationRequest -> IO ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyle
 requestStyle asAuthorizationPlatformPublicKeyCredentialRegistrationRequest  =
@@ -72,6 +102,22 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @init@
 initSelector :: Selector
 initSelector = mkSelector "init"
+
+-- | @Selector@ for @largeBlob@
+largeBlobSelector :: Selector
+largeBlobSelector = mkSelector "largeBlob"
+
+-- | @Selector@ for @setLargeBlob:@
+setLargeBlobSelector :: Selector
+setLargeBlobSelector = mkSelector "setLargeBlob:"
+
+-- | @Selector@ for @prf@
+prfSelector :: Selector
+prfSelector = mkSelector "prf"
+
+-- | @Selector@ for @setPrf:@
+setPrfSelector :: Selector
+setPrfSelector = mkSelector "setPrf:"
 
 -- | @Selector@ for @requestStyle@
 requestStyleSelector :: Selector

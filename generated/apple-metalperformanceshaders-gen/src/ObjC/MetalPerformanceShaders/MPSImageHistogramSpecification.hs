@@ -10,8 +10,10 @@
 module ObjC.MetalPerformanceShaders.MPSImageHistogramSpecification
   ( MPSImageHistogramSpecification
   , IsMPSImageHistogramSpecification(..)
+  , initWithDevice_histogramInfo
   , initWithCoder_device
   , encodeTransformToCommandBuffer_sourceTexture_sourceHistogram_sourceHistogramOffset_desiredHistogram_desiredHistogramOffset
+  , initWithDevice_histogramInfoSelector
   , initWithCoder_deviceSelector
   , encodeTransformToCommandBuffer_sourceTexture_sourceHistogram_sourceHistogramOffset_desiredHistogram_desiredHistogramOffsetSelector
 
@@ -32,6 +34,29 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.MetalPerformanceShaders.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | Specifies information about the histogram for the channels of an image.
+--
+-- The MPSImageHistogramSpecification applies a transfor to convert the histogram               to a specified histogram. The process is divided into three steps:
+--
+-- -# Call -initWithDevice:histogramInfo:   This creates a MPSImageHistogramSpecification              object.  It is done when the method returns.
+--
+-- -# Call -encodeTransform:sourceTexture:sourceHistogram:sourceHistogramOffset:desiredHistogram:              desiredHistogramOffset: This creates a privately held image transform which will convert the              the distribution of the source histogram to the desired histogram. This process runs on a               MTLCommandBuffer when it is committed to a MTLCommandQueue. It must complete before the next               step can be run. It may be performed on the same MTLCommandBuffer.  The sourceTexture argument               is used by encodeTransform to determine the number of channels and therefore which histogram data               in sourceHistogram buffer to use. The sourceHistogram and desiredHistogram must have been computed               either on the CPU or using the MPSImageHistogram kernel
+--
+-- -# Call -encodeToCommandBuffer:sourceTexture:destinationTexture: to read data from              sourceTexture, apply the transform to it and write to destination texture.              This step is also done on the GPU on a MTLCommandQueue.
+--
+-- You can reuse the same specification transform on other images to perform the              same transform on those images. (Since their starting distribution is probably              different, they will probably not arrive at the same distribution as the desired              histogram.) This filter usually will not be able to work in place.
+--
+-- @device@ — The device the filter will run on
+--
+-- @histogramInfo@ — Pointer to the MPSHistogramInfo struct
+--
+-- Returns: A valid MPSImageHistogramSpecification object or nil, if failure.
+--
+-- ObjC selector: @- initWithDevice:histogramInfo:@
+initWithDevice_histogramInfo :: IsMPSImageHistogramSpecification mpsImageHistogramSpecification => mpsImageHistogramSpecification -> RawId -> Const RawId -> IO (Id MPSImageHistogramSpecification)
+initWithDevice_histogramInfo mpsImageHistogramSpecification  device histogramInfo =
+    sendMsg mpsImageHistogramSpecification (mkSelector "initWithDevice:histogramInfo:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr (unRawId (unConst histogramInfo)) :: Ptr ())] >>= ownedObject . castPtr
 
 -- | NSSecureCoding compatability
 --
@@ -73,6 +98,10 @@ encodeTransformToCommandBuffer_sourceTexture_sourceHistogram_sourceHistogramOffs
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @initWithDevice:histogramInfo:@
+initWithDevice_histogramInfoSelector :: Selector
+initWithDevice_histogramInfoSelector = mkSelector "initWithDevice:histogramInfo:"
 
 -- | @Selector@ for @initWithCoder:device:@
 initWithCoder_deviceSelector :: Selector

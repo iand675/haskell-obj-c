@@ -11,7 +11,9 @@ module ObjC.AccessorySetupKit.ASDiscoveredAccessory
   ( ASDiscoveredAccessory
   , IsASDiscoveredAccessory(..)
   , bluetoothAdvertisementData
+  , bluetoothRSSI
   , bluetoothAdvertisementDataSelector
+  , bluetoothRSSISelector
 
 
   ) where
@@ -38,6 +40,15 @@ bluetoothAdvertisementData :: IsASDiscoveredAccessory asDiscoveredAccessory => a
 bluetoothAdvertisementData asDiscoveredAccessory  =
     sendMsg asDiscoveredAccessory (mkSelector "bluetoothAdvertisementData") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The Bluetooth RSSI (Received Signal Strength Indicator) value from the discovered accessory.
+--
+-- This value represents the signal strength in dBm when the session discovered the accessory.
+--
+-- ObjC selector: @- bluetoothRSSI@
+bluetoothRSSI :: IsASDiscoveredAccessory asDiscoveredAccessory => asDiscoveredAccessory -> IO (Id NSNumber)
+bluetoothRSSI asDiscoveredAccessory  =
+    sendMsg asDiscoveredAccessory (mkSelector "bluetoothRSSI") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -45,4 +56,8 @@ bluetoothAdvertisementData asDiscoveredAccessory  =
 -- | @Selector@ for @bluetoothAdvertisementData@
 bluetoothAdvertisementDataSelector :: Selector
 bluetoothAdvertisementDataSelector = mkSelector "bluetoothAdvertisementData"
+
+-- | @Selector@ for @bluetoothRSSI@
+bluetoothRSSISelector :: Selector
+bluetoothRSSISelector = mkSelector "bluetoothRSSI"
 

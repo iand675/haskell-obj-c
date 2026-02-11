@@ -10,20 +10,28 @@ module ObjC.Metal.MTLIndirectInstanceAccelerationStructureDescriptor
   ( MTLIndirectInstanceAccelerationStructureDescriptor
   , IsMTLIndirectInstanceAccelerationStructureDescriptor(..)
   , descriptor
+  , instanceDescriptorBuffer
+  , setInstanceDescriptorBuffer
   , instanceDescriptorBufferOffset
   , setInstanceDescriptorBufferOffset
   , instanceDescriptorStride
   , setInstanceDescriptorStride
   , maxInstanceCount
   , setMaxInstanceCount
+  , instanceCountBuffer
+  , setInstanceCountBuffer
   , instanceCountBufferOffset
   , setInstanceCountBufferOffset
   , instanceDescriptorType
   , setInstanceDescriptorType
+  , motionTransformBuffer
+  , setMotionTransformBuffer
   , motionTransformBufferOffset
   , setMotionTransformBufferOffset
   , maxMotionTransformCount
   , setMaxMotionTransformCount
+  , motionTransformCountBuffer
+  , setMotionTransformCountBuffer
   , motionTransformCountBufferOffset
   , setMotionTransformCountBufferOffset
   , instanceTransformationMatrixLayout
@@ -33,20 +41,28 @@ module ObjC.Metal.MTLIndirectInstanceAccelerationStructureDescriptor
   , motionTransformStride
   , setMotionTransformStride
   , descriptorSelector
+  , instanceDescriptorBufferSelector
+  , setInstanceDescriptorBufferSelector
   , instanceDescriptorBufferOffsetSelector
   , setInstanceDescriptorBufferOffsetSelector
   , instanceDescriptorStrideSelector
   , setInstanceDescriptorStrideSelector
   , maxInstanceCountSelector
   , setMaxInstanceCountSelector
+  , instanceCountBufferSelector
+  , setInstanceCountBufferSelector
   , instanceCountBufferOffsetSelector
   , setInstanceCountBufferOffsetSelector
   , instanceDescriptorTypeSelector
   , setInstanceDescriptorTypeSelector
+  , motionTransformBufferSelector
+  , setMotionTransformBufferSelector
   , motionTransformBufferOffsetSelector
   , setMotionTransformBufferOffsetSelector
   , maxMotionTransformCountSelector
   , setMaxMotionTransformCountSelector
+  , motionTransformCountBufferSelector
+  , setMotionTransformCountBufferSelector
   , motionTransformCountBufferOffsetSelector
   , setMotionTransformCountBufferOffsetSelector
   , instanceTransformationMatrixLayoutSelector
@@ -95,6 +111,20 @@ descriptor  =
     cls' <- getRequiredClass "MTLIndirectInstanceAccelerationStructureDescriptor"
     sendClassMsg cls' (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | Buffer containing instance descriptors of the type specified by the instanceDescriptorType property
+--
+-- ObjC selector: @- instanceDescriptorBuffer@
+instanceDescriptorBuffer :: IsMTLIndirectInstanceAccelerationStructureDescriptor mtlIndirectInstanceAccelerationStructureDescriptor => mtlIndirectInstanceAccelerationStructureDescriptor -> IO RawId
+instanceDescriptorBuffer mtlIndirectInstanceAccelerationStructureDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlIndirectInstanceAccelerationStructureDescriptor (mkSelector "instanceDescriptorBuffer") (retPtr retVoid) []
+
+-- | Buffer containing instance descriptors of the type specified by the instanceDescriptorType property
+--
+-- ObjC selector: @- setInstanceDescriptorBuffer:@
+setInstanceDescriptorBuffer :: IsMTLIndirectInstanceAccelerationStructureDescriptor mtlIndirectInstanceAccelerationStructureDescriptor => mtlIndirectInstanceAccelerationStructureDescriptor -> RawId -> IO ()
+setInstanceDescriptorBuffer mtlIndirectInstanceAccelerationStructureDescriptor  value =
+    sendMsg mtlIndirectInstanceAccelerationStructureDescriptor (mkSelector "setInstanceDescriptorBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Offset into the instance descriptor buffer. Must be a multiple of 64 bytes and must be aligned to the platform's buffer offset alignment.
 --
 -- ObjC selector: @- instanceDescriptorBufferOffset@
@@ -137,6 +167,20 @@ setMaxInstanceCount :: IsMTLIndirectInstanceAccelerationStructureDescriptor mtlI
 setMaxInstanceCount mtlIndirectInstanceAccelerationStructureDescriptor  value =
     sendMsg mtlIndirectInstanceAccelerationStructureDescriptor (mkSelector "setMaxInstanceCount:") retVoid [argCULong value]
 
+-- | Buffer containing the instance count as a uint32_t value. Value at build time must be less than or equal to maxInstanceCount.
+--
+-- ObjC selector: @- instanceCountBuffer@
+instanceCountBuffer :: IsMTLIndirectInstanceAccelerationStructureDescriptor mtlIndirectInstanceAccelerationStructureDescriptor => mtlIndirectInstanceAccelerationStructureDescriptor -> IO RawId
+instanceCountBuffer mtlIndirectInstanceAccelerationStructureDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlIndirectInstanceAccelerationStructureDescriptor (mkSelector "instanceCountBuffer") (retPtr retVoid) []
+
+-- | Buffer containing the instance count as a uint32_t value. Value at build time must be less than or equal to maxInstanceCount.
+--
+-- ObjC selector: @- setInstanceCountBuffer:@
+setInstanceCountBuffer :: IsMTLIndirectInstanceAccelerationStructureDescriptor mtlIndirectInstanceAccelerationStructureDescriptor => mtlIndirectInstanceAccelerationStructureDescriptor -> RawId -> IO ()
+setInstanceCountBuffer mtlIndirectInstanceAccelerationStructureDescriptor  value =
+    sendMsg mtlIndirectInstanceAccelerationStructureDescriptor (mkSelector "setInstanceCountBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Offset into the instance count buffer. Must be a multiple of 4 bytes and must be aligned to the platform's buffer offset alignment.
 --
 -- ObjC selector: @- instanceCountBufferOffset@
@@ -165,6 +209,20 @@ setInstanceDescriptorType :: IsMTLIndirectInstanceAccelerationStructureDescripto
 setInstanceDescriptorType mtlIndirectInstanceAccelerationStructureDescriptor  value =
     sendMsg mtlIndirectInstanceAccelerationStructureDescriptor (mkSelector "setInstanceDescriptorType:") retVoid [argCULong (coerce value)]
 
+-- | Buffer containing transformation information for motion
+--
+-- ObjC selector: @- motionTransformBuffer@
+motionTransformBuffer :: IsMTLIndirectInstanceAccelerationStructureDescriptor mtlIndirectInstanceAccelerationStructureDescriptor => mtlIndirectInstanceAccelerationStructureDescriptor -> IO RawId
+motionTransformBuffer mtlIndirectInstanceAccelerationStructureDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlIndirectInstanceAccelerationStructureDescriptor (mkSelector "motionTransformBuffer") (retPtr retVoid) []
+
+-- | Buffer containing transformation information for motion
+--
+-- ObjC selector: @- setMotionTransformBuffer:@
+setMotionTransformBuffer :: IsMTLIndirectInstanceAccelerationStructureDescriptor mtlIndirectInstanceAccelerationStructureDescriptor => mtlIndirectInstanceAccelerationStructureDescriptor -> RawId -> IO ()
+setMotionTransformBuffer mtlIndirectInstanceAccelerationStructureDescriptor  value =
+    sendMsg mtlIndirectInstanceAccelerationStructureDescriptor (mkSelector "setMotionTransformBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Offset into the instance motion descriptor buffer. Must be a multiple of 64 bytes and must be aligned to the platform's buffer offset alignment.
 --
 -- ObjC selector: @- motionTransformBufferOffset@
@@ -192,6 +250,20 @@ maxMotionTransformCount mtlIndirectInstanceAccelerationStructureDescriptor  =
 setMaxMotionTransformCount :: IsMTLIndirectInstanceAccelerationStructureDescriptor mtlIndirectInstanceAccelerationStructureDescriptor => mtlIndirectInstanceAccelerationStructureDescriptor -> CULong -> IO ()
 setMaxMotionTransformCount mtlIndirectInstanceAccelerationStructureDescriptor  value =
     sendMsg mtlIndirectInstanceAccelerationStructureDescriptor (mkSelector "setMaxMotionTransformCount:") retVoid [argCULong value]
+
+-- | Buffer containing the motion transform count as a uint32_t value. Value at build time must be less than or equal to maxMotionTransformCount.
+--
+-- ObjC selector: @- motionTransformCountBuffer@
+motionTransformCountBuffer :: IsMTLIndirectInstanceAccelerationStructureDescriptor mtlIndirectInstanceAccelerationStructureDescriptor => mtlIndirectInstanceAccelerationStructureDescriptor -> IO RawId
+motionTransformCountBuffer mtlIndirectInstanceAccelerationStructureDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlIndirectInstanceAccelerationStructureDescriptor (mkSelector "motionTransformCountBuffer") (retPtr retVoid) []
+
+-- | Buffer containing the motion transform count as a uint32_t value. Value at build time must be less than or equal to maxMotionTransformCount.
+--
+-- ObjC selector: @- setMotionTransformCountBuffer:@
+setMotionTransformCountBuffer :: IsMTLIndirectInstanceAccelerationStructureDescriptor mtlIndirectInstanceAccelerationStructureDescriptor => mtlIndirectInstanceAccelerationStructureDescriptor -> RawId -> IO ()
+setMotionTransformCountBuffer mtlIndirectInstanceAccelerationStructureDescriptor  value =
+    sendMsg mtlIndirectInstanceAccelerationStructureDescriptor (mkSelector "setMotionTransformCountBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | Offset into the motion transform count buffer. Must be a multiple of 4 bytes and must be aligned to the platform's buffer offset alignment.
 --
@@ -257,6 +329,14 @@ setMotionTransformStride mtlIndirectInstanceAccelerationStructureDescriptor  val
 descriptorSelector :: Selector
 descriptorSelector = mkSelector "descriptor"
 
+-- | @Selector@ for @instanceDescriptorBuffer@
+instanceDescriptorBufferSelector :: Selector
+instanceDescriptorBufferSelector = mkSelector "instanceDescriptorBuffer"
+
+-- | @Selector@ for @setInstanceDescriptorBuffer:@
+setInstanceDescriptorBufferSelector :: Selector
+setInstanceDescriptorBufferSelector = mkSelector "setInstanceDescriptorBuffer:"
+
 -- | @Selector@ for @instanceDescriptorBufferOffset@
 instanceDescriptorBufferOffsetSelector :: Selector
 instanceDescriptorBufferOffsetSelector = mkSelector "instanceDescriptorBufferOffset"
@@ -281,6 +361,14 @@ maxInstanceCountSelector = mkSelector "maxInstanceCount"
 setMaxInstanceCountSelector :: Selector
 setMaxInstanceCountSelector = mkSelector "setMaxInstanceCount:"
 
+-- | @Selector@ for @instanceCountBuffer@
+instanceCountBufferSelector :: Selector
+instanceCountBufferSelector = mkSelector "instanceCountBuffer"
+
+-- | @Selector@ for @setInstanceCountBuffer:@
+setInstanceCountBufferSelector :: Selector
+setInstanceCountBufferSelector = mkSelector "setInstanceCountBuffer:"
+
 -- | @Selector@ for @instanceCountBufferOffset@
 instanceCountBufferOffsetSelector :: Selector
 instanceCountBufferOffsetSelector = mkSelector "instanceCountBufferOffset"
@@ -297,6 +385,14 @@ instanceDescriptorTypeSelector = mkSelector "instanceDescriptorType"
 setInstanceDescriptorTypeSelector :: Selector
 setInstanceDescriptorTypeSelector = mkSelector "setInstanceDescriptorType:"
 
+-- | @Selector@ for @motionTransformBuffer@
+motionTransformBufferSelector :: Selector
+motionTransformBufferSelector = mkSelector "motionTransformBuffer"
+
+-- | @Selector@ for @setMotionTransformBuffer:@
+setMotionTransformBufferSelector :: Selector
+setMotionTransformBufferSelector = mkSelector "setMotionTransformBuffer:"
+
 -- | @Selector@ for @motionTransformBufferOffset@
 motionTransformBufferOffsetSelector :: Selector
 motionTransformBufferOffsetSelector = mkSelector "motionTransformBufferOffset"
@@ -312,6 +408,14 @@ maxMotionTransformCountSelector = mkSelector "maxMotionTransformCount"
 -- | @Selector@ for @setMaxMotionTransformCount:@
 setMaxMotionTransformCountSelector :: Selector
 setMaxMotionTransformCountSelector = mkSelector "setMaxMotionTransformCount:"
+
+-- | @Selector@ for @motionTransformCountBuffer@
+motionTransformCountBufferSelector :: Selector
+motionTransformCountBufferSelector = mkSelector "motionTransformCountBuffer"
+
+-- | @Selector@ for @setMotionTransformCountBuffer:@
+setMotionTransformCountBufferSelector :: Selector
+setMotionTransformCountBufferSelector = mkSelector "setMotionTransformCountBuffer:"
 
 -- | @Selector@ for @motionTransformCountBufferOffset@
 motionTransformCountBufferOffsetSelector :: Selector

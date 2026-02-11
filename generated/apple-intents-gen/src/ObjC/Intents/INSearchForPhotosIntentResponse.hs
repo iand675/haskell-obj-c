@@ -10,9 +10,13 @@ module ObjC.Intents.INSearchForPhotosIntentResponse
   , init_
   , initWithCode_userActivity
   , code
+  , searchResultsCount
+  , setSearchResultsCount
   , initSelector
   , initWithCode_userActivitySelector
   , codeSelector
+  , searchResultsCountSelector
+  , setSearchResultsCountSelector
 
   -- * Enum types
   , INSearchForPhotosIntentResponseCode(INSearchForPhotosIntentResponseCode)
@@ -57,6 +61,17 @@ code :: IsINSearchForPhotosIntentResponse inSearchForPhotosIntentResponse => inS
 code inSearchForPhotosIntentResponse  =
     fmap (coerce :: CLong -> INSearchForPhotosIntentResponseCode) $ sendMsg inSearchForPhotosIntentResponse (mkSelector "code") retCLong []
 
+-- | @- searchResultsCount@
+searchResultsCount :: IsINSearchForPhotosIntentResponse inSearchForPhotosIntentResponse => inSearchForPhotosIntentResponse -> IO (Id NSNumber)
+searchResultsCount inSearchForPhotosIntentResponse  =
+    sendMsg inSearchForPhotosIntentResponse (mkSelector "searchResultsCount") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setSearchResultsCount:@
+setSearchResultsCount :: (IsINSearchForPhotosIntentResponse inSearchForPhotosIntentResponse, IsNSNumber value) => inSearchForPhotosIntentResponse -> value -> IO ()
+setSearchResultsCount inSearchForPhotosIntentResponse  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg inSearchForPhotosIntentResponse (mkSelector "setSearchResultsCount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -72,4 +87,12 @@ initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 -- | @Selector@ for @code@
 codeSelector :: Selector
 codeSelector = mkSelector "code"
+
+-- | @Selector@ for @searchResultsCount@
+searchResultsCountSelector :: Selector
+searchResultsCountSelector = mkSelector "searchResultsCount"
+
+-- | @Selector@ for @setSearchResultsCount:@
+setSearchResultsCountSelector :: Selector
+setSearchResultsCountSelector = mkSelector "setSearchResultsCount:"
 

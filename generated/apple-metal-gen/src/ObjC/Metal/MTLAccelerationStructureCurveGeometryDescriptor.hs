@@ -10,6 +10,8 @@ module ObjC.Metal.MTLAccelerationStructureCurveGeometryDescriptor
   ( MTLAccelerationStructureCurveGeometryDescriptor
   , IsMTLAccelerationStructureCurveGeometryDescriptor(..)
   , descriptor
+  , controlPointBuffer
+  , setControlPointBuffer
   , controlPointBufferOffset
   , setControlPointBufferOffset
   , controlPointCount
@@ -18,12 +20,16 @@ module ObjC.Metal.MTLAccelerationStructureCurveGeometryDescriptor
   , setControlPointStride
   , controlPointFormat
   , setControlPointFormat
+  , radiusBuffer
+  , setRadiusBuffer
   , radiusBufferOffset
   , setRadiusBufferOffset
   , radiusFormat
   , setRadiusFormat
   , radiusStride
   , setRadiusStride
+  , indexBuffer
+  , setIndexBuffer
   , indexBufferOffset
   , setIndexBufferOffset
   , indexType
@@ -39,6 +45,8 @@ module ObjC.Metal.MTLAccelerationStructureCurveGeometryDescriptor
   , curveEndCaps
   , setCurveEndCaps
   , descriptorSelector
+  , controlPointBufferSelector
+  , setControlPointBufferSelector
   , controlPointBufferOffsetSelector
   , setControlPointBufferOffsetSelector
   , controlPointCountSelector
@@ -47,12 +55,16 @@ module ObjC.Metal.MTLAccelerationStructureCurveGeometryDescriptor
   , setControlPointStrideSelector
   , controlPointFormatSelector
   , setControlPointFormatSelector
+  , radiusBufferSelector
+  , setRadiusBufferSelector
   , radiusBufferOffsetSelector
   , setRadiusBufferOffsetSelector
   , radiusFormatSelector
   , setRadiusFormatSelector
   , radiusStrideSelector
   , setRadiusStrideSelector
+  , indexBufferSelector
+  , setIndexBufferSelector
   , indexBufferOffsetSelector
   , setIndexBufferOffsetSelector
   , indexTypeSelector
@@ -165,6 +177,20 @@ descriptor  =
     cls' <- getRequiredClass "MTLAccelerationStructureCurveGeometryDescriptor"
     sendClassMsg cls' (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | Buffer containing curve control points. Each control point must be of the format specified by the control point format. Must not be nil when the acceleration structure is built.
+--
+-- ObjC selector: @- controlPointBuffer@
+controlPointBuffer :: IsMTLAccelerationStructureCurveGeometryDescriptor mtlAccelerationStructureCurveGeometryDescriptor => mtlAccelerationStructureCurveGeometryDescriptor -> IO RawId
+controlPointBuffer mtlAccelerationStructureCurveGeometryDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlAccelerationStructureCurveGeometryDescriptor (mkSelector "controlPointBuffer") (retPtr retVoid) []
+
+-- | Buffer containing curve control points. Each control point must be of the format specified by the control point format. Must not be nil when the acceleration structure is built.
+--
+-- ObjC selector: @- setControlPointBuffer:@
+setControlPointBuffer :: IsMTLAccelerationStructureCurveGeometryDescriptor mtlAccelerationStructureCurveGeometryDescriptor => mtlAccelerationStructureCurveGeometryDescriptor -> RawId -> IO ()
+setControlPointBuffer mtlAccelerationStructureCurveGeometryDescriptor  value =
+    sendMsg mtlAccelerationStructureCurveGeometryDescriptor (mkSelector "setControlPointBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Control point buffer offset. Must be a multiple of the control point format's element size and must be aligned to the platform's buffer offset alignment.
 --
 -- ObjC selector: @- controlPointBufferOffset@
@@ -221,6 +247,20 @@ setControlPointFormat :: IsMTLAccelerationStructureCurveGeometryDescriptor mtlAc
 setControlPointFormat mtlAccelerationStructureCurveGeometryDescriptor  value =
     sendMsg mtlAccelerationStructureCurveGeometryDescriptor (mkSelector "setControlPointFormat:") retVoid [argCULong (coerce value)]
 
+-- | Buffer containing the curve radius for each control point. Each radius must be of the type specified by the radius format. Each radius must be at least zero. Must not be nil when the acceleration structure is built.
+--
+-- ObjC selector: @- radiusBuffer@
+radiusBuffer :: IsMTLAccelerationStructureCurveGeometryDescriptor mtlAccelerationStructureCurveGeometryDescriptor => mtlAccelerationStructureCurveGeometryDescriptor -> IO RawId
+radiusBuffer mtlAccelerationStructureCurveGeometryDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlAccelerationStructureCurveGeometryDescriptor (mkSelector "radiusBuffer") (retPtr retVoid) []
+
+-- | Buffer containing the curve radius for each control point. Each radius must be of the type specified by the radius format. Each radius must be at least zero. Must not be nil when the acceleration structure is built.
+--
+-- ObjC selector: @- setRadiusBuffer:@
+setRadiusBuffer :: IsMTLAccelerationStructureCurveGeometryDescriptor mtlAccelerationStructureCurveGeometryDescriptor => mtlAccelerationStructureCurveGeometryDescriptor -> RawId -> IO ()
+setRadiusBuffer mtlAccelerationStructureCurveGeometryDescriptor  value =
+    sendMsg mtlAccelerationStructureCurveGeometryDescriptor (mkSelector "setRadiusBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Radius buffer offset. Must be a multiple of the radius format size and must be aligned to the platform's buffer offset alignment.
 --
 -- ObjC selector: @- radiusBufferOffset@
@@ -262,6 +302,20 @@ radiusStride mtlAccelerationStructureCurveGeometryDescriptor  =
 setRadiusStride :: IsMTLAccelerationStructureCurveGeometryDescriptor mtlAccelerationStructureCurveGeometryDescriptor => mtlAccelerationStructureCurveGeometryDescriptor -> CULong -> IO ()
 setRadiusStride mtlAccelerationStructureCurveGeometryDescriptor  value =
     sendMsg mtlAccelerationStructureCurveGeometryDescriptor (mkSelector "setRadiusStride:") retVoid [argCULong value]
+
+-- | Index buffer containing references to control points in the control point buffer. Must not be nil when the acceleration structure is built.
+--
+-- ObjC selector: @- indexBuffer@
+indexBuffer :: IsMTLAccelerationStructureCurveGeometryDescriptor mtlAccelerationStructureCurveGeometryDescriptor => mtlAccelerationStructureCurveGeometryDescriptor -> IO RawId
+indexBuffer mtlAccelerationStructureCurveGeometryDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlAccelerationStructureCurveGeometryDescriptor (mkSelector "indexBuffer") (retPtr retVoid) []
+
+-- | Index buffer containing references to control points in the control point buffer. Must not be nil when the acceleration structure is built.
+--
+-- ObjC selector: @- setIndexBuffer:@
+setIndexBuffer :: IsMTLAccelerationStructureCurveGeometryDescriptor mtlAccelerationStructureCurveGeometryDescriptor => mtlAccelerationStructureCurveGeometryDescriptor -> RawId -> IO ()
+setIndexBuffer mtlAccelerationStructureCurveGeometryDescriptor  value =
+    sendMsg mtlAccelerationStructureCurveGeometryDescriptor (mkSelector "setIndexBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | Index buffer offset. Must be a multiple of the index data type size and must be aligned to both the index data type's alignment and the platform's buffer offset alignment.
 --
@@ -369,6 +423,14 @@ setCurveEndCaps mtlAccelerationStructureCurveGeometryDescriptor  value =
 descriptorSelector :: Selector
 descriptorSelector = mkSelector "descriptor"
 
+-- | @Selector@ for @controlPointBuffer@
+controlPointBufferSelector :: Selector
+controlPointBufferSelector = mkSelector "controlPointBuffer"
+
+-- | @Selector@ for @setControlPointBuffer:@
+setControlPointBufferSelector :: Selector
+setControlPointBufferSelector = mkSelector "setControlPointBuffer:"
+
 -- | @Selector@ for @controlPointBufferOffset@
 controlPointBufferOffsetSelector :: Selector
 controlPointBufferOffsetSelector = mkSelector "controlPointBufferOffset"
@@ -401,6 +463,14 @@ controlPointFormatSelector = mkSelector "controlPointFormat"
 setControlPointFormatSelector :: Selector
 setControlPointFormatSelector = mkSelector "setControlPointFormat:"
 
+-- | @Selector@ for @radiusBuffer@
+radiusBufferSelector :: Selector
+radiusBufferSelector = mkSelector "radiusBuffer"
+
+-- | @Selector@ for @setRadiusBuffer:@
+setRadiusBufferSelector :: Selector
+setRadiusBufferSelector = mkSelector "setRadiusBuffer:"
+
 -- | @Selector@ for @radiusBufferOffset@
 radiusBufferOffsetSelector :: Selector
 radiusBufferOffsetSelector = mkSelector "radiusBufferOffset"
@@ -424,6 +494,14 @@ radiusStrideSelector = mkSelector "radiusStride"
 -- | @Selector@ for @setRadiusStride:@
 setRadiusStrideSelector :: Selector
 setRadiusStrideSelector = mkSelector "setRadiusStride:"
+
+-- | @Selector@ for @indexBuffer@
+indexBufferSelector :: Selector
+indexBufferSelector = mkSelector "indexBuffer"
+
+-- | @Selector@ for @setIndexBuffer:@
+setIndexBufferSelector :: Selector
+setIndexBufferSelector = mkSelector "setIndexBuffer:"
 
 -- | @Selector@ for @indexBufferOffset@
 indexBufferOffsetSelector :: Selector

@@ -26,6 +26,7 @@ module ObjC.AVFoundation.AVDepthData
   , depthDataByApplyingExifOrientation
   , depthDataByReplacingDepthDataMapWithPixelBuffer_error
   , dictionaryRepresentationForAuxiliaryDataType
+  , availableDepthDataTypes
   , depthDataType
   , depthDataMap
   , depthDataQuality
@@ -39,6 +40,7 @@ module ObjC.AVFoundation.AVDepthData
   , depthDataByApplyingExifOrientationSelector
   , depthDataByReplacingDepthDataMapWithPixelBuffer_errorSelector
   , dictionaryRepresentationForAuxiliaryDataTypeSelector
+  , availableDepthDataTypesSelector
   , depthDataTypeSelector
   , depthDataMapSelector
   , depthDataQualitySelector
@@ -169,6 +171,17 @@ dictionaryRepresentationForAuxiliaryDataType avDepthData  outAuxDataType =
   withObjCPtr outAuxDataType $ \raw_outAuxDataType ->
       sendMsg avDepthData (mkSelector "dictionaryRepresentationForAuxiliaryDataType:") (retPtr retVoid) [argPtr (castPtr raw_outAuxDataType :: Ptr ())] >>= retainedObject . castPtr
 
+-- | availableDepthDataTypes
+--
+-- Specifies which depth data pixel formats may be used with depthDataByConvertingToDepthDataType:.
+--
+-- This property presents the available pixel format types as an array of NSNumbers, each wrapping an OSType (CV pixel format type).
+--
+-- ObjC selector: @- availableDepthDataTypes@
+availableDepthDataTypes :: IsAVDepthData avDepthData => avDepthData -> IO (Id NSArray)
+availableDepthDataTypes avDepthData  =
+    sendMsg avDepthData (mkSelector "availableDepthDataTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | depthDataType
 --
 -- Specifies the pixel format type of this depth data object's internal map.
@@ -266,6 +279,10 @@ depthDataByReplacingDepthDataMapWithPixelBuffer_errorSelector = mkSelector "dept
 -- | @Selector@ for @dictionaryRepresentationForAuxiliaryDataType:@
 dictionaryRepresentationForAuxiliaryDataTypeSelector :: Selector
 dictionaryRepresentationForAuxiliaryDataTypeSelector = mkSelector "dictionaryRepresentationForAuxiliaryDataType:"
+
+-- | @Selector@ for @availableDepthDataTypes@
+availableDepthDataTypesSelector :: Selector
+availableDepthDataTypesSelector = mkSelector "availableDepthDataTypes"
 
 -- | @Selector@ for @depthDataType@
 depthDataTypeSelector :: Selector

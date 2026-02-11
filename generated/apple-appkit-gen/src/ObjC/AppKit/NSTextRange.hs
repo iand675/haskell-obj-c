@@ -21,6 +21,8 @@ module ObjC.AppKit.NSTextRange
   , textRangeByIntersectingWithTextRange
   , textRangeByFormingUnionWithTextRange
   , empty
+  , location
+  , endLocation
   , initWithLocation_endLocationSelector
   , initWithLocationSelector
   , initSelector
@@ -32,6 +34,8 @@ module ObjC.AppKit.NSTextRange
   , textRangeByIntersectingWithTextRangeSelector
   , textRangeByFormingUnionWithTextRangeSelector
   , emptySelector
+  , locationSelector
+  , endLocationSelector
 
 
   ) where
@@ -159,6 +163,20 @@ empty :: IsNSTextRange nsTextRange => nsTextRange -> IO Bool
 empty nsTextRange  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextRange (mkSelector "empty") retCULong []
 
+-- | The starting location of the text range.
+--
+-- ObjC selector: @- location@
+location :: IsNSTextRange nsTextRange => nsTextRange -> IO RawId
+location nsTextRange  =
+    fmap (RawId . castPtr) $ sendMsg nsTextRange (mkSelector "location") (retPtr retVoid) []
+
+-- | The ending location of the text range.
+--
+-- ObjC selector: @- endLocation@
+endLocation :: IsNSTextRange nsTextRange => nsTextRange -> IO RawId
+endLocation nsTextRange  =
+    fmap (RawId . castPtr) $ sendMsg nsTextRange (mkSelector "endLocation") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -206,4 +224,12 @@ textRangeByFormingUnionWithTextRangeSelector = mkSelector "textRangeByFormingUni
 -- | @Selector@ for @empty@
 emptySelector :: Selector
 emptySelector = mkSelector "empty"
+
+-- | @Selector@ for @location@
+locationSelector :: Selector
+locationSelector = mkSelector "location"
+
+-- | @Selector@ for @endLocation@
+endLocationSelector :: Selector
+endLocationSelector = mkSelector "endLocation"
 

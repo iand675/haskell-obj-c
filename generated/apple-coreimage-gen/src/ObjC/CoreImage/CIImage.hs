@@ -64,16 +64,43 @@ module ObjC.CoreImage.CIImage
   , imageBySettingContentAverageLightLevel
   , imageWithImageProvider_size__format_colorSpace_options
   , initWithImageProvider_size__format_colorSpace_options
+  , initWithSemanticSegmentationMatte_options
+  , initWithSemanticSegmentationMatte
+  , imageWithSemanticSegmentationMatte_options
+  , imageWithSemanticSegmentationMatte
+  , initWithPortaitEffectsMatte_options
+  , initWithPortaitEffectsMatte
+  , imageWithPortaitEffectsMatte_options
+  , imageWithPortaitEffectsMatte
+  , initWithDepthData_options
+  , initWithDepthData
+  , imageWithDepthData_options
+  , imageWithDepthData
   , imageByConvertingWorkingSpaceToLab
   , imageByConvertingLabToWorkingSpace
   , autoAdjustmentFilters
   , autoAdjustmentFiltersWithOptions
+  , blackImage
+  , whiteImage
+  , grayImage
+  , redImage
+  , greenImage
+  , blueImage
+  , cyanImage
+  , magentaImage
+  , yellowImage
+  , clearImage
   , opaque
+  , definition
+  , url
   , colorSpace
   , contentHeadroom
   , contentAverageLightLevel
   , pixelBuffer
   , cgImage
+  , semanticSegmentationMatte
+  , portraitEffectsMatte
+  , depthData
   , imageWithCGImageSelector
   , imageWithCGImage_optionsSelector
   , imageWithCGImageSource_index_optionsSelector
@@ -132,16 +159,43 @@ module ObjC.CoreImage.CIImage
   , imageBySettingContentAverageLightLevelSelector
   , imageWithImageProvider_size__format_colorSpace_optionsSelector
   , initWithImageProvider_size__format_colorSpace_optionsSelector
+  , initWithSemanticSegmentationMatte_optionsSelector
+  , initWithSemanticSegmentationMatteSelector
+  , imageWithSemanticSegmentationMatte_optionsSelector
+  , imageWithSemanticSegmentationMatteSelector
+  , initWithPortaitEffectsMatte_optionsSelector
+  , initWithPortaitEffectsMatteSelector
+  , imageWithPortaitEffectsMatte_optionsSelector
+  , imageWithPortaitEffectsMatteSelector
+  , initWithDepthData_optionsSelector
+  , initWithDepthDataSelector
+  , imageWithDepthData_optionsSelector
+  , imageWithDepthDataSelector
   , imageByConvertingWorkingSpaceToLabSelector
   , imageByConvertingLabToWorkingSpaceSelector
   , autoAdjustmentFiltersSelector
   , autoAdjustmentFiltersWithOptionsSelector
+  , blackImageSelector
+  , whiteImageSelector
+  , grayImageSelector
+  , redImageSelector
+  , greenImageSelector
+  , blueImageSelector
+  , cyanImageSelector
+  , magentaImageSelector
+  , yellowImageSelector
+  , clearImageSelector
   , opaqueSelector
+  , definitionSelector
+  , urlSelector
   , colorSpaceSelector
   , contentHeadroomSelector
   , contentAverageLightLevelSelector
   , pixelBufferSelector
   , cgImageSelector
+  , semanticSegmentationMatteSelector
+  , portraitEffectsMatteSelector
+  , depthDataSelector
 
 
   ) where
@@ -583,6 +637,84 @@ initWithImageProvider_size__format_colorSpace_options ciImage  provider width he
   withObjCPtr options $ \raw_options ->
       sendMsg ciImage (mkSelector "initWithImageProvider:size::format:colorSpace:options:") (retPtr retVoid) [argPtr (castPtr (unRawId provider) :: Ptr ()), argCULong width, argCULong height, argCInt format, argPtr colorSpace, argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
 
+-- | @- initWithSemanticSegmentationMatte:options:@
+initWithSemanticSegmentationMatte_options :: (IsCIImage ciImage, IsNSDictionary options) => ciImage -> RawId -> options -> IO (Id CIImage)
+initWithSemanticSegmentationMatte_options ciImage  matte options =
+  withObjCPtr options $ \raw_options ->
+      sendMsg ciImage (mkSelector "initWithSemanticSegmentationMatte:options:") (retPtr retVoid) [argPtr (castPtr (unRawId matte) :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+
+-- | @- initWithSemanticSegmentationMatte:@
+initWithSemanticSegmentationMatte :: IsCIImage ciImage => ciImage -> RawId -> IO (Id CIImage)
+initWithSemanticSegmentationMatte ciImage  matte =
+    sendMsg ciImage (mkSelector "initWithSemanticSegmentationMatte:") (retPtr retVoid) [argPtr (castPtr (unRawId matte) :: Ptr ())] >>= ownedObject . castPtr
+
+-- | @+ imageWithSemanticSegmentationMatte:options:@
+imageWithSemanticSegmentationMatte_options :: IsNSDictionary options => RawId -> options -> IO (Id CIImage)
+imageWithSemanticSegmentationMatte_options matte options =
+  do
+    cls' <- getRequiredClass "CIImage"
+    withObjCPtr options $ \raw_options ->
+      sendClassMsg cls' (mkSelector "imageWithSemanticSegmentationMatte:options:") (retPtr retVoid) [argPtr (castPtr (unRawId matte) :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+
+-- | @+ imageWithSemanticSegmentationMatte:@
+imageWithSemanticSegmentationMatte :: RawId -> IO (Id CIImage)
+imageWithSemanticSegmentationMatte matte =
+  do
+    cls' <- getRequiredClass "CIImage"
+    sendClassMsg cls' (mkSelector "imageWithSemanticSegmentationMatte:") (retPtr retVoid) [argPtr (castPtr (unRawId matte) :: Ptr ())] >>= retainedObject . castPtr
+
+-- | @- initWithPortaitEffectsMatte:options:@
+initWithPortaitEffectsMatte_options :: (IsCIImage ciImage, IsNSDictionary options) => ciImage -> RawId -> options -> IO (Id CIImage)
+initWithPortaitEffectsMatte_options ciImage  matte options =
+  withObjCPtr options $ \raw_options ->
+      sendMsg ciImage (mkSelector "initWithPortaitEffectsMatte:options:") (retPtr retVoid) [argPtr (castPtr (unRawId matte) :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+
+-- | @- initWithPortaitEffectsMatte:@
+initWithPortaitEffectsMatte :: IsCIImage ciImage => ciImage -> RawId -> IO (Id CIImage)
+initWithPortaitEffectsMatte ciImage  matte =
+    sendMsg ciImage (mkSelector "initWithPortaitEffectsMatte:") (retPtr retVoid) [argPtr (castPtr (unRawId matte) :: Ptr ())] >>= ownedObject . castPtr
+
+-- | @+ imageWithPortaitEffectsMatte:options:@
+imageWithPortaitEffectsMatte_options :: IsNSDictionary options => RawId -> options -> IO (Id CIImage)
+imageWithPortaitEffectsMatte_options matte options =
+  do
+    cls' <- getRequiredClass "CIImage"
+    withObjCPtr options $ \raw_options ->
+      sendClassMsg cls' (mkSelector "imageWithPortaitEffectsMatte:options:") (retPtr retVoid) [argPtr (castPtr (unRawId matte) :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+
+-- | @+ imageWithPortaitEffectsMatte:@
+imageWithPortaitEffectsMatte :: RawId -> IO (Id CIImage)
+imageWithPortaitEffectsMatte matte =
+  do
+    cls' <- getRequiredClass "CIImage"
+    sendClassMsg cls' (mkSelector "imageWithPortaitEffectsMatte:") (retPtr retVoid) [argPtr (castPtr (unRawId matte) :: Ptr ())] >>= retainedObject . castPtr
+
+-- | @- initWithDepthData:options:@
+initWithDepthData_options :: (IsCIImage ciImage, IsNSDictionary options) => ciImage -> RawId -> options -> IO (Id CIImage)
+initWithDepthData_options ciImage  data_ options =
+  withObjCPtr options $ \raw_options ->
+      sendMsg ciImage (mkSelector "initWithDepthData:options:") (retPtr retVoid) [argPtr (castPtr (unRawId data_) :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+
+-- | @- initWithDepthData:@
+initWithDepthData :: IsCIImage ciImage => ciImage -> RawId -> IO (Id CIImage)
+initWithDepthData ciImage  data_ =
+    sendMsg ciImage (mkSelector "initWithDepthData:") (retPtr retVoid) [argPtr (castPtr (unRawId data_) :: Ptr ())] >>= ownedObject . castPtr
+
+-- | @+ imageWithDepthData:options:@
+imageWithDepthData_options :: IsNSDictionary options => RawId -> options -> IO (Id CIImage)
+imageWithDepthData_options data_ options =
+  do
+    cls' <- getRequiredClass "CIImage"
+    withObjCPtr options $ \raw_options ->
+      sendClassMsg cls' (mkSelector "imageWithDepthData:options:") (retPtr retVoid) [argPtr (castPtr (unRawId data_) :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+
+-- | @+ imageWithDepthData:@
+imageWithDepthData :: RawId -> IO (Id CIImage)
+imageWithDepthData data_ =
+  do
+    cls' <- getRequiredClass "CIImage"
+    sendClassMsg cls' (mkSelector "imageWithDepthData:") (retPtr retVoid) [argPtr (castPtr (unRawId data_) :: Ptr ())] >>= retainedObject . castPtr
+
 -- | @- imageByConvertingWorkingSpaceToLab@
 imageByConvertingWorkingSpaceToLab :: IsCIImage ciImage => ciImage -> IO (Id CIImage)
 imageByConvertingWorkingSpaceToLab ciImage  =
@@ -604,12 +736,92 @@ autoAdjustmentFiltersWithOptions ciImage  options =
   withObjCPtr options $ \raw_options ->
       sendMsg ciImage (mkSelector "autoAdjustmentFiltersWithOptions:") (retPtr retVoid) [argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
 
+-- | @+ blackImage@
+blackImage :: IO RawId
+blackImage  =
+  do
+    cls' <- getRequiredClass "CIImage"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "blackImage") (retPtr retVoid) []
+
+-- | @+ whiteImage@
+whiteImage :: IO RawId
+whiteImage  =
+  do
+    cls' <- getRequiredClass "CIImage"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "whiteImage") (retPtr retVoid) []
+
+-- | @+ grayImage@
+grayImage :: IO RawId
+grayImage  =
+  do
+    cls' <- getRequiredClass "CIImage"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "grayImage") (retPtr retVoid) []
+
+-- | @+ redImage@
+redImage :: IO RawId
+redImage  =
+  do
+    cls' <- getRequiredClass "CIImage"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "redImage") (retPtr retVoid) []
+
+-- | @+ greenImage@
+greenImage :: IO RawId
+greenImage  =
+  do
+    cls' <- getRequiredClass "CIImage"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "greenImage") (retPtr retVoid) []
+
+-- | @+ blueImage@
+blueImage :: IO RawId
+blueImage  =
+  do
+    cls' <- getRequiredClass "CIImage"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "blueImage") (retPtr retVoid) []
+
+-- | @+ cyanImage@
+cyanImage :: IO RawId
+cyanImage  =
+  do
+    cls' <- getRequiredClass "CIImage"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "cyanImage") (retPtr retVoid) []
+
+-- | @+ magentaImage@
+magentaImage :: IO RawId
+magentaImage  =
+  do
+    cls' <- getRequiredClass "CIImage"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "magentaImage") (retPtr retVoid) []
+
+-- | @+ yellowImage@
+yellowImage :: IO RawId
+yellowImage  =
+  do
+    cls' <- getRequiredClass "CIImage"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "yellowImage") (retPtr retVoid) []
+
+-- | @+ clearImage@
+clearImage :: IO RawId
+clearImage  =
+  do
+    cls' <- getRequiredClass "CIImage"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "clearImage") (retPtr retVoid) []
+
 -- | Returns YES if the image is known to have and alpha value of @1.0@ over the entire image extent.
 --
 -- ObjC selector: @- opaque@
 opaque :: IsCIImage ciImage => ciImage -> IO Bool
 opaque ciImage  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg ciImage (mkSelector "opaque") retCULong []
+
+-- | @- definition@
+definition :: IsCIImage ciImage => ciImage -> IO RawId
+definition ciImage  =
+    fmap (RawId . castPtr) $ sendMsg ciImage (mkSelector "definition") (retPtr retVoid) []
+
+-- | @- url@
+url :: IsCIImage ciImage => ciImage -> IO RawId
+url ciImage  =
+    fmap (RawId . castPtr) $ sendMsg ciImage (mkSelector "url") (retPtr retVoid) []
 
 -- | @- colorSpace@
 colorSpace :: IsCIImage ciImage => ciImage -> IO (Ptr ())
@@ -659,6 +871,21 @@ pixelBuffer ciImage  =
 cgImage :: IsCIImage ciImage => ciImage -> IO (Ptr ())
 cgImage ciImage  =
     fmap castPtr $ sendMsg ciImage (mkSelector "CGImage") (retPtr retVoid) []
+
+-- | @- semanticSegmentationMatte@
+semanticSegmentationMatte :: IsCIImage ciImage => ciImage -> IO RawId
+semanticSegmentationMatte ciImage  =
+    fmap (RawId . castPtr) $ sendMsg ciImage (mkSelector "semanticSegmentationMatte") (retPtr retVoid) []
+
+-- | @- portraitEffectsMatte@
+portraitEffectsMatte :: IsCIImage ciImage => ciImage -> IO RawId
+portraitEffectsMatte ciImage  =
+    fmap (RawId . castPtr) $ sendMsg ciImage (mkSelector "portraitEffectsMatte") (retPtr retVoid) []
+
+-- | @- depthData@
+depthData :: IsCIImage ciImage => ciImage -> IO RawId
+depthData ciImage  =
+    fmap (RawId . castPtr) $ sendMsg ciImage (mkSelector "depthData") (retPtr retVoid) []
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -896,6 +1123,54 @@ imageWithImageProvider_size__format_colorSpace_optionsSelector = mkSelector "ima
 initWithImageProvider_size__format_colorSpace_optionsSelector :: Selector
 initWithImageProvider_size__format_colorSpace_optionsSelector = mkSelector "initWithImageProvider:size::format:colorSpace:options:"
 
+-- | @Selector@ for @initWithSemanticSegmentationMatte:options:@
+initWithSemanticSegmentationMatte_optionsSelector :: Selector
+initWithSemanticSegmentationMatte_optionsSelector = mkSelector "initWithSemanticSegmentationMatte:options:"
+
+-- | @Selector@ for @initWithSemanticSegmentationMatte:@
+initWithSemanticSegmentationMatteSelector :: Selector
+initWithSemanticSegmentationMatteSelector = mkSelector "initWithSemanticSegmentationMatte:"
+
+-- | @Selector@ for @imageWithSemanticSegmentationMatte:options:@
+imageWithSemanticSegmentationMatte_optionsSelector :: Selector
+imageWithSemanticSegmentationMatte_optionsSelector = mkSelector "imageWithSemanticSegmentationMatte:options:"
+
+-- | @Selector@ for @imageWithSemanticSegmentationMatte:@
+imageWithSemanticSegmentationMatteSelector :: Selector
+imageWithSemanticSegmentationMatteSelector = mkSelector "imageWithSemanticSegmentationMatte:"
+
+-- | @Selector@ for @initWithPortaitEffectsMatte:options:@
+initWithPortaitEffectsMatte_optionsSelector :: Selector
+initWithPortaitEffectsMatte_optionsSelector = mkSelector "initWithPortaitEffectsMatte:options:"
+
+-- | @Selector@ for @initWithPortaitEffectsMatte:@
+initWithPortaitEffectsMatteSelector :: Selector
+initWithPortaitEffectsMatteSelector = mkSelector "initWithPortaitEffectsMatte:"
+
+-- | @Selector@ for @imageWithPortaitEffectsMatte:options:@
+imageWithPortaitEffectsMatte_optionsSelector :: Selector
+imageWithPortaitEffectsMatte_optionsSelector = mkSelector "imageWithPortaitEffectsMatte:options:"
+
+-- | @Selector@ for @imageWithPortaitEffectsMatte:@
+imageWithPortaitEffectsMatteSelector :: Selector
+imageWithPortaitEffectsMatteSelector = mkSelector "imageWithPortaitEffectsMatte:"
+
+-- | @Selector@ for @initWithDepthData:options:@
+initWithDepthData_optionsSelector :: Selector
+initWithDepthData_optionsSelector = mkSelector "initWithDepthData:options:"
+
+-- | @Selector@ for @initWithDepthData:@
+initWithDepthDataSelector :: Selector
+initWithDepthDataSelector = mkSelector "initWithDepthData:"
+
+-- | @Selector@ for @imageWithDepthData:options:@
+imageWithDepthData_optionsSelector :: Selector
+imageWithDepthData_optionsSelector = mkSelector "imageWithDepthData:options:"
+
+-- | @Selector@ for @imageWithDepthData:@
+imageWithDepthDataSelector :: Selector
+imageWithDepthDataSelector = mkSelector "imageWithDepthData:"
+
 -- | @Selector@ for @imageByConvertingWorkingSpaceToLab@
 imageByConvertingWorkingSpaceToLabSelector :: Selector
 imageByConvertingWorkingSpaceToLabSelector = mkSelector "imageByConvertingWorkingSpaceToLab"
@@ -912,9 +1187,57 @@ autoAdjustmentFiltersSelector = mkSelector "autoAdjustmentFilters"
 autoAdjustmentFiltersWithOptionsSelector :: Selector
 autoAdjustmentFiltersWithOptionsSelector = mkSelector "autoAdjustmentFiltersWithOptions:"
 
+-- | @Selector@ for @blackImage@
+blackImageSelector :: Selector
+blackImageSelector = mkSelector "blackImage"
+
+-- | @Selector@ for @whiteImage@
+whiteImageSelector :: Selector
+whiteImageSelector = mkSelector "whiteImage"
+
+-- | @Selector@ for @grayImage@
+grayImageSelector :: Selector
+grayImageSelector = mkSelector "grayImage"
+
+-- | @Selector@ for @redImage@
+redImageSelector :: Selector
+redImageSelector = mkSelector "redImage"
+
+-- | @Selector@ for @greenImage@
+greenImageSelector :: Selector
+greenImageSelector = mkSelector "greenImage"
+
+-- | @Selector@ for @blueImage@
+blueImageSelector :: Selector
+blueImageSelector = mkSelector "blueImage"
+
+-- | @Selector@ for @cyanImage@
+cyanImageSelector :: Selector
+cyanImageSelector = mkSelector "cyanImage"
+
+-- | @Selector@ for @magentaImage@
+magentaImageSelector :: Selector
+magentaImageSelector = mkSelector "magentaImage"
+
+-- | @Selector@ for @yellowImage@
+yellowImageSelector :: Selector
+yellowImageSelector = mkSelector "yellowImage"
+
+-- | @Selector@ for @clearImage@
+clearImageSelector :: Selector
+clearImageSelector = mkSelector "clearImage"
+
 -- | @Selector@ for @opaque@
 opaqueSelector :: Selector
 opaqueSelector = mkSelector "opaque"
+
+-- | @Selector@ for @definition@
+definitionSelector :: Selector
+definitionSelector = mkSelector "definition"
+
+-- | @Selector@ for @url@
+urlSelector :: Selector
+urlSelector = mkSelector "url"
 
 -- | @Selector@ for @colorSpace@
 colorSpaceSelector :: Selector
@@ -935,4 +1258,16 @@ pixelBufferSelector = mkSelector "pixelBuffer"
 -- | @Selector@ for @CGImage@
 cgImageSelector :: Selector
 cgImageSelector = mkSelector "CGImage"
+
+-- | @Selector@ for @semanticSegmentationMatte@
+semanticSegmentationMatteSelector :: Selector
+semanticSegmentationMatteSelector = mkSelector "semanticSegmentationMatte"
+
+-- | @Selector@ for @portraitEffectsMatte@
+portraitEffectsMatteSelector :: Selector
+portraitEffectsMatteSelector = mkSelector "portraitEffectsMatte"
+
+-- | @Selector@ for @depthData@
+depthDataSelector :: Selector
+depthDataSelector = mkSelector "depthData"
 

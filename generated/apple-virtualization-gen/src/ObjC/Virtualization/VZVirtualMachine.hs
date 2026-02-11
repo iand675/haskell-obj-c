@@ -36,13 +36,20 @@ module ObjC.Virtualization.VZVirtualMachine
   , queue
   , supported
   , state
+  , delegate
+  , setDelegate
   , canStart
   , canStop
   , canPause
   , canResume
   , canRequestStop
+  , consoleDevices
+  , directorySharingDevices
+  , graphicsDevices
   , memoryBalloonDevices
+  , networkDevices
   , socketDevices
+  , usbControllers
   , newSelector
   , initSelector
   , initWithConfigurationSelector
@@ -58,13 +65,20 @@ module ObjC.Virtualization.VZVirtualMachine
   , queueSelector
   , supportedSelector
   , stateSelector
+  , delegateSelector
+  , setDelegateSelector
   , canStartSelector
   , canStopSelector
   , canPauseSelector
   , canResumeSelector
   , canRequestStopSelector
+  , consoleDevicesSelector
+  , directorySharingDevicesSelector
+  , graphicsDevicesSelector
   , memoryBalloonDevicesSelector
+  , networkDevicesSelector
   , socketDevicesSelector
+  , usbControllersSelector
 
   -- * Enum types
   , VZVirtualMachineState(VZVirtualMachineState)
@@ -289,6 +303,20 @@ state :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO VZVirtual
 state vzVirtualMachine  =
     fmap (coerce :: CLong -> VZVirtualMachineState) $ sendMsg vzVirtualMachine (mkSelector "state") retCLong []
 
+-- | The virtual machine delegate.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO RawId
+delegate vzVirtualMachine  =
+    fmap (RawId . castPtr) $ sendMsg vzVirtualMachine (mkSelector "delegate") (retPtr retVoid) []
+
+-- | The virtual machine delegate.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> RawId -> IO ()
+setDelegate vzVirtualMachine  value =
+    sendMsg vzVirtualMachine (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Return YES if the machine is in a state that can be started.
 --
 -- See: -[VZVirtualMachine startWithCompletionHandler:].
@@ -344,6 +372,39 @@ canRequestStop :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO 
 canRequestStop vzVirtualMachine  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzVirtualMachine (mkSelector "canRequestStop") retCULong []
 
+-- | Return the list of console devices configured on this virtual machine. Return an empty array if no console device is configured.
+--
+-- See: VZVirtioConsoleDeviceConfiguration
+--
+-- See: VZVirtualMachineConfiguration
+--
+-- ObjC selector: @- consoleDevices@
+consoleDevices :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO (Id NSArray)
+consoleDevices vzVirtualMachine  =
+    sendMsg vzVirtualMachine (mkSelector "consoleDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Return the list of directory sharing devices configured on this virtual machine. Return an empty array if no directory sharing device is configured.
+--
+-- See: VZVirtioFileSystemDeviceConfiguration
+--
+-- See: VZVirtualMachineConfiguration
+--
+-- ObjC selector: @- directorySharingDevices@
+directorySharingDevices :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO (Id NSArray)
+directorySharingDevices vzVirtualMachine  =
+    sendMsg vzVirtualMachine (mkSelector "directorySharingDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Return the list of graphics devices configured on this virtual machine. Return an empty array if no graphics device is configured.
+--
+-- See: VZGraphicsDeviceConfiguration
+--
+-- See: VZVirtualMachineConfiguration
+--
+-- ObjC selector: @- graphicsDevices@
+graphicsDevices :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO (Id NSArray)
+graphicsDevices vzVirtualMachine  =
+    sendMsg vzVirtualMachine (mkSelector "graphicsDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Return the list of memory balloon devices configured on this virtual machine. Return an empty array if no memory balloon device is configured.
 --
 -- See: VZVirtioTraditionalMemoryBalloonDeviceConfiguration
@@ -355,6 +416,17 @@ memoryBalloonDevices :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine 
 memoryBalloonDevices vzVirtualMachine  =
     sendMsg vzVirtualMachine (mkSelector "memoryBalloonDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | Return the list of network devices configured on this virtual machine. Return an empty array if no network device is configured.
+--
+-- See: VZVirtioNetworkDeviceConfiguration
+--
+-- See: VZVirtualMachineConfiguration
+--
+-- ObjC selector: @- networkDevices@
+networkDevices :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO (Id NSArray)
+networkDevices vzVirtualMachine  =
+    sendMsg vzVirtualMachine (mkSelector "networkDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Return the list of socket devices configured on this virtual machine. Return an empty array if no socket device is configured.
 --
 -- See: VZVirtioSocketDeviceConfiguration
@@ -365,6 +437,17 @@ memoryBalloonDevices vzVirtualMachine  =
 socketDevices :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO (Id NSArray)
 socketDevices vzVirtualMachine  =
     sendMsg vzVirtualMachine (mkSelector "socketDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Return the list of USB controllers configured on this virtual machine. Return an empty array if no USB controller is configured.
+--
+-- See: VZUSBControllerConfiguration
+--
+-- See: VZVirtualMachineConfiguration
+--
+-- ObjC selector: @- usbControllers@
+usbControllers :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO (Id NSArray)
+usbControllers vzVirtualMachine  =
+    sendMsg vzVirtualMachine (mkSelector "usbControllers") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -430,6 +513,14 @@ supportedSelector = mkSelector "supported"
 stateSelector :: Selector
 stateSelector = mkSelector "state"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @canStart@
 canStartSelector :: Selector
 canStartSelector = mkSelector "canStart"
@@ -450,11 +541,31 @@ canResumeSelector = mkSelector "canResume"
 canRequestStopSelector :: Selector
 canRequestStopSelector = mkSelector "canRequestStop"
 
+-- | @Selector@ for @consoleDevices@
+consoleDevicesSelector :: Selector
+consoleDevicesSelector = mkSelector "consoleDevices"
+
+-- | @Selector@ for @directorySharingDevices@
+directorySharingDevicesSelector :: Selector
+directorySharingDevicesSelector = mkSelector "directorySharingDevices"
+
+-- | @Selector@ for @graphicsDevices@
+graphicsDevicesSelector :: Selector
+graphicsDevicesSelector = mkSelector "graphicsDevices"
+
 -- | @Selector@ for @memoryBalloonDevices@
 memoryBalloonDevicesSelector :: Selector
 memoryBalloonDevicesSelector = mkSelector "memoryBalloonDevices"
 
+-- | @Selector@ for @networkDevices@
+networkDevicesSelector :: Selector
+networkDevicesSelector = mkSelector "networkDevices"
+
 -- | @Selector@ for @socketDevices@
 socketDevicesSelector :: Selector
 socketDevicesSelector = mkSelector "socketDevices"
+
+-- | @Selector@ for @usbControllers@
+usbControllersSelector :: Selector
+usbControllersSelector = mkSelector "usbControllers"
 

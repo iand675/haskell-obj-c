@@ -16,6 +16,8 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.ParavirtualizedGraphics.Delegate.PGDevice
+  - ObjC.ParavirtualizedGraphics.Delegate.PGDisplay
   - ObjC.ParavirtualizedGraphics.Enums
   - ObjC.ParavirtualizedGraphics.Internal.Classes
   - ObjC.ParavirtualizedGraphics.Internal.Enums

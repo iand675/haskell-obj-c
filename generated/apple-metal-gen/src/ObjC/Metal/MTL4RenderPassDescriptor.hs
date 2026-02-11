@@ -13,6 +13,8 @@
 module ObjC.Metal.MTL4RenderPassDescriptor
   ( MTL4RenderPassDescriptor
   , IsMTL4RenderPassDescriptor(..)
+  , setSamplePositions_count
+  , getSamplePositions_count
   , colorAttachments
   , depthAttachment
   , setDepthAttachment
@@ -34,10 +36,16 @@ module ObjC.Metal.MTL4RenderPassDescriptor
   , setRenderTargetWidth
   , renderTargetHeight
   , setRenderTargetHeight
+  , rasterizationRateMap
+  , setRasterizationRateMap
+  , visibilityResultBuffer
+  , setVisibilityResultBuffer
   , visibilityResultType
   , setVisibilityResultType
   , supportColorAttachmentMapping
   , setSupportColorAttachmentMapping
+  , setSamplePositions_countSelector
+  , getSamplePositions_countSelector
   , colorAttachmentsSelector
   , depthAttachmentSelector
   , setDepthAttachmentSelector
@@ -59,6 +67,10 @@ module ObjC.Metal.MTL4RenderPassDescriptor
   , setRenderTargetWidthSelector
   , renderTargetHeightSelector
   , setRenderTargetHeightSelector
+  , rasterizationRateMapSelector
+  , setRasterizationRateMapSelector
+  , visibilityResultBufferSelector
+  , setVisibilityResultBufferSelector
   , visibilityResultTypeSelector
   , setVisibilityResultTypeSelector
   , supportColorAttachmentMappingSelector
@@ -86,6 +98,28 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.Metal.Internal.Classes
 import ObjC.Metal.Internal.Enums
 import ObjC.Foundation.Internal.Classes
+
+-- | Configures the custom sample positions to use in MSAA rendering.
+--
+-- - Parameters:   - positions: Array of ``MTLSamplePosition`` instances.   - count:     Number of ``MTLSamplePosition`` instances in the array. This value                needs to be a valid sample count, or @0@ to disable custom sample positions.
+--
+-- ObjC selector: @- setSamplePositions:count:@
+setSamplePositions_count :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> Const RawId -> CULong -> IO ()
+setSamplePositions_count mtL4RenderPassDescriptor  positions count =
+    sendMsg mtL4RenderPassDescriptor (mkSelector "setSamplePositions:count:") retVoid [argPtr (castPtr (unRawId (unConst positions)) :: Ptr ()), argCULong count]
+
+-- | Retrieves the previously-configured custom sample positions.
+--
+-- This method stores the app's last set custom sample positions into an output array. Metal only modifies the array when the @count@ parameter consists of a length sufficient to store the number of sample positions.
+--
+-- - Parameters:   - positions: The destination array where Metal stores ``MTLSamplePosition`` instances.   - count:     Number of ``MTLSamplePosition`` instances in the array. This array                needs to be large enough to store all sample positions.
+--
+-- - Returns: The number of previously-configured custom sample positions.
+--
+-- ObjC selector: @- getSamplePositions:count:@
+getSamplePositions_count :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> RawId -> CULong -> IO CULong
+getSamplePositions_count mtL4RenderPassDescriptor  positions count =
+    sendMsg mtL4RenderPassDescriptor (mkSelector "getSamplePositions:count:") retCULong [argPtr (castPtr (unRawId positions) :: Ptr ()), argCULong count]
 
 -- | Accesses the array of state information for render attachments that store color data.
 --
@@ -268,6 +302,42 @@ setRenderTargetHeight :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => 
 setRenderTargetHeight mtL4RenderPassDescriptor  value =
     sendMsg mtL4RenderPassDescriptor (mkSelector "setRenderTargetHeight:") retVoid [argCULong value]
 
+-- | Assigns an optional variable rasterization rate map that Metal uses in the render pass.
+--
+-- Enabling variable rasterization rate allows Metal to decrease the rasterization rate, typically in unimportant regions of color attachments, to accelerate processing.
+--
+-- When set to @nil@, the default, Metal doesn't use variable rasterization rate.
+--
+-- ObjC selector: @- rasterizationRateMap@
+rasterizationRateMap :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> IO RawId
+rasterizationRateMap mtL4RenderPassDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtL4RenderPassDescriptor (mkSelector "rasterizationRateMap") (retPtr retVoid) []
+
+-- | Assigns an optional variable rasterization rate map that Metal uses in the render pass.
+--
+-- Enabling variable rasterization rate allows Metal to decrease the rasterization rate, typically in unimportant regions of color attachments, to accelerate processing.
+--
+-- When set to @nil@, the default, Metal doesn't use variable rasterization rate.
+--
+-- ObjC selector: @- setRasterizationRateMap:@
+setRasterizationRateMap :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> RawId -> IO ()
+setRasterizationRateMap mtL4RenderPassDescriptor  value =
+    sendMsg mtL4RenderPassDescriptor (mkSelector "setRasterizationRateMap:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | Configures a buffer into which Metal writes counts of fragments (pixels) passing the depth and stencil tests.
+--
+-- ObjC selector: @- visibilityResultBuffer@
+visibilityResultBuffer :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> IO RawId
+visibilityResultBuffer mtL4RenderPassDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtL4RenderPassDescriptor (mkSelector "visibilityResultBuffer") (retPtr retVoid) []
+
+-- | Configures a buffer into which Metal writes counts of fragments (pixels) passing the depth and stencil tests.
+--
+-- ObjC selector: @- setVisibilityResultBuffer:@
+setVisibilityResultBuffer :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> RawId -> IO ()
+setVisibilityResultBuffer mtL4RenderPassDescriptor  value =
+    sendMsg mtL4RenderPassDescriptor (mkSelector "setVisibilityResultBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Determines if Metal accumulates visibility results between render encoders or resets them.
 --
 -- ObjC selector: @- visibilityResultType@
@@ -299,6 +369,14 @@ setSupportColorAttachmentMapping mtL4RenderPassDescriptor  value =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @setSamplePositions:count:@
+setSamplePositions_countSelector :: Selector
+setSamplePositions_countSelector = mkSelector "setSamplePositions:count:"
+
+-- | @Selector@ for @getSamplePositions:count:@
+getSamplePositions_countSelector :: Selector
+getSamplePositions_countSelector = mkSelector "getSamplePositions:count:"
 
 -- | @Selector@ for @colorAttachments@
 colorAttachmentsSelector :: Selector
@@ -383,6 +461,22 @@ renderTargetHeightSelector = mkSelector "renderTargetHeight"
 -- | @Selector@ for @setRenderTargetHeight:@
 setRenderTargetHeightSelector :: Selector
 setRenderTargetHeightSelector = mkSelector "setRenderTargetHeight:"
+
+-- | @Selector@ for @rasterizationRateMap@
+rasterizationRateMapSelector :: Selector
+rasterizationRateMapSelector = mkSelector "rasterizationRateMap"
+
+-- | @Selector@ for @setRasterizationRateMap:@
+setRasterizationRateMapSelector :: Selector
+setRasterizationRateMapSelector = mkSelector "setRasterizationRateMap:"
+
+-- | @Selector@ for @visibilityResultBuffer@
+visibilityResultBufferSelector :: Selector
+visibilityResultBufferSelector = mkSelector "visibilityResultBuffer"
+
+-- | @Selector@ for @setVisibilityResultBuffer:@
+setVisibilityResultBufferSelector :: Selector
+setVisibilityResultBufferSelector = mkSelector "setVisibilityResultBuffer:"
 
 -- | @Selector@ for @visibilityResultType@
 visibilityResultTypeSelector :: Selector

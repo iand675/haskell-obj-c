@@ -45,9 +45,12 @@ module ObjC.AppKit.NSSegmentedControl
   , trackingMode
   , setTrackingMode
   , doubleValueForSelectedSegment
+  , selectedSegmentBezelColor
+  , setSelectedSegmentBezelColor
   , indexOfSelectedItem
   , segmentDistribution
   , setSegmentDistribution
+  , activeCompressionOptions
   , borderShape
   , setBorderShape
   , selectSegmentWithTagSelector
@@ -88,9 +91,12 @@ module ObjC.AppKit.NSSegmentedControl
   , trackingModeSelector
   , setTrackingModeSelector
   , doubleValueForSelectedSegmentSelector
+  , selectedSegmentBezelColorSelector
+  , setSelectedSegmentBezelColorSelector
   , indexOfSelectedItemSelector
   , segmentDistributionSelector
   , setSegmentDistributionSelector
+  , activeCompressionOptionsSelector
   , borderShapeSelector
   , setBorderShapeSelector
 
@@ -379,6 +385,17 @@ doubleValueForSelectedSegment :: IsNSSegmentedControl nsSegmentedControl => nsSe
 doubleValueForSelectedSegment nsSegmentedControl  =
     sendMsg nsSegmentedControl (mkSelector "doubleValueForSelectedSegment") retCDouble []
 
+-- | @- selectedSegmentBezelColor@
+selectedSegmentBezelColor :: IsNSSegmentedControl nsSegmentedControl => nsSegmentedControl -> IO (Id NSColor)
+selectedSegmentBezelColor nsSegmentedControl  =
+    sendMsg nsSegmentedControl (mkSelector "selectedSegmentBezelColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setSelectedSegmentBezelColor:@
+setSelectedSegmentBezelColor :: (IsNSSegmentedControl nsSegmentedControl, IsNSColor value) => nsSegmentedControl -> value -> IO ()
+setSelectedSegmentBezelColor nsSegmentedControl  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsSegmentedControl (mkSelector "setSelectedSegmentBezelColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- indexOfSelectedItem@
 indexOfSelectedItem :: IsNSSegmentedControl nsSegmentedControl => nsSegmentedControl -> IO CLong
 indexOfSelectedItem nsSegmentedControl  =
@@ -393,6 +410,11 @@ segmentDistribution nsSegmentedControl  =
 setSegmentDistribution :: IsNSSegmentedControl nsSegmentedControl => nsSegmentedControl -> NSSegmentDistribution -> IO ()
 setSegmentDistribution nsSegmentedControl  value =
     sendMsg nsSegmentedControl (mkSelector "setSegmentDistribution:") retVoid [argCLong (coerce value)]
+
+-- | @- activeCompressionOptions@
+activeCompressionOptions :: IsNSSegmentedControl nsSegmentedControl => nsSegmentedControl -> IO (Id NSUserInterfaceCompressionOptions)
+activeCompressionOptions nsSegmentedControl  =
+    sendMsg nsSegmentedControl (mkSelector "activeCompressionOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- borderShape@
 borderShape :: IsNSSegmentedControl nsSegmentedControl => nsSegmentedControl -> IO NSControlBorderShape
@@ -560,6 +582,14 @@ setTrackingModeSelector = mkSelector "setTrackingMode:"
 doubleValueForSelectedSegmentSelector :: Selector
 doubleValueForSelectedSegmentSelector = mkSelector "doubleValueForSelectedSegment"
 
+-- | @Selector@ for @selectedSegmentBezelColor@
+selectedSegmentBezelColorSelector :: Selector
+selectedSegmentBezelColorSelector = mkSelector "selectedSegmentBezelColor"
+
+-- | @Selector@ for @setSelectedSegmentBezelColor:@
+setSelectedSegmentBezelColorSelector :: Selector
+setSelectedSegmentBezelColorSelector = mkSelector "setSelectedSegmentBezelColor:"
+
 -- | @Selector@ for @indexOfSelectedItem@
 indexOfSelectedItemSelector :: Selector
 indexOfSelectedItemSelector = mkSelector "indexOfSelectedItem"
@@ -571,6 +601,10 @@ segmentDistributionSelector = mkSelector "segmentDistribution"
 -- | @Selector@ for @setSegmentDistribution:@
 setSegmentDistributionSelector :: Selector
 setSegmentDistributionSelector = mkSelector "setSegmentDistribution:"
+
+-- | @Selector@ for @activeCompressionOptions@
+activeCompressionOptionsSelector :: Selector
+activeCompressionOptionsSelector = mkSelector "activeCompressionOptions"
 
 -- | @Selector@ for @borderShape@
 borderShapeSelector :: Selector

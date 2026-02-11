@@ -14,8 +14,12 @@ module ObjC.Virtualization.VZUSBControllerConfiguration
   , IsVZUSBControllerConfiguration(..)
   , new
   , init_
+  , usbDevices
+  , setUsbDevices
   , newSelector
   , initSelector
+  , usbDevicesSelector
+  , setUsbDevicesSelector
 
 
   ) where
@@ -47,6 +51,37 @@ init_ :: IsVZUSBControllerConfiguration vzusbControllerConfiguration => vzusbCon
 init_ vzusbControllerConfiguration  =
     sendMsg vzusbControllerConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | List of USB devices. Empty by default.
+--
+-- This list represents a set of USB devices that virtual machine will start with.    For each entry in this list, there will be a corresponding runtime object created in VZUSBController.usbDevices property.
+--
+-- See: VZUSBController
+--
+-- See: VZUSBDeviceConfiguration
+--
+-- See: VZUSBMassStorageDeviceConfiguration
+--
+-- ObjC selector: @- usbDevices@
+usbDevices :: IsVZUSBControllerConfiguration vzusbControllerConfiguration => vzusbControllerConfiguration -> IO (Id NSArray)
+usbDevices vzusbControllerConfiguration  =
+    sendMsg vzusbControllerConfiguration (mkSelector "usbDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | List of USB devices. Empty by default.
+--
+-- This list represents a set of USB devices that virtual machine will start with.    For each entry in this list, there will be a corresponding runtime object created in VZUSBController.usbDevices property.
+--
+-- See: VZUSBController
+--
+-- See: VZUSBDeviceConfiguration
+--
+-- See: VZUSBMassStorageDeviceConfiguration
+--
+-- ObjC selector: @- setUsbDevices:@
+setUsbDevices :: (IsVZUSBControllerConfiguration vzusbControllerConfiguration, IsNSArray value) => vzusbControllerConfiguration -> value -> IO ()
+setUsbDevices vzusbControllerConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg vzusbControllerConfiguration (mkSelector "setUsbDevices:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -58,4 +93,12 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @init@
 initSelector :: Selector
 initSelector = mkSelector "init"
+
+-- | @Selector@ for @usbDevices@
+usbDevicesSelector :: Selector
+usbDevicesSelector = mkSelector "usbDevices"
+
+-- | @Selector@ for @setUsbDevices:@
+setUsbDevicesSelector :: Selector
+setUsbDevicesSelector = mkSelector "setUsbDevices:"
 

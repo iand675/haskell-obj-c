@@ -34,6 +34,8 @@ module ObjC.Foundation.NSUserActivity
   , setKeywords
   , supportsContinuationStreams
   , setSupportsContinuationStreams
+  , delegate
+  , setDelegate
   , targetContentIdentifier
   , setTargetContentIdentifier
   , eligibleForHandoff
@@ -74,6 +76,8 @@ module ObjC.Foundation.NSUserActivity
   , setKeywordsSelector
   , supportsContinuationStreamsSelector
   , setSupportsContinuationStreamsSelector
+  , delegateSelector
+  , setDelegateSelector
   , targetContentIdentifierSelector
   , setTargetContentIdentifierSelector
   , eligibleForHandoffSelector
@@ -258,6 +262,16 @@ setSupportsContinuationStreams :: IsNSUserActivity nsUserActivity => nsUserActiv
 setSupportsContinuationStreams nsUserActivity  value =
     sendMsg nsUserActivity (mkSelector "setSupportsContinuationStreams:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @- delegate@
+delegate :: IsNSUserActivity nsUserActivity => nsUserActivity -> IO RawId
+delegate nsUserActivity  =
+    fmap (RawId . castPtr) $ sendMsg nsUserActivity (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSUserActivity nsUserActivity => nsUserActivity -> RawId -> IO ()
+setDelegate nsUserActivity  value =
+    sendMsg nsUserActivity (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- targetContentIdentifier@
 targetContentIdentifier :: IsNSUserActivity nsUserActivity => nsUserActivity -> IO (Id NSString)
 targetContentIdentifier nsUserActivity  =
@@ -435,6 +449,14 @@ supportsContinuationStreamsSelector = mkSelector "supportsContinuationStreams"
 -- | @Selector@ for @setSupportsContinuationStreams:@
 setSupportsContinuationStreamsSelector :: Selector
 setSupportsContinuationStreamsSelector = mkSelector "setSupportsContinuationStreams:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @targetContentIdentifier@
 targetContentIdentifierSelector :: Selector

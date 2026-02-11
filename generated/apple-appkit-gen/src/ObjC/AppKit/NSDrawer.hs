@@ -18,6 +18,8 @@ module ObjC.AppKit.NSDrawer
   , setContentView
   , preferredEdge
   , setPreferredEdge
+  , delegate
+  , setDelegate
   , state
   , edge
   , contentSize
@@ -41,6 +43,8 @@ module ObjC.AppKit.NSDrawer
   , setContentViewSelector
   , preferredEdgeSelector
   , setPreferredEdgeSelector
+  , delegateSelector
+  , setDelegateSelector
   , stateSelector
   , edgeSelector
   , contentSizeSelector
@@ -140,6 +144,16 @@ preferredEdge nsDrawer  =
 setPreferredEdge :: IsNSDrawer nsDrawer => nsDrawer -> NSRectEdge -> IO ()
 setPreferredEdge nsDrawer  value =
     sendMsg nsDrawer (mkSelector "setPreferredEdge:") retVoid [argCULong (coerce value)]
+
+-- | @- delegate@
+delegate :: IsNSDrawer nsDrawer => nsDrawer -> IO RawId
+delegate nsDrawer  =
+    fmap (RawId . castPtr) $ sendMsg nsDrawer (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSDrawer nsDrawer => nsDrawer -> RawId -> IO ()
+setDelegate nsDrawer  value =
+    sendMsg nsDrawer (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- state@
 state :: IsNSDrawer nsDrawer => nsDrawer -> IO CLong
@@ -248,6 +262,14 @@ preferredEdgeSelector = mkSelector "preferredEdge"
 -- | @Selector@ for @setPreferredEdge:@
 setPreferredEdgeSelector :: Selector
 setPreferredEdgeSelector = mkSelector "setPreferredEdge:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @state@
 stateSelector :: Selector

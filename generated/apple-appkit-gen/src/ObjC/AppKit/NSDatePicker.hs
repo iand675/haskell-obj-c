@@ -39,6 +39,8 @@ module ObjC.AppKit.NSDatePicker
   , setMaxDate
   , presentsCalendarOverlay
   , setPresentsCalendarOverlay
+  , delegate
+  , setDelegate
   , datePickerStyleSelector
   , setDatePickerStyleSelector
   , bezeledSelector
@@ -71,6 +73,8 @@ module ObjC.AppKit.NSDatePicker
   , setMaxDateSelector
   , presentsCalendarOverlaySelector
   , setPresentsCalendarOverlaySelector
+  , delegateSelector
+  , setDelegateSelector
 
   -- * Enum types
   , NSDatePickerElementFlags(NSDatePickerElementFlags)
@@ -274,6 +278,16 @@ setPresentsCalendarOverlay :: IsNSDatePicker nsDatePicker => nsDatePicker -> Boo
 setPresentsCalendarOverlay nsDatePicker  value =
     sendMsg nsDatePicker (mkSelector "setPresentsCalendarOverlay:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @- delegate@
+delegate :: IsNSDatePicker nsDatePicker => nsDatePicker -> IO RawId
+delegate nsDatePicker  =
+    fmap (RawId . castPtr) $ sendMsg nsDatePicker (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSDatePicker nsDatePicker => nsDatePicker -> RawId -> IO ()
+setDelegate nsDatePicker  value =
+    sendMsg nsDatePicker (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -405,4 +419,12 @@ presentsCalendarOverlaySelector = mkSelector "presentsCalendarOverlay"
 -- | @Selector@ for @setPresentsCalendarOverlay:@
 setPresentsCalendarOverlaySelector :: Selector
 setPresentsCalendarOverlaySelector = mkSelector "setPresentsCalendarOverlay:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

@@ -17,6 +17,7 @@ module ObjC.AVFoundation.AVCaptureDepthDataOutput
   , init_
   , new
   , setDelegate_callbackQueue
+  , delegate
   , delegateCallbackQueue
   , alwaysDiscardsLateDepthData
   , setAlwaysDiscardsLateDepthData
@@ -25,6 +26,7 @@ module ObjC.AVFoundation.AVCaptureDepthDataOutput
   , initSelector
   , newSelector
   , setDelegate_callbackQueueSelector
+  , delegateSelector
   , delegateCallbackQueueSelector
   , alwaysDiscardsLateDepthDataSelector
   , setAlwaysDiscardsLateDepthDataSelector
@@ -80,6 +82,17 @@ setDelegate_callbackQueue :: (IsAVCaptureDepthDataOutput avCaptureDepthDataOutpu
 setDelegate_callbackQueue avCaptureDepthDataOutput  delegate callbackQueue =
   withObjCPtr callbackQueue $ \raw_callbackQueue ->
       sendMsg avCaptureDepthDataOutput (mkSelector "setDelegate:callbackQueue:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_callbackQueue :: Ptr ())]
+
+-- | delegate
+--
+-- The receiver's delegate.
+--
+-- The value of this property is an object conforming to the AVCaptureDepthDataOutputDelegate protocol that receives depth data as it is captured. The delegate is set using the setDelegate:callbackQueue: method.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsAVCaptureDepthDataOutput avCaptureDepthDataOutput => avCaptureDepthDataOutput -> IO RawId
+delegate avCaptureDepthDataOutput  =
+    fmap (RawId . castPtr) $ sendMsg avCaptureDepthDataOutput (mkSelector "delegate") (retPtr retVoid) []
 
 -- | delegateCallbackQueue
 --
@@ -151,6 +164,10 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @setDelegate:callbackQueue:@
 setDelegate_callbackQueueSelector :: Selector
 setDelegate_callbackQueueSelector = mkSelector "setDelegate:callbackQueue:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @delegateCallbackQueue@
 delegateCallbackQueueSelector :: Selector

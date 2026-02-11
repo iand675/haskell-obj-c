@@ -219,8 +219,17 @@ propertyToMethods prop =
 
 -- | All methods for a class: explicit methods plus synthesized property
 -- accessors, deduplicated by selector.
-allClassMethods :: Set Text -> ObjCClass -> [ObjCMethod]
-allClassMethods importable cls =
+--
+-- The first set is the importable names (classes + structs from available
+-- frameworks).  The second set is /all/ known class names across all
+-- frameworks.  The distinction matters for the importability check:
+-- a referenced name that is a known class but not importable means
+-- we lack the framework dependency and must skip the method.  A name
+-- that is not a known class at all (protocol, type parameter, etc.)
+-- maps to 'RawId' and needs no import — so it should not block the
+-- method.
+allClassMethods :: Set Text -> Set Text -> ObjCClass -> [ObjCMethod]
+allClassMethods importable allKnownClasses cls =
   let explicit = classMethods cls
       explicitSels = Set.fromList
         (fmap (\m -> (methodSelector m, methodIsClass m)) explicit)
@@ -230,10 +239,14 @@ allClassMethods importable cls =
       filteredProps
         | Set.null importable = propMethods
         | otherwise = filter isImportable propMethods
+      -- Only require importability for refs that are actual known classes.
+      -- Protocol names, type parameters, etc. are not in allKnownClasses
+      -- and map to RawId in the generated code — they need no import.
       isImportable m =
         let types = methodReturnType m : fmap snd (methodParams m)
             refs = foldMap referencedClasses types
-        in all (`Set.member` importable) (Set.toList refs)
+            classRefs = Set.intersection refs allKnownClasses
+        in all (`Set.member` importable) (Set.toList classRefs)
       combined = explicit ++ filteredProps
       deduped = dedupBy (\m -> (methodSelector m, methodIsClass m))
                         Set.empty combined

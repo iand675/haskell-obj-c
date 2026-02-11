@@ -16,6 +16,7 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.SafetyKit.Delegate.SACrashDetectionDelegate
   - ObjC.SafetyKit.Enums
   - ObjC.SafetyKit.Internal.Classes
   - ObjC.SafetyKit.Internal.Enums

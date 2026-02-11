@@ -23,6 +23,7 @@ module ObjC.AVFoundation.AVCaptureDeviceInput
   , setUnifiedAutoExposureDefaultsEnabled
   , lockedVideoFrameDurationSupported
   , externalSyncSupported
+  , externalSyncDevice
   , multichannelAudioMode
   , setMultichannelAudioMode
   , windNoiseRemovalSupported
@@ -43,6 +44,7 @@ module ObjC.AVFoundation.AVCaptureDeviceInput
   , setUnifiedAutoExposureDefaultsEnabledSelector
   , lockedVideoFrameDurationSupportedSelector
   , externalSyncSupportedSelector
+  , externalSyncDeviceSelector
   , multichannelAudioModeSelector
   , setMultichannelAudioModeSelector
   , windNoiseRemovalSupportedSelector
@@ -232,6 +234,15 @@ externalSyncSupported :: IsAVCaptureDeviceInput avCaptureDeviceInput => avCaptur
 externalSyncSupported avCaptureDeviceInput  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceInput (mkSelector "externalSyncSupported") retCULong []
 
+-- | The external sync device currently being followed by this input.
+--
+-- This readonly property returns the ``AVExternalSyncDevice`` instance you provided in ``followExternalSyncDevice:videoFrameDuration:delegate:``. This property returns @nil@ when an external sync device is disconnected or fails to calibrate.
+--
+-- ObjC selector: @- externalSyncDevice@
+externalSyncDevice :: IsAVCaptureDeviceInput avCaptureDeviceInput => avCaptureDeviceInput -> IO (Id AVExternalSyncDevice)
+externalSyncDevice avCaptureDeviceInput  =
+    sendMsg avCaptureDeviceInput (mkSelector "externalSyncDevice") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | multichannelAudioMode
 --
 -- Indicates the multichannel audio mode to apply when recording audio.
@@ -411,6 +422,10 @@ lockedVideoFrameDurationSupportedSelector = mkSelector "lockedVideoFrameDuration
 -- | @Selector@ for @externalSyncSupported@
 externalSyncSupportedSelector :: Selector
 externalSyncSupportedSelector = mkSelector "externalSyncSupported"
+
+-- | @Selector@ for @externalSyncDevice@
+externalSyncDeviceSelector :: Selector
+externalSyncDeviceSelector = mkSelector "externalSyncDevice"
 
 -- | @Selector@ for @multichannelAudioMode@
 multichannelAudioModeSelector :: Selector

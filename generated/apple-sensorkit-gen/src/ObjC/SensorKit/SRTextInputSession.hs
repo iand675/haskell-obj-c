@@ -9,8 +9,10 @@ module ObjC.SensorKit.SRTextInputSession
   , IsSRTextInputSession(..)
   , duration
   , sessionType
+  , sessionIdentifier
   , durationSelector
   , sessionTypeSelector
+  , sessionIdentifierSelector
 
   -- * Enum types
   , SRTextInputSessionType(SRTextInputSessionType)
@@ -47,6 +49,15 @@ sessionType :: IsSRTextInputSession srTextInputSession => srTextInputSession -> 
 sessionType srTextInputSession  =
     fmap (coerce :: CLong -> SRTextInputSessionType) $ sendMsg srTextInputSession (mkSelector "sessionType") retCLong []
 
+-- | sessionIdentifier
+--
+-- Unique identifier of keyboard session
+--
+-- ObjC selector: @- sessionIdentifier@
+sessionIdentifier :: IsSRTextInputSession srTextInputSession => srTextInputSession -> IO (Id NSString)
+sessionIdentifier srTextInputSession  =
+    sendMsg srTextInputSession (mkSelector "sessionIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -58,4 +69,8 @@ durationSelector = mkSelector "duration"
 -- | @Selector@ for @sessionType@
 sessionTypeSelector :: Selector
 sessionTypeSelector = mkSelector "sessionType"
+
+-- | @Selector@ for @sessionIdentifier@
+sessionIdentifierSelector :: Selector
+sessionIdentifierSelector = mkSelector "sessionIdentifier"
 

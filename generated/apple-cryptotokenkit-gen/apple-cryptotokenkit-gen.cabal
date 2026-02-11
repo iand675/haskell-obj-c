@@ -12,6 +12,11 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.CryptoTokenKit.Delegate.TKSmartCardTokenDriverDelegate
+      ObjC.CryptoTokenKit.Delegate.TKSmartCardUserInteractionDelegate
+      ObjC.CryptoTokenKit.Delegate.TKTokenDelegate
+      ObjC.CryptoTokenKit.Delegate.TKTokenDriverDelegate
+      ObjC.CryptoTokenKit.Delegate.TKTokenSessionDelegate
       ObjC.CryptoTokenKit.Enums
       ObjC.CryptoTokenKit.Internal.Classes
       ObjC.CryptoTokenKit.Internal.Enums

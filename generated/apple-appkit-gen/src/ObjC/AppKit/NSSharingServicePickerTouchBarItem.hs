@@ -6,12 +6,16 @@
 module ObjC.AppKit.NSSharingServicePickerTouchBarItem
   ( NSSharingServicePickerTouchBarItem
   , IsNSSharingServicePickerTouchBarItem(..)
+  , delegate
+  , setDelegate
   , enabled
   , setEnabled
   , buttonTitle
   , setButtonTitle
   , buttonImage
   , setButtonImage
+  , delegateSelector
+  , setDelegateSelector
   , enabledSelector
   , setEnabledSelector
   , buttonTitleSelector
@@ -36,6 +40,16 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.AppKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | @- delegate@
+delegate :: IsNSSharingServicePickerTouchBarItem nsSharingServicePickerTouchBarItem => nsSharingServicePickerTouchBarItem -> IO RawId
+delegate nsSharingServicePickerTouchBarItem  =
+    fmap (RawId . castPtr) $ sendMsg nsSharingServicePickerTouchBarItem (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSSharingServicePickerTouchBarItem nsSharingServicePickerTouchBarItem => nsSharingServicePickerTouchBarItem -> RawId -> IO ()
+setDelegate nsSharingServicePickerTouchBarItem  value =
+    sendMsg nsSharingServicePickerTouchBarItem (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- enabled@
 enabled :: IsNSSharingServicePickerTouchBarItem nsSharingServicePickerTouchBarItem => nsSharingServicePickerTouchBarItem -> IO Bool
@@ -72,6 +86,14 @@ setButtonImage nsSharingServicePickerTouchBarItem  value =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @enabled@
 enabledSelector :: Selector

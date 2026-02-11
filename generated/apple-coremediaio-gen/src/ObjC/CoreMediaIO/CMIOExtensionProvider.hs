@@ -20,6 +20,7 @@ module ObjC.CoreMediaIO.CMIOExtensionProvider
   , removeDevice_error
   , notifyPropertiesChanged
   , ignoreSIGTERM
+  , source
   , clientQueue
   , connectedClients
   , devices
@@ -33,6 +34,7 @@ module ObjC.CoreMediaIO.CMIOExtensionProvider
   , removeDevice_errorSelector
   , notifyPropertiesChangedSelector
   , ignoreSIGTERMSelector
+  , sourceSelector
   , clientQueueSelector
   , connectedClientsSelector
   , devicesSelector
@@ -186,6 +188,15 @@ ignoreSIGTERM  =
     cls' <- getRequiredClass "CMIOExtensionProvider"
     sendClassMsg cls' (mkSelector "ignoreSIGTERM") retVoid []
 
+-- | source
+--
+-- The provider source.
+--
+-- ObjC selector: @- source@
+source :: IsCMIOExtensionProvider cmioExtensionProvider => cmioExtensionProvider -> IO RawId
+source cmioExtensionProvider  =
+    fmap (RawId . castPtr) $ sendMsg cmioExtensionProvider (mkSelector "source") (retPtr retVoid) []
+
 -- | clientQueue
 --
 -- The dispatch queue on which source methods from the provider/device/stream will be called.
@@ -260,6 +271,10 @@ notifyPropertiesChangedSelector = mkSelector "notifyPropertiesChanged:"
 -- | @Selector@ for @ignoreSIGTERM@
 ignoreSIGTERMSelector :: Selector
 ignoreSIGTERMSelector = mkSelector "ignoreSIGTERM"
+
+-- | @Selector@ for @source@
+sourceSelector :: Selector
+sourceSelector = mkSelector "source"
 
 -- | @Selector@ for @clientQueue@
 clientQueueSelector :: Selector

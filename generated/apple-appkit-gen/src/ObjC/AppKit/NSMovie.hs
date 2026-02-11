@@ -8,8 +8,12 @@ module ObjC.AppKit.NSMovie
   , IsNSMovie(..)
   , initWithCoder
   , init_
+  , initWithMovie
+  , qtMovie
   , initWithCoderSelector
   , initSelector
+  , initWithMovieSelector
+  , qtMovieSelector
 
 
   ) where
@@ -40,6 +44,16 @@ init_ :: IsNSMovie nsMovie => nsMovie -> IO (Id NSMovie)
 init_ nsMovie  =
     sendMsg nsMovie (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | @- initWithMovie:@
+initWithMovie :: IsNSMovie nsMovie => nsMovie -> RawId -> IO (Id NSMovie)
+initWithMovie nsMovie  movie =
+    sendMsg nsMovie (mkSelector "initWithMovie:") (retPtr retVoid) [argPtr (castPtr (unRawId movie) :: Ptr ())] >>= ownedObject . castPtr
+
+-- | @- QTMovie@
+qtMovie :: IsNSMovie nsMovie => nsMovie -> IO RawId
+qtMovie nsMovie  =
+    fmap (RawId . castPtr) $ sendMsg nsMovie (mkSelector "QTMovie") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -51,4 +65,12 @@ initWithCoderSelector = mkSelector "initWithCoder:"
 -- | @Selector@ for @init@
 initSelector :: Selector
 initSelector = mkSelector "init"
+
+-- | @Selector@ for @initWithMovie:@
+initWithMovieSelector :: Selector
+initWithMovieSelector = mkSelector "initWithMovie:"
+
+-- | @Selector@ for @QTMovie@
+qtMovieSelector :: Selector
+qtMovieSelector = mkSelector "QTMovie"
 

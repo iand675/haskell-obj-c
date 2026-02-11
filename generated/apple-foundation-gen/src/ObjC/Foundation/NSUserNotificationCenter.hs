@@ -12,6 +12,8 @@ module ObjC.Foundation.NSUserNotificationCenter
   , removeDeliveredNotification
   , removeAllDeliveredNotifications
   , defaultUserNotificationCenter
+  , delegate
+  , setDelegate
   , scheduledNotifications
   , setScheduledNotifications
   , deliveredNotifications
@@ -21,6 +23,8 @@ module ObjC.Foundation.NSUserNotificationCenter
   , removeDeliveredNotificationSelector
   , removeAllDeliveredNotificationsSelector
   , defaultUserNotificationCenterSelector
+  , delegateSelector
+  , setDelegateSelector
   , scheduledNotificationsSelector
   , setScheduledNotificationsSelector
   , deliveredNotificationsSelector
@@ -78,6 +82,16 @@ defaultUserNotificationCenter  =
     cls' <- getRequiredClass "NSUserNotificationCenter"
     sendClassMsg cls' (mkSelector "defaultUserNotificationCenter") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- delegate@
+delegate :: IsNSUserNotificationCenter nsUserNotificationCenter => nsUserNotificationCenter -> IO RawId
+delegate nsUserNotificationCenter  =
+    fmap (RawId . castPtr) $ sendMsg nsUserNotificationCenter (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSUserNotificationCenter nsUserNotificationCenter => nsUserNotificationCenter -> RawId -> IO ()
+setDelegate nsUserNotificationCenter  value =
+    sendMsg nsUserNotificationCenter (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- scheduledNotifications@
 scheduledNotifications :: IsNSUserNotificationCenter nsUserNotificationCenter => nsUserNotificationCenter -> IO (Id NSArray)
 scheduledNotifications nsUserNotificationCenter  =
@@ -121,6 +135,14 @@ removeAllDeliveredNotificationsSelector = mkSelector "removeAllDeliveredNotifica
 -- | @Selector@ for @defaultUserNotificationCenter@
 defaultUserNotificationCenterSelector :: Selector
 defaultUserNotificationCenterSelector = mkSelector "defaultUserNotificationCenter"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @scheduledNotifications@
 scheduledNotificationsSelector :: Selector

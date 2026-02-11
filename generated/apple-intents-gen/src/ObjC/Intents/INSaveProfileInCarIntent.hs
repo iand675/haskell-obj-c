@@ -8,8 +8,14 @@ module ObjC.Intents.INSaveProfileInCarIntent
   , IsINSaveProfileInCarIntent(..)
   , initWithProfileNumber_profileName
   , initWithProfileNumber_profileLabel
+  , profileNumber
+  , profileName
+  , profileLabel
   , initWithProfileNumber_profileNameSelector
   , initWithProfileNumber_profileLabelSelector
+  , profileNumberSelector
+  , profileNameSelector
+  , profileLabelSelector
 
 
   ) where
@@ -43,6 +49,21 @@ initWithProfileNumber_profileLabel inSaveProfileInCarIntent  profileNumber profi
     withObjCPtr profileLabel $ \raw_profileLabel ->
         sendMsg inSaveProfileInCarIntent (mkSelector "initWithProfileNumber:profileLabel:") (retPtr retVoid) [argPtr (castPtr raw_profileNumber :: Ptr ()), argPtr (castPtr raw_profileLabel :: Ptr ())] >>= ownedObject . castPtr
 
+-- | @- profileNumber@
+profileNumber :: IsINSaveProfileInCarIntent inSaveProfileInCarIntent => inSaveProfileInCarIntent -> IO (Id NSNumber)
+profileNumber inSaveProfileInCarIntent  =
+    sendMsg inSaveProfileInCarIntent (mkSelector "profileNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- profileName@
+profileName :: IsINSaveProfileInCarIntent inSaveProfileInCarIntent => inSaveProfileInCarIntent -> IO (Id NSString)
+profileName inSaveProfileInCarIntent  =
+    sendMsg inSaveProfileInCarIntent (mkSelector "profileName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- profileLabel@
+profileLabel :: IsINSaveProfileInCarIntent inSaveProfileInCarIntent => inSaveProfileInCarIntent -> IO (Id NSString)
+profileLabel inSaveProfileInCarIntent  =
+    sendMsg inSaveProfileInCarIntent (mkSelector "profileLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -54,4 +75,16 @@ initWithProfileNumber_profileNameSelector = mkSelector "initWithProfileNumber:pr
 -- | @Selector@ for @initWithProfileNumber:profileLabel:@
 initWithProfileNumber_profileLabelSelector :: Selector
 initWithProfileNumber_profileLabelSelector = mkSelector "initWithProfileNumber:profileLabel:"
+
+-- | @Selector@ for @profileNumber@
+profileNumberSelector :: Selector
+profileNumberSelector = mkSelector "profileNumber"
+
+-- | @Selector@ for @profileName@
+profileNameSelector :: Selector
+profileNameSelector = mkSelector "profileName"
+
+-- | @Selector@ for @profileLabel@
+profileLabelSelector :: Selector
+profileLabelSelector = mkSelector "profileLabel"
 

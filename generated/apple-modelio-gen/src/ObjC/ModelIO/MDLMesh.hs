@@ -45,8 +45,11 @@ module ObjC.ModelIO.MDLMesh
   , setVertexDescriptor
   , vertexCount
   , setVertexCount
+  , vertexBuffers
+  , setVertexBuffers
   , submeshes
   , setSubmeshes
+  , allocator
   , initWithBufferAllocatorSelector
   , initWithVertexBuffer_vertexCount_descriptor_submeshesSelector
   , initWithVertexBuffers_vertexCount_descriptor_submeshesSelector
@@ -79,8 +82,11 @@ module ObjC.ModelIO.MDLMesh
   , setVertexDescriptorSelector
   , vertexCountSelector
   , setVertexCountSelector
+  , vertexBuffersSelector
+  , setVertexBuffersSelector
   , submeshesSelector
   , setSubmeshesSelector
+  , allocatorSelector
 
   -- * Enum types
   , MDLGeometryType(MDLGeometryType)
@@ -611,6 +617,29 @@ setVertexCount :: IsMDLMesh mdlMesh => mdlMesh -> CULong -> IO ()
 setVertexCount mdlMesh  value =
     sendMsg mdlMesh (mkSelector "setVertexCount:") retVoid [argCULong value]
 
+-- | vertexBuffers
+--
+-- Array of buffers containing vertex data
+--
+-- The vertex buffers in this array are indexed by the vertex descriptor.
+--
+-- ObjC selector: @- vertexBuffers@
+vertexBuffers :: IsMDLMesh mdlMesh => mdlMesh -> IO (Id NSArray)
+vertexBuffers mdlMesh  =
+    sendMsg mdlMesh (mkSelector "vertexBuffers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | vertexBuffers
+--
+-- Array of buffers containing vertex data
+--
+-- The vertex buffers in this array are indexed by the vertex descriptor.
+--
+-- ObjC selector: @- setVertexBuffers:@
+setVertexBuffers :: (IsMDLMesh mdlMesh, IsNSArray value) => mdlMesh -> value -> IO ()
+setVertexBuffers mdlMesh  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mdlMesh (mkSelector "setVertexBuffers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | submeshes
 --
 -- Array of submeshes containing an indexbuffer referencing the vertex           data and material to be applied when the mesh is rendered
@@ -629,6 +658,15 @@ setSubmeshes :: (IsMDLMesh mdlMesh, IsNSMutableArray value) => mdlMesh -> value 
 setSubmeshes mdlMesh  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mdlMesh (mkSelector "setSubmeshes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | allocator
+--
+-- allocator used to allocate contained mesh buffers
+--
+-- ObjC selector: @- allocator@
+allocator :: IsMDLMesh mdlMesh => mdlMesh -> IO RawId
+allocator mdlMesh  =
+    fmap (RawId . castPtr) $ sendMsg mdlMesh (mkSelector "allocator") (retPtr retVoid) []
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -762,6 +800,14 @@ vertexCountSelector = mkSelector "vertexCount"
 setVertexCountSelector :: Selector
 setVertexCountSelector = mkSelector "setVertexCount:"
 
+-- | @Selector@ for @vertexBuffers@
+vertexBuffersSelector :: Selector
+vertexBuffersSelector = mkSelector "vertexBuffers"
+
+-- | @Selector@ for @setVertexBuffers:@
+setVertexBuffersSelector :: Selector
+setVertexBuffersSelector = mkSelector "setVertexBuffers:"
+
 -- | @Selector@ for @submeshes@
 submeshesSelector :: Selector
 submeshesSelector = mkSelector "submeshes"
@@ -769,4 +815,8 @@ submeshesSelector = mkSelector "submeshes"
 -- | @Selector@ for @setSubmeshes:@
 setSubmeshesSelector :: Selector
 setSubmeshesSelector = mkSelector "setSubmeshes:"
+
+-- | @Selector@ for @allocator@
+allocatorSelector :: Selector
+allocatorSelector = mkSelector "allocator"
 

@@ -6,9 +6,19 @@
 module ObjC.Metal.MTLRenderPipelineReflection
   ( MTLRenderPipelineReflection
   , IsMTLRenderPipelineReflection(..)
+  , vertexBindings
+  , fragmentBindings
+  , tileBindings
+  , objectBindings
+  , meshBindings
   , vertexArguments
   , fragmentArguments
   , tileArguments
+  , vertexBindingsSelector
+  , fragmentBindingsSelector
+  , tileBindingsSelector
+  , objectBindingsSelector
+  , meshBindingsSelector
   , vertexArgumentsSelector
   , fragmentArgumentsSelector
   , tileArgumentsSelector
@@ -31,6 +41,31 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.Metal.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | @- vertexBindings@
+vertexBindings :: IsMTLRenderPipelineReflection mtlRenderPipelineReflection => mtlRenderPipelineReflection -> IO (Id NSArray)
+vertexBindings mtlRenderPipelineReflection  =
+    sendMsg mtlRenderPipelineReflection (mkSelector "vertexBindings") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- fragmentBindings@
+fragmentBindings :: IsMTLRenderPipelineReflection mtlRenderPipelineReflection => mtlRenderPipelineReflection -> IO (Id NSArray)
+fragmentBindings mtlRenderPipelineReflection  =
+    sendMsg mtlRenderPipelineReflection (mkSelector "fragmentBindings") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- tileBindings@
+tileBindings :: IsMTLRenderPipelineReflection mtlRenderPipelineReflection => mtlRenderPipelineReflection -> IO (Id NSArray)
+tileBindings mtlRenderPipelineReflection  =
+    sendMsg mtlRenderPipelineReflection (mkSelector "tileBindings") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- objectBindings@
+objectBindings :: IsMTLRenderPipelineReflection mtlRenderPipelineReflection => mtlRenderPipelineReflection -> IO (Id NSArray)
+objectBindings mtlRenderPipelineReflection  =
+    sendMsg mtlRenderPipelineReflection (mkSelector "objectBindings") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- meshBindings@
+meshBindings :: IsMTLRenderPipelineReflection mtlRenderPipelineReflection => mtlRenderPipelineReflection -> IO (Id NSArray)
+meshBindings mtlRenderPipelineReflection  =
+    sendMsg mtlRenderPipelineReflection (mkSelector "meshBindings") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- vertexArguments@
 vertexArguments :: IsMTLRenderPipelineReflection mtlRenderPipelineReflection => mtlRenderPipelineReflection -> IO (Id NSArray)
 vertexArguments mtlRenderPipelineReflection  =
@@ -49,6 +84,26 @@ tileArguments mtlRenderPipelineReflection  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @vertexBindings@
+vertexBindingsSelector :: Selector
+vertexBindingsSelector = mkSelector "vertexBindings"
+
+-- | @Selector@ for @fragmentBindings@
+fragmentBindingsSelector :: Selector
+fragmentBindingsSelector = mkSelector "fragmentBindings"
+
+-- | @Selector@ for @tileBindings@
+tileBindingsSelector :: Selector
+tileBindingsSelector = mkSelector "tileBindings"
+
+-- | @Selector@ for @objectBindings@
+objectBindingsSelector :: Selector
+objectBindingsSelector = mkSelector "objectBindings"
+
+-- | @Selector@ for @meshBindings@
+meshBindingsSelector :: Selector
+meshBindingsSelector = mkSelector "meshBindings"
 
 -- | @Selector@ for @vertexArguments@
 vertexArgumentsSelector :: Selector

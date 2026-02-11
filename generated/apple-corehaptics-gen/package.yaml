@@ -24,6 +24,9 @@ library:
   - ObjC.CoreHaptics.CHHapticParameterCurve
   - ObjC.CoreHaptics.CHHapticParameterCurveControlPoint
   - ObjC.CoreHaptics.CHHapticPattern
+  - ObjC.CoreHaptics.Delegate.CHHapticAdvancedPatternPlayer
+  - ObjC.CoreHaptics.Delegate.CHHapticParameterAttributes
+  - ObjC.CoreHaptics.Delegate.CHHapticPatternPlayer
   - ObjC.CoreHaptics.Enums
   - ObjC.CoreHaptics.Internal.Classes
   - ObjC.CoreHaptics.Internal.Enums

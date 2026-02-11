@@ -13,7 +13,9 @@ module ObjC.FSKit.FSClient
   ( FSClient
   , IsFSClient(..)
   , init_
+  , sharedInstance
   , initSelector
+  , sharedInstanceSelector
 
 
   ) where
@@ -38,6 +40,15 @@ init_ :: IsFSClient fsClient => fsClient -> IO (Id FSClient)
 init_ fsClient  =
     sendMsg fsClient (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | The shared instance of the FSKit client class.
+--
+-- ObjC selector: @+ sharedInstance@
+sharedInstance :: IO (Id FSClient)
+sharedInstance  =
+  do
+    cls' <- getRequiredClass "FSClient"
+    sendClassMsg cls' (mkSelector "sharedInstance") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -45,4 +56,8 @@ init_ fsClient  =
 -- | @Selector@ for @init@
 initSelector :: Selector
 initSelector = mkSelector "init"
+
+-- | @Selector@ for @sharedInstance@
+sharedInstanceSelector :: Selector
+sharedInstanceSelector = mkSelector "sharedInstance"
 

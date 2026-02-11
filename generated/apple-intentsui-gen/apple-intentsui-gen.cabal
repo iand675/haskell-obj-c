@@ -12,6 +12,9 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.IntentsUI.Delegate.INUIAddVoiceShortcutButtonDelegate
+      ObjC.IntentsUI.Delegate.INUIAddVoiceShortcutViewControllerDelegate
+      ObjC.IntentsUI.Delegate.INUIEditVoiceShortcutViewControllerDelegate
       ObjC.IntentsUI.Enums
       ObjC.IntentsUI.INUIAddVoiceShortcutButton
       ObjC.IntentsUI.INUIAddVoiceShortcutViewController

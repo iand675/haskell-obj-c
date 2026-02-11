@@ -17,6 +17,7 @@ module ObjC.GameController.GCPhysicalInputProfile
   , setStateFromPhysicalInput
   , mappedElementAliasForPhysicalInputName
   , mappedPhysicalInputNamesForElementAlias
+  , device
   , lastEventTimestamp
   , hasRemappedElements
   , valueDidChangeHandler
@@ -36,6 +37,7 @@ module ObjC.GameController.GCPhysicalInputProfile
   , setStateFromPhysicalInputSelector
   , mappedElementAliasForPhysicalInputNameSelector
   , mappedPhysicalInputNamesForElementAliasSelector
+  , deviceSelector
   , lastEventTimestampSelector
   , hasRemappedElementsSelector
   , valueDidChangeHandlerSelector
@@ -135,6 +137,13 @@ mappedPhysicalInputNamesForElementAlias :: (IsGCPhysicalInputProfile gcPhysicalI
 mappedPhysicalInputNamesForElementAlias gcPhysicalInputProfile  elementAlias =
   withObjCPtr elementAlias $ \raw_elementAlias ->
       sendMsg gcPhysicalInputProfile (mkSelector "mappedPhysicalInputNamesForElementAlias:") (retPtr retVoid) [argPtr (castPtr raw_elementAlias :: Ptr ())] >>= retainedObject . castPtr
+
+-- | A profile keeps a reference to the device that this profile is mapping input from
+--
+-- ObjC selector: @- device@
+device :: IsGCPhysicalInputProfile gcPhysicalInputProfile => gcPhysicalInputProfile -> IO RawId
+device gcPhysicalInputProfile  =
+    fmap (RawId . castPtr) $ sendMsg gcPhysicalInputProfile (mkSelector "device") (retPtr retVoid) []
 
 -- | The last time elements of this profile were updated.
 --
@@ -257,6 +266,10 @@ mappedElementAliasForPhysicalInputNameSelector = mkSelector "mappedElementAliasF
 -- | @Selector@ for @mappedPhysicalInputNamesForElementAlias:@
 mappedPhysicalInputNamesForElementAliasSelector :: Selector
 mappedPhysicalInputNamesForElementAliasSelector = mkSelector "mappedPhysicalInputNamesForElementAlias:"
+
+-- | @Selector@ for @device@
+deviceSelector :: Selector
+deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @lastEventTimestamp@
 lastEventTimestampSelector :: Selector

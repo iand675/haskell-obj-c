@@ -23,6 +23,8 @@ module ObjC.Foundation.NSNetService
   , txtRecordData
   , startMonitoring
   , stopMonitoring
+  , delegate
+  , setDelegate
   , includesPeerToPeer
   , setIncludesPeerToPeer
   , name
@@ -47,6 +49,8 @@ module ObjC.Foundation.NSNetService
   , txtRecordDataSelector
   , startMonitoringSelector
   , stopMonitoringSelector
+  , delegateSelector
+  , setDelegateSelector
   , includesPeerToPeerSelector
   , setIncludesPeerToPeerSelector
   , nameSelector
@@ -177,6 +181,16 @@ stopMonitoring :: IsNSNetService nsNetService => nsNetService -> IO ()
 stopMonitoring nsNetService  =
     sendMsg nsNetService (mkSelector "stopMonitoring") retVoid []
 
+-- | @- delegate@
+delegate :: IsNSNetService nsNetService => nsNetService -> IO RawId
+delegate nsNetService  =
+    fmap (RawId . castPtr) $ sendMsg nsNetService (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSNetService nsNetService => nsNetService -> RawId -> IO ()
+setDelegate nsNetService  value =
+    sendMsg nsNetService (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- includesPeerToPeer@
 includesPeerToPeer :: IsNSNetService nsNetService => nsNetService -> IO Bool
 includesPeerToPeer nsNetService  =
@@ -284,6 +298,14 @@ startMonitoringSelector = mkSelector "startMonitoring"
 -- | @Selector@ for @stopMonitoring@
 stopMonitoringSelector :: Selector
 stopMonitoringSelector = mkSelector "stopMonitoring"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @includesPeerToPeer@
 includesPeerToPeerSelector :: Selector

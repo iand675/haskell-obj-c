@@ -12,6 +12,9 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.NotificationCenter.Delegate.NCWidgetListViewDelegate
+      ObjC.NotificationCenter.Delegate.NCWidgetProviding
+      ObjC.NotificationCenter.Delegate.NCWidgetSearchViewDelegate
       ObjC.NotificationCenter.Enums
       ObjC.NotificationCenter.Internal.Classes
       ObjC.NotificationCenter.Internal.Enums

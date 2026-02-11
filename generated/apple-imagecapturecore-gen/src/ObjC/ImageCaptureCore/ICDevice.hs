@@ -20,6 +20,8 @@ module ObjC.ImageCaptureCore.ICDevice
   , requestSendMessage_outData_maxReturnedDataSize_sendMessageDelegate_didSendMessageSelector_contextInfo
   , requestEjectOrDisconnect
   , requestYield
+  , delegate
+  , setDelegate
   , type_
   , capabilities
   , name
@@ -28,12 +30,19 @@ module ObjC.ImageCaptureCore.ICDevice
   , systemSymbolName
   , transportType
   , uuidString
+  , locationDescription
   , hasOpenSession
   , userData
+  , modulePath
+  , moduleVersion
+  , serialNumberString
   , usbLocationID
   , usbProductID
   , usbVendorID
+  , autolaunchApplicationPath
+  , setAutolaunchApplicationPath
   , remote
+  , persistentIDString
   , moduleExecutableArchitecture
   , requestOpenSessionSelector
   , requestCloseSessionSelector
@@ -44,6 +53,8 @@ module ObjC.ImageCaptureCore.ICDevice
   , requestSendMessage_outData_maxReturnedDataSize_sendMessageDelegate_didSendMessageSelector_contextInfoSelector
   , requestEjectOrDisconnectSelector
   , requestYieldSelector
+  , delegateSelector
+  , setDelegateSelector
   , typeSelector
   , capabilitiesSelector
   , nameSelector
@@ -52,12 +63,19 @@ module ObjC.ImageCaptureCore.ICDevice
   , systemSymbolNameSelector
   , transportTypeSelector
   , uuidStringSelector
+  , locationDescriptionSelector
   , hasOpenSessionSelector
   , userDataSelector
+  , modulePathSelector
+  , moduleVersionSelector
+  , serialNumberStringSelector
   , usbLocationIDSelector
   , usbProductIDSelector
   , usbVendorIDSelector
+  , autolaunchApplicationPathSelector
+  , setAutolaunchApplicationPathSelector
   , remoteSelector
+  , persistentIDStringSelector
   , moduleExecutableArchitectureSelector
 
   -- * Enum types
@@ -199,6 +217,28 @@ requestYield :: IsICDevice icDevice => icDevice -> IO ()
 requestYield icDevice  =
     sendMsg icDevice (mkSelector "requestYield") retVoid []
 
+-- | delegate
+--
+-- The delegate to receive messages once a session is opened on the device.
+--
+-- The delegate must conform ICDeviceDelegate protocol. In addition it should respond to selectors defined in ICCameraDeviceDelegate protocol in order to effectively interact with the device object. The messages this delegate can expect to receive are described by these protocols.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsICDevice icDevice => icDevice -> IO RawId
+delegate icDevice  =
+    fmap (RawId . castPtr) $ sendMsg icDevice (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- The delegate to receive messages once a session is opened on the device.
+--
+-- The delegate must conform ICDeviceDelegate protocol. In addition it should respond to selectors defined in ICCameraDeviceDelegate protocol in order to effectively interact with the device object. The messages this delegate can expect to receive are described by these protocols.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsICDevice icDevice => icDevice -> RawId -> IO ()
+setDelegate icDevice  value =
+    sendMsg icDevice (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | type
 --
 -- ￼The type of the device as defined by ICDeviceType OR'd with its ICDeviceLocationType.
@@ -277,6 +317,17 @@ uuidString :: IsICDevice icDevice => icDevice -> IO (Id NSString)
 uuidString icDevice  =
     sendMsg icDevice (mkSelector "UUIDString") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | locationDescription
+--
+-- ￼A non-localized location description string for the device.
+--
+-- The value returned in one of the location description strings defined above, or location obtained from the Bonjour TXT record of a network device.
+--
+-- ObjC selector: @- locationDescription@
+locationDescription :: IsICDevice icDevice => icDevice -> IO RawId
+locationDescription icDevice  =
+    fmap (RawId . castPtr) $ sendMsg icDevice (mkSelector "locationDescription") (retPtr retVoid) []
+
 -- | hasOpenSession
 --
 -- ￼Indicates whether the device has an open session.
@@ -294,6 +345,35 @@ hasOpenSession icDevice  =
 userData :: IsICDevice icDevice => icDevice -> IO (Id NSMutableDictionary)
 userData icDevice  =
     sendMsg icDevice (mkSelector "userData") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | modulePath
+--
+-- ￼Filesystem path of the device module that is associated with this device. Camera-specific capabilities are defined in ICCameraDevice.h and scanner-specific capabilities are defined in ICScannerDevice.h.
+--
+-- ObjC selector: @- modulePath@
+modulePath :: IsICDevice icDevice => icDevice -> IO RawId
+modulePath icDevice  =
+    fmap (RawId . castPtr) $ sendMsg icDevice (mkSelector "modulePath") (retPtr retVoid) []
+
+-- | moduleVersion
+--
+-- ￼The bundle version of the device module associated with this device.
+--
+-- Note: This may change if an existing device module associated with this device is updated or a new device module for this device is installed.
+--
+-- ObjC selector: @- moduleVersion@
+moduleVersion :: IsICDevice icDevice => icDevice -> IO RawId
+moduleVersion icDevice  =
+    fmap (RawId . castPtr) $ sendMsg icDevice (mkSelector "moduleVersion") (retPtr retVoid) []
+
+-- | serialNumberString
+--
+-- ￼The serial number of the device. This will be NULL if the device does not provide a serial number.
+--
+-- ObjC selector: @- serialNumberString@
+serialNumberString :: IsICDevice icDevice => icDevice -> IO RawId
+serialNumberString icDevice  =
+    fmap (RawId . castPtr) $ sendMsg icDevice (mkSelector "serialNumberString") (retPtr retVoid) []
 
 -- | usbLocationID
 --
@@ -322,6 +402,28 @@ usbVendorID :: IsICDevice icDevice => icDevice -> IO CInt
 usbVendorID icDevice  =
     sendMsg icDevice (mkSelector "usbVendorID") retCInt []
 
+-- | autolaunchApplicationPath
+--
+-- ￼Filesystem path of an application that is to be automatically launched when this device is added.
+--
+-- This property is unavailable for devices of ICTransportTypeProximity.
+--
+-- ObjC selector: @- autolaunchApplicationPath@
+autolaunchApplicationPath :: IsICDevice icDevice => icDevice -> IO RawId
+autolaunchApplicationPath icDevice  =
+    fmap (RawId . castPtr) $ sendMsg icDevice (mkSelector "autolaunchApplicationPath") (retPtr retVoid) []
+
+-- | autolaunchApplicationPath
+--
+-- ￼Filesystem path of an application that is to be automatically launched when this device is added.
+--
+-- This property is unavailable for devices of ICTransportTypeProximity.
+--
+-- ObjC selector: @- setAutolaunchApplicationPath:@
+setAutolaunchApplicationPath :: IsICDevice icDevice => icDevice -> RawId -> IO ()
+setAutolaunchApplicationPath icDevice  value =
+    sendMsg icDevice (mkSelector "setAutolaunchApplicationPath:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | remote
 --
 -- ￼Indicates whether the device is a remote device published by Image Capture device sharing facility.
@@ -336,6 +438,15 @@ usbVendorID icDevice  =
 remote :: IsICDevice icDevice => icDevice -> IO Bool
 remote icDevice  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg icDevice (mkSelector "remote") retCULong []
+
+-- | persistentIDString
+--
+-- ￼A string representation of the persistent ID of the device.
+--
+-- ObjC selector: @- persistentIDString@
+persistentIDString :: IsICDevice icDevice => icDevice -> IO RawId
+persistentIDString icDevice  =
+    fmap (RawId . castPtr) $ sendMsg icDevice (mkSelector "persistentIDString") (retPtr retVoid) []
 
 -- | moduleExecutableArchitecture
 --
@@ -386,6 +497,14 @@ requestEjectOrDisconnectSelector = mkSelector "requestEjectOrDisconnect"
 requestYieldSelector :: Selector
 requestYieldSelector = mkSelector "requestYield"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @type@
 typeSelector :: Selector
 typeSelector = mkSelector "type"
@@ -418,6 +537,10 @@ transportTypeSelector = mkSelector "transportType"
 uuidStringSelector :: Selector
 uuidStringSelector = mkSelector "UUIDString"
 
+-- | @Selector@ for @locationDescription@
+locationDescriptionSelector :: Selector
+locationDescriptionSelector = mkSelector "locationDescription"
+
 -- | @Selector@ for @hasOpenSession@
 hasOpenSessionSelector :: Selector
 hasOpenSessionSelector = mkSelector "hasOpenSession"
@@ -425,6 +548,18 @@ hasOpenSessionSelector = mkSelector "hasOpenSession"
 -- | @Selector@ for @userData@
 userDataSelector :: Selector
 userDataSelector = mkSelector "userData"
+
+-- | @Selector@ for @modulePath@
+modulePathSelector :: Selector
+modulePathSelector = mkSelector "modulePath"
+
+-- | @Selector@ for @moduleVersion@
+moduleVersionSelector :: Selector
+moduleVersionSelector = mkSelector "moduleVersion"
+
+-- | @Selector@ for @serialNumberString@
+serialNumberStringSelector :: Selector
+serialNumberStringSelector = mkSelector "serialNumberString"
 
 -- | @Selector@ for @usbLocationID@
 usbLocationIDSelector :: Selector
@@ -438,9 +573,21 @@ usbProductIDSelector = mkSelector "usbProductID"
 usbVendorIDSelector :: Selector
 usbVendorIDSelector = mkSelector "usbVendorID"
 
+-- | @Selector@ for @autolaunchApplicationPath@
+autolaunchApplicationPathSelector :: Selector
+autolaunchApplicationPathSelector = mkSelector "autolaunchApplicationPath"
+
+-- | @Selector@ for @setAutolaunchApplicationPath:@
+setAutolaunchApplicationPathSelector :: Selector
+setAutolaunchApplicationPathSelector = mkSelector "setAutolaunchApplicationPath:"
+
 -- | @Selector@ for @remote@
 remoteSelector :: Selector
 remoteSelector = mkSelector "remote"
+
+-- | @Selector@ for @persistentIDString@
+persistentIDStringSelector :: Selector
+persistentIDStringSelector = mkSelector "persistentIDString"
 
 -- | @Selector@ for @moduleExecutableArchitecture@
 moduleExecutableArchitectureSelector :: Selector

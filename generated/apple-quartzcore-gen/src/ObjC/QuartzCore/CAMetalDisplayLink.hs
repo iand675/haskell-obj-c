@@ -10,6 +10,8 @@ module ObjC.QuartzCore.CAMetalDisplayLink
   , addToRunLoop_forMode
   , removeFromRunLoop_forMode
   , invalidate
+  , delegate
+  , setDelegate
   , preferredFrameLatency
   , setPreferredFrameLatency
   , preferredFrameRateRange
@@ -20,6 +22,8 @@ module ObjC.QuartzCore.CAMetalDisplayLink
   , addToRunLoop_forModeSelector
   , removeFromRunLoop_forModeSelector
   , invalidateSelector
+  , delegateSelector
+  , setDelegateSelector
   , preferredFrameLatencySelector
   , setPreferredFrameLatencySelector
   , preferredFrameRateRangeSelector
@@ -71,6 +75,16 @@ invalidate :: IsCAMetalDisplayLink caMetalDisplayLink => caMetalDisplayLink -> I
 invalidate caMetalDisplayLink  =
     sendMsg caMetalDisplayLink (mkSelector "invalidate") retVoid []
 
+-- | @- delegate@
+delegate :: IsCAMetalDisplayLink caMetalDisplayLink => caMetalDisplayLink -> IO RawId
+delegate caMetalDisplayLink  =
+    fmap (RawId . castPtr) $ sendMsg caMetalDisplayLink (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsCAMetalDisplayLink caMetalDisplayLink => caMetalDisplayLink -> RawId -> IO ()
+setDelegate caMetalDisplayLink  value =
+    sendMsg caMetalDisplayLink (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- preferredFrameLatency@
 preferredFrameLatency :: IsCAMetalDisplayLink caMetalDisplayLink => caMetalDisplayLink -> IO CFloat
 preferredFrameLatency caMetalDisplayLink  =
@@ -120,6 +134,14 @@ removeFromRunLoop_forModeSelector = mkSelector "removeFromRunLoop:forMode:"
 -- | @Selector@ for @invalidate@
 invalidateSelector :: Selector
 invalidateSelector = mkSelector "invalidate"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @preferredFrameLatency@
 preferredFrameLatencySelector :: Selector

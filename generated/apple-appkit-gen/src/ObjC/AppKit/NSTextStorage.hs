@@ -17,7 +17,11 @@ module ObjC.AppKit.NSTextStorage
   , editedMask
   , editedRange
   , changeInLength
+  , delegate
+  , setDelegate
   , fixesAttributesLazily
+  , textStorageObserver
+  , setTextStorageObserver
   , attributeRuns
   , setAttributeRuns
   , paragraphs
@@ -40,7 +44,11 @@ module ObjC.AppKit.NSTextStorage
   , editedMaskSelector
   , editedRangeSelector
   , changeInLengthSelector
+  , delegateSelector
+  , setDelegateSelector
   , fixesAttributesLazilySelector
+  , textStorageObserverSelector
+  , setTextStorageObserverSelector
   , attributeRunsSelector
   , setAttributeRunsSelector
   , paragraphsSelector
@@ -136,12 +144,40 @@ changeInLength :: IsNSTextStorage nsTextStorage => nsTextStorage -> IO CLong
 changeInLength nsTextStorage  =
     sendMsg nsTextStorage (mkSelector "changeInLength") retCLong []
 
+-- | ************************** Delegate ***************************
+--
+-- ObjC selector: @- delegate@
+delegate :: IsNSTextStorage nsTextStorage => nsTextStorage -> IO RawId
+delegate nsTextStorage  =
+    fmap (RawId . castPtr) $ sendMsg nsTextStorage (mkSelector "delegate") (retPtr retVoid) []
+
+-- | ************************** Delegate ***************************
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsNSTextStorage nsTextStorage => nsTextStorage -> RawId -> IO ()
+setDelegate nsTextStorage  value =
+    sendMsg nsTextStorage (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | ************************** Attribute fixing ***************************
 --
 -- ObjC selector: @- fixesAttributesLazily@
 fixesAttributesLazily :: IsNSTextStorage nsTextStorage => nsTextStorage -> IO Bool
 fixesAttributesLazily nsTextStorage  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextStorage (mkSelector "fixesAttributesLazily") retCULong []
+
+-- | ************************** NSTextStorageObserving ***************************
+--
+-- ObjC selector: @- textStorageObserver@
+textStorageObserver :: IsNSTextStorage nsTextStorage => nsTextStorage -> IO RawId
+textStorageObserver nsTextStorage  =
+    fmap (RawId . castPtr) $ sendMsg nsTextStorage (mkSelector "textStorageObserver") (retPtr retVoid) []
+
+-- | ************************** NSTextStorageObserving ***************************
+--
+-- ObjC selector: @- setTextStorageObserver:@
+setTextStorageObserver :: IsNSTextStorage nsTextStorage => nsTextStorage -> RawId -> IO ()
+setTextStorageObserver nsTextStorage  value =
+    sendMsg nsTextStorage (mkSelector "setTextStorageObserver:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- attributeRuns@
 attributeRuns :: IsNSTextStorage nsTextStorage => nsTextStorage -> IO (Id NSArray)
@@ -253,9 +289,25 @@ editedRangeSelector = mkSelector "editedRange"
 changeInLengthSelector :: Selector
 changeInLengthSelector = mkSelector "changeInLength"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @fixesAttributesLazily@
 fixesAttributesLazilySelector :: Selector
 fixesAttributesLazilySelector = mkSelector "fixesAttributesLazily"
+
+-- | @Selector@ for @textStorageObserver@
+textStorageObserverSelector :: Selector
+textStorageObserverSelector = mkSelector "textStorageObserver"
+
+-- | @Selector@ for @setTextStorageObserver:@
+setTextStorageObserverSelector :: Selector
+setTextStorageObserverSelector = mkSelector "setTextStorageObserver:"
 
 -- | @Selector@ for @attributeRuns@
 attributeRunsSelector :: Selector

@@ -10,6 +10,14 @@
 module ObjC.AVRouting.AVCustomRoutingActionItem
   ( AVCustomRoutingActionItem
   , IsAVCustomRoutingActionItem(..)
+  , type_
+  , setType
+  , overrideTitle
+  , setOverrideTitle
+  , typeSelector
+  , setTypeSelector
+  , overrideTitleSelector
+  , setOverrideTitleSelector
 
 
   ) where
@@ -29,7 +37,60 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.AVRouting.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | A type with an identifier that matches a value in the app’s configuration.
+--
+-- Provide a @UTType@ symbol name and description in your app’s @Info.plist@ file.
+--
+-- ObjC selector: @- type@
+type_ :: IsAVCustomRoutingActionItem avCustomRoutingActionItem => avCustomRoutingActionItem -> IO RawId
+type_ avCustomRoutingActionItem  =
+    fmap (RawId . castPtr) $ sendMsg avCustomRoutingActionItem (mkSelector "type") (retPtr retVoid) []
+
+-- | A type with an identifier that matches a value in the app’s configuration.
+--
+-- Provide a @UTType@ symbol name and description in your app’s @Info.plist@ file.
+--
+-- ObjC selector: @- setType:@
+setType :: IsAVCustomRoutingActionItem avCustomRoutingActionItem => avCustomRoutingActionItem -> RawId -> IO ()
+setType avCustomRoutingActionItem  value =
+    sendMsg avCustomRoutingActionItem (mkSelector "setType:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | A string to use to override the title of the item’s type.
+--
+-- Use this value to dynamically override the title of the custom item.
+--
+-- ObjC selector: @- overrideTitle@
+overrideTitle :: IsAVCustomRoutingActionItem avCustomRoutingActionItem => avCustomRoutingActionItem -> IO (Id NSString)
+overrideTitle avCustomRoutingActionItem  =
+    sendMsg avCustomRoutingActionItem (mkSelector "overrideTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | A string to use to override the title of the item’s type.
+--
+-- Use this value to dynamically override the title of the custom item.
+--
+-- ObjC selector: @- setOverrideTitle:@
+setOverrideTitle :: (IsAVCustomRoutingActionItem avCustomRoutingActionItem, IsNSString value) => avCustomRoutingActionItem -> value -> IO ()
+setOverrideTitle avCustomRoutingActionItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avCustomRoutingActionItem (mkSelector "setOverrideTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @type@
+typeSelector :: Selector
+typeSelector = mkSelector "type"
+
+-- | @Selector@ for @setType:@
+setTypeSelector :: Selector
+setTypeSelector = mkSelector "setType:"
+
+-- | @Selector@ for @overrideTitle@
+overrideTitleSelector :: Selector
+overrideTitleSelector = mkSelector "overrideTitle"
+
+-- | @Selector@ for @setOverrideTitle:@
+setOverrideTitleSelector :: Selector
+setOverrideTitleSelector = mkSelector "setOverrideTitle:"
 

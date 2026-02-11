@@ -17,6 +17,9 @@ module ObjC.PhotosUI.PHPickerViewController
   , init_
   , initWithNibName_bundle
   , initWithCoder
+  , configuration
+  , delegate
+  , setDelegate
   , initWithConfigurationSelector
   , updatePickerUsingConfigurationSelector
   , deselectAssetsWithIdentifiersSelector
@@ -28,6 +31,9 @@ module ObjC.PhotosUI.PHPickerViewController
   , initSelector
   , initWithNibName_bundleSelector
   , initWithCoderSelector
+  , configurationSelector
+  , delegateSelector
+  , setDelegateSelector
 
 
   ) where
@@ -131,6 +137,27 @@ initWithCoder phPickerViewController  coder =
   withObjCPtr coder $ \raw_coder ->
       sendMsg phPickerViewController (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
 
+-- | The configuration passed in during initialization.
+--
+-- ObjC selector: @- configuration@
+configuration :: IsPHPickerViewController phPickerViewController => phPickerViewController -> IO (Id PHPickerConfiguration)
+configuration phPickerViewController  =
+    sendMsg phPickerViewController (mkSelector "configuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The delegate to be notified.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsPHPickerViewController phPickerViewController => phPickerViewController -> IO RawId
+delegate phPickerViewController  =
+    fmap (RawId . castPtr) $ sendMsg phPickerViewController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | The delegate to be notified.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsPHPickerViewController phPickerViewController => phPickerViewController -> RawId -> IO ()
+setDelegate phPickerViewController  value =
+    sendMsg phPickerViewController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -178,4 +205,16 @@ initWithNibName_bundleSelector = mkSelector "initWithNibName:bundle:"
 -- | @Selector@ for @initWithCoder:@
 initWithCoderSelector :: Selector
 initWithCoderSelector = mkSelector "initWithCoder:"
+
+-- | @Selector@ for @configuration@
+configurationSelector :: Selector
+configurationSelector = mkSelector "configuration"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

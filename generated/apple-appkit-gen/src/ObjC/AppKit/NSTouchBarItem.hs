@@ -14,6 +14,7 @@ module ObjC.AppKit.NSTouchBarItem
   , setVisibilityPriority
   , view
   , viewController
+  , customizationLabel
   , visible
   , initWithIdentifierSelector
   , initWithCoderSelector
@@ -23,6 +24,7 @@ module ObjC.AppKit.NSTouchBarItem
   , setVisibilityPrioritySelector
   , viewSelector
   , viewControllerSelector
+  , customizationLabelSelector
   , visibleSelector
 
 
@@ -85,6 +87,11 @@ viewController :: IsNSTouchBarItem nsTouchBarItem => nsTouchBarItem -> IO (Id NS
 viewController nsTouchBarItem  =
     sendMsg nsTouchBarItem (mkSelector "viewController") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- customizationLabel@
+customizationLabel :: IsNSTouchBarItem nsTouchBarItem => nsTouchBarItem -> IO (Id NSString)
+customizationLabel nsTouchBarItem  =
+    sendMsg nsTouchBarItem (mkSelector "customizationLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- visible@
 visible :: IsNSTouchBarItem nsTouchBarItem => nsTouchBarItem -> IO Bool
 visible nsTouchBarItem  =
@@ -125,6 +132,10 @@ viewSelector = mkSelector "view"
 -- | @Selector@ for @viewController@
 viewControllerSelector :: Selector
 viewControllerSelector = mkSelector "viewController"
+
+-- | @Selector@ for @customizationLabel@
+customizationLabelSelector :: Selector
+customizationLabelSelector = mkSelector "customizationLabel"
 
 -- | @Selector@ for @visible@
 visibleSelector :: Selector

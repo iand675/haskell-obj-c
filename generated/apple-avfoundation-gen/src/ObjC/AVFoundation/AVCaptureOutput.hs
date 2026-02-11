@@ -20,6 +20,7 @@ module ObjC.AVFoundation.AVCaptureOutput
   , new
   , connectionWithMediaType
   , transformedMetadataObjectForMetadataObject_connection
+  , connections
   , deferredStartSupported
   , deferredStartEnabled
   , setDeferredStartEnabled
@@ -27,6 +28,7 @@ module ObjC.AVFoundation.AVCaptureOutput
   , newSelector
   , connectionWithMediaTypeSelector
   , transformedMetadataObjectForMetadataObject_connectionSelector
+  , connectionsSelector
   , deferredStartSupportedSelector
   , deferredStartEnabledSelector
   , setDeferredStartEnabledSelector
@@ -98,6 +100,17 @@ transformedMetadataObjectForMetadataObject_connection avCaptureOutput  metadataO
     withObjCPtr connection $ \raw_connection ->
         sendMsg avCaptureOutput (mkSelector "transformedMetadataObjectForMetadataObject:connection:") (retPtr retVoid) [argPtr (castPtr raw_metadataObject :: Ptr ()), argPtr (castPtr raw_connection :: Ptr ())] >>= retainedObject . castPtr
 
+-- | connections
+--
+-- The connections that describe the flow of media data to the receiver from AVCaptureInputs.
+--
+-- The value of this property is an NSArray of AVCaptureConnection objects, each describing the mapping between the receiver and the AVCaptureInputPorts of one or more AVCaptureInputs.
+--
+-- ObjC selector: @- connections@
+connections :: IsAVCaptureOutput avCaptureOutput => avCaptureOutput -> IO (Id NSArray)
+connections avCaptureOutput  =
+    sendMsg avCaptureOutput (mkSelector "connections") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | A @BOOL@ value that indicates whether the output supports deferred start.
 --
 -- You can only set the ``deferredStartEnabled`` property value to @true@ if the output supports deferred start.
@@ -156,6 +169,10 @@ connectionWithMediaTypeSelector = mkSelector "connectionWithMediaType:"
 -- | @Selector@ for @transformedMetadataObjectForMetadataObject:connection:@
 transformedMetadataObjectForMetadataObject_connectionSelector :: Selector
 transformedMetadataObjectForMetadataObject_connectionSelector = mkSelector "transformedMetadataObjectForMetadataObject:connection:"
+
+-- | @Selector@ for @connections@
+connectionsSelector :: Selector
+connectionsSelector = mkSelector "connections"
 
 -- | @Selector@ for @deferredStartSupported@
 deferredStartSupportedSelector :: Selector

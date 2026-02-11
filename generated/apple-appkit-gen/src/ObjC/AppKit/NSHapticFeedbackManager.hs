@@ -6,6 +6,8 @@
 module ObjC.AppKit.NSHapticFeedbackManager
   ( NSHapticFeedbackManager
   , IsNSHapticFeedbackManager(..)
+  , defaultPerformer
+  , defaultPerformerSelector
 
 
   ) where
@@ -25,7 +27,18 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.AppKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | @+ defaultPerformer@
+defaultPerformer :: IO RawId
+defaultPerformer  =
+  do
+    cls' <- getRequiredClass "NSHapticFeedbackManager"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "defaultPerformer") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @defaultPerformer@
+defaultPerformerSelector :: Selector
+defaultPerformerSelector = mkSelector "defaultPerformer"
 

@@ -15,7 +15,17 @@ module ObjC.NetworkExtension.NETunnelNetworkSettings
   ( NETunnelNetworkSettings
   , IsNETunnelNetworkSettings(..)
   , initWithTunnelRemoteAddress
+  , tunnelRemoteAddress
+  , dnsSettings
+  , setDNSSettings
+  , proxySettings
+  , setProxySettings
   , initWithTunnelRemoteAddressSelector
+  , tunnelRemoteAddressSelector
+  , dnsSettingsSelector
+  , setDNSSettingsSelector
+  , proxySettingsSelector
+  , setProxySettingsSelector
 
 
   ) where
@@ -47,6 +57,53 @@ initWithTunnelRemoteAddress neTunnelNetworkSettings  address =
   withObjCPtr address $ \raw_address ->
       sendMsg neTunnelNetworkSettings (mkSelector "initWithTunnelRemoteAddress:") (retPtr retVoid) [argPtr (castPtr raw_address :: Ptr ())] >>= ownedObject . castPtr
 
+-- | tunnelRemoteAddress
+--
+-- A string containing the IP address of the remote endpoint that is providing the tunnel service.
+--
+-- ObjC selector: @- tunnelRemoteAddress@
+tunnelRemoteAddress :: IsNETunnelNetworkSettings neTunnelNetworkSettings => neTunnelNetworkSettings -> IO (Id NSString)
+tunnelRemoteAddress neTunnelNetworkSettings  =
+    sendMsg neTunnelNetworkSettings (mkSelector "tunnelRemoteAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | DNSSettings
+--
+-- An NEDNSSettings object that contains the desired tunnel DNS settings.
+--
+-- ObjC selector: @- DNSSettings@
+dnsSettings :: IsNETunnelNetworkSettings neTunnelNetworkSettings => neTunnelNetworkSettings -> IO (Id NEDNSSettings)
+dnsSettings neTunnelNetworkSettings  =
+    sendMsg neTunnelNetworkSettings (mkSelector "DNSSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | DNSSettings
+--
+-- An NEDNSSettings object that contains the desired tunnel DNS settings.
+--
+-- ObjC selector: @- setDNSSettings:@
+setDNSSettings :: (IsNETunnelNetworkSettings neTunnelNetworkSettings, IsNEDNSSettings value) => neTunnelNetworkSettings -> value -> IO ()
+setDNSSettings neTunnelNetworkSettings  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neTunnelNetworkSettings (mkSelector "setDNSSettings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | proxySettings
+--
+-- An NEProxySettings object that contains the desired tunnel proxy settings.
+--
+-- ObjC selector: @- proxySettings@
+proxySettings :: IsNETunnelNetworkSettings neTunnelNetworkSettings => neTunnelNetworkSettings -> IO (Id NEProxySettings)
+proxySettings neTunnelNetworkSettings  =
+    sendMsg neTunnelNetworkSettings (mkSelector "proxySettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | proxySettings
+--
+-- An NEProxySettings object that contains the desired tunnel proxy settings.
+--
+-- ObjC selector: @- setProxySettings:@
+setProxySettings :: (IsNETunnelNetworkSettings neTunnelNetworkSettings, IsNEProxySettings value) => neTunnelNetworkSettings -> value -> IO ()
+setProxySettings neTunnelNetworkSettings  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neTunnelNetworkSettings (mkSelector "setProxySettings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -54,4 +111,24 @@ initWithTunnelRemoteAddress neTunnelNetworkSettings  address =
 -- | @Selector@ for @initWithTunnelRemoteAddress:@
 initWithTunnelRemoteAddressSelector :: Selector
 initWithTunnelRemoteAddressSelector = mkSelector "initWithTunnelRemoteAddress:"
+
+-- | @Selector@ for @tunnelRemoteAddress@
+tunnelRemoteAddressSelector :: Selector
+tunnelRemoteAddressSelector = mkSelector "tunnelRemoteAddress"
+
+-- | @Selector@ for @DNSSettings@
+dnsSettingsSelector :: Selector
+dnsSettingsSelector = mkSelector "DNSSettings"
+
+-- | @Selector@ for @setDNSSettings:@
+setDNSSettingsSelector :: Selector
+setDNSSettingsSelector = mkSelector "setDNSSettings:"
+
+-- | @Selector@ for @proxySettings@
+proxySettingsSelector :: Selector
+proxySettingsSelector = mkSelector "proxySettings"
+
+-- | @Selector@ for @setProxySettings:@
+setProxySettingsSelector :: Selector
+setProxySettingsSelector = mkSelector "setProxySettings:"
 

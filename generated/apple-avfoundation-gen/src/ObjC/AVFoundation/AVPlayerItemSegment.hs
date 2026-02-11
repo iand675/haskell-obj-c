@@ -16,11 +16,13 @@ module ObjC.AVFoundation.AVPlayerItemSegment
   , init_
   , new
   , segmentType
+  , loadedTimeRanges
   , startDate
   , interstitialEvent
   , initSelector
   , newSelector
   , segmentTypeSelector
+  , loadedTimeRangesSelector
   , startDateSelector
   , interstitialEventSelector
 
@@ -68,6 +70,17 @@ segmentType :: IsAVPlayerItemSegment avPlayerItemSegment => avPlayerItemSegment 
 segmentType avPlayerItemSegment  =
     fmap (coerce :: CLong -> AVPlayerItemSegmentType) $ sendMsg avPlayerItemSegment (mkSelector "segmentType") retCLong []
 
+-- | loadedTimeRanges
+--
+-- This property provides a collection of time ranges for the segment if media data is readily available. The ranges provided might be discontinuous.
+--
+-- Returns an NSArray of NSValues containing CMTimeRanges. Loaded time ranges will be within the timeMapping's target timeRange. Loaded time ranges will be empty for interstitial events that occupy a single point in time.
+--
+-- ObjC selector: @- loadedTimeRanges@
+loadedTimeRanges :: IsAVPlayerItemSegment avPlayerItemSegment => avPlayerItemSegment -> IO (Id NSArray)
+loadedTimeRanges avPlayerItemSegment  =
+    sendMsg avPlayerItemSegment (mkSelector "loadedTimeRanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | startDate
 --
 -- The date this segment starts at.
@@ -105,6 +118,10 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @segmentType@
 segmentTypeSelector :: Selector
 segmentTypeSelector = mkSelector "segmentType"
+
+-- | @Selector@ for @loadedTimeRanges@
+loadedTimeRangesSelector :: Selector
+loadedTimeRangesSelector = mkSelector "loadedTimeRanges"
 
 -- | @Selector@ for @startDate@
 startDateSelector :: Selector

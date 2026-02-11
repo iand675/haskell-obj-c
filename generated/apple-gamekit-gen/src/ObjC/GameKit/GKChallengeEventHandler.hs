@@ -9,7 +9,11 @@ module ObjC.GameKit.GKChallengeEventHandler
   ( GKChallengeEventHandler
   , IsGKChallengeEventHandler(..)
   , challengeEventHandler
+  , delegate
+  , setDelegate
   , challengeEventHandlerSelector
+  , delegateSelector
+  , setDelegateSelector
 
 
   ) where
@@ -36,6 +40,16 @@ challengeEventHandler  =
     cls' <- getRequiredClass "GKChallengeEventHandler"
     sendClassMsg cls' (mkSelector "challengeEventHandler") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- delegate@
+delegate :: IsGKChallengeEventHandler gkChallengeEventHandler => gkChallengeEventHandler -> IO RawId
+delegate gkChallengeEventHandler  =
+    fmap (RawId . castPtr) $ sendMsg gkChallengeEventHandler (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsGKChallengeEventHandler gkChallengeEventHandler => gkChallengeEventHandler -> RawId -> IO ()
+setDelegate gkChallengeEventHandler  value =
+    sendMsg gkChallengeEventHandler (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -43,4 +57,12 @@ challengeEventHandler  =
 -- | @Selector@ for @challengeEventHandler@
 challengeEventHandlerSelector :: Selector
 challengeEventHandlerSelector = mkSelector "challengeEventHandler"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

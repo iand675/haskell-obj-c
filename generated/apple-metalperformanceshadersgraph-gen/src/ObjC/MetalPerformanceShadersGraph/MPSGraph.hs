@@ -13,6 +13,15 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , IsMPSGraph(..)
   , new
   , init_
+  , compileWithDevice_feeds_targetTensors_targetOperations_compilationDescriptor
+  , runWithFeeds_targetTensors_targetOperations
+  , runWithMTLCommandQueue_feeds_targetTensors_targetOperations
+  , runWithMTLCommandQueue_feeds_targetOperations_resultsDictionary
+  , runAsyncWithFeeds_targetTensors_targetOperations_executionDescriptor
+  , runAsyncWithMTLCommandQueue_feeds_targetTensors_targetOperations_executionDescriptor
+  , runAsyncWithMTLCommandQueue_feeds_targetOperations_resultsDictionary_executionDescriptor
+  , encodeToCommandBuffer_feeds_targetTensors_targetOperations_executionDescriptor
+  , encodeToCommandBuffer_feeds_targetOperations_resultsDictionary_executionDescriptor
   , topKWithGradientTensor_source_k_name
   , topKWithGradientTensor_source_axis_k_name
   , bottomKWithGradientTensor_source_axis_k_name
@@ -25,6 +34,7 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , bottomKWithSourceTensor_axis_k_name
   , topKWithSourceTensor_axisTensor_kTensor_name
   , bottomKWithSourceTensor_axisTensor_kTensor_name
+  , reshapeTensor_withShape_name
   , reshapeTensor_withShapeTensor_name
   , transposeTensor_dimension_withDimension_name
   , transposeTensor_permutation_name
@@ -44,6 +54,10 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , concatTensor_withTensor_dimension_name
   , concatTensors_dimension_name
   , concatTensors_dimension_interleave_name
+  , tileTensor_withMultiplier_name
+  , tileGradientWithIncomingGradientTensor_sourceTensor_withMultiplier_name
+  , padTensor_withPaddingMode_leftPadding_rightPadding_constantValue_name
+  , padGradientWithIncomingGradientTensor_sourceTensor_paddingMode_leftPadding_rightPadding_name
   , spaceToDepth2DTensor_widthAxis_heightAxis_depthAxis_blockSize_usePixelShuffleOrder_name
   , spaceToDepth2DTensor_widthAxisTensor_heightAxisTensor_depthAxisTensor_blockSize_usePixelShuffleOrder_name
   , depthToSpace2DTensor_widthAxis_heightAxis_depthAxis_blockSize_usePixelShuffleOrder_name
@@ -57,6 +71,7 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , reverseTensor_name
   , flatten2DTensor_axis_name
   , flatten2DTensor_axisTensor_name
+  , broadcastTensor_toShape_name
   , broadcastTensor_toShapeTensor_name
   , shapeOfTensor_name
   , castTensor_toType_name
@@ -72,9 +87,13 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , expandDimsOfTensor_axis_name
   , expandDimsOfTensor_axes_name
   , expandDimsOfTensor_axesTensor_name
+  , coordinateAlongAxis_withShape_name
+  , coordinateAlongAxisTensor_withShape_name
   , coordinateAlongAxis_withShapeTensor_name
   , coordinateAlongAxisTensor_withShapeTensor_name
   , stencilWithSourceTensor_weightsTensor_descriptor_name
+  , sparseTensorWithType_tensors_shape_dataType_name
+  , sparseTensorWithDescriptor_tensors_shape_name
   , sortWithTensor_axis_descending_name
   , sortWithTensor_axisTensor_descending_name
   , sortWithTensor_axis_name
@@ -83,9 +102,14 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , argSortWithTensor_axisTensor_descending_name
   , argSortWithTensor_axis_name
   , argSortWithTensor_axisTensor_name
+  , scatterAlongAxis_withUpdatesTensor_indicesTensor_shape_mode_name
+  , scatterAlongAxisTensor_withUpdatesTensor_indicesTensor_shape_mode_name
   , scatterAlongAxis_withDataTensor_updatesTensor_indicesTensor_mode_name
   , scatterAlongAxisTensor_withDataTensor_updatesTensor_indicesTensor_mode_name
+  , scatterWithUpdatesTensor_indicesTensor_shape_axis_mode_name
   , scatterWithDataTensor_updatesTensor_indicesTensor_axis_mode_name
+  , scatterNDWithUpdatesTensor_indicesTensor_shape_batchDimensions_mode_name
+  , scatterNDWithUpdatesTensor_indicesTensor_shape_batchDimensions_name
   , scatterNDWithDataTensor_updatesTensor_indicesTensor_batchDimensions_mode_name
   , sampleGridWithSourceTensor_coordinateTensor_layout_normalizeCoordinates_relativeCoordinates_alignCorners_paddingMode_samplingMode_constantValue_name
   , sampleGridWithSourceTensor_coordinateTensor_layout_normalizeCoordinates_relativeCoordinates_alignCorners_paddingMode_nearestRoundingMode_constantValue_name
@@ -109,6 +133,7 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , gruGradientsWithSourceTensor_recurrentWeight_sourceGradient_zState_outputFwd_stateGradient_inputWeight_bias_initState_mask_secondaryBias_descriptor_name
   , gruGradientsWithSourceTensor_recurrentWeight_sourceGradient_zState_outputFwd_inputWeight_bias_initState_descriptor_name
   , gruGradientsWithSourceTensor_recurrentWeight_sourceGradient_zState_outputFwd_inputWeight_bias_descriptor_name
+  , resizeTensor_size_mode_centerResult_alignCorners_layout_name
   , resizeTensor_sizeTensor_mode_centerResult_alignCorners_layout_name
   , resizeTensor_sizeTensor_mode_centerResult_alignCorners_name
   , resizeNearestWithTensor_sizeTensor_nearestRoundingMode_centerResult_alignCorners_layout_name
@@ -150,11 +175,17 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , reductionOrWithTensor_axes_name
   , randomPhiloxStateTensorWithSeed_name
   , randomPhiloxStateTensorWithCounterLow_counterHigh_key_name
+  , randomTensorWithShape_descriptor_name
   , randomTensorWithShapeTensor_descriptor_name
+  , randomTensorWithShape_descriptor_seed_name
   , randomTensorWithShapeTensor_descriptor_seed_name
+  , randomTensorWithShape_descriptor_stateTensor_name
   , randomTensorWithShapeTensor_descriptor_stateTensor_name
+  , randomUniformTensorWithShape_name
   , randomUniformTensorWithShapeTensor_name
+  , randomUniformTensorWithShape_seed_name
   , randomUniformTensorWithShapeTensor_seed_name
+  , randomUniformTensorWithShape_stateTensor_name
   , randomUniformTensorWithShapeTensor_stateTensor_name
   , dropoutTensor_rate_name
   , dropoutTensor_rateTensor_name
@@ -171,12 +202,14 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , maxPooling2DWithSourceTensor_descriptor_name
   , maxPooling2DReturnIndicesWithSourceTensor_descriptor_name
   , maxPooling2DGradientWithGradientTensor_sourceTensor_descriptor_name
+  , maxPooling2DGradientWithGradientTensor_indicesTensor_outputShape_descriptor_name
   , maxPooling2DGradientWithGradientTensor_indicesTensor_outputShapeTensor_descriptor_name
   , avgPooling2DWithSourceTensor_descriptor_name
   , avgPooling2DGradientWithGradientTensor_sourceTensor_descriptor_name
   , maxPooling4DWithSourceTensor_descriptor_name
   , maxPooling4DReturnIndicesWithSourceTensor_descriptor_name
   , maxPooling4DGradientWithGradientTensor_sourceTensor_descriptor_name
+  , maxPooling4DGradientWithGradientTensor_indicesTensor_outputShape_descriptor_name
   , maxPooling4DGradientWithGradientTensor_indicesTensor_outputShapeTensor_descriptor_name
   , avgPooling4DWithSourceTensor_descriptor_name
   , avgPooling4DGradientWithGradientTensor_sourceTensor_descriptor_name
@@ -202,9 +235,15 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , nonZeroIndicesOfTensor_name
   , nonMaximumSuppressionWithBoxesTensor_scoresTensor_IOUThreshold_scoreThreshold_perClassSuppression_coordinateMode_name
   , nonMaximumSuppressionWithBoxesTensor_scoresTensor_classIndicesTensor_IOUThreshold_scoreThreshold_perClassSuppression_coordinateMode_name
+  , placeholderWithShape_dataType_name
+  , placeholderWithShape_name
+  , constantWithData_shape_dataType
   , constantWithScalar_dataType
+  , constantWithScalar_shape_dataType
   , constantWithRealPart_imaginaryPart
   , constantWithRealPart_imaginaryPart_dataType
+  , constantWithRealPart_imaginaryPart_shape_dataType
+  , variableWithData_shape_dataType_name
   , variableFromTensorWithTensor_name
   , readVariable_name
   , assignVariable_withValueOfTensor_name
@@ -218,6 +257,7 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , bandPartWithTensor_numLower_numUpper_name
   , bandPartWithTensor_numLowerTensor_numUpperTensor_name
   , imToColWithSourceTensor_descriptor_name
+  , colToImWithSourceTensor_outputShape_descriptor_name
   , gatherAlongAxis_withUpdatesTensor_indicesTensor_name
   , gatherAlongAxisTensor_withUpdatesTensor_indicesTensor_name
   , gatherWithUpdatesTensor_indicesTensor_axis_batchDimensions_name
@@ -229,7 +269,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , hermiteanToRealFFTWithTensor_axes_descriptor_name
   , hermiteanToRealFFTWithTensor_axesTensor_descriptor_name
   , depthwiseConvolution2DWithSourceTensor_weightsTensor_descriptor_name
+  , depthwiseConvolution2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_descriptor_name
+  , depthwiseConvolution2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_descriptor_name
   , depthwiseConvolution3DWithSourceTensor_weightsTensor_descriptor_name
+  , depthwiseConvolution3DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_descriptor_name
+  , depthwiseConvolution3DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_descriptor_name
   , cumulativeSumWithTensor_axis_exclusive_reverse_name
   , cumulativeSumWithTensor_axisTensor_exclusive_reverse_name
   , cumulativeSumWithTensor_axis_name
@@ -251,14 +295,21 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , whileWithInitialInputs_before_after_name
   , forLoopWithLowerBound_upperBound_step_initialBodyArguments_body_name
   , forLoopWithNumberOfIterations_initialBodyArguments_body_name
+  , convolutionTranspose2DWithSourceTensor_weightsTensor_outputShape_descriptor_name
   , convolutionTranspose2DWithSourceTensor_weightsTensor_outputShapeTensor_descriptor_name
+  , convolutionTranspose2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_forwardConvolutionDescriptor_name
   , convolutionTranspose2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShapeTensor_forwardConvolutionDescriptor_name
+  , convolutionTranspose2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_forwardConvolutionDescriptor_name
   , convolutionTranspose2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShapeTensor_forwardConvolutionDescriptor_name
   , convolution2DWithSourceTensor_weightsTensor_descriptor_name
+  , convolution2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_forwardConvolutionDescriptor_name
   , convolution2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShapeTensor_forwardConvolutionDescriptor_name
+  , convolution2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_forwardConvolutionDescriptor_name
   , convolution2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShapeTensor_forwardConvolutionDescriptor_name
   , convolution3DWithSourceTensor_weightsTensor_descriptor_name
+  , convolution3DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_forwardConvolutionDescriptor_name
   , convolution3DDataGradientWithIncomingGradientTensor_weightsTensor_outputShapeTensor_forwardConvolutionDescriptor_name
+  , convolution3DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_forwardConvolutionDescriptor_name
   , convolution3DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShapeTensor_forwardConvolutionDescriptor_name
   , callSymbolName_inputTensors_outputTypes_name
   , identityWithTensor_name
@@ -353,6 +404,15 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , placeholderTensors
   , newSelector
   , initSelector
+  , compileWithDevice_feeds_targetTensors_targetOperations_compilationDescriptorSelector
+  , runWithFeeds_targetTensors_targetOperationsSelector
+  , runWithMTLCommandQueue_feeds_targetTensors_targetOperationsSelector
+  , runWithMTLCommandQueue_feeds_targetOperations_resultsDictionarySelector
+  , runAsyncWithFeeds_targetTensors_targetOperations_executionDescriptorSelector
+  , runAsyncWithMTLCommandQueue_feeds_targetTensors_targetOperations_executionDescriptorSelector
+  , runAsyncWithMTLCommandQueue_feeds_targetOperations_resultsDictionary_executionDescriptorSelector
+  , encodeToCommandBuffer_feeds_targetTensors_targetOperations_executionDescriptorSelector
+  , encodeToCommandBuffer_feeds_targetOperations_resultsDictionary_executionDescriptorSelector
   , topKWithGradientTensor_source_k_nameSelector
   , topKWithGradientTensor_source_axis_k_nameSelector
   , bottomKWithGradientTensor_source_axis_k_nameSelector
@@ -365,6 +425,7 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , bottomKWithSourceTensor_axis_k_nameSelector
   , topKWithSourceTensor_axisTensor_kTensor_nameSelector
   , bottomKWithSourceTensor_axisTensor_kTensor_nameSelector
+  , reshapeTensor_withShape_nameSelector
   , reshapeTensor_withShapeTensor_nameSelector
   , transposeTensor_dimension_withDimension_nameSelector
   , transposeTensor_permutation_nameSelector
@@ -384,6 +445,10 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , concatTensor_withTensor_dimension_nameSelector
   , concatTensors_dimension_nameSelector
   , concatTensors_dimension_interleave_nameSelector
+  , tileTensor_withMultiplier_nameSelector
+  , tileGradientWithIncomingGradientTensor_sourceTensor_withMultiplier_nameSelector
+  , padTensor_withPaddingMode_leftPadding_rightPadding_constantValue_nameSelector
+  , padGradientWithIncomingGradientTensor_sourceTensor_paddingMode_leftPadding_rightPadding_nameSelector
   , spaceToDepth2DTensor_widthAxis_heightAxis_depthAxis_blockSize_usePixelShuffleOrder_nameSelector
   , spaceToDepth2DTensor_widthAxisTensor_heightAxisTensor_depthAxisTensor_blockSize_usePixelShuffleOrder_nameSelector
   , depthToSpace2DTensor_widthAxis_heightAxis_depthAxis_blockSize_usePixelShuffleOrder_nameSelector
@@ -397,6 +462,7 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , reverseTensor_nameSelector
   , flatten2DTensor_axis_nameSelector
   , flatten2DTensor_axisTensor_nameSelector
+  , broadcastTensor_toShape_nameSelector
   , broadcastTensor_toShapeTensor_nameSelector
   , shapeOfTensor_nameSelector
   , castTensor_toType_nameSelector
@@ -412,9 +478,13 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , expandDimsOfTensor_axis_nameSelector
   , expandDimsOfTensor_axes_nameSelector
   , expandDimsOfTensor_axesTensor_nameSelector
+  , coordinateAlongAxis_withShape_nameSelector
+  , coordinateAlongAxisTensor_withShape_nameSelector
   , coordinateAlongAxis_withShapeTensor_nameSelector
   , coordinateAlongAxisTensor_withShapeTensor_nameSelector
   , stencilWithSourceTensor_weightsTensor_descriptor_nameSelector
+  , sparseTensorWithType_tensors_shape_dataType_nameSelector
+  , sparseTensorWithDescriptor_tensors_shape_nameSelector
   , sortWithTensor_axis_descending_nameSelector
   , sortWithTensor_axisTensor_descending_nameSelector
   , sortWithTensor_axis_nameSelector
@@ -423,9 +493,14 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , argSortWithTensor_axisTensor_descending_nameSelector
   , argSortWithTensor_axis_nameSelector
   , argSortWithTensor_axisTensor_nameSelector
+  , scatterAlongAxis_withUpdatesTensor_indicesTensor_shape_mode_nameSelector
+  , scatterAlongAxisTensor_withUpdatesTensor_indicesTensor_shape_mode_nameSelector
   , scatterAlongAxis_withDataTensor_updatesTensor_indicesTensor_mode_nameSelector
   , scatterAlongAxisTensor_withDataTensor_updatesTensor_indicesTensor_mode_nameSelector
+  , scatterWithUpdatesTensor_indicesTensor_shape_axis_mode_nameSelector
   , scatterWithDataTensor_updatesTensor_indicesTensor_axis_mode_nameSelector
+  , scatterNDWithUpdatesTensor_indicesTensor_shape_batchDimensions_mode_nameSelector
+  , scatterNDWithUpdatesTensor_indicesTensor_shape_batchDimensions_nameSelector
   , scatterNDWithDataTensor_updatesTensor_indicesTensor_batchDimensions_mode_nameSelector
   , sampleGridWithSourceTensor_coordinateTensor_layout_normalizeCoordinates_relativeCoordinates_alignCorners_paddingMode_samplingMode_constantValue_nameSelector
   , sampleGridWithSourceTensor_coordinateTensor_layout_normalizeCoordinates_relativeCoordinates_alignCorners_paddingMode_nearestRoundingMode_constantValue_nameSelector
@@ -449,6 +524,7 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , gruGradientsWithSourceTensor_recurrentWeight_sourceGradient_zState_outputFwd_stateGradient_inputWeight_bias_initState_mask_secondaryBias_descriptor_nameSelector
   , gruGradientsWithSourceTensor_recurrentWeight_sourceGradient_zState_outputFwd_inputWeight_bias_initState_descriptor_nameSelector
   , gruGradientsWithSourceTensor_recurrentWeight_sourceGradient_zState_outputFwd_inputWeight_bias_descriptor_nameSelector
+  , resizeTensor_size_mode_centerResult_alignCorners_layout_nameSelector
   , resizeTensor_sizeTensor_mode_centerResult_alignCorners_layout_nameSelector
   , resizeTensor_sizeTensor_mode_centerResult_alignCorners_nameSelector
   , resizeNearestWithTensor_sizeTensor_nearestRoundingMode_centerResult_alignCorners_layout_nameSelector
@@ -490,11 +566,17 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , reductionOrWithTensor_axes_nameSelector
   , randomPhiloxStateTensorWithSeed_nameSelector
   , randomPhiloxStateTensorWithCounterLow_counterHigh_key_nameSelector
+  , randomTensorWithShape_descriptor_nameSelector
   , randomTensorWithShapeTensor_descriptor_nameSelector
+  , randomTensorWithShape_descriptor_seed_nameSelector
   , randomTensorWithShapeTensor_descriptor_seed_nameSelector
+  , randomTensorWithShape_descriptor_stateTensor_nameSelector
   , randomTensorWithShapeTensor_descriptor_stateTensor_nameSelector
+  , randomUniformTensorWithShape_nameSelector
   , randomUniformTensorWithShapeTensor_nameSelector
+  , randomUniformTensorWithShape_seed_nameSelector
   , randomUniformTensorWithShapeTensor_seed_nameSelector
+  , randomUniformTensorWithShape_stateTensor_nameSelector
   , randomUniformTensorWithShapeTensor_stateTensor_nameSelector
   , dropoutTensor_rate_nameSelector
   , dropoutTensor_rateTensor_nameSelector
@@ -511,12 +593,14 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , maxPooling2DWithSourceTensor_descriptor_nameSelector
   , maxPooling2DReturnIndicesWithSourceTensor_descriptor_nameSelector
   , maxPooling2DGradientWithGradientTensor_sourceTensor_descriptor_nameSelector
+  , maxPooling2DGradientWithGradientTensor_indicesTensor_outputShape_descriptor_nameSelector
   , maxPooling2DGradientWithGradientTensor_indicesTensor_outputShapeTensor_descriptor_nameSelector
   , avgPooling2DWithSourceTensor_descriptor_nameSelector
   , avgPooling2DGradientWithGradientTensor_sourceTensor_descriptor_nameSelector
   , maxPooling4DWithSourceTensor_descriptor_nameSelector
   , maxPooling4DReturnIndicesWithSourceTensor_descriptor_nameSelector
   , maxPooling4DGradientWithGradientTensor_sourceTensor_descriptor_nameSelector
+  , maxPooling4DGradientWithGradientTensor_indicesTensor_outputShape_descriptor_nameSelector
   , maxPooling4DGradientWithGradientTensor_indicesTensor_outputShapeTensor_descriptor_nameSelector
   , avgPooling4DWithSourceTensor_descriptor_nameSelector
   , avgPooling4DGradientWithGradientTensor_sourceTensor_descriptor_nameSelector
@@ -542,9 +626,15 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , nonZeroIndicesOfTensor_nameSelector
   , nonMaximumSuppressionWithBoxesTensor_scoresTensor_IOUThreshold_scoreThreshold_perClassSuppression_coordinateMode_nameSelector
   , nonMaximumSuppressionWithBoxesTensor_scoresTensor_classIndicesTensor_IOUThreshold_scoreThreshold_perClassSuppression_coordinateMode_nameSelector
+  , placeholderWithShape_dataType_nameSelector
+  , placeholderWithShape_nameSelector
+  , constantWithData_shape_dataTypeSelector
   , constantWithScalar_dataTypeSelector
+  , constantWithScalar_shape_dataTypeSelector
   , constantWithRealPart_imaginaryPartSelector
   , constantWithRealPart_imaginaryPart_dataTypeSelector
+  , constantWithRealPart_imaginaryPart_shape_dataTypeSelector
+  , variableWithData_shape_dataType_nameSelector
   , variableFromTensorWithTensor_nameSelector
   , readVariable_nameSelector
   , assignVariable_withValueOfTensor_nameSelector
@@ -558,6 +648,7 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , bandPartWithTensor_numLower_numUpper_nameSelector
   , bandPartWithTensor_numLowerTensor_numUpperTensor_nameSelector
   , imToColWithSourceTensor_descriptor_nameSelector
+  , colToImWithSourceTensor_outputShape_descriptor_nameSelector
   , gatherAlongAxis_withUpdatesTensor_indicesTensor_nameSelector
   , gatherAlongAxisTensor_withUpdatesTensor_indicesTensor_nameSelector
   , gatherWithUpdatesTensor_indicesTensor_axis_batchDimensions_nameSelector
@@ -569,7 +660,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , hermiteanToRealFFTWithTensor_axes_descriptor_nameSelector
   , hermiteanToRealFFTWithTensor_axesTensor_descriptor_nameSelector
   , depthwiseConvolution2DWithSourceTensor_weightsTensor_descriptor_nameSelector
+  , depthwiseConvolution2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_descriptor_nameSelector
+  , depthwiseConvolution2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_descriptor_nameSelector
   , depthwiseConvolution3DWithSourceTensor_weightsTensor_descriptor_nameSelector
+  , depthwiseConvolution3DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_descriptor_nameSelector
+  , depthwiseConvolution3DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_descriptor_nameSelector
   , cumulativeSumWithTensor_axis_exclusive_reverse_nameSelector
   , cumulativeSumWithTensor_axisTensor_exclusive_reverse_nameSelector
   , cumulativeSumWithTensor_axis_nameSelector
@@ -591,14 +686,21 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraph
   , whileWithInitialInputs_before_after_nameSelector
   , forLoopWithLowerBound_upperBound_step_initialBodyArguments_body_nameSelector
   , forLoopWithNumberOfIterations_initialBodyArguments_body_nameSelector
+  , convolutionTranspose2DWithSourceTensor_weightsTensor_outputShape_descriptor_nameSelector
   , convolutionTranspose2DWithSourceTensor_weightsTensor_outputShapeTensor_descriptor_nameSelector
+  , convolutionTranspose2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_forwardConvolutionDescriptor_nameSelector
   , convolutionTranspose2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShapeTensor_forwardConvolutionDescriptor_nameSelector
+  , convolutionTranspose2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_forwardConvolutionDescriptor_nameSelector
   , convolutionTranspose2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShapeTensor_forwardConvolutionDescriptor_nameSelector
   , convolution2DWithSourceTensor_weightsTensor_descriptor_nameSelector
+  , convolution2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_forwardConvolutionDescriptor_nameSelector
   , convolution2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShapeTensor_forwardConvolutionDescriptor_nameSelector
+  , convolution2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_forwardConvolutionDescriptor_nameSelector
   , convolution2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShapeTensor_forwardConvolutionDescriptor_nameSelector
   , convolution3DWithSourceTensor_weightsTensor_descriptor_nameSelector
+  , convolution3DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_forwardConvolutionDescriptor_nameSelector
   , convolution3DDataGradientWithIncomingGradientTensor_weightsTensor_outputShapeTensor_forwardConvolutionDescriptor_nameSelector
+  , convolution3DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_forwardConvolutionDescriptor_nameSelector
   , convolution3DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShapeTensor_forwardConvolutionDescriptor_nameSelector
   , callSymbolName_inputTensors_outputTypes_nameSelector
   , identityWithTensor_nameSelector
@@ -815,6 +917,129 @@ init_ :: IsMPSGraph mpsGraph => mpsGraph -> IO (Id MPSGraph)
 init_ mpsGraph  =
     sendMsg mpsGraph (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | Compiles the graph for the given feeds to returns the target tensor values, ensuring all target operations would be executed.
+--
+-- This call blocks until execution has completed. The compilation descriptor helps specialize the executable returned.
+--
+-- - Parameters:   - device: MPSGraph device to optimize for.   - feeds: Feeds dictionary for the placeholder tensors.   - targetTensors: Tensors for which the caller wishes MPSGraphTensorData to be returned.   - targetOperations: Operations to be completed at the end of the run.   - compilationDescriptor: compilation descriptor to set different compilation parameters. - Returns: A valid MPSGraphExecutable object
+--
+-- ObjC selector: @- compileWithDevice:feeds:targetTensors:targetOperations:compilationDescriptor:@
+compileWithDevice_feeds_targetTensors_targetOperations_compilationDescriptor :: (IsMPSGraph mpsGraph, IsMPSGraphDevice device, IsNSArray targetTensors, IsNSArray targetOperations, IsMPSGraphCompilationDescriptor compilationDescriptor) => mpsGraph -> device -> RawId -> targetTensors -> targetOperations -> compilationDescriptor -> IO (Id MPSGraphExecutable)
+compileWithDevice_feeds_targetTensors_targetOperations_compilationDescriptor mpsGraph  device feeds targetTensors targetOperations compilationDescriptor =
+  withObjCPtr device $ \raw_device ->
+    withObjCPtr targetTensors $ \raw_targetTensors ->
+      withObjCPtr targetOperations $ \raw_targetOperations ->
+        withObjCPtr compilationDescriptor $ \raw_compilationDescriptor ->
+            sendMsg mpsGraph (mkSelector "compileWithDevice:feeds:targetTensors:targetOperations:compilationDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr (unRawId feeds) :: Ptr ()), argPtr (castPtr raw_targetTensors :: Ptr ()), argPtr (castPtr raw_targetOperations :: Ptr ()), argPtr (castPtr raw_compilationDescriptor :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Runs the graph for the given feeds and returns the target tensor values, ensuring all target operations also executed.
+--
+-- This call blocks until execution has completed.
+--
+-- - Parameters:   - feeds: Feeds dictionary for the placeholder tensors.   - targetTensors: Tensors for which the caller wishes MPSGraphTensorData to be returned.   - targetOperations: Operations to be completed at the end of the run. - Returns: A valid MPSGraphTensor : MPSGraphTensorData dictionary with results synchronized to the CPU memory.
+--
+-- ObjC selector: @- runWithFeeds:targetTensors:targetOperations:@
+runWithFeeds_targetTensors_targetOperations :: (IsMPSGraph mpsGraph, IsNSArray targetTensors, IsNSArray targetOperations) => mpsGraph -> RawId -> targetTensors -> targetOperations -> IO RawId
+runWithFeeds_targetTensors_targetOperations mpsGraph  feeds targetTensors targetOperations =
+  withObjCPtr targetTensors $ \raw_targetTensors ->
+    withObjCPtr targetOperations $ \raw_targetOperations ->
+        fmap (RawId . castPtr) $ sendMsg mpsGraph (mkSelector "runWithFeeds:targetTensors:targetOperations:") (retPtr retVoid) [argPtr (castPtr (unRawId feeds) :: Ptr ()), argPtr (castPtr raw_targetTensors :: Ptr ()), argPtr (castPtr raw_targetOperations :: Ptr ())]
+
+-- | Runs the graph for the given feeds and returns the target tensor values, ensuring all target operations also executed.
+--
+-- This call blocks until execution has completed.
+--
+-- - Parameters:   - commandQueue: CommandQueue passed to exectute the graph on.   - feeds: Feeds dictionary for the placeholder tensors.   - targetTensors: Tensors for which the caller wishes MPSGraphTensorData to be returned.   - targetOperations: Operations to be completed at the end of the run. - Returns: A valid MPSGraphTensor : MPSGraphTensorData dictionary with results synchronized to the CPU memory.
+--
+-- ObjC selector: @- runWithMTLCommandQueue:feeds:targetTensors:targetOperations:@
+runWithMTLCommandQueue_feeds_targetTensors_targetOperations :: (IsMPSGraph mpsGraph, IsNSArray targetTensors, IsNSArray targetOperations) => mpsGraph -> RawId -> RawId -> targetTensors -> targetOperations -> IO RawId
+runWithMTLCommandQueue_feeds_targetTensors_targetOperations mpsGraph  commandQueue feeds targetTensors targetOperations =
+  withObjCPtr targetTensors $ \raw_targetTensors ->
+    withObjCPtr targetOperations $ \raw_targetOperations ->
+        fmap (RawId . castPtr) $ sendMsg mpsGraph (mkSelector "runWithMTLCommandQueue:feeds:targetTensors:targetOperations:") (retPtr retVoid) [argPtr (castPtr (unRawId commandQueue) :: Ptr ()), argPtr (castPtr (unRawId feeds) :: Ptr ()), argPtr (castPtr raw_targetTensors :: Ptr ()), argPtr (castPtr raw_targetOperations :: Ptr ())]
+
+-- | Runs the graph for the given feeds and returns the target tensor values in the results dictionary provided by the user.
+--
+-- It also ensures all target operations also executed. This call blocks until execution has completed.
+--
+-- - Parameters:   - commandQueue: CommandQueue passed to exectute the graph on.   - feeds: Feeds dictionary for the placeholder tensors.   - targetOperations: Operations to be completed at the end of the run.   - resultsDictionary: MPSGraphTensors dictionary passed by user, these will be filled with graph output data.
+--
+-- ObjC selector: @- runWithMTLCommandQueue:feeds:targetOperations:resultsDictionary:@
+runWithMTLCommandQueue_feeds_targetOperations_resultsDictionary :: (IsMPSGraph mpsGraph, IsNSArray targetOperations) => mpsGraph -> RawId -> RawId -> targetOperations -> RawId -> IO ()
+runWithMTLCommandQueue_feeds_targetOperations_resultsDictionary mpsGraph  commandQueue feeds targetOperations resultsDictionary =
+  withObjCPtr targetOperations $ \raw_targetOperations ->
+      sendMsg mpsGraph (mkSelector "runWithMTLCommandQueue:feeds:targetOperations:resultsDictionary:") retVoid [argPtr (castPtr (unRawId commandQueue) :: Ptr ()), argPtr (castPtr (unRawId feeds) :: Ptr ()), argPtr (castPtr raw_targetOperations :: Ptr ()), argPtr (castPtr (unRawId resultsDictionary) :: Ptr ())]
+
+-- | Runs the graph for the given feeds and returns the target tensor values, ensuring all target operations also executed.
+--
+-- This call is asynchronous and will return immediately if a completionHandler is set.
+--
+-- - Parameters:   - feeds: Feeds dictionary for the placeholder tensors.   - targetTensors: Tensors for which the caller wishes MPSGraphTensorData to be returned.   - targetOperations: Operations to be completed at the end of the run.   - executionDescriptor: ExecutionDescriptor to be passed in and used. - Returns: A valid MPSGraphTensor : MPSGraphTensorData dictionary with results synchronized to the CPU memory.
+--
+-- ObjC selector: @- runAsyncWithFeeds:targetTensors:targetOperations:executionDescriptor:@
+runAsyncWithFeeds_targetTensors_targetOperations_executionDescriptor :: (IsMPSGraph mpsGraph, IsNSArray targetTensors, IsNSArray targetOperations, IsMPSGraphExecutionDescriptor executionDescriptor) => mpsGraph -> RawId -> targetTensors -> targetOperations -> executionDescriptor -> IO RawId
+runAsyncWithFeeds_targetTensors_targetOperations_executionDescriptor mpsGraph  feeds targetTensors targetOperations executionDescriptor =
+  withObjCPtr targetTensors $ \raw_targetTensors ->
+    withObjCPtr targetOperations $ \raw_targetOperations ->
+      withObjCPtr executionDescriptor $ \raw_executionDescriptor ->
+          fmap (RawId . castPtr) $ sendMsg mpsGraph (mkSelector "runAsyncWithFeeds:targetTensors:targetOperations:executionDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId feeds) :: Ptr ()), argPtr (castPtr raw_targetTensors :: Ptr ()), argPtr (castPtr raw_targetOperations :: Ptr ()), argPtr (castPtr raw_executionDescriptor :: Ptr ())]
+
+-- | Runs the graph for the given feeds and returns the target tensor values, ensuring all target operations also executed.
+--
+-- This call is asynchronous and will return immediately if a completionHandler is set.
+--
+-- - Parameters:   - commandQueue: CommandQueue passed to exectute the graph on.   - feeds: Feeds dictionary for the placeholder tensors.   - targetTensors: Tensors for which the caller wishes MPSGraphTensorData to be returned.   - targetOperations: Operations to be completed at the end of the run.   - executionDescriptor: ExecutionDescriptor to be passed in and used. - Returns: A valid MPSGraphTensor : MPSGraphTensorData dictionary with results synchronized to the CPU memory if MPSGraphOptionsSynchronizeResults set.
+--
+-- ObjC selector: @- runAsyncWithMTLCommandQueue:feeds:targetTensors:targetOperations:executionDescriptor:@
+runAsyncWithMTLCommandQueue_feeds_targetTensors_targetOperations_executionDescriptor :: (IsMPSGraph mpsGraph, IsNSArray targetTensors, IsNSArray targetOperations, IsMPSGraphExecutionDescriptor executionDescriptor) => mpsGraph -> RawId -> RawId -> targetTensors -> targetOperations -> executionDescriptor -> IO RawId
+runAsyncWithMTLCommandQueue_feeds_targetTensors_targetOperations_executionDescriptor mpsGraph  commandQueue feeds targetTensors targetOperations executionDescriptor =
+  withObjCPtr targetTensors $ \raw_targetTensors ->
+    withObjCPtr targetOperations $ \raw_targetOperations ->
+      withObjCPtr executionDescriptor $ \raw_executionDescriptor ->
+          fmap (RawId . castPtr) $ sendMsg mpsGraph (mkSelector "runAsyncWithMTLCommandQueue:feeds:targetTensors:targetOperations:executionDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId commandQueue) :: Ptr ()), argPtr (castPtr (unRawId feeds) :: Ptr ()), argPtr (castPtr raw_targetTensors :: Ptr ()), argPtr (castPtr raw_targetOperations :: Ptr ()), argPtr (castPtr raw_executionDescriptor :: Ptr ())]
+
+-- | Encodes the graph for the given feeds to returns the target tensor values in the results dictionary provided by the user.
+--
+-- It ensures all target operations also executed. This call is asynchronous and will return immediately if a completionHandler is set.
+--
+-- - Parameters:   - commandQueue: CommandQueue passed to exectute the graph on.   - feeds: Feeds dictionary for the placeholder tensors.   - targetOperations: Operations to be completed at the end of the run.   - resultsDictionary: MPSGraphTensors dictionary passed by user, these will be filled with graph output data.   - executionDescriptor: ExecutionDescriptor to be passed in and used.
+--
+-- ObjC selector: @- runAsyncWithMTLCommandQueue:feeds:targetOperations:resultsDictionary:executionDescriptor:@
+runAsyncWithMTLCommandQueue_feeds_targetOperations_resultsDictionary_executionDescriptor :: (IsMPSGraph mpsGraph, IsNSArray targetOperations, IsMPSGraphExecutionDescriptor executionDescriptor) => mpsGraph -> RawId -> RawId -> targetOperations -> RawId -> executionDescriptor -> IO ()
+runAsyncWithMTLCommandQueue_feeds_targetOperations_resultsDictionary_executionDescriptor mpsGraph  commandQueue feeds targetOperations resultsDictionary executionDescriptor =
+  withObjCPtr targetOperations $ \raw_targetOperations ->
+    withObjCPtr executionDescriptor $ \raw_executionDescriptor ->
+        sendMsg mpsGraph (mkSelector "runAsyncWithMTLCommandQueue:feeds:targetOperations:resultsDictionary:executionDescriptor:") retVoid [argPtr (castPtr (unRawId commandQueue) :: Ptr ()), argPtr (castPtr (unRawId feeds) :: Ptr ()), argPtr (castPtr raw_targetOperations :: Ptr ()), argPtr (castPtr (unRawId resultsDictionary) :: Ptr ()), argPtr (castPtr raw_executionDescriptor :: Ptr ())]
+
+-- | Encodes the graph for the given feeds to returns the target tensor values, ensuring all target operations also executed.
+--
+-- This call is asynchronous and will return immediately if a completionHandler is set.
+--
+-- - Parameters:   - commandBuffer: commandBuffer passed to exectute the graph on, it is an MPSCommandBuffer, commitAndContinue might be called, please don't rely on underlying MTLCommandBuffer to remain uncommitted.   - feeds: Feeds dictionary for the placeholder tensors.   - targetTensors: Tensors for which the caller wishes MPSGraphTensorData to be returned.   - targetOperations: Operations to be completed at the end of the run.   - executionDescriptor: ExecutionDescriptor to be passed in and used. - Returns: A valid MPSGraphTensor : MPSGraphTensorData dictionary with results synchronized to the CPU memory if MPSGraphOptionsSynchronizeResults set.
+--
+-- ObjC selector: @- encodeToCommandBuffer:feeds:targetTensors:targetOperations:executionDescriptor:@
+encodeToCommandBuffer_feeds_targetTensors_targetOperations_executionDescriptor :: (IsMPSGraph mpsGraph, IsMPSCommandBuffer commandBuffer, IsNSArray targetTensors, IsNSArray targetOperations, IsMPSGraphExecutionDescriptor executionDescriptor) => mpsGraph -> commandBuffer -> RawId -> targetTensors -> targetOperations -> executionDescriptor -> IO RawId
+encodeToCommandBuffer_feeds_targetTensors_targetOperations_executionDescriptor mpsGraph  commandBuffer feeds targetTensors targetOperations executionDescriptor =
+  withObjCPtr commandBuffer $ \raw_commandBuffer ->
+    withObjCPtr targetTensors $ \raw_targetTensors ->
+      withObjCPtr targetOperations $ \raw_targetOperations ->
+        withObjCPtr executionDescriptor $ \raw_executionDescriptor ->
+            fmap (RawId . castPtr) $ sendMsg mpsGraph (mkSelector "encodeToCommandBuffer:feeds:targetTensors:targetOperations:executionDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_commandBuffer :: Ptr ()), argPtr (castPtr (unRawId feeds) :: Ptr ()), argPtr (castPtr raw_targetTensors :: Ptr ()), argPtr (castPtr raw_targetOperations :: Ptr ()), argPtr (castPtr raw_executionDescriptor :: Ptr ())]
+
+-- | Encodes the graph for the given feeds to returns the target tensor values in the results dictionary provided by the user.
+--
+-- It ensures all target operations also executed. This call is asynchronous and will return immediately if a completionHandler is set.
+--
+-- - Parameters:   - commandBuffer: commandBuffer passed to execute the graph on, commitAndContinue might be called, please don't rely on underlying MTLCommandBuffer to remain uncommitted.   - feeds: Feeds dictionary for the placeholder tensors.   - targetOperations: Operations to be completed at the end of the run.   - resultsDictionary: MPSGraphTensors dictionary passed by user, these will be filled with graph output data.   - executionDescriptor: ExecutionDescriptor to be passed in and used.
+--
+-- ObjC selector: @- encodeToCommandBuffer:feeds:targetOperations:resultsDictionary:executionDescriptor:@
+encodeToCommandBuffer_feeds_targetOperations_resultsDictionary_executionDescriptor :: (IsMPSGraph mpsGraph, IsMPSCommandBuffer commandBuffer, IsNSArray targetOperations, IsMPSGraphExecutionDescriptor executionDescriptor) => mpsGraph -> commandBuffer -> RawId -> targetOperations -> RawId -> executionDescriptor -> IO ()
+encodeToCommandBuffer_feeds_targetOperations_resultsDictionary_executionDescriptor mpsGraph  commandBuffer feeds targetOperations resultsDictionary executionDescriptor =
+  withObjCPtr commandBuffer $ \raw_commandBuffer ->
+    withObjCPtr targetOperations $ \raw_targetOperations ->
+      withObjCPtr executionDescriptor $ \raw_executionDescriptor ->
+          sendMsg mpsGraph (mkSelector "encodeToCommandBuffer:feeds:targetOperations:resultsDictionary:executionDescriptor:") retVoid [argPtr (castPtr raw_commandBuffer :: Ptr ()), argPtr (castPtr (unRawId feeds) :: Ptr ()), argPtr (castPtr raw_targetOperations :: Ptr ()), argPtr (castPtr (unRawId resultsDictionary) :: Ptr ()), argPtr (castPtr raw_executionDescriptor :: Ptr ())]
+
 -- | Creates a TopKGradient operation and returns the result tensor.
 --
 -- Finds the K largest values along the minor dimension of the input. The input must have at least K elements along its minor dimension.
@@ -986,6 +1211,19 @@ bottomKWithSourceTensor_axisTensor_kTensor_name mpsGraph  source axisTensor kTen
       withObjCPtr kTensor $ \raw_kTensor ->
         withObjCPtr name $ \raw_name ->
             sendMsg mpsGraph (mkSelector "bottomKWithSourceTensor:axisTensor:kTensor:name:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr raw_axisTensor :: Ptr ()), argPtr (castPtr raw_kTensor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a reshape operation and returns the result tensor.
+--
+-- This operation reshapes the input tensor to the target shape. The shape must be compatible with the input tensor shape, specifically the volume of the input tensor has to match the volume defined by the shape. The shape is allowed to contain dynamic dimensions (-1) when the result type can be inferred unambiguously.
+--
+-- - Parameters:   - tensor: The tensor to be reshaped.   - shape: The result tensor shape.   - name: The name for the operation. - Returns: A valid MPSGraphTensor object.
+--
+-- ObjC selector: @- reshapeTensor:withShape:name:@
+reshapeTensor_withShape_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor tensor, IsNSString name) => mpsGraph -> tensor -> RawId -> name -> IO (Id MPSGraphTensor)
+reshapeTensor_withShape_name mpsGraph  tensor shape name =
+  withObjCPtr tensor $ \raw_tensor ->
+    withObjCPtr name $ \raw_name ->
+        sendMsg mpsGraph (mkSelector "reshapeTensor:withShape:name:") (retPtr retVoid) [argPtr (castPtr raw_tensor :: Ptr ()), argPtr (castPtr (unRawId shape) :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
 
 -- | Creates a reshape operation and returns the result tensor.
 --
@@ -1261,6 +1499,54 @@ concatTensors_dimension_interleave_name mpsGraph  tensors dimensionIndex interle
     withObjCPtr name $ \raw_name ->
         sendMsg mpsGraph (mkSelector "concatTensors:dimension:interleave:name:") (retPtr retVoid) [argPtr (castPtr raw_tensors :: Ptr ()), argCLong dimensionIndex, argCULong (if interleave then 1 else 0), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
 
+-- | Creates a tile operation and returns the result tensor.
+--
+-- Creates a tensor which contains multiple copies of the input tensor along each dimension of the tensor.
+--
+-- - Parameters:   - tensor: The input tensor   - multiplier: An array of numbers that specifies how many copies per dimension MPSGraph produces.   - name: The name for the operation. - Returns: A valid MPSGraphTensor object.
+--
+-- ObjC selector: @- tileTensor:withMultiplier:name:@
+tileTensor_withMultiplier_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor tensor, IsNSString name) => mpsGraph -> tensor -> RawId -> name -> IO (Id MPSGraphTensor)
+tileTensor_withMultiplier_name mpsGraph  tensor multiplier name =
+  withObjCPtr tensor $ \raw_tensor ->
+    withObjCPtr name $ \raw_name ->
+        sendMsg mpsGraph (mkSelector "tileTensor:withMultiplier:name:") (retPtr retVoid) [argPtr (castPtr raw_tensor :: Ptr ()), argPtr (castPtr (unRawId multiplier) :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a tile gradient operation and returns the result tensor.
+--
+-- - Parameters:   - incomingGradientTensor: The input gradient tensor.   - sourceTensor: The input tensor of the forward pass.   - multiplier: An array of numbers that specifies how many copies per dimension MPSGraph produced in the forward pass.   - name: The name for the operation. - Returns: A valid MPSGraphTensor object.
+--
+-- ObjC selector: @- tileGradientWithIncomingGradientTensor:sourceTensor:withMultiplier:name:@
+tileGradientWithIncomingGradientTensor_sourceTensor_withMultiplier_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor incomingGradientTensor, IsMPSGraphTensor sourceTensor, IsNSString name) => mpsGraph -> incomingGradientTensor -> sourceTensor -> RawId -> name -> IO (Id MPSGraphTensor)
+tileGradientWithIncomingGradientTensor_sourceTensor_withMultiplier_name mpsGraph  incomingGradientTensor sourceTensor multiplier name =
+  withObjCPtr incomingGradientTensor $ \raw_incomingGradientTensor ->
+    withObjCPtr sourceTensor $ \raw_sourceTensor ->
+      withObjCPtr name $ \raw_name ->
+          sendMsg mpsGraph (mkSelector "tileGradientWithIncomingGradientTensor:sourceTensor:withMultiplier:name:") (retPtr retVoid) [argPtr (castPtr raw_incomingGradientTensor :: Ptr ()), argPtr (castPtr raw_sourceTensor :: Ptr ()), argPtr (castPtr (unRawId multiplier) :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a padding operation and returns the result tensor.
+--
+-- - Parameters:   - tensor: The input tensor.   - paddingMode: The parameter that defines the padding mode.   - leftPadding: The parameter that defines how much padding the operation applies to the input tensor before each dimension - must be of size @rank(tensor)@.   - rightPadding: The parameter that defines how much padding the operation applies to the input tensor after each dimension - must be of size @rank(tensor)@.   - constantValue: The constant value the operation uses when @paddingMode = MPSGraphPaddingModeConstant@.   - name: The name for the operation. - Returns: A valid MPSGraphTensor object.
+--
+-- ObjC selector: @- padTensor:withPaddingMode:leftPadding:rightPadding:constantValue:name:@
+padTensor_withPaddingMode_leftPadding_rightPadding_constantValue_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor tensor, IsNSString name) => mpsGraph -> tensor -> MPSGraphPaddingMode -> RawId -> RawId -> CDouble -> name -> IO (Id MPSGraphTensor)
+padTensor_withPaddingMode_leftPadding_rightPadding_constantValue_name mpsGraph  tensor paddingMode leftPadding rightPadding constantValue name =
+  withObjCPtr tensor $ \raw_tensor ->
+    withObjCPtr name $ \raw_name ->
+        sendMsg mpsGraph (mkSelector "padTensor:withPaddingMode:leftPadding:rightPadding:constantValue:name:") (retPtr retVoid) [argPtr (castPtr raw_tensor :: Ptr ()), argCLong (coerce paddingMode), argPtr (castPtr (unRawId leftPadding) :: Ptr ()), argPtr (castPtr (unRawId rightPadding) :: Ptr ()), argCDouble constantValue, argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a padding gradient operation and returns the result tensor.
+--
+-- - Parameters:   - incomingGradientTensor: The input gradient tensor.   - sourceTensor: The input tensor of the forward pass.   - paddingMode: The parameter that defines the padding mode.   - leftPadding: The parameter that defines how much padding the operation applies to the input tensor before each dimension - must be of size @rank(tensor)@.   - rightPadding: The parameter that defines how much padding the operation applies to the input tensor after each dimension - must be of size @rank(tensor)@.   - name: The name for the operation. - Returns: A valid MPSGraphTensor object.
+--
+-- ObjC selector: @- padGradientWithIncomingGradientTensor:sourceTensor:paddingMode:leftPadding:rightPadding:name:@
+padGradientWithIncomingGradientTensor_sourceTensor_paddingMode_leftPadding_rightPadding_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor incomingGradientTensor, IsMPSGraphTensor sourceTensor, IsNSString name) => mpsGraph -> incomingGradientTensor -> sourceTensor -> MPSGraphPaddingMode -> RawId -> RawId -> name -> IO (Id MPSGraphTensor)
+padGradientWithIncomingGradientTensor_sourceTensor_paddingMode_leftPadding_rightPadding_name mpsGraph  incomingGradientTensor sourceTensor paddingMode leftPadding rightPadding name =
+  withObjCPtr incomingGradientTensor $ \raw_incomingGradientTensor ->
+    withObjCPtr sourceTensor $ \raw_sourceTensor ->
+      withObjCPtr name $ \raw_name ->
+          sendMsg mpsGraph (mkSelector "padGradientWithIncomingGradientTensor:sourceTensor:paddingMode:leftPadding:rightPadding:name:") (retPtr retVoid) [argPtr (castPtr raw_incomingGradientTensor :: Ptr ()), argPtr (castPtr raw_sourceTensor :: Ptr ()), argCLong (coerce paddingMode), argPtr (castPtr (unRawId leftPadding) :: Ptr ()), argPtr (castPtr (unRawId rightPadding) :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
 -- | Creates a space-to-depth2D operation and returns the result tensor.
 --
 -- This operation outputs a copy of the @input@ tensor, where values from the @widthAxis@ and @heightAxis@ dimensions are moved in spatial blocks of size @blockSize@ to the @depthAxis@ dimension. Use the @usePixelShuffleOrder@ parameter to control how the data within spatial blocks is ordered in the @depthAxis@ dimension: with @usePixelShuffleOrder=YES@ MPSGraph stores the values of the spatial blocks  contiguosly within the @depthAxis@ dimension, whereas otherwise they are stored interleaved with existing values in the @depthAxis@ dimension. This operation is the inverse of @MPSGraph/depthToSpace2DTensor:widthAxis:heightAxis:depthAxis:blockSize:usePixelShuffleOrder:name:@. - Parameters:   - tensor: The input tensor.   - widthAxis: The axis that defines the fastest running dimension within the block.   - heightAxis: The axis that defines the 2nd fastest running dimension within the block.   - depthAxis: The axis that defines the destination dimension, where to copy the blocks.   - blockSize: The size of the square spatial sub-block.   - usePixelShuffleOrder: A parameter that controls the layout of the sub-blocks within the depth dimension.   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
@@ -1446,6 +1732,19 @@ flatten2DTensor_axisTensor_name mpsGraph  tensor axisTensor name =
     withObjCPtr axisTensor $ \raw_axisTensor ->
       withObjCPtr name $ \raw_name ->
           sendMsg mpsGraph (mkSelector "flatten2DTensor:axisTensor:name:") (retPtr retVoid) [argPtr (castPtr raw_tensor :: Ptr ()), argPtr (castPtr raw_axisTensor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a broadcast operation and returns the result tensor.
+--
+-- Broadcasts values inside the tensor, starting from the trailing dimensions, to give it the correct shape. This is equivalent to the broadcasting for arithmetic operations when operands have different shapes.
+--
+-- - Parameters:   - tensor: The tensor to be broadcasted   - shape: The shape of the result tensor.   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
+--
+-- ObjC selector: @- broadcastTensor:toShape:name:@
+broadcastTensor_toShape_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor tensor, IsNSString name) => mpsGraph -> tensor -> RawId -> name -> IO (Id MPSGraphTensor)
+broadcastTensor_toShape_name mpsGraph  tensor shape name =
+  withObjCPtr tensor $ \raw_tensor ->
+    withObjCPtr name $ \raw_name ->
+        sendMsg mpsGraph (mkSelector "broadcastTensor:toShape:name:") (retPtr retVoid) [argPtr (castPtr raw_tensor :: Ptr ()), argPtr (castPtr (unRawId shape) :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
 
 -- | Creates a broadcast operation and returns the result tensor.
 --
@@ -1651,6 +1950,31 @@ expandDimsOfTensor_axesTensor_name mpsGraph  tensor axesTensor name =
 
 -- | Creates a get-coordindate operation and returns the result tensor.
 --
+-- Creates a tensor of specified shape with value at index @[i_0, i_1, ... , i_N] = i_axis@ For example,  ```md  coordinateAlongAxis(0, withShape=[5]) = [0, 1, 2, 3, 4]  coordinateAlongAxis(0, withShape=[3,2]) = [[0, 0],                                            [1, 1],                                            [2, 2]] ```
+--
+-- - Parameters:   - axis: The coordinate axis an element's value is set to. Negative values wrap around.   - shape: The shape of the result tensor.   - name: The name for the operation. - Returns: A valid MPSGraphTensor object.
+--
+-- ObjC selector: @- coordinateAlongAxis:withShape:name:@
+coordinateAlongAxis_withShape_name :: (IsMPSGraph mpsGraph, IsNSString name) => mpsGraph -> CLong -> RawId -> name -> IO (Id MPSGraphTensor)
+coordinateAlongAxis_withShape_name mpsGraph  axis shape name =
+  withObjCPtr name $ \raw_name ->
+      sendMsg mpsGraph (mkSelector "coordinateAlongAxis:withShape:name:") (retPtr retVoid) [argCLong axis, argPtr (castPtr (unRawId shape) :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a get-coordindate operation and returns the result tensor.
+--
+-- See ``MPSGraph/coordinateAlongAxis:withShape:name:``.
+--
+-- - Parameters:   - axisTensor: A Scalar tensor of type @MPSDataTypeInt32@, that specifies the coordinate axis an element's value is set to. Negative values wrap around.   - shape: The shape of the result tensor.   - name: The name for the operation. - Returns: A valid MPSGraphTensor object.
+--
+-- ObjC selector: @- coordinateAlongAxisTensor:withShape:name:@
+coordinateAlongAxisTensor_withShape_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor axisTensor, IsNSString name) => mpsGraph -> axisTensor -> RawId -> name -> IO (Id MPSGraphTensor)
+coordinateAlongAxisTensor_withShape_name mpsGraph  axisTensor shape name =
+  withObjCPtr axisTensor $ \raw_axisTensor ->
+    withObjCPtr name $ \raw_name ->
+        sendMsg mpsGraph (mkSelector "coordinateAlongAxisTensor:withShape:name:") (retPtr retVoid) [argPtr (castPtr raw_axisTensor :: Ptr ()), argPtr (castPtr (unRawId shape) :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a get-coordindate operation and returns the result tensor.
+--
 -- See ``coordinateAlongAxis:withShape:name:``.
 --
 -- - Parameters:   - axis: The coordinate axis an element's value is set to. Negative values wrap around.   - shapeTensor: A rank-1 tensor of type @MPSDataTypeInt32@ or @MPSDataTypeInt64@ that defines the shape of the result tensor.   - name: The name for the operation. - Returns: A valid MPSGraphTensor object.
@@ -1690,6 +2014,33 @@ stencilWithSourceTensor_weightsTensor_descriptor_name mpsGraph  source weights d
       withObjCPtr descriptor $ \raw_descriptor ->
         withObjCPtr name $ \raw_name ->
             sendMsg mpsGraph (mkSelector "stencilWithSourceTensor:weightsTensor:descriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a sparse tensor representation.
+--
+-- sparseVals corresponds to non zero values in matrix.  indexTensor0 and indexTensor1 are indices used for indexing into sparse data structure.  For COO, indexTensor0 is x index and indexTensor1 is y index.  For CSC, indexTensor0 and indexTensor1 correspond to rowIndex and colStarts respectively.  For CSR, indexTensor0 and indexTensor1 correspond to colIndex and rowStarts respectively. You must set input tensors appropriately for each sparse storage type.
+--
+-- - Parameters:   - sparseStorageType: A sparseStorageType.   - inputTensorArray: An array of input tensors as [sparseVals, indexTensor0, indexTensor1].   - shape: The shape of the sparse tensor.   - dataType: The dataType of the sparse tensor.   - name: A name for the operation. - Returns: A valid ``MPSGraphTensor`` object.
+--
+-- ObjC selector: @- sparseTensorWithType:tensors:shape:dataType:name:@
+sparseTensorWithType_tensors_shape_dataType_name :: (IsMPSGraph mpsGraph, IsNSArray inputTensorArray, IsNSString name) => mpsGraph -> MPSGraphSparseStorageType -> inputTensorArray -> RawId -> MPSDataType -> name -> IO (Id MPSGraphTensor)
+sparseTensorWithType_tensors_shape_dataType_name mpsGraph  sparseStorageType inputTensorArray shape dataType name =
+  withObjCPtr inputTensorArray $ \raw_inputTensorArray ->
+    withObjCPtr name $ \raw_name ->
+        sendMsg mpsGraph (mkSelector "sparseTensorWithType:tensors:shape:dataType:name:") (retPtr retVoid) [argCULong (coerce sparseStorageType), argPtr (castPtr raw_inputTensorArray :: Ptr ()), argPtr (castPtr (unRawId shape) :: Ptr ()), argCUInt (coerce dataType), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a sparse tensor representation.
+--
+-- sparseVals corresponds to non zero values in matrix.  indexTensor0 and indexTensor1 are indices used for indexing into sparse data structure.  For COO, indexTensor0 is x index and indexTensor1 is y index . For CSC, indexTensor0 and indexTensor1 correspond to rowIndex and colStarts respectively.  For CSR, indexTensor0 and indexTensor1 correspond to colIndex and rowStarts respectively. You must set input tensors appropriately for each sparse storage type.
+--
+-- - Parameters:   - sparseDescriptor: A sparseDescriptor.   - inputTensorArray: An array of input tensors as [sparseVals, indexTensor0, indexTensor1].   - shape: The shape of the sparse tensor.   - name: A name for the operation. - Returns: A valid ``MPSGraphTensor`` object
+--
+-- ObjC selector: @- sparseTensorWithDescriptor:tensors:shape:name:@
+sparseTensorWithDescriptor_tensors_shape_name :: (IsMPSGraph mpsGraph, IsMPSGraphCreateSparseOpDescriptor sparseDescriptor, IsNSArray inputTensorArray, IsNSString name) => mpsGraph -> sparseDescriptor -> inputTensorArray -> RawId -> name -> IO (Id MPSGraphTensor)
+sparseTensorWithDescriptor_tensors_shape_name mpsGraph  sparseDescriptor inputTensorArray shape name =
+  withObjCPtr sparseDescriptor $ \raw_sparseDescriptor ->
+    withObjCPtr inputTensorArray $ \raw_inputTensorArray ->
+      withObjCPtr name $ \raw_name ->
+          sendMsg mpsGraph (mkSelector "sparseTensorWithDescriptor:tensors:shape:name:") (retPtr retVoid) [argPtr (castPtr raw_sparseDescriptor :: Ptr ()), argPtr (castPtr raw_inputTensorArray :: Ptr ()), argPtr (castPtr (unRawId shape) :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
 
 -- | Sorts the elements of the input tensor along the specified axis.
 --
@@ -1785,6 +2136,35 @@ argSortWithTensor_axisTensor_name mpsGraph  tensor axisTensor name =
 
 -- | Creates a ScatterAlongAxis operation and returns the result tensor.
 --
+-- Scatter values from @updatesTensor@ along the specified @axis@ at indices in @indicesTensor@ into a result tensor.  Values are updated following @mode@. See MPSGraphScatterMode.  The shape of @updatesTensor@ and @indicesTensor@ must match. @shape@ must match except at @axis@.  The shape of the result tensor is equal to @shape@ and initialized with an initial value corresponding to @mode@.  If an index is out of bounds of @shape@ along @axis@ the update value is skipped.
+--
+-- - Parameters:   - axis: The axis to scatter to. Negative values wrap around   - updatesTensor: The input tensor to scatter values from   - indicesTensor: Int32 or Int64 tensor used to index the result tensor.   - mode: The type of update to use   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
+--
+-- ObjC selector: @- scatterAlongAxis:withUpdatesTensor:indicesTensor:shape:mode:name:@
+scatterAlongAxis_withUpdatesTensor_indicesTensor_shape_mode_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor updatesTensor, IsMPSGraphTensor indicesTensor, IsNSString name) => mpsGraph -> CLong -> updatesTensor -> indicesTensor -> RawId -> MPSGraphScatterMode -> name -> IO (Id MPSGraphTensor)
+scatterAlongAxis_withUpdatesTensor_indicesTensor_shape_mode_name mpsGraph  axis updatesTensor indicesTensor shape mode name =
+  withObjCPtr updatesTensor $ \raw_updatesTensor ->
+    withObjCPtr indicesTensor $ \raw_indicesTensor ->
+      withObjCPtr name $ \raw_name ->
+          sendMsg mpsGraph (mkSelector "scatterAlongAxis:withUpdatesTensor:indicesTensor:shape:mode:name:") (retPtr retVoid) [argCLong axis, argPtr (castPtr raw_updatesTensor :: Ptr ()), argPtr (castPtr raw_indicesTensor :: Ptr ()), argPtr (castPtr (unRawId shape) :: Ptr ()), argCLong (coerce mode), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a ScatterAlongAxis operation and returns the result tensor.
+--
+-- Scatter values from @updatesTensor@ along the specified @axis@ at indices in @indicesTensor@ into a result tensor. Values are updated following @mode@. See MPSGraphScatterMode. The shape of @updatesTensor@ and @indicesTensor@ must match. @shape@ must match except at @axis@. The shape of the result tensor is equal to @shape@ and initialized with an initial value corresponding to @mode@. If an index is out of bounds of @shape@ along @axis@ the update value is skipped.
+--
+-- - Parameters:   - axisTensor: Scalar Int32 tensor. The axis to scatter to. Negative values wrap around   - updatesTensor: The input tensor to scatter values from   - indicesTensor: Int32 or Int64 tensor used to index the result tensor.   - mode: The type of update to use   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
+--
+-- ObjC selector: @- scatterAlongAxisTensor:withUpdatesTensor:indicesTensor:shape:mode:name:@
+scatterAlongAxisTensor_withUpdatesTensor_indicesTensor_shape_mode_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor axisTensor, IsMPSGraphTensor updatesTensor, IsMPSGraphTensor indicesTensor, IsNSString name) => mpsGraph -> axisTensor -> updatesTensor -> indicesTensor -> RawId -> MPSGraphScatterMode -> name -> IO (Id MPSGraphTensor)
+scatterAlongAxisTensor_withUpdatesTensor_indicesTensor_shape_mode_name mpsGraph  axisTensor updatesTensor indicesTensor shape mode name =
+  withObjCPtr axisTensor $ \raw_axisTensor ->
+    withObjCPtr updatesTensor $ \raw_updatesTensor ->
+      withObjCPtr indicesTensor $ \raw_indicesTensor ->
+        withObjCPtr name $ \raw_name ->
+            sendMsg mpsGraph (mkSelector "scatterAlongAxisTensor:withUpdatesTensor:indicesTensor:shape:mode:name:") (retPtr retVoid) [argPtr (castPtr raw_axisTensor :: Ptr ()), argPtr (castPtr raw_updatesTensor :: Ptr ()), argPtr (castPtr raw_indicesTensor :: Ptr ()), argPtr (castPtr (unRawId shape) :: Ptr ()), argCLong (coerce mode), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a ScatterAlongAxis operation and returns the result tensor.
+--
 -- Scatter values from @updatesTensor@ along the specified @axis@ at indices in @indicesTensor@ onto @dataTensor@.  Values in @dataTensor@ are updated following @mode@. See MPSGraphScatterMode.  The shape of @updatesTensor@ and @indicesTensor@ must match. The shape of @dataTensor@ must match except at @axis@.  If an index is out of bounds of @shape@ along @axis@ the update value is skipped.  For example,  ```md data = [ [0, 0, 0],          [1, 1, 1],          [2, 2, 2],          [3, 3, 3] ] updates = [ [1, 2, 3],             [4, 5, 6] ] indices = [ [2, 1, 0],             [1, 3, 2] ] axis = 0 result = scatterAlongAxis(axis, data, updates, indices, MPSGraphScatterModeAdd, "scatter") result = [ [0, 0, 3],            [5, 3, 1],            [3, 2, 8],            [3, 8, 3] ] ```
 --
 -- - Parameters:   - axis: The axis to scatter to. Negative values wrap around   - dataTensor: The input tensor to scatter values onto   - updatesTensor: The input tensor to scatter values from   - indicesTensor: Int32 or Int64 tensor used to index the result tensor.   - mode: The type of update to use   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
@@ -1816,6 +2196,20 @@ scatterAlongAxisTensor_withDataTensor_updatesTensor_indicesTensor_mode_name mpsG
 
 -- | Creates a Scatter operation and returns the result tensor.
 --
+-- Scatters the slices in updatesTensor to the result tensor along the indices in indicesTensor.  The scatter is defined as  ```md  U = updates.rank  P = res.rank  res[i_{0},...,i_{axis-1},indices[i_{axis}],i_{axis+1},...,i_{U-1}] = updates[i_{0},...,i_{axis-1},i_{axis},i_{axis+1},...,i_{U-1}]  ```  Collisions will be updated according to mode. The tensors have the following shape requirements ```md  U = P  indices.rank = 1  updates.shape[0:axis-1] = res.shape[0:axis-1]  updates.shape[axis] = indices.shape[0]  updates.shape[axis+1:U] = res.shape[0:P]  ```
+--
+-- - Parameters:   - updatesTensor: Tensor containing values to be inserted into the result tensor.   - indicesTensor: Tensor containg the result indices to insert values at.   - shape: The shape of the result tensor.   - axis: The axis of the result tensor to scatter values along.   - mode: The type of update to use on the destination.   - name: The name for the operation. - Returns: A valid MPSGraphTensor object.
+--
+-- ObjC selector: @- scatterWithUpdatesTensor:indicesTensor:shape:axis:mode:name:@
+scatterWithUpdatesTensor_indicesTensor_shape_axis_mode_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor updatesTensor, IsMPSGraphTensor indicesTensor, IsNSString name) => mpsGraph -> updatesTensor -> indicesTensor -> RawId -> CLong -> MPSGraphScatterMode -> name -> IO (Id MPSGraphTensor)
+scatterWithUpdatesTensor_indicesTensor_shape_axis_mode_name mpsGraph  updatesTensor indicesTensor shape axis mode name =
+  withObjCPtr updatesTensor $ \raw_updatesTensor ->
+    withObjCPtr indicesTensor $ \raw_indicesTensor ->
+      withObjCPtr name $ \raw_name ->
+          sendMsg mpsGraph (mkSelector "scatterWithUpdatesTensor:indicesTensor:shape:axis:mode:name:") (retPtr retVoid) [argPtr (castPtr raw_updatesTensor :: Ptr ()), argPtr (castPtr raw_indicesTensor :: Ptr ()), argPtr (castPtr (unRawId shape) :: Ptr ()), argCLong axis, argCLong (coerce mode), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a Scatter operation and returns the result tensor.
+--
 -- Scatters the slices in updatesTensor to the result tensor along the indices in indicesTensor, on top of dataTensor.  The scatter is defined as  ```md  U = updates.rank  P = res.rank  res[...] = data[...]  res[i_{0},...,i_{axis-1},indices[i_{axis}],i_{axis+1},...,i_{U-1}] += updates[i_{0},...,i_{axis-1},i_{axis},i_{axis+1},...,i_{U-1}] // Note += is used but this depends on mode  ```  Collisions will be updated according to mode. The tensors have the following shape requirements ```md  U = P  indices.rank = 1  data.shape = res.shape  updates.shape[0:axis-1] = res.shape[0:axis-1]  updates.shape[axis] = indices.shape[0]  updates.shape[axis+1:U] = res.shape[0:P]  ```
 --
 -- - Parameters:   - dataTensor: Tensor containing inital values of same shape as result tensor   - updatesTensor: Tensor containing values to be inserted into the result tensor.   - indicesTensor: Tensor containg the result indices to insert values at   - axis: The axis of the result tensor to scatter values along   - mode: The type of update to use on the destination   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
@@ -1828,6 +2222,34 @@ scatterWithDataTensor_updatesTensor_indicesTensor_axis_mode_name mpsGraph  dataT
       withObjCPtr indicesTensor $ \raw_indicesTensor ->
         withObjCPtr name $ \raw_name ->
             sendMsg mpsGraph (mkSelector "scatterWithDataTensor:updatesTensor:indicesTensor:axis:mode:name:") (retPtr retVoid) [argPtr (castPtr raw_dataTensor :: Ptr ()), argPtr (castPtr raw_updatesTensor :: Ptr ()), argPtr (castPtr raw_indicesTensor :: Ptr ()), argCLong axis, argCLong (coerce mode), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a ScatterND operation and returns the result tensor.
+--
+-- Scatters the slices in updatesTensor to the result tensor along the indices in indicesTensor.  The scatter is defined as  ```md  B = batchDims  U = updates.rank - B  P = res.rank - B  Q = inds.rank - B  K = inds.shape[-1]  index_slice = indices[i_{b0},...,i_{bB},i_{0},..,i_{Q-1}]  res[i_{b0},...,i_{bB},index_slice[0],...,index_slice[K-1]] = updates[i_{b0},...,i_{bB},i_{0},...,i_{Q-1}]  ```  Collisions will be summed, and slices not set by indices are set to 0. The tensors have the following shape requirements ```md  K <= P  U = (P-K) + Q-1  indices.shape[0:Q-1] = updates.shape[0:Q-1]  updates.shape[Q:U] = res.shape[K:P]  ```
+--
+-- - Parameters:   - updatesTensor: Tensor containing slices to be inserted into the result tensor.   - indicesTensor: Tensor containg the result indices to insert slices at   - shape: The shape of the result tensor.   - batchDimensions: The number of batch dimensions   - mode: The type of update to use on the destination   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
+--
+-- ObjC selector: @- scatterNDWithUpdatesTensor:indicesTensor:shape:batchDimensions:mode:name:@
+scatterNDWithUpdatesTensor_indicesTensor_shape_batchDimensions_mode_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor updatesTensor, IsMPSGraphTensor indicesTensor, IsNSString name) => mpsGraph -> updatesTensor -> indicesTensor -> RawId -> CULong -> MPSGraphScatterMode -> name -> IO (Id MPSGraphTensor)
+scatterNDWithUpdatesTensor_indicesTensor_shape_batchDimensions_mode_name mpsGraph  updatesTensor indicesTensor shape batchDimensions mode name =
+  withObjCPtr updatesTensor $ \raw_updatesTensor ->
+    withObjCPtr indicesTensor $ \raw_indicesTensor ->
+      withObjCPtr name $ \raw_name ->
+          sendMsg mpsGraph (mkSelector "scatterNDWithUpdatesTensor:indicesTensor:shape:batchDimensions:mode:name:") (retPtr retVoid) [argPtr (castPtr raw_updatesTensor :: Ptr ()), argPtr (castPtr raw_indicesTensor :: Ptr ()), argPtr (castPtr (unRawId shape) :: Ptr ()), argCULong batchDimensions, argCLong (coerce mode), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a ScatterND operation and returns the result tensor.
+--
+-- Scatters the slices in updatesTensor to the result tensor along the indices in indicesTensor.  The scatter is defined as  ```md  B = batchDims  U = updates.rank - B  P = res.rank - B  Q = inds.rank - B  K = inds.shape[-1]  index_slice = indices[i_{b0},...,i_{bB},i_{0},..,i_{Q-1}]  res[i_{b0},...,i_{bB},index_slice[0],...,index_slice[K-1]] = updates[i_{b0},...,i_{bB},i_{0},...,i_{Q-1}]  ```  Collisions will be summed, and slices not set by indices are set to 0. The tensors have the following shape requirements ```md  K <= P  U = (P-K) + Q-1  indices.shape[0:Q-1] = updates.shape[0:Q-1]  updates.shape[Q:U] = res.shape[K:P]  ```
+--
+-- - Parameters:   - updatesTensor: Tensor containing slices to be inserted into the result tensor.   - indicesTensor: Tensor containg the result indices to insert slices at   - shape: The shape of the result tensor.   - batchDimensions: The number of batch dimensions   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
+--
+-- ObjC selector: @- scatterNDWithUpdatesTensor:indicesTensor:shape:batchDimensions:name:@
+scatterNDWithUpdatesTensor_indicesTensor_shape_batchDimensions_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor updatesTensor, IsMPSGraphTensor indicesTensor, IsNSString name) => mpsGraph -> updatesTensor -> indicesTensor -> RawId -> CULong -> name -> IO (Id MPSGraphTensor)
+scatterNDWithUpdatesTensor_indicesTensor_shape_batchDimensions_name mpsGraph  updatesTensor indicesTensor shape batchDimensions name =
+  withObjCPtr updatesTensor $ \raw_updatesTensor ->
+    withObjCPtr indicesTensor $ \raw_indicesTensor ->
+      withObjCPtr name $ \raw_name ->
+          sendMsg mpsGraph (mkSelector "scatterNDWithUpdatesTensor:indicesTensor:shape:batchDimensions:name:") (retPtr retVoid) [argPtr (castPtr raw_updatesTensor :: Ptr ()), argPtr (castPtr raw_indicesTensor :: Ptr ()), argPtr (castPtr (unRawId shape) :: Ptr ()), argCULong batchDimensions, argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
 
 -- | Creates a ScatterND operation and returns the result tensor.
 --
@@ -2271,6 +2693,19 @@ gruGradientsWithSourceTensor_recurrentWeight_sourceGradient_zState_outputFwd_inp
                 withObjCPtr descriptor $ \raw_descriptor ->
                   withObjCPtr name $ \raw_name ->
                       sendMsg mpsGraph (mkSelector "GRUGradientsWithSourceTensor:recurrentWeight:sourceGradient:zState:outputFwd:inputWeight:bias:descriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr raw_recurrentWeight :: Ptr ()), argPtr (castPtr raw_sourceGradient :: Ptr ()), argPtr (castPtr raw_zState :: Ptr ()), argPtr (castPtr raw_outputFwd :: Ptr ()), argPtr (castPtr raw_inputWeight :: Ptr ()), argPtr (castPtr raw_bias :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a Resize operation and returns the result tensor.
+--
+-- Resamples input images to given size. Result images will be distorted if size is of different aspect ratio.  Resize supports the following modes:  Nearest Neighbor - values are interpolated using the closest neighbor pixel  Bilinear - values are computed using bilinear interpolation of 4 neighboring pixels  Destination indices are computed using direct index scaling by default, with no offset added.  If the centerResult parameter is true, the destination indices will be scaled and shifted to be centered  on the input image.  If the alignCorners parameter is true, the corners of the result images will match the input images.  Scaling will be modified to a factor of (size - 1) / (inputSize - 1). When alignCorners is true, the  centerResult parameter does nothing.  In order to achieve the same behavior as OpenCV's resize and TensorFlowV2's resize,  ```md  centerResult = YES;  alginCorners = NO;  ```  To achieve the same behavior as TensorFlowV1 resize  ```md  centerResult = NO;  ```
+--
+-- - Parameters:   - imagesTensor: Tensor containing input images.   - size: A 2-element shape as [newHeight, newWidth]   - mode: The resampling mode to use. If nearest sampling is specifed, RoundPreferCeil mode will be used.   - centerResult: Controls if the result image is centered on the input image. When NO, the result will have the top left corner aligned   - alignCorners: When YES, the result image will have the same value as the input image in the corners   - layout: Specifies what layout the provided tensor is in. The returned tensor will follow the same layout. Valid layouts are NHWC, NCHW, HWC, CHW, and HW.   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
+--
+-- ObjC selector: @- resizeTensor:size:mode:centerResult:alignCorners:layout:name:@
+resizeTensor_size_mode_centerResult_alignCorners_layout_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor imagesTensor, IsNSString name) => mpsGraph -> imagesTensor -> RawId -> MPSGraphResizeMode -> Bool -> Bool -> MPSGraphTensorNamedDataLayout -> name -> IO (Id MPSGraphTensor)
+resizeTensor_size_mode_centerResult_alignCorners_layout_name mpsGraph  imagesTensor size mode centerResult alignCorners layout name =
+  withObjCPtr imagesTensor $ \raw_imagesTensor ->
+    withObjCPtr name $ \raw_name ->
+        sendMsg mpsGraph (mkSelector "resizeTensor:size:mode:centerResult:alignCorners:layout:name:") (retPtr retVoid) [argPtr (castPtr raw_imagesTensor :: Ptr ()), argPtr (castPtr (unRawId size) :: Ptr ()), argCULong (coerce mode), argCULong (if centerResult then 1 else 0), argCULong (if alignCorners then 1 else 0), argCULong (coerce layout), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
 
 -- | Creates a Resize operation and returns the result tensor.
 --
@@ -2810,6 +3245,19 @@ randomPhiloxStateTensorWithCounterLow_counterHigh_key_name mpsGraph  counterLow 
 
 -- | Creates a Random op of type matching distribution in descriptor and returns random values.
 --
+-- Returns a tensor of provided shape of random values in the distribution specified. Uses a random seed value to initalize state. No state is preserved, and subsequent calls are not guaranteed to result in a unique stream of  random values.
+--
+-- - Parameters:   - shape: The shape of the tensor generated   - descriptor: The descriptor of the distribution. See MPSGraphRandomOpDescriptor.   - name: The name for the operation. - Returns: An MPSGraphTensor of shape containing random values in the defined range.
+--
+-- ObjC selector: @- randomTensorWithShape:descriptor:name:@
+randomTensorWithShape_descriptor_name :: (IsMPSGraph mpsGraph, IsMPSGraphRandomOpDescriptor descriptor, IsNSString name) => mpsGraph -> RawId -> descriptor -> name -> IO (Id MPSGraphTensor)
+randomTensorWithShape_descriptor_name mpsGraph  shape descriptor name =
+  withObjCPtr descriptor $ \raw_descriptor ->
+    withObjCPtr name $ \raw_name ->
+        sendMsg mpsGraph (mkSelector "randomTensorWithShape:descriptor:name:") (retPtr retVoid) [argPtr (castPtr (unRawId shape) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a Random op of type matching distribution in descriptor and returns random values.
+--
 -- Returns a tensor of provided shape of random values in the distribution specified. Uses a random seed value to initalize state. No state is preserved, and subsequent calls are not guaranteed to result in a unique stream of random values.
 --
 -- - Parameters:   - shapeTensor: 1D Int32 or Int64 tensor. The shape of the tensor generated   - descriptor: The descriptor of the distribution. See MPSGraphRandomOpDescriptor.   - name: The name for the operation. - Returns: An MPSGraphTensor of shape containing random values in the defined range.
@@ -2826,6 +3274,19 @@ randomTensorWithShapeTensor_descriptor_name mpsGraph  shapeTensor descriptor nam
 --
 -- Returns a tensor of provided shape of random values in the distribution specified. Uses the provided seed value to initalize state. No state is preserved, and all calls with equal seed yield an identical stream of random values.
 --
+-- - Parameters:   - shape: The shape of the tensor generated   - descriptor: The descriptor of the distribution. See MPSGraphRandomOpDescriptor.   - seed: The seed to use to initialize state. All calls with equal seed yield an identical stream of random values.   - name: The name for the operation. - Returns: An MPSGraphTensor of shape containing random values in the defined range.
+--
+-- ObjC selector: @- randomTensorWithShape:descriptor:seed:name:@
+randomTensorWithShape_descriptor_seed_name :: (IsMPSGraph mpsGraph, IsMPSGraphRandomOpDescriptor descriptor, IsNSString name) => mpsGraph -> RawId -> descriptor -> CULong -> name -> IO (Id MPSGraphTensor)
+randomTensorWithShape_descriptor_seed_name mpsGraph  shape descriptor seed name =
+  withObjCPtr descriptor $ \raw_descriptor ->
+    withObjCPtr name $ \raw_name ->
+        sendMsg mpsGraph (mkSelector "randomTensorWithShape:descriptor:seed:name:") (retPtr retVoid) [argPtr (castPtr (unRawId shape) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ()), argCULong seed, argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a Random op of type matching distribution in descriptor and returns random values.
+--
+-- Returns a tensor of provided shape of random values in the distribution specified. Uses the provided seed value to initalize state. No state is preserved, and all calls with equal seed yield an identical stream of random values.
+--
 -- - Parameters:   - shapeTensor: 1D Int32 or Int64 tensor. The shape of the tensor generated   - descriptor: The descriptor of the distribution. See MPSGraphRandomOpDescriptor.   - seed: The seed to use to initialize state. All calls with equal seed yield an identical stream of random values.   - name: The name for the operation. - Returns: An MPSGraphTensor of shape containing random values in the defined range.
 --
 -- ObjC selector: @- randomTensorWithShapeTensor:descriptor:seed:name:@
@@ -2835,6 +3296,20 @@ randomTensorWithShapeTensor_descriptor_seed_name mpsGraph  shapeTensor descripto
     withObjCPtr descriptor $ \raw_descriptor ->
       withObjCPtr name $ \raw_name ->
           sendMsg mpsGraph (mkSelector "randomTensorWithShapeTensor:descriptor:seed:name:") (retPtr retVoid) [argPtr (castPtr raw_shapeTensor :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ()), argCULong seed, argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a Random op of type matching distribution in descriptor, and returns random values and updated state.
+--
+-- Returns an array of 2 tensors, where the first is of provided shape of random values in the distribution specified, and the second is the updated state tensor. Uses the provided state to define a stream of random values. No state is preserved, and all calls with equal state yield an identical stream of random values. The initial stateTensor provided should be created using the MPSGraph  randomPhiloxStateTensor APIs. The resulting stateTensor from this op can be passed as an argument to the following  random calls to continue sampling from the stream.
+--
+-- - Parameters:   - shape: The shape of the tensor generated   - descriptor: The descriptor of the distribution. See MPSGraphRandomOpDescriptor.   - state: The state to define a stream of random values. All calls with equal state yield an identical stream of random values.   - name: The name for the operation. - Returns: An array of MPSGraphTensor of size 2. The first MPSGraphTensor is of shape containing random values in the defined range.  The second MPSGraphTensor is the updated state tensor.
+--
+-- ObjC selector: @- randomTensorWithShape:descriptor:stateTensor:name:@
+randomTensorWithShape_descriptor_stateTensor_name :: (IsMPSGraph mpsGraph, IsMPSGraphRandomOpDescriptor descriptor, IsMPSGraphTensor state, IsNSString name) => mpsGraph -> RawId -> descriptor -> state -> name -> IO (Id NSArray)
+randomTensorWithShape_descriptor_stateTensor_name mpsGraph  shape descriptor state name =
+  withObjCPtr descriptor $ \raw_descriptor ->
+    withObjCPtr state $ \raw_state ->
+      withObjCPtr name $ \raw_name ->
+          sendMsg mpsGraph (mkSelector "randomTensorWithShape:descriptor:stateTensor:name:") (retPtr retVoid) [argPtr (castPtr (unRawId shape) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_state :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
 
 -- | Creates a Random op of type matching distribution in descriptor, and returns random values and updated state.
 --
@@ -2853,6 +3328,18 @@ randomTensorWithShapeTensor_descriptor_stateTensor_name mpsGraph  shapeTensor de
 
 -- | Creates a RandomUniform operation and returns random uniform values
 --
+-- Returns a tensor of provided shape of random uniform values in the range [0.0, 1.0). Uses a random seed value to initalize state. No state is preserved, and subsequent calls are not guaranteed to result in a unique stream of  random values.
+--
+-- - Parameters:   - shape: The shape of the tensor generated   - name: The name for the operation. - Returns: An MPSGraphTensor of shape containing random values in the defined range.
+--
+-- ObjC selector: @- randomUniformTensorWithShape:name:@
+randomUniformTensorWithShape_name :: (IsMPSGraph mpsGraph, IsNSString name) => mpsGraph -> RawId -> name -> IO (Id MPSGraphTensor)
+randomUniformTensorWithShape_name mpsGraph  shape name =
+  withObjCPtr name $ \raw_name ->
+      sendMsg mpsGraph (mkSelector "randomUniformTensorWithShape:name:") (retPtr retVoid) [argPtr (castPtr (unRawId shape) :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a RandomUniform operation and returns random uniform values
+--
 -- Returns a tensor of provided shape of random uniform values in the range [0.0, 1.0). Uses a random seed value to initalize state. No state is preserved, and subsequent calls are not guaranteed to result in a unique stream of random values.
 --
 -- - Parameters:   - shapeTensor: 1D Int32 or Int64 tensor. The shape of the tensor generated   - name: The name for the operation. - Returns: An MPSGraphTensor of shape containing random values in the defined range.
@@ -2868,6 +3355,18 @@ randomUniformTensorWithShapeTensor_name mpsGraph  shapeTensor name =
 --
 -- Returns a tensor of provided shape of random uniform values in the range [0.0, 1.0). Uses the provided seed value to initalize state. No state is preserved, and all calls with equal seed yield an identical stream of random values.
 --
+-- - Parameters:   - shape: The shape of the tensor generated   - seed: The seed to use to initialize state. All calls with equal seed yield an identical stream of random values.   - name: The name for the operation. - Returns: An MPSGraphTensor of shape containing random values in the defined range.
+--
+-- ObjC selector: @- randomUniformTensorWithShape:seed:name:@
+randomUniformTensorWithShape_seed_name :: (IsMPSGraph mpsGraph, IsNSString name) => mpsGraph -> RawId -> CULong -> name -> IO (Id MPSGraphTensor)
+randomUniformTensorWithShape_seed_name mpsGraph  shape seed name =
+  withObjCPtr name $ \raw_name ->
+      sendMsg mpsGraph (mkSelector "randomUniformTensorWithShape:seed:name:") (retPtr retVoid) [argPtr (castPtr (unRawId shape) :: Ptr ()), argCULong seed, argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a RandomUniform operation and returns random uniform values
+--
+-- Returns a tensor of provided shape of random uniform values in the range [0.0, 1.0). Uses the provided seed value to initalize state. No state is preserved, and all calls with equal seed yield an identical stream of random values.
+--
 -- - Parameters:   - shapeTensor: 1D Int32 or Int64 tensor. The shape of the tensor generated   - seed: The seed to use to initialize state. All calls with equal seed yield an identical stream of random values.   - name: The name for the operation. - Returns: An MPSGraphTensor of shape containing random values in the defined range.
 --
 -- ObjC selector: @- randomUniformTensorWithShapeTensor:seed:name:@
@@ -2876,6 +3375,19 @@ randomUniformTensorWithShapeTensor_seed_name mpsGraph  shapeTensor seed name =
   withObjCPtr shapeTensor $ \raw_shapeTensor ->
     withObjCPtr name $ \raw_name ->
         sendMsg mpsGraph (mkSelector "randomUniformTensorWithShapeTensor:seed:name:") (retPtr retVoid) [argPtr (castPtr raw_shapeTensor :: Ptr ()), argCULong seed, argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a RandomUniform operation and returns random uniform values and updated state
+--
+-- Returns an array of 2 tensors, where the first is a tensor of provided shape of random uniform values in the range  [0.0, 1.0), and the second is the updated state tensor. The provided state is used to define a stream of random values. No state is preserved, and all calls with equal state  yield an identical stream of random values. The initial stateTensor provided should be created using the MPSGraph  randomPhiloxStateTensor APIs. The resulting stateTensor from this op can be passed as an argument to the following  random calls to continue sampling from the stream.
+--
+-- - Parameters:   - shape: The shape of the tensor generated   - state: The state to define a stream of random values. All calls with equal state yield an identical stream of random values.   - name: The name for the operation. - Returns: An array of MPSGraphTensor of size 2. The first MPSGraphTensor is of shape containing random values in the defined range.  The second MPSGraphTensor is the updated state tensor.
+--
+-- ObjC selector: @- randomUniformTensorWithShape:stateTensor:name:@
+randomUniformTensorWithShape_stateTensor_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor state, IsNSString name) => mpsGraph -> RawId -> state -> name -> IO (Id NSArray)
+randomUniformTensorWithShape_stateTensor_name mpsGraph  shape state name =
+  withObjCPtr state $ \raw_state ->
+    withObjCPtr name $ \raw_name ->
+        sendMsg mpsGraph (mkSelector "randomUniformTensorWithShape:stateTensor:name:") (retPtr retVoid) [argPtr (castPtr (unRawId shape) :: Ptr ()), argPtr (castPtr raw_state :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
 
 -- | Creates a RandomUniform operation and returns random uniform values and updated state
 --
@@ -3102,6 +3614,21 @@ maxPooling2DGradientWithGradientTensor_sourceTensor_descriptor_name mpsGraph  gr
 --
 -- With this API MPSGraph computes the max-pooling gradient efficiently by reusing the indices from the forward API instead of recomputing them. The descriptor must set @returnIndicesMode@ and @returnIndicesDataType@ to the same value as that set by the forward pass.
 --
+-- - Parameters:   - gradient: A 2D input gradient tensor - must be of rank=4. The layout is defined by @descriptor.dataLayout@.   - indices: The indices tensor returned from ``MPSGraph/maxPooling2DReturnIndicesWithSourceTensor:descriptor:name:``.   - outputShape: The shape of the destination gradient.   - descriptor: A pooling operation descriptor that specifies pooling window sizes, strides, dilation rates, paddings and layouts.   - name: The name for the operation. - Returns: Destination gradient tensor.
+--
+-- ObjC selector: @- maxPooling2DGradientWithGradientTensor:indicesTensor:outputShape:descriptor:name:@
+maxPooling2DGradientWithGradientTensor_indicesTensor_outputShape_descriptor_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor gradient, IsMPSGraphTensor indices, IsMPSGraphPooling2DOpDescriptor descriptor, IsNSString name) => mpsGraph -> gradient -> indices -> RawId -> descriptor -> name -> IO (Id MPSGraphTensor)
+maxPooling2DGradientWithGradientTensor_indicesTensor_outputShape_descriptor_name mpsGraph  gradient indices outputShape descriptor name =
+  withObjCPtr gradient $ \raw_gradient ->
+    withObjCPtr indices $ \raw_indices ->
+      withObjCPtr descriptor $ \raw_descriptor ->
+        withObjCPtr name $ \raw_name ->
+            sendMsg mpsGraph (mkSelector "maxPooling2DGradientWithGradientTensor:indicesTensor:outputShape:descriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_gradient :: Ptr ()), argPtr (castPtr raw_indices :: Ptr ()), argPtr (castPtr (unRawId outputShape) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a max-pooling gradient operation and returns the result tensor.
+--
+-- With this API MPSGraph computes the max-pooling gradient efficiently by reusing the indices from the forward API instead of recomputing them. The descriptor must set @returnIndicesMode@ and @returnIndicesDataType@ to the same value as that set by the forward pass.
+--
 -- - Parameters:   - gradient: A 2D input gradient tensor - must be of rank=4. The layout is defined by @descriptor.dataLayout@.   - indices: The indices tensor returned from ``MPSGraph/maxPooling2DReturnIndicesWithSourceTensor:descriptor:name:``.   - outputShape: A tensor containing the shape of the destination gradient.   - descriptor: A pooling operation descriptor that specifies pooling window sizes, strides, dilation rates, paddings and layouts.   - name: The name for the operation. - Returns: Destination gradient tensor.
 --
 -- ObjC selector: @- maxPooling2DGradientWithGradientTensor:indicesTensor:outputShapeTensor:descriptor:name:@
@@ -3177,6 +3704,21 @@ maxPooling4DGradientWithGradientTensor_sourceTensor_descriptor_name mpsGraph  gr
       withObjCPtr descriptor $ \raw_descriptor ->
         withObjCPtr name $ \raw_name ->
             sendMsg mpsGraph (mkSelector "maxPooling4DGradientWithGradientTensor:sourceTensor:descriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_gradient :: Ptr ()), argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a max-pooling gradient operation and returns the result tensor.
+--
+-- With this API MPSGraph computes the max-pooling gradient efficiently by reusing the indices from the forward API instead of recomputing them. The descriptor must set @returnIndicesMode@ and @returnIndicesDataType@ to the same value as that set by the forward pass.
+--
+-- - Parameters:   - gradient: An input gradient tensor.   - indices: Indices tensor returned from ``MPSGraph/maxPooling4DReturnIndicesWithSourceTensor:descriptor:name:``.   - outputShape: The shape of the destination gradient.   - descriptor: A pooling operation descriptor that specifies pooling window sizes, strides, dilation rates, paddings and layouts.   - name: The name for the operation. - Returns: Destination gradient tensor.
+--
+-- ObjC selector: @- maxPooling4DGradientWithGradientTensor:indicesTensor:outputShape:descriptor:name:@
+maxPooling4DGradientWithGradientTensor_indicesTensor_outputShape_descriptor_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor gradient, IsMPSGraphTensor indices, IsMPSGraphPooling4DOpDescriptor descriptor, IsNSString name) => mpsGraph -> gradient -> indices -> RawId -> descriptor -> name -> IO (Id MPSGraphTensor)
+maxPooling4DGradientWithGradientTensor_indicesTensor_outputShape_descriptor_name mpsGraph  gradient indices outputShape descriptor name =
+  withObjCPtr gradient $ \raw_gradient ->
+    withObjCPtr indices $ \raw_indices ->
+      withObjCPtr descriptor $ \raw_descriptor ->
+        withObjCPtr name $ \raw_name ->
+            sendMsg mpsGraph (mkSelector "maxPooling4DGradientWithGradientTensor:indicesTensor:outputShape:descriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_gradient :: Ptr ()), argPtr (castPtr raw_indices :: Ptr ()), argPtr (castPtr (unRawId outputShape) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
 
 -- | Creates a max-pooling gradient operation and returns the result tensor.
 --
@@ -3530,6 +4072,36 @@ nonMaximumSuppressionWithBoxesTensor_scoresTensor_classIndicesTensor_IOUThreshol
         withObjCPtr name $ \raw_name ->
             sendMsg mpsGraph (mkSelector "nonMaximumSuppressionWithBoxesTensor:scoresTensor:classIndicesTensor:IOUThreshold:scoreThreshold:perClassSuppression:coordinateMode:name:") (retPtr retVoid) [argPtr (castPtr raw_boxesTensor :: Ptr ()), argPtr (castPtr raw_scoresTensor :: Ptr ()), argPtr (castPtr raw_classIndicesTensor :: Ptr ()), argCFloat iouThreshold, argCFloat scoreThreshold, argCULong (if perClassSuppression then 1 else 0), argCULong (coerce coordinateMode), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
 
+-- | Creates a placeholder operation and returns the result tensor.
+--
+-- - Parameters:   - shape: The shape of the output tensor. A nil shape will result in an unranked tensor.   - dataType: The dataType of the placeholder tensor.   - name: The name for the placeholder operation. - Returns: A valid MPSGraphTensor object.
+--
+-- ObjC selector: @- placeholderWithShape:dataType:name:@
+placeholderWithShape_dataType_name :: (IsMPSGraph mpsGraph, IsNSString name) => mpsGraph -> RawId -> MPSDataType -> name -> IO (Id MPSGraphTensor)
+placeholderWithShape_dataType_name mpsGraph  shape dataType name =
+  withObjCPtr name $ \raw_name ->
+      sendMsg mpsGraph (mkSelector "placeholderWithShape:dataType:name:") (retPtr retVoid) [argPtr (castPtr (unRawId shape) :: Ptr ()), argCUInt (coerce dataType), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a placeholder operation and returns the result tensor with the dataType of the placeholder tensor set to 32 bit float.
+--
+-- - Parameters:   - shape: The shape of the output tensor. A nil shape will result in an unranked tensor.   - name: The name for the operation. - Returns: A valid MPSGraphTensor object.
+--
+-- ObjC selector: @- placeholderWithShape:name:@
+placeholderWithShape_name :: (IsMPSGraph mpsGraph, IsNSString name) => mpsGraph -> RawId -> name -> IO (Id MPSGraphTensor)
+placeholderWithShape_name mpsGraph  shape name =
+  withObjCPtr name $ \raw_name ->
+      sendMsg mpsGraph (mkSelector "placeholderWithShape:name:") (retPtr retVoid) [argPtr (castPtr (unRawId shape) :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a constant op with a given shape and data, and returns the result tensor.
+--
+-- - Parameters:   - data: The data for the tensor. The number of bytes should be sizeof(dataType)numberOfElements.   - shape: The shape of the output tensor. This has to be statically shaped.   - dataType: The dataType of theconstant tensor. - Returns: A valid MPSGraphTensor object.
+--
+-- ObjC selector: @- constantWithData:shape:dataType:@
+constantWithData_shape_dataType :: (IsMPSGraph mpsGraph, IsNSData data_) => mpsGraph -> data_ -> RawId -> MPSDataType -> IO (Id MPSGraphTensor)
+constantWithData_shape_dataType mpsGraph  data_ shape dataType =
+  withObjCPtr data_ $ \raw_data_ ->
+      sendMsg mpsGraph (mkSelector "constantWithData:shape:dataType:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr (unRawId shape) :: Ptr ()), argCUInt (coerce dataType)] >>= retainedObject . castPtr
+
 -- | Creates a constant operation and returns the result tensor.
 --
 -- - Parameters:   - scalar: The scalar value to fill the entire tensor values with.   - dataType: The dataType of the constant tensor. - Returns: A valid MPSGraphTensor object.
@@ -3538,6 +4110,15 @@ nonMaximumSuppressionWithBoxesTensor_scoresTensor_classIndicesTensor_IOUThreshol
 constantWithScalar_dataType :: IsMPSGraph mpsGraph => mpsGraph -> CDouble -> MPSDataType -> IO (Id MPSGraphTensor)
 constantWithScalar_dataType mpsGraph  scalar dataType =
     sendMsg mpsGraph (mkSelector "constantWithScalar:dataType:") (retPtr retVoid) [argCDouble scalar, argCUInt (coerce dataType)] >>= retainedObject . castPtr
+
+-- | Creates a constant op with a given shape and returns the result tensor.
+--
+-- - Parameters:   - scalar: The scalar value to fill the entire tensor values with.   - shape: The shape of the output tensor.   - dataType: The dataType of the constant tensor. - Returns: A valid MPSGraphTensor object.
+--
+-- ObjC selector: @- constantWithScalar:shape:dataType:@
+constantWithScalar_shape_dataType :: IsMPSGraph mpsGraph => mpsGraph -> CDouble -> RawId -> MPSDataType -> IO (Id MPSGraphTensor)
+constantWithScalar_shape_dataType mpsGraph  scalar shape dataType =
+    sendMsg mpsGraph (mkSelector "constantWithScalar:shape:dataType:") (retPtr retVoid) [argCDouble scalar, argPtr (castPtr (unRawId shape) :: Ptr ()), argCUInt (coerce dataType)] >>= retainedObject . castPtr
 
 -- | Creates a complex constant op with the MPSDataTypeComplexFloat32 data type and returns the result tensor.
 --
@@ -3556,6 +4137,26 @@ constantWithRealPart_imaginaryPart mpsGraph  realPart imaginaryPart =
 constantWithRealPart_imaginaryPart_dataType :: IsMPSGraph mpsGraph => mpsGraph -> CDouble -> CDouble -> MPSDataType -> IO (Id MPSGraphTensor)
 constantWithRealPart_imaginaryPart_dataType mpsGraph  realPart imaginaryPart dataType =
     sendMsg mpsGraph (mkSelector "constantWithRealPart:imaginaryPart:dataType:") (retPtr retVoid) [argCDouble realPart, argCDouble imaginaryPart, argCUInt (coerce dataType)] >>= retainedObject . castPtr
+
+-- | Creates a complex constant op with a given shape and returns the result tensor.
+--
+-- - Parameters:   - realPart: The real part of the complex scalar to fill the entire tensor values with.   - imaginaryPart: The imaginary part of the complex scalar to fill the entire tensor values with.   - shape: The shape of the output tensor. This has to be statically shaped.   - dataType: The dataType of the constant tensor. - Returns: A valid MPSGraphTensor object.
+--
+-- ObjC selector: @- constantWithRealPart:imaginaryPart:shape:dataType:@
+constantWithRealPart_imaginaryPart_shape_dataType :: IsMPSGraph mpsGraph => mpsGraph -> CDouble -> CDouble -> RawId -> MPSDataType -> IO (Id MPSGraphTensor)
+constantWithRealPart_imaginaryPart_shape_dataType mpsGraph  realPart imaginaryPart shape dataType =
+    sendMsg mpsGraph (mkSelector "constantWithRealPart:imaginaryPart:shape:dataType:") (retPtr retVoid) [argCDouble realPart, argCDouble imaginaryPart, argPtr (castPtr (unRawId shape) :: Ptr ()), argCUInt (coerce dataType)] >>= retainedObject . castPtr
+
+-- | Creates a variable operation and returns the result tensor.
+--
+-- - Parameters:   - data: The data for the tensor. The number of bytes should be sizeof(dataType)numberOfElements.   - shape: The shape of the output tensor. This has to be statically shaped.   - dataType: The dataType of the constant tensor.   - name: The name for the operation. - Returns: A valid MPSGraphTensor object.
+--
+-- ObjC selector: @- variableWithData:shape:dataType:name:@
+variableWithData_shape_dataType_name :: (IsMPSGraph mpsGraph, IsNSData data_, IsNSString name) => mpsGraph -> data_ -> RawId -> MPSDataType -> name -> IO (Id MPSGraphTensor)
+variableWithData_shape_dataType_name mpsGraph  data_ shape dataType name =
+  withObjCPtr data_ $ \raw_data_ ->
+    withObjCPtr name $ \raw_name ->
+        sendMsg mpsGraph (mkSelector "variableWithData:shape:dataType:name:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr (unRawId shape) :: Ptr ()), argCUInt (coerce dataType), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
 
 -- | Creates a variable from an input tensor.
 --
@@ -3725,6 +4326,18 @@ imToColWithSourceTensor_descriptor_name mpsGraph  source descriptor name =
     withObjCPtr descriptor $ \raw_descriptor ->
       withObjCPtr name $ \raw_name ->
           sendMsg mpsGraph (mkSelector "imToColWithSourceTensor:descriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a column to image operation and returns the result tensor.
+--
+-- - Parameters:   - source: The tensor containing the source data. Must be of rank 4. The layout is defined by @descriptor.dataLayout@.   - outputShape: The result tensor shape.   - descriptor: The descriptor object that specifies the parameters of the operation.   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
+--
+-- ObjC selector: @- colToImWithSourceTensor:outputShape:descriptor:name:@
+colToImWithSourceTensor_outputShape_descriptor_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor source, IsMPSGraphImToColOpDescriptor descriptor, IsNSString name) => mpsGraph -> source -> RawId -> descriptor -> name -> IO (Id MPSGraphTensor)
+colToImWithSourceTensor_outputShape_descriptor_name mpsGraph  source outputShape descriptor name =
+  withObjCPtr source $ \raw_source ->
+    withObjCPtr descriptor $ \raw_descriptor ->
+      withObjCPtr name $ \raw_name ->
+          sendMsg mpsGraph (mkSelector "colToImWithSourceTensor:outputShape:descriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr (unRawId outputShape) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
 
 -- | Creates a GatherAlongAxis operation and returns the result tensor.
 --
@@ -3898,6 +4511,32 @@ depthwiseConvolution2DWithSourceTensor_weightsTensor_descriptor_name mpsGraph  s
         withObjCPtr name $ \raw_name ->
             sendMsg mpsGraph (mkSelector "depthwiseConvolution2DWithSourceTensor:weightsTensor:descriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
 
+-- | Creates a 2D-depthwise convolution gradient for data operation and returns the result tensor.
+--
+-- - Parameters:   - incomingGradient: A 2D input gradient tensor - must be of rank=4. The layout is defined by @descriptor.dataLayout@.   - weights: The weights tensor, must be rank=4. The layout is defined by @descriptor.weightsLayout@.   - outputShape: The shape of the οutput tensor (and therefore input tensor of forward pass).   - descriptor: The descriptor object that specifies strides, dilation rates, paddings and layouts.   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
+--
+-- ObjC selector: @- depthwiseConvolution2DDataGradientWithIncomingGradientTensor:weightsTensor:outputShape:descriptor:name:@
+depthwiseConvolution2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_descriptor_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor incomingGradient, IsMPSGraphTensor weights, IsMPSGraphDepthwiseConvolution2DOpDescriptor descriptor, IsNSString name) => mpsGraph -> incomingGradient -> weights -> RawId -> descriptor -> name -> IO (Id MPSGraphTensor)
+depthwiseConvolution2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_descriptor_name mpsGraph  incomingGradient weights outputShape descriptor name =
+  withObjCPtr incomingGradient $ \raw_incomingGradient ->
+    withObjCPtr weights $ \raw_weights ->
+      withObjCPtr descriptor $ \raw_descriptor ->
+        withObjCPtr name $ \raw_name ->
+            sendMsg mpsGraph (mkSelector "depthwiseConvolution2DDataGradientWithIncomingGradientTensor:weightsTensor:outputShape:descriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_incomingGradient :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ()), argPtr (castPtr (unRawId outputShape) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a 2D-depthwise convolution gradient for weights operation and returns the result tensor.
+--
+-- - Parameters:   - incomingGradient: A 2D input gradient tensor - must be of rank=4. The layout is defined by @descriptor.dataLayout@.   - source: A 2D Image source as tensor - must be of rank=4. The layout is defined by @descriptor.dataLayout@.   - outputShape: The shape of the οutput tensor (and therefore weight tensor of forward pass).   - descriptor: The descriptor object that specifies strides, dilation rates, paddings and layouts.   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
+--
+-- ObjC selector: @- depthwiseConvolution2DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShape:descriptor:name:@
+depthwiseConvolution2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_descriptor_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor incomingGradient, IsMPSGraphTensor source, IsMPSGraphDepthwiseConvolution2DOpDescriptor descriptor, IsNSString name) => mpsGraph -> incomingGradient -> source -> RawId -> descriptor -> name -> IO (Id MPSGraphTensor)
+depthwiseConvolution2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_descriptor_name mpsGraph  incomingGradient source outputShape descriptor name =
+  withObjCPtr incomingGradient $ \raw_incomingGradient ->
+    withObjCPtr source $ \raw_source ->
+      withObjCPtr descriptor $ \raw_descriptor ->
+        withObjCPtr name $ \raw_name ->
+            sendMsg mpsGraph (mkSelector "depthwiseConvolution2DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShape:descriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_incomingGradient :: Ptr ()), argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr (unRawId outputShape) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
 -- | Creates a 3D depthwise convolution operation and returns the result tensor.
 --
 -- Works exactly like depthwise convolution2D, but in three dimensions. Supports different layouts with the ``MPSGraphDepthwiseConvolution3DOpDescriptor/channelDimensionIndex`` property. If your weights need a different layout add a permute operation on them before this operation.
@@ -3912,6 +4551,32 @@ depthwiseConvolution3DWithSourceTensor_weightsTensor_descriptor_name mpsGraph  s
       withObjCPtr descriptor $ \raw_descriptor ->
         withObjCPtr name $ \raw_name ->
             sendMsg mpsGraph (mkSelector "depthwiseConvolution3DWithSourceTensor:weightsTensor:descriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a 3D depthwise convolution gradient for data operation and returns the result tensor.
+--
+-- - Parameters:   - incomingGradient: A 3D input gradient tensor - must be at least rank=4 (CDHW).   - weights: The weights tensor, must be rank=4 - axes are interpreted as CDHW.   - outputShape: The shape of the οutput tensor (and therefore input tensor of forward pass).   - descriptor: The descriptor object that  specifies strides, dilation rates and paddings.   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
+--
+-- ObjC selector: @- depthwiseConvolution3DDataGradientWithIncomingGradientTensor:weightsTensor:outputShape:descriptor:name:@
+depthwiseConvolution3DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_descriptor_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor incomingGradient, IsMPSGraphTensor weights, IsMPSGraphDepthwiseConvolution3DOpDescriptor descriptor, IsNSString name) => mpsGraph -> incomingGradient -> weights -> RawId -> descriptor -> name -> IO (Id MPSGraphTensor)
+depthwiseConvolution3DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_descriptor_name mpsGraph  incomingGradient weights outputShape descriptor name =
+  withObjCPtr incomingGradient $ \raw_incomingGradient ->
+    withObjCPtr weights $ \raw_weights ->
+      withObjCPtr descriptor $ \raw_descriptor ->
+        withObjCPtr name $ \raw_name ->
+            sendMsg mpsGraph (mkSelector "depthwiseConvolution3DDataGradientWithIncomingGradientTensor:weightsTensor:outputShape:descriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_incomingGradient :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ()), argPtr (castPtr (unRawId outputShape) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a 3D depthwise convolution gradient for weights operation and returns the result tensor.
+--
+-- - Parameters:   - incomingGradient: A 3D input gradient tensor - must be at least rank=4 (NCDHW).   - source: The forward pass 3D Image source as tensor - must be at least rank=4 (NCDHW).   - outputShape: The shape of the οutput tensor (and therefore weight tensor of forward pass).   - descriptor: The descriptor object that specifies strides, dilation rates and paddings.   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
+--
+-- ObjC selector: @- depthwiseConvolution3DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShape:descriptor:name:@
+depthwiseConvolution3DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_descriptor_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor incomingGradient, IsMPSGraphTensor source, IsMPSGraphDepthwiseConvolution3DOpDescriptor descriptor, IsNSString name) => mpsGraph -> incomingGradient -> source -> RawId -> descriptor -> name -> IO (Id MPSGraphTensor)
+depthwiseConvolution3DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_descriptor_name mpsGraph  incomingGradient source outputShape descriptor name =
+  withObjCPtr incomingGradient $ \raw_incomingGradient ->
+    withObjCPtr source $ \raw_source ->
+      withObjCPtr descriptor $ \raw_descriptor ->
+        withObjCPtr name $ \raw_name ->
+            sendMsg mpsGraph (mkSelector "depthwiseConvolution3DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShape:descriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_incomingGradient :: Ptr ()), argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr (unRawId outputShape) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
 
 -- | Computes the cumulative sum of the input tensor along the specified axis.
 --
@@ -4160,6 +4825,21 @@ forLoopWithNumberOfIterations_initialBodyArguments_body_name mpsGraph  numberOfI
 
 -- | Creates a convolution transpose operation and returns the result tensor.
 --
+-- Convolution Tranpose operation is exactly the same as convolution gradint with respect to input image @convolution2DDataGradientWithIncomingGradient@. Weights tensor and source tensors are interpreted as they are in @convolution2DDataGradientWithIncomingGradient@. Convolution with stride @s@ downsamples source tensor by factor @s@ in spatial dimensions whereas convolution tranpose with stride @s@ upsamples source tensor by factor @s@. Convolution transpose can map the same source size to multiple destination sizes. The relationship between the width of the source and the width of the destination is `(sourceWidth - 1)stride + 1 + (kernelWidth - 1)dilationRate <= destinationWidth + paddingLeft + paddingRight` so there are stride -1 values of the width of the destination that give same width of the source. In order to disambiguate, outputShape parameter is used.
+--
+-- - Parameters:   - source: input tensor   - weights: weights tensor   - outputShape: shape of the result tensor.   - descriptor: descriptor for the corresponding forward 2D-convolution operation   - name: name for the operation - Returns: A valid MPSGraphTensor object.
+--
+-- ObjC selector: @- convolutionTranspose2DWithSourceTensor:weightsTensor:outputShape:descriptor:name:@
+convolutionTranspose2DWithSourceTensor_weightsTensor_outputShape_descriptor_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor source, IsMPSGraphTensor weights, IsMPSGraphConvolution2DOpDescriptor descriptor, IsNSString name) => mpsGraph -> source -> weights -> RawId -> descriptor -> name -> IO (Id MPSGraphTensor)
+convolutionTranspose2DWithSourceTensor_weightsTensor_outputShape_descriptor_name mpsGraph  source weights outputShape descriptor name =
+  withObjCPtr source $ \raw_source ->
+    withObjCPtr weights $ \raw_weights ->
+      withObjCPtr descriptor $ \raw_descriptor ->
+        withObjCPtr name $ \raw_name ->
+            sendMsg mpsGraph (mkSelector "convolutionTranspose2DWithSourceTensor:weightsTensor:outputShape:descriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ()), argPtr (castPtr (unRawId outputShape) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a convolution transpose operation and returns the result tensor.
+--
 -- - Parameters:   - source: input tensor   - weights: weights tensor   - outputShape: 1D Int32 or Int64 tensor. shape of the result tensor.   - descriptor: descriptor for the corresponding forward Conv2D operation   - name: name for the operation - Returns: A valid MPSGraphTensor object.
 --
 -- ObjC selector: @- convolutionTranspose2DWithSourceTensor:weightsTensor:outputShapeTensor:descriptor:name:@
@@ -4176,6 +4856,21 @@ convolutionTranspose2DWithSourceTensor_weightsTensor_outputShapeTensor_descripto
 --
 -- Inserts an operation in graph to compute gradient of convolution transpose with respect to source tensor of the corresponding convolution transpose operation.
 --
+-- - Parameters:   - incomingGradient: Incoming gradient tensor   - weights: Forward pass weights tensor   - outputShape: Shape of the forward pass source tensor   - forwardConvolutionDescriptor: Forward pass op descriptor   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
+--
+-- ObjC selector: @- convolutionTranspose2DDataGradientWithIncomingGradientTensor:weightsTensor:outputShape:forwardConvolutionDescriptor:name:@
+convolutionTranspose2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_forwardConvolutionDescriptor_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor incomingGradient, IsMPSGraphTensor weights, IsMPSGraphConvolution2DOpDescriptor forwardConvolutionDescriptor, IsNSString name) => mpsGraph -> incomingGradient -> weights -> RawId -> forwardConvolutionDescriptor -> name -> IO (Id MPSGraphTensor)
+convolutionTranspose2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_forwardConvolutionDescriptor_name mpsGraph  incomingGradient weights outputShape forwardConvolutionDescriptor name =
+  withObjCPtr incomingGradient $ \raw_incomingGradient ->
+    withObjCPtr weights $ \raw_weights ->
+      withObjCPtr forwardConvolutionDescriptor $ \raw_forwardConvolutionDescriptor ->
+        withObjCPtr name $ \raw_name ->
+            sendMsg mpsGraph (mkSelector "convolutionTranspose2DDataGradientWithIncomingGradientTensor:weightsTensor:outputShape:forwardConvolutionDescriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_incomingGradient :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ()), argPtr (castPtr (unRawId outputShape) :: Ptr ()), argPtr (castPtr raw_forwardConvolutionDescriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a convolution transpose gradient operation with respect to the source tensor of convolution transpose operation and returns the result tensor.
+--
+-- Inserts an operation in graph to compute gradient of convolution transpose with respect to source tensor of the corresponding convolution transpose operation.
+--
 -- - Parameters:   - incomingGradient: Incoming gradient tensor   - weights: Forward pass weights tensor   - outputShape: 1D Int32 or Int64 Tensor. Shape of the forward pass source tensor   - forwardConvolutionDescriptor: Forward pass op descriptor   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
 --
 -- ObjC selector: @- convolutionTranspose2DDataGradientWithIncomingGradientTensor:weightsTensor:outputShapeTensor:forwardConvolutionDescriptor:name:@
@@ -4187,6 +4882,21 @@ convolutionTranspose2DDataGradientWithIncomingGradientTensor_weightsTensor_outpu
         withObjCPtr forwardConvolutionDescriptor $ \raw_forwardConvolutionDescriptor ->
           withObjCPtr name $ \raw_name ->
               sendMsg mpsGraph (mkSelector "convolutionTranspose2DDataGradientWithIncomingGradientTensor:weightsTensor:outputShapeTensor:forwardConvolutionDescriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_incomingGradient :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ()), argPtr (castPtr raw_outputShape :: Ptr ()), argPtr (castPtr raw_forwardConvolutionDescriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a convolution transpose gradient operation with respect to the weights tensor of the convolution transpose operation and returns the result tensor.
+--
+-- Inserts an operation in graph to compute gradient of convolution transpose with respect to the weights tensor of the corresponding convolution transpose operation.
+--
+-- - Parameters:   - incomingGradientTensor: Incoming gradient tensor   - source: Forward pass source tensor   - outputShape: Shape of the forward pass source weights tensor   - forwardConvolutionDescriptor: Forward pass op descriptor   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
+--
+-- ObjC selector: @- convolutionTranspose2DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShape:forwardConvolutionDescriptor:name:@
+convolutionTranspose2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_forwardConvolutionDescriptor_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor incomingGradientTensor, IsMPSGraphTensor source, IsMPSGraphConvolution2DOpDescriptor forwardConvolutionDescriptor, IsNSString name) => mpsGraph -> incomingGradientTensor -> source -> RawId -> forwardConvolutionDescriptor -> name -> IO (Id MPSGraphTensor)
+convolutionTranspose2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_forwardConvolutionDescriptor_name mpsGraph  incomingGradientTensor source outputShape forwardConvolutionDescriptor name =
+  withObjCPtr incomingGradientTensor $ \raw_incomingGradientTensor ->
+    withObjCPtr source $ \raw_source ->
+      withObjCPtr forwardConvolutionDescriptor $ \raw_forwardConvolutionDescriptor ->
+        withObjCPtr name $ \raw_name ->
+            sendMsg mpsGraph (mkSelector "convolutionTranspose2DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShape:forwardConvolutionDescriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_incomingGradientTensor :: Ptr ()), argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr (unRawId outputShape) :: Ptr ()), argPtr (castPtr raw_forwardConvolutionDescriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
 
 -- | Creates a convolution transpose gradient operation with respect to the weights tensor of the convolution transpose operation and returns the result tensor.
 --
@@ -4219,6 +4929,21 @@ convolution2DWithSourceTensor_weightsTensor_descriptor_name mpsGraph  source wei
 
 -- | Creates a 2D convolution gradient operation with respect to the source tensor of the forward convolution.
 --
+-- If @S@ is source tensor to forward convolution, @R@ is the result/returned tensor from forward convolution, and @L@ is the loss function, @convolution2DDataGradientWithIncomingGradientTensor@ returns tensor @dL/dS = dL/dR * dR/dS@, where @dL/dR@ is the incomingGradient parameter.
+--
+-- - Parameters:   - incomingGradient: Incoming loss gradient tensor   - weights: Forward pass weights tensor   - outputShape: Shape of the forward pass source tensor   - forwardConvolutionDescriptor: Forward convolution 2D op ``descriptor``   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
+--
+-- ObjC selector: @- convolution2DDataGradientWithIncomingGradientTensor:weightsTensor:outputShape:forwardConvolutionDescriptor:name:@
+convolution2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_forwardConvolutionDescriptor_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor incomingGradient, IsMPSGraphTensor weights, IsMPSGraphConvolution2DOpDescriptor forwardConvolutionDescriptor, IsNSString name) => mpsGraph -> incomingGradient -> weights -> RawId -> forwardConvolutionDescriptor -> name -> IO (Id MPSGraphTensor)
+convolution2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_forwardConvolutionDescriptor_name mpsGraph  incomingGradient weights outputShape forwardConvolutionDescriptor name =
+  withObjCPtr incomingGradient $ \raw_incomingGradient ->
+    withObjCPtr weights $ \raw_weights ->
+      withObjCPtr forwardConvolutionDescriptor $ \raw_forwardConvolutionDescriptor ->
+        withObjCPtr name $ \raw_name ->
+            sendMsg mpsGraph (mkSelector "convolution2DDataGradientWithIncomingGradientTensor:weightsTensor:outputShape:forwardConvolutionDescriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_incomingGradient :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ()), argPtr (castPtr (unRawId outputShape) :: Ptr ()), argPtr (castPtr raw_forwardConvolutionDescriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a 2D convolution gradient operation with respect to the source tensor of the forward convolution.
+--
 -- If @S@ is source tensor to forward convolution, @R@ is the result/returned tensor of forward convolution, and @L@ is the loss function, convolution2DDataGradientWithIncomingGradientTensor returns tensor @dL/dS = dL/dR * dR/dS@, where @dL/dR@ is the incomingGradient parameter.
 --
 -- - Parameters:   - incomingGradient: Incoming loss gradient tensor   - weights: Forward pass weights tensor   - outputShapeTensor: 4D Int32 or Int64 tensor. Shape of the forward pass source tensor   - forwardConvolutionDescriptor: Forward convolution 2D op ``descriptor``   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
@@ -4232,6 +4957,21 @@ convolution2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShapeTen
         withObjCPtr forwardConvolutionDescriptor $ \raw_forwardConvolutionDescriptor ->
           withObjCPtr name $ \raw_name ->
               sendMsg mpsGraph (mkSelector "convolution2DDataGradientWithIncomingGradientTensor:weightsTensor:outputShapeTensor:forwardConvolutionDescriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_gradient :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ()), argPtr (castPtr raw_outputShapeTensor :: Ptr ()), argPtr (castPtr raw_forwardConvolutionDescriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a 2D convolution gradient operation with respect to the weights tensor of the forward convolution.
+--
+-- If @W@ is weights tensor to forward convolution, @R@ is the result/returned tensor of forward convolution, and @L@ is the loss function, convolution2DWeightsGradientWithIncomingGradientTensor returns tensor @dL/dW = dL/dR * dR/dW@, where @dL/dR@ is the incomingGradient parameter.
+--
+-- - Parameters:   - incomingGradient: Incoming loss gradient tensor   - weights: Forward pass weights tensor   - outputShape: Shape of the forward pass source tensor   - forwardConvolutionDescriptor: Forward convolution 2D op ``descriptor``   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
+--
+-- ObjC selector: @- convolution2DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShape:forwardConvolutionDescriptor:name:@
+convolution2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_forwardConvolutionDescriptor_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor incomingGradient, IsMPSGraphTensor source, IsMPSGraphConvolution2DOpDescriptor forwardConvolutionDescriptor, IsNSString name) => mpsGraph -> incomingGradient -> source -> RawId -> forwardConvolutionDescriptor -> name -> IO (Id MPSGraphTensor)
+convolution2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_forwardConvolutionDescriptor_name mpsGraph  incomingGradient source outputShape forwardConvolutionDescriptor name =
+  withObjCPtr incomingGradient $ \raw_incomingGradient ->
+    withObjCPtr source $ \raw_source ->
+      withObjCPtr forwardConvolutionDescriptor $ \raw_forwardConvolutionDescriptor ->
+        withObjCPtr name $ \raw_name ->
+            sendMsg mpsGraph (mkSelector "convolution2DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShape:forwardConvolutionDescriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_incomingGradient :: Ptr ()), argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr (unRawId outputShape) :: Ptr ()), argPtr (castPtr raw_forwardConvolutionDescriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
 
 -- | Creates a 2D convolution gradient operation with respect to weights tensor of forward convolution.
 --
@@ -4266,6 +5006,21 @@ convolution3DWithSourceTensor_weightsTensor_descriptor_name mpsGraph  source wei
 --
 -- If @S@ is source tensor to forward convolution, @R@ is the result/returned tensor of forward convolution, and @L@ is the loss function, convolution3DDataGradientWithIncomingGradientTensor returns tensor @dL/dS = dL/dR * dR/dS@, where @dL/dR@ is the incomingGradient parameter.
 --
+-- - Parameters:   - incomingGradient: Incoming loss gradient tensor   - weights: Forward pass weights tensor   - outputShape: Shape of the forward pass source tensor   - forwardConvolutionDescriptor: Forward convolution 2D op ``descriptor``   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
+--
+-- ObjC selector: @- convolution3DDataGradientWithIncomingGradientTensor:weightsTensor:outputShape:forwardConvolutionDescriptor:name:@
+convolution3DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_forwardConvolutionDescriptor_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor incomingGradient, IsMPSGraphTensor weights, IsMPSGraphConvolution3DOpDescriptor forwardConvolutionDescriptor, IsNSString name) => mpsGraph -> incomingGradient -> weights -> RawId -> forwardConvolutionDescriptor -> name -> IO (Id MPSGraphTensor)
+convolution3DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_forwardConvolutionDescriptor_name mpsGraph  incomingGradient weights outputShape forwardConvolutionDescriptor name =
+  withObjCPtr incomingGradient $ \raw_incomingGradient ->
+    withObjCPtr weights $ \raw_weights ->
+      withObjCPtr forwardConvolutionDescriptor $ \raw_forwardConvolutionDescriptor ->
+        withObjCPtr name $ \raw_name ->
+            sendMsg mpsGraph (mkSelector "convolution3DDataGradientWithIncomingGradientTensor:weightsTensor:outputShape:forwardConvolutionDescriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_incomingGradient :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ()), argPtr (castPtr (unRawId outputShape) :: Ptr ()), argPtr (castPtr raw_forwardConvolutionDescriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a 3D convolution gradient operation with respect to the source tensor of the forward convolution.
+--
+-- If @S@ is source tensor to forward convolution, @R@ is the result/returned tensor of forward convolution, and @L@ is the loss function, convolution3DDataGradientWithIncomingGradientTensor returns tensor @dL/dS = dL/dR * dR/dS@, where @dL/dR@ is the incomingGradient parameter.
+--
 -- - Parameters:   - incomingGradient: Incoming loss gradient tensor   - weights: Forward pass weights tensor   - outputShapeTensor: 4D Int32 or Int64 tensor. Shape of the forward pass source tensor   - forwardConvolutionDescriptor: Forward convolution 2D op ``descriptor``   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
 --
 -- ObjC selector: @- convolution3DDataGradientWithIncomingGradientTensor:weightsTensor:outputShapeTensor:forwardConvolutionDescriptor:name:@
@@ -4277,6 +5032,21 @@ convolution3DDataGradientWithIncomingGradientTensor_weightsTensor_outputShapeTen
         withObjCPtr forwardConvolutionDescriptor $ \raw_forwardConvolutionDescriptor ->
           withObjCPtr name $ \raw_name ->
               sendMsg mpsGraph (mkSelector "convolution3DDataGradientWithIncomingGradientTensor:weightsTensor:outputShapeTensor:forwardConvolutionDescriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_gradient :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ()), argPtr (castPtr raw_outputShapeTensor :: Ptr ()), argPtr (castPtr raw_forwardConvolutionDescriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Creates a 3D convolution gradient operation with respect to the weights tensor of the forward convolution.
+--
+-- If @W@ is weights tensor to forward convolution, @R@ is the result/returned tensor of forward convolution, and @L@ is the loss function, convolution3DWeightsGradientWithIncomingGradientTensor returns tensor @dL/dW = dL/dR * dR/dW@, where @dL/dR@ is the incomingGradient parameter.
+--
+-- - Parameters:   - incomingGradient: Incoming loss gradient tensor   - weights: Forward pass weights tensor   - outputShape: Shape of the forward pass source tensor   - forwardConvolutionDescriptor: Forward convolution 2D op ``descriptor``   - name: The name for the operation. - Returns: A valid MPSGraphTensor object
+--
+-- ObjC selector: @- convolution3DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShape:forwardConvolutionDescriptor:name:@
+convolution3DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_forwardConvolutionDescriptor_name :: (IsMPSGraph mpsGraph, IsMPSGraphTensor incomingGradient, IsMPSGraphTensor source, IsMPSGraphConvolution3DOpDescriptor forwardConvolutionDescriptor, IsNSString name) => mpsGraph -> incomingGradient -> source -> RawId -> forwardConvolutionDescriptor -> name -> IO (Id MPSGraphTensor)
+convolution3DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_forwardConvolutionDescriptor_name mpsGraph  incomingGradient source outputShape forwardConvolutionDescriptor name =
+  withObjCPtr incomingGradient $ \raw_incomingGradient ->
+    withObjCPtr source $ \raw_source ->
+      withObjCPtr forwardConvolutionDescriptor $ \raw_forwardConvolutionDescriptor ->
+        withObjCPtr name $ \raw_name ->
+            sendMsg mpsGraph (mkSelector "convolution3DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShape:forwardConvolutionDescriptor:name:") (retPtr retVoid) [argPtr (castPtr raw_incomingGradient :: Ptr ()), argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr (unRawId outputShape) :: Ptr ()), argPtr (castPtr raw_forwardConvolutionDescriptor :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
 
 -- | Creates a 3D convolution gradient operation with respect to the weights tensor of the forward convolution.
 --
@@ -5423,6 +6193,42 @@ newSelector = mkSelector "new"
 initSelector :: Selector
 initSelector = mkSelector "init"
 
+-- | @Selector@ for @compileWithDevice:feeds:targetTensors:targetOperations:compilationDescriptor:@
+compileWithDevice_feeds_targetTensors_targetOperations_compilationDescriptorSelector :: Selector
+compileWithDevice_feeds_targetTensors_targetOperations_compilationDescriptorSelector = mkSelector "compileWithDevice:feeds:targetTensors:targetOperations:compilationDescriptor:"
+
+-- | @Selector@ for @runWithFeeds:targetTensors:targetOperations:@
+runWithFeeds_targetTensors_targetOperationsSelector :: Selector
+runWithFeeds_targetTensors_targetOperationsSelector = mkSelector "runWithFeeds:targetTensors:targetOperations:"
+
+-- | @Selector@ for @runWithMTLCommandQueue:feeds:targetTensors:targetOperations:@
+runWithMTLCommandQueue_feeds_targetTensors_targetOperationsSelector :: Selector
+runWithMTLCommandQueue_feeds_targetTensors_targetOperationsSelector = mkSelector "runWithMTLCommandQueue:feeds:targetTensors:targetOperations:"
+
+-- | @Selector@ for @runWithMTLCommandQueue:feeds:targetOperations:resultsDictionary:@
+runWithMTLCommandQueue_feeds_targetOperations_resultsDictionarySelector :: Selector
+runWithMTLCommandQueue_feeds_targetOperations_resultsDictionarySelector = mkSelector "runWithMTLCommandQueue:feeds:targetOperations:resultsDictionary:"
+
+-- | @Selector@ for @runAsyncWithFeeds:targetTensors:targetOperations:executionDescriptor:@
+runAsyncWithFeeds_targetTensors_targetOperations_executionDescriptorSelector :: Selector
+runAsyncWithFeeds_targetTensors_targetOperations_executionDescriptorSelector = mkSelector "runAsyncWithFeeds:targetTensors:targetOperations:executionDescriptor:"
+
+-- | @Selector@ for @runAsyncWithMTLCommandQueue:feeds:targetTensors:targetOperations:executionDescriptor:@
+runAsyncWithMTLCommandQueue_feeds_targetTensors_targetOperations_executionDescriptorSelector :: Selector
+runAsyncWithMTLCommandQueue_feeds_targetTensors_targetOperations_executionDescriptorSelector = mkSelector "runAsyncWithMTLCommandQueue:feeds:targetTensors:targetOperations:executionDescriptor:"
+
+-- | @Selector@ for @runAsyncWithMTLCommandQueue:feeds:targetOperations:resultsDictionary:executionDescriptor:@
+runAsyncWithMTLCommandQueue_feeds_targetOperations_resultsDictionary_executionDescriptorSelector :: Selector
+runAsyncWithMTLCommandQueue_feeds_targetOperations_resultsDictionary_executionDescriptorSelector = mkSelector "runAsyncWithMTLCommandQueue:feeds:targetOperations:resultsDictionary:executionDescriptor:"
+
+-- | @Selector@ for @encodeToCommandBuffer:feeds:targetTensors:targetOperations:executionDescriptor:@
+encodeToCommandBuffer_feeds_targetTensors_targetOperations_executionDescriptorSelector :: Selector
+encodeToCommandBuffer_feeds_targetTensors_targetOperations_executionDescriptorSelector = mkSelector "encodeToCommandBuffer:feeds:targetTensors:targetOperations:executionDescriptor:"
+
+-- | @Selector@ for @encodeToCommandBuffer:feeds:targetOperations:resultsDictionary:executionDescriptor:@
+encodeToCommandBuffer_feeds_targetOperations_resultsDictionary_executionDescriptorSelector :: Selector
+encodeToCommandBuffer_feeds_targetOperations_resultsDictionary_executionDescriptorSelector = mkSelector "encodeToCommandBuffer:feeds:targetOperations:resultsDictionary:executionDescriptor:"
+
 -- | @Selector@ for @topKWithGradientTensor:source:k:name:@
 topKWithGradientTensor_source_k_nameSelector :: Selector
 topKWithGradientTensor_source_k_nameSelector = mkSelector "topKWithGradientTensor:source:k:name:"
@@ -5470,6 +6276,10 @@ topKWithSourceTensor_axisTensor_kTensor_nameSelector = mkSelector "topKWithSourc
 -- | @Selector@ for @bottomKWithSourceTensor:axisTensor:kTensor:name:@
 bottomKWithSourceTensor_axisTensor_kTensor_nameSelector :: Selector
 bottomKWithSourceTensor_axisTensor_kTensor_nameSelector = mkSelector "bottomKWithSourceTensor:axisTensor:kTensor:name:"
+
+-- | @Selector@ for @reshapeTensor:withShape:name:@
+reshapeTensor_withShape_nameSelector :: Selector
+reshapeTensor_withShape_nameSelector = mkSelector "reshapeTensor:withShape:name:"
 
 -- | @Selector@ for @reshapeTensor:withShapeTensor:name:@
 reshapeTensor_withShapeTensor_nameSelector :: Selector
@@ -5547,6 +6357,22 @@ concatTensors_dimension_nameSelector = mkSelector "concatTensors:dimension:name:
 concatTensors_dimension_interleave_nameSelector :: Selector
 concatTensors_dimension_interleave_nameSelector = mkSelector "concatTensors:dimension:interleave:name:"
 
+-- | @Selector@ for @tileTensor:withMultiplier:name:@
+tileTensor_withMultiplier_nameSelector :: Selector
+tileTensor_withMultiplier_nameSelector = mkSelector "tileTensor:withMultiplier:name:"
+
+-- | @Selector@ for @tileGradientWithIncomingGradientTensor:sourceTensor:withMultiplier:name:@
+tileGradientWithIncomingGradientTensor_sourceTensor_withMultiplier_nameSelector :: Selector
+tileGradientWithIncomingGradientTensor_sourceTensor_withMultiplier_nameSelector = mkSelector "tileGradientWithIncomingGradientTensor:sourceTensor:withMultiplier:name:"
+
+-- | @Selector@ for @padTensor:withPaddingMode:leftPadding:rightPadding:constantValue:name:@
+padTensor_withPaddingMode_leftPadding_rightPadding_constantValue_nameSelector :: Selector
+padTensor_withPaddingMode_leftPadding_rightPadding_constantValue_nameSelector = mkSelector "padTensor:withPaddingMode:leftPadding:rightPadding:constantValue:name:"
+
+-- | @Selector@ for @padGradientWithIncomingGradientTensor:sourceTensor:paddingMode:leftPadding:rightPadding:name:@
+padGradientWithIncomingGradientTensor_sourceTensor_paddingMode_leftPadding_rightPadding_nameSelector :: Selector
+padGradientWithIncomingGradientTensor_sourceTensor_paddingMode_leftPadding_rightPadding_nameSelector = mkSelector "padGradientWithIncomingGradientTensor:sourceTensor:paddingMode:leftPadding:rightPadding:name:"
+
 -- | @Selector@ for @spaceToDepth2DTensor:widthAxis:heightAxis:depthAxis:blockSize:usePixelShuffleOrder:name:@
 spaceToDepth2DTensor_widthAxis_heightAxis_depthAxis_blockSize_usePixelShuffleOrder_nameSelector :: Selector
 spaceToDepth2DTensor_widthAxis_heightAxis_depthAxis_blockSize_usePixelShuffleOrder_nameSelector = mkSelector "spaceToDepth2DTensor:widthAxis:heightAxis:depthAxis:blockSize:usePixelShuffleOrder:name:"
@@ -5598,6 +6424,10 @@ flatten2DTensor_axis_nameSelector = mkSelector "flatten2DTensor:axis:name:"
 -- | @Selector@ for @flatten2DTensor:axisTensor:name:@
 flatten2DTensor_axisTensor_nameSelector :: Selector
 flatten2DTensor_axisTensor_nameSelector = mkSelector "flatten2DTensor:axisTensor:name:"
+
+-- | @Selector@ for @broadcastTensor:toShape:name:@
+broadcastTensor_toShape_nameSelector :: Selector
+broadcastTensor_toShape_nameSelector = mkSelector "broadcastTensor:toShape:name:"
 
 -- | @Selector@ for @broadcastTensor:toShapeTensor:name:@
 broadcastTensor_toShapeTensor_nameSelector :: Selector
@@ -5659,6 +6489,14 @@ expandDimsOfTensor_axes_nameSelector = mkSelector "expandDimsOfTensor:axes:name:
 expandDimsOfTensor_axesTensor_nameSelector :: Selector
 expandDimsOfTensor_axesTensor_nameSelector = mkSelector "expandDimsOfTensor:axesTensor:name:"
 
+-- | @Selector@ for @coordinateAlongAxis:withShape:name:@
+coordinateAlongAxis_withShape_nameSelector :: Selector
+coordinateAlongAxis_withShape_nameSelector = mkSelector "coordinateAlongAxis:withShape:name:"
+
+-- | @Selector@ for @coordinateAlongAxisTensor:withShape:name:@
+coordinateAlongAxisTensor_withShape_nameSelector :: Selector
+coordinateAlongAxisTensor_withShape_nameSelector = mkSelector "coordinateAlongAxisTensor:withShape:name:"
+
 -- | @Selector@ for @coordinateAlongAxis:withShapeTensor:name:@
 coordinateAlongAxis_withShapeTensor_nameSelector :: Selector
 coordinateAlongAxis_withShapeTensor_nameSelector = mkSelector "coordinateAlongAxis:withShapeTensor:name:"
@@ -5670,6 +6508,14 @@ coordinateAlongAxisTensor_withShapeTensor_nameSelector = mkSelector "coordinateA
 -- | @Selector@ for @stencilWithSourceTensor:weightsTensor:descriptor:name:@
 stencilWithSourceTensor_weightsTensor_descriptor_nameSelector :: Selector
 stencilWithSourceTensor_weightsTensor_descriptor_nameSelector = mkSelector "stencilWithSourceTensor:weightsTensor:descriptor:name:"
+
+-- | @Selector@ for @sparseTensorWithType:tensors:shape:dataType:name:@
+sparseTensorWithType_tensors_shape_dataType_nameSelector :: Selector
+sparseTensorWithType_tensors_shape_dataType_nameSelector = mkSelector "sparseTensorWithType:tensors:shape:dataType:name:"
+
+-- | @Selector@ for @sparseTensorWithDescriptor:tensors:shape:name:@
+sparseTensorWithDescriptor_tensors_shape_nameSelector :: Selector
+sparseTensorWithDescriptor_tensors_shape_nameSelector = mkSelector "sparseTensorWithDescriptor:tensors:shape:name:"
 
 -- | @Selector@ for @sortWithTensor:axis:descending:name:@
 sortWithTensor_axis_descending_nameSelector :: Selector
@@ -5703,6 +6549,14 @@ argSortWithTensor_axis_nameSelector = mkSelector "argSortWithTensor:axis:name:"
 argSortWithTensor_axisTensor_nameSelector :: Selector
 argSortWithTensor_axisTensor_nameSelector = mkSelector "argSortWithTensor:axisTensor:name:"
 
+-- | @Selector@ for @scatterAlongAxis:withUpdatesTensor:indicesTensor:shape:mode:name:@
+scatterAlongAxis_withUpdatesTensor_indicesTensor_shape_mode_nameSelector :: Selector
+scatterAlongAxis_withUpdatesTensor_indicesTensor_shape_mode_nameSelector = mkSelector "scatterAlongAxis:withUpdatesTensor:indicesTensor:shape:mode:name:"
+
+-- | @Selector@ for @scatterAlongAxisTensor:withUpdatesTensor:indicesTensor:shape:mode:name:@
+scatterAlongAxisTensor_withUpdatesTensor_indicesTensor_shape_mode_nameSelector :: Selector
+scatterAlongAxisTensor_withUpdatesTensor_indicesTensor_shape_mode_nameSelector = mkSelector "scatterAlongAxisTensor:withUpdatesTensor:indicesTensor:shape:mode:name:"
+
 -- | @Selector@ for @scatterAlongAxis:withDataTensor:updatesTensor:indicesTensor:mode:name:@
 scatterAlongAxis_withDataTensor_updatesTensor_indicesTensor_mode_nameSelector :: Selector
 scatterAlongAxis_withDataTensor_updatesTensor_indicesTensor_mode_nameSelector = mkSelector "scatterAlongAxis:withDataTensor:updatesTensor:indicesTensor:mode:name:"
@@ -5711,9 +6565,21 @@ scatterAlongAxis_withDataTensor_updatesTensor_indicesTensor_mode_nameSelector = 
 scatterAlongAxisTensor_withDataTensor_updatesTensor_indicesTensor_mode_nameSelector :: Selector
 scatterAlongAxisTensor_withDataTensor_updatesTensor_indicesTensor_mode_nameSelector = mkSelector "scatterAlongAxisTensor:withDataTensor:updatesTensor:indicesTensor:mode:name:"
 
+-- | @Selector@ for @scatterWithUpdatesTensor:indicesTensor:shape:axis:mode:name:@
+scatterWithUpdatesTensor_indicesTensor_shape_axis_mode_nameSelector :: Selector
+scatterWithUpdatesTensor_indicesTensor_shape_axis_mode_nameSelector = mkSelector "scatterWithUpdatesTensor:indicesTensor:shape:axis:mode:name:"
+
 -- | @Selector@ for @scatterWithDataTensor:updatesTensor:indicesTensor:axis:mode:name:@
 scatterWithDataTensor_updatesTensor_indicesTensor_axis_mode_nameSelector :: Selector
 scatterWithDataTensor_updatesTensor_indicesTensor_axis_mode_nameSelector = mkSelector "scatterWithDataTensor:updatesTensor:indicesTensor:axis:mode:name:"
+
+-- | @Selector@ for @scatterNDWithUpdatesTensor:indicesTensor:shape:batchDimensions:mode:name:@
+scatterNDWithUpdatesTensor_indicesTensor_shape_batchDimensions_mode_nameSelector :: Selector
+scatterNDWithUpdatesTensor_indicesTensor_shape_batchDimensions_mode_nameSelector = mkSelector "scatterNDWithUpdatesTensor:indicesTensor:shape:batchDimensions:mode:name:"
+
+-- | @Selector@ for @scatterNDWithUpdatesTensor:indicesTensor:shape:batchDimensions:name:@
+scatterNDWithUpdatesTensor_indicesTensor_shape_batchDimensions_nameSelector :: Selector
+scatterNDWithUpdatesTensor_indicesTensor_shape_batchDimensions_nameSelector = mkSelector "scatterNDWithUpdatesTensor:indicesTensor:shape:batchDimensions:name:"
 
 -- | @Selector@ for @scatterNDWithDataTensor:updatesTensor:indicesTensor:batchDimensions:mode:name:@
 scatterNDWithDataTensor_updatesTensor_indicesTensor_batchDimensions_mode_nameSelector :: Selector
@@ -5806,6 +6672,10 @@ gruGradientsWithSourceTensor_recurrentWeight_sourceGradient_zState_outputFwd_inp
 -- | @Selector@ for @GRUGradientsWithSourceTensor:recurrentWeight:sourceGradient:zState:outputFwd:inputWeight:bias:descriptor:name:@
 gruGradientsWithSourceTensor_recurrentWeight_sourceGradient_zState_outputFwd_inputWeight_bias_descriptor_nameSelector :: Selector
 gruGradientsWithSourceTensor_recurrentWeight_sourceGradient_zState_outputFwd_inputWeight_bias_descriptor_nameSelector = mkSelector "GRUGradientsWithSourceTensor:recurrentWeight:sourceGradient:zState:outputFwd:inputWeight:bias:descriptor:name:"
+
+-- | @Selector@ for @resizeTensor:size:mode:centerResult:alignCorners:layout:name:@
+resizeTensor_size_mode_centerResult_alignCorners_layout_nameSelector :: Selector
+resizeTensor_size_mode_centerResult_alignCorners_layout_nameSelector = mkSelector "resizeTensor:size:mode:centerResult:alignCorners:layout:name:"
 
 -- | @Selector@ for @resizeTensor:sizeTensor:mode:centerResult:alignCorners:layout:name:@
 resizeTensor_sizeTensor_mode_centerResult_alignCorners_layout_nameSelector :: Selector
@@ -5971,25 +6841,49 @@ randomPhiloxStateTensorWithSeed_nameSelector = mkSelector "randomPhiloxStateTens
 randomPhiloxStateTensorWithCounterLow_counterHigh_key_nameSelector :: Selector
 randomPhiloxStateTensorWithCounterLow_counterHigh_key_nameSelector = mkSelector "randomPhiloxStateTensorWithCounterLow:counterHigh:key:name:"
 
+-- | @Selector@ for @randomTensorWithShape:descriptor:name:@
+randomTensorWithShape_descriptor_nameSelector :: Selector
+randomTensorWithShape_descriptor_nameSelector = mkSelector "randomTensorWithShape:descriptor:name:"
+
 -- | @Selector@ for @randomTensorWithShapeTensor:descriptor:name:@
 randomTensorWithShapeTensor_descriptor_nameSelector :: Selector
 randomTensorWithShapeTensor_descriptor_nameSelector = mkSelector "randomTensorWithShapeTensor:descriptor:name:"
+
+-- | @Selector@ for @randomTensorWithShape:descriptor:seed:name:@
+randomTensorWithShape_descriptor_seed_nameSelector :: Selector
+randomTensorWithShape_descriptor_seed_nameSelector = mkSelector "randomTensorWithShape:descriptor:seed:name:"
 
 -- | @Selector@ for @randomTensorWithShapeTensor:descriptor:seed:name:@
 randomTensorWithShapeTensor_descriptor_seed_nameSelector :: Selector
 randomTensorWithShapeTensor_descriptor_seed_nameSelector = mkSelector "randomTensorWithShapeTensor:descriptor:seed:name:"
 
+-- | @Selector@ for @randomTensorWithShape:descriptor:stateTensor:name:@
+randomTensorWithShape_descriptor_stateTensor_nameSelector :: Selector
+randomTensorWithShape_descriptor_stateTensor_nameSelector = mkSelector "randomTensorWithShape:descriptor:stateTensor:name:"
+
 -- | @Selector@ for @randomTensorWithShapeTensor:descriptor:stateTensor:name:@
 randomTensorWithShapeTensor_descriptor_stateTensor_nameSelector :: Selector
 randomTensorWithShapeTensor_descriptor_stateTensor_nameSelector = mkSelector "randomTensorWithShapeTensor:descriptor:stateTensor:name:"
+
+-- | @Selector@ for @randomUniformTensorWithShape:name:@
+randomUniformTensorWithShape_nameSelector :: Selector
+randomUniformTensorWithShape_nameSelector = mkSelector "randomUniformTensorWithShape:name:"
 
 -- | @Selector@ for @randomUniformTensorWithShapeTensor:name:@
 randomUniformTensorWithShapeTensor_nameSelector :: Selector
 randomUniformTensorWithShapeTensor_nameSelector = mkSelector "randomUniformTensorWithShapeTensor:name:"
 
+-- | @Selector@ for @randomUniformTensorWithShape:seed:name:@
+randomUniformTensorWithShape_seed_nameSelector :: Selector
+randomUniformTensorWithShape_seed_nameSelector = mkSelector "randomUniformTensorWithShape:seed:name:"
+
 -- | @Selector@ for @randomUniformTensorWithShapeTensor:seed:name:@
 randomUniformTensorWithShapeTensor_seed_nameSelector :: Selector
 randomUniformTensorWithShapeTensor_seed_nameSelector = mkSelector "randomUniformTensorWithShapeTensor:seed:name:"
+
+-- | @Selector@ for @randomUniformTensorWithShape:stateTensor:name:@
+randomUniformTensorWithShape_stateTensor_nameSelector :: Selector
+randomUniformTensorWithShape_stateTensor_nameSelector = mkSelector "randomUniformTensorWithShape:stateTensor:name:"
 
 -- | @Selector@ for @randomUniformTensorWithShapeTensor:stateTensor:name:@
 randomUniformTensorWithShapeTensor_stateTensor_nameSelector :: Selector
@@ -6055,6 +6949,10 @@ maxPooling2DReturnIndicesWithSourceTensor_descriptor_nameSelector = mkSelector "
 maxPooling2DGradientWithGradientTensor_sourceTensor_descriptor_nameSelector :: Selector
 maxPooling2DGradientWithGradientTensor_sourceTensor_descriptor_nameSelector = mkSelector "maxPooling2DGradientWithGradientTensor:sourceTensor:descriptor:name:"
 
+-- | @Selector@ for @maxPooling2DGradientWithGradientTensor:indicesTensor:outputShape:descriptor:name:@
+maxPooling2DGradientWithGradientTensor_indicesTensor_outputShape_descriptor_nameSelector :: Selector
+maxPooling2DGradientWithGradientTensor_indicesTensor_outputShape_descriptor_nameSelector = mkSelector "maxPooling2DGradientWithGradientTensor:indicesTensor:outputShape:descriptor:name:"
+
 -- | @Selector@ for @maxPooling2DGradientWithGradientTensor:indicesTensor:outputShapeTensor:descriptor:name:@
 maxPooling2DGradientWithGradientTensor_indicesTensor_outputShapeTensor_descriptor_nameSelector :: Selector
 maxPooling2DGradientWithGradientTensor_indicesTensor_outputShapeTensor_descriptor_nameSelector = mkSelector "maxPooling2DGradientWithGradientTensor:indicesTensor:outputShapeTensor:descriptor:name:"
@@ -6078,6 +6976,10 @@ maxPooling4DReturnIndicesWithSourceTensor_descriptor_nameSelector = mkSelector "
 -- | @Selector@ for @maxPooling4DGradientWithGradientTensor:sourceTensor:descriptor:name:@
 maxPooling4DGradientWithGradientTensor_sourceTensor_descriptor_nameSelector :: Selector
 maxPooling4DGradientWithGradientTensor_sourceTensor_descriptor_nameSelector = mkSelector "maxPooling4DGradientWithGradientTensor:sourceTensor:descriptor:name:"
+
+-- | @Selector@ for @maxPooling4DGradientWithGradientTensor:indicesTensor:outputShape:descriptor:name:@
+maxPooling4DGradientWithGradientTensor_indicesTensor_outputShape_descriptor_nameSelector :: Selector
+maxPooling4DGradientWithGradientTensor_indicesTensor_outputShape_descriptor_nameSelector = mkSelector "maxPooling4DGradientWithGradientTensor:indicesTensor:outputShape:descriptor:name:"
 
 -- | @Selector@ for @maxPooling4DGradientWithGradientTensor:indicesTensor:outputShapeTensor:descriptor:name:@
 maxPooling4DGradientWithGradientTensor_indicesTensor_outputShapeTensor_descriptor_nameSelector :: Selector
@@ -6179,9 +7081,25 @@ nonMaximumSuppressionWithBoxesTensor_scoresTensor_IOUThreshold_scoreThreshold_pe
 nonMaximumSuppressionWithBoxesTensor_scoresTensor_classIndicesTensor_IOUThreshold_scoreThreshold_perClassSuppression_coordinateMode_nameSelector :: Selector
 nonMaximumSuppressionWithBoxesTensor_scoresTensor_classIndicesTensor_IOUThreshold_scoreThreshold_perClassSuppression_coordinateMode_nameSelector = mkSelector "nonMaximumSuppressionWithBoxesTensor:scoresTensor:classIndicesTensor:IOUThreshold:scoreThreshold:perClassSuppression:coordinateMode:name:"
 
+-- | @Selector@ for @placeholderWithShape:dataType:name:@
+placeholderWithShape_dataType_nameSelector :: Selector
+placeholderWithShape_dataType_nameSelector = mkSelector "placeholderWithShape:dataType:name:"
+
+-- | @Selector@ for @placeholderWithShape:name:@
+placeholderWithShape_nameSelector :: Selector
+placeholderWithShape_nameSelector = mkSelector "placeholderWithShape:name:"
+
+-- | @Selector@ for @constantWithData:shape:dataType:@
+constantWithData_shape_dataTypeSelector :: Selector
+constantWithData_shape_dataTypeSelector = mkSelector "constantWithData:shape:dataType:"
+
 -- | @Selector@ for @constantWithScalar:dataType:@
 constantWithScalar_dataTypeSelector :: Selector
 constantWithScalar_dataTypeSelector = mkSelector "constantWithScalar:dataType:"
+
+-- | @Selector@ for @constantWithScalar:shape:dataType:@
+constantWithScalar_shape_dataTypeSelector :: Selector
+constantWithScalar_shape_dataTypeSelector = mkSelector "constantWithScalar:shape:dataType:"
 
 -- | @Selector@ for @constantWithRealPart:imaginaryPart:@
 constantWithRealPart_imaginaryPartSelector :: Selector
@@ -6190,6 +7108,14 @@ constantWithRealPart_imaginaryPartSelector = mkSelector "constantWithRealPart:im
 -- | @Selector@ for @constantWithRealPart:imaginaryPart:dataType:@
 constantWithRealPart_imaginaryPart_dataTypeSelector :: Selector
 constantWithRealPart_imaginaryPart_dataTypeSelector = mkSelector "constantWithRealPart:imaginaryPart:dataType:"
+
+-- | @Selector@ for @constantWithRealPart:imaginaryPart:shape:dataType:@
+constantWithRealPart_imaginaryPart_shape_dataTypeSelector :: Selector
+constantWithRealPart_imaginaryPart_shape_dataTypeSelector = mkSelector "constantWithRealPart:imaginaryPart:shape:dataType:"
+
+-- | @Selector@ for @variableWithData:shape:dataType:name:@
+variableWithData_shape_dataType_nameSelector :: Selector
+variableWithData_shape_dataType_nameSelector = mkSelector "variableWithData:shape:dataType:name:"
 
 -- | @Selector@ for @variableFromTensorWithTensor:name:@
 variableFromTensorWithTensor_nameSelector :: Selector
@@ -6243,6 +7169,10 @@ bandPartWithTensor_numLowerTensor_numUpperTensor_nameSelector = mkSelector "band
 imToColWithSourceTensor_descriptor_nameSelector :: Selector
 imToColWithSourceTensor_descriptor_nameSelector = mkSelector "imToColWithSourceTensor:descriptor:name:"
 
+-- | @Selector@ for @colToImWithSourceTensor:outputShape:descriptor:name:@
+colToImWithSourceTensor_outputShape_descriptor_nameSelector :: Selector
+colToImWithSourceTensor_outputShape_descriptor_nameSelector = mkSelector "colToImWithSourceTensor:outputShape:descriptor:name:"
+
 -- | @Selector@ for @gatherAlongAxis:withUpdatesTensor:indicesTensor:name:@
 gatherAlongAxis_withUpdatesTensor_indicesTensor_nameSelector :: Selector
 gatherAlongAxis_withUpdatesTensor_indicesTensor_nameSelector = mkSelector "gatherAlongAxis:withUpdatesTensor:indicesTensor:name:"
@@ -6287,9 +7217,25 @@ hermiteanToRealFFTWithTensor_axesTensor_descriptor_nameSelector = mkSelector "He
 depthwiseConvolution2DWithSourceTensor_weightsTensor_descriptor_nameSelector :: Selector
 depthwiseConvolution2DWithSourceTensor_weightsTensor_descriptor_nameSelector = mkSelector "depthwiseConvolution2DWithSourceTensor:weightsTensor:descriptor:name:"
 
+-- | @Selector@ for @depthwiseConvolution2DDataGradientWithIncomingGradientTensor:weightsTensor:outputShape:descriptor:name:@
+depthwiseConvolution2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_descriptor_nameSelector :: Selector
+depthwiseConvolution2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_descriptor_nameSelector = mkSelector "depthwiseConvolution2DDataGradientWithIncomingGradientTensor:weightsTensor:outputShape:descriptor:name:"
+
+-- | @Selector@ for @depthwiseConvolution2DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShape:descriptor:name:@
+depthwiseConvolution2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_descriptor_nameSelector :: Selector
+depthwiseConvolution2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_descriptor_nameSelector = mkSelector "depthwiseConvolution2DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShape:descriptor:name:"
+
 -- | @Selector@ for @depthwiseConvolution3DWithSourceTensor:weightsTensor:descriptor:name:@
 depthwiseConvolution3DWithSourceTensor_weightsTensor_descriptor_nameSelector :: Selector
 depthwiseConvolution3DWithSourceTensor_weightsTensor_descriptor_nameSelector = mkSelector "depthwiseConvolution3DWithSourceTensor:weightsTensor:descriptor:name:"
+
+-- | @Selector@ for @depthwiseConvolution3DDataGradientWithIncomingGradientTensor:weightsTensor:outputShape:descriptor:name:@
+depthwiseConvolution3DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_descriptor_nameSelector :: Selector
+depthwiseConvolution3DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_descriptor_nameSelector = mkSelector "depthwiseConvolution3DDataGradientWithIncomingGradientTensor:weightsTensor:outputShape:descriptor:name:"
+
+-- | @Selector@ for @depthwiseConvolution3DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShape:descriptor:name:@
+depthwiseConvolution3DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_descriptor_nameSelector :: Selector
+depthwiseConvolution3DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_descriptor_nameSelector = mkSelector "depthwiseConvolution3DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShape:descriptor:name:"
 
 -- | @Selector@ for @cumulativeSumWithTensor:axis:exclusive:reverse:name:@
 cumulativeSumWithTensor_axis_exclusive_reverse_nameSelector :: Selector
@@ -6375,13 +7321,25 @@ forLoopWithLowerBound_upperBound_step_initialBodyArguments_body_nameSelector = m
 forLoopWithNumberOfIterations_initialBodyArguments_body_nameSelector :: Selector
 forLoopWithNumberOfIterations_initialBodyArguments_body_nameSelector = mkSelector "forLoopWithNumberOfIterations:initialBodyArguments:body:name:"
 
+-- | @Selector@ for @convolutionTranspose2DWithSourceTensor:weightsTensor:outputShape:descriptor:name:@
+convolutionTranspose2DWithSourceTensor_weightsTensor_outputShape_descriptor_nameSelector :: Selector
+convolutionTranspose2DWithSourceTensor_weightsTensor_outputShape_descriptor_nameSelector = mkSelector "convolutionTranspose2DWithSourceTensor:weightsTensor:outputShape:descriptor:name:"
+
 -- | @Selector@ for @convolutionTranspose2DWithSourceTensor:weightsTensor:outputShapeTensor:descriptor:name:@
 convolutionTranspose2DWithSourceTensor_weightsTensor_outputShapeTensor_descriptor_nameSelector :: Selector
 convolutionTranspose2DWithSourceTensor_weightsTensor_outputShapeTensor_descriptor_nameSelector = mkSelector "convolutionTranspose2DWithSourceTensor:weightsTensor:outputShapeTensor:descriptor:name:"
 
+-- | @Selector@ for @convolutionTranspose2DDataGradientWithIncomingGradientTensor:weightsTensor:outputShape:forwardConvolutionDescriptor:name:@
+convolutionTranspose2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_forwardConvolutionDescriptor_nameSelector :: Selector
+convolutionTranspose2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_forwardConvolutionDescriptor_nameSelector = mkSelector "convolutionTranspose2DDataGradientWithIncomingGradientTensor:weightsTensor:outputShape:forwardConvolutionDescriptor:name:"
+
 -- | @Selector@ for @convolutionTranspose2DDataGradientWithIncomingGradientTensor:weightsTensor:outputShapeTensor:forwardConvolutionDescriptor:name:@
 convolutionTranspose2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShapeTensor_forwardConvolutionDescriptor_nameSelector :: Selector
 convolutionTranspose2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShapeTensor_forwardConvolutionDescriptor_nameSelector = mkSelector "convolutionTranspose2DDataGradientWithIncomingGradientTensor:weightsTensor:outputShapeTensor:forwardConvolutionDescriptor:name:"
+
+-- | @Selector@ for @convolutionTranspose2DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShape:forwardConvolutionDescriptor:name:@
+convolutionTranspose2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_forwardConvolutionDescriptor_nameSelector :: Selector
+convolutionTranspose2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_forwardConvolutionDescriptor_nameSelector = mkSelector "convolutionTranspose2DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShape:forwardConvolutionDescriptor:name:"
 
 -- | @Selector@ for @convolutionTranspose2DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShapeTensor:forwardConvolutionDescriptor:name:@
 convolutionTranspose2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShapeTensor_forwardConvolutionDescriptor_nameSelector :: Selector
@@ -6391,9 +7349,17 @@ convolutionTranspose2DWeightsGradientWithIncomingGradientTensor_sourceTensor_out
 convolution2DWithSourceTensor_weightsTensor_descriptor_nameSelector :: Selector
 convolution2DWithSourceTensor_weightsTensor_descriptor_nameSelector = mkSelector "convolution2DWithSourceTensor:weightsTensor:descriptor:name:"
 
+-- | @Selector@ for @convolution2DDataGradientWithIncomingGradientTensor:weightsTensor:outputShape:forwardConvolutionDescriptor:name:@
+convolution2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_forwardConvolutionDescriptor_nameSelector :: Selector
+convolution2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_forwardConvolutionDescriptor_nameSelector = mkSelector "convolution2DDataGradientWithIncomingGradientTensor:weightsTensor:outputShape:forwardConvolutionDescriptor:name:"
+
 -- | @Selector@ for @convolution2DDataGradientWithIncomingGradientTensor:weightsTensor:outputShapeTensor:forwardConvolutionDescriptor:name:@
 convolution2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShapeTensor_forwardConvolutionDescriptor_nameSelector :: Selector
 convolution2DDataGradientWithIncomingGradientTensor_weightsTensor_outputShapeTensor_forwardConvolutionDescriptor_nameSelector = mkSelector "convolution2DDataGradientWithIncomingGradientTensor:weightsTensor:outputShapeTensor:forwardConvolutionDescriptor:name:"
+
+-- | @Selector@ for @convolution2DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShape:forwardConvolutionDescriptor:name:@
+convolution2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_forwardConvolutionDescriptor_nameSelector :: Selector
+convolution2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_forwardConvolutionDescriptor_nameSelector = mkSelector "convolution2DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShape:forwardConvolutionDescriptor:name:"
 
 -- | @Selector@ for @convolution2DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShapeTensor:forwardConvolutionDescriptor:name:@
 convolution2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShapeTensor_forwardConvolutionDescriptor_nameSelector :: Selector
@@ -6403,9 +7369,17 @@ convolution2DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShapeT
 convolution3DWithSourceTensor_weightsTensor_descriptor_nameSelector :: Selector
 convolution3DWithSourceTensor_weightsTensor_descriptor_nameSelector = mkSelector "convolution3DWithSourceTensor:weightsTensor:descriptor:name:"
 
+-- | @Selector@ for @convolution3DDataGradientWithIncomingGradientTensor:weightsTensor:outputShape:forwardConvolutionDescriptor:name:@
+convolution3DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_forwardConvolutionDescriptor_nameSelector :: Selector
+convolution3DDataGradientWithIncomingGradientTensor_weightsTensor_outputShape_forwardConvolutionDescriptor_nameSelector = mkSelector "convolution3DDataGradientWithIncomingGradientTensor:weightsTensor:outputShape:forwardConvolutionDescriptor:name:"
+
 -- | @Selector@ for @convolution3DDataGradientWithIncomingGradientTensor:weightsTensor:outputShapeTensor:forwardConvolutionDescriptor:name:@
 convolution3DDataGradientWithIncomingGradientTensor_weightsTensor_outputShapeTensor_forwardConvolutionDescriptor_nameSelector :: Selector
 convolution3DDataGradientWithIncomingGradientTensor_weightsTensor_outputShapeTensor_forwardConvolutionDescriptor_nameSelector = mkSelector "convolution3DDataGradientWithIncomingGradientTensor:weightsTensor:outputShapeTensor:forwardConvolutionDescriptor:name:"
+
+-- | @Selector@ for @convolution3DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShape:forwardConvolutionDescriptor:name:@
+convolution3DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_forwardConvolutionDescriptor_nameSelector :: Selector
+convolution3DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShape_forwardConvolutionDescriptor_nameSelector = mkSelector "convolution3DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShape:forwardConvolutionDescriptor:name:"
 
 -- | @Selector@ for @convolution3DWeightsGradientWithIncomingGradientTensor:sourceTensor:outputShapeTensor:forwardConvolutionDescriptor:name:@
 convolution3DWeightsGradientWithIncomingGradientTensor_sourceTensor_outputShapeTensor_forwardConvolutionDescriptor_nameSelector :: Selector

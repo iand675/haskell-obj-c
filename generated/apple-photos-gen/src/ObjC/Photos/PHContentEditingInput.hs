@@ -17,6 +17,7 @@ module ObjC.Photos.PHContentEditingInput
   , displaySizeImage
   , fullSizeImageURL
   , fullSizeImageOrientation
+  , avAsset
   , livePhoto
   , mediaTypeSelector
   , mediaSubtypesSelector
@@ -28,6 +29,7 @@ module ObjC.Photos.PHContentEditingInput
   , displaySizeImageSelector
   , fullSizeImageURLSelector
   , fullSizeImageOrientationSelector
+  , avAssetSelector
   , livePhotoSelector
 
   -- * Enum types
@@ -129,6 +131,11 @@ fullSizeImageOrientation :: IsPHContentEditingInput phContentEditingInput => phC
 fullSizeImageOrientation phContentEditingInput  =
     sendMsg phContentEditingInput (mkSelector "fullSizeImageOrientation") retCInt []
 
+-- | @- avAsset@
+avAsset :: IsPHContentEditingInput phContentEditingInput => phContentEditingInput -> IO RawId
+avAsset phContentEditingInput  =
+    fmap (RawId . castPtr) $ sendMsg phContentEditingInput (mkSelector "avAsset") (retPtr retVoid) []
+
 -- | @- livePhoto@
 livePhoto :: IsPHContentEditingInput phContentEditingInput => phContentEditingInput -> IO (Id PHLivePhoto)
 livePhoto phContentEditingInput  =
@@ -177,6 +184,10 @@ fullSizeImageURLSelector = mkSelector "fullSizeImageURL"
 -- | @Selector@ for @fullSizeImageOrientation@
 fullSizeImageOrientationSelector :: Selector
 fullSizeImageOrientationSelector = mkSelector "fullSizeImageOrientation"
+
+-- | @Selector@ for @avAsset@
+avAssetSelector :: Selector
+avAssetSelector = mkSelector "avAsset"
 
 -- | @Selector@ for @livePhoto@
 livePhotoSelector :: Selector

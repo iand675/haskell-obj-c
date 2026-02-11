@@ -30,6 +30,7 @@ module ObjC.Photos.PHAsset
   , hidden
   , favorite
   , syncFailureHidden
+  , burstIdentifier
   , burstSelectionTypes
   , representsBurst
   , sourceType
@@ -58,6 +59,7 @@ module ObjC.Photos.PHAsset
   , hiddenSelector
   , favoriteSelector
   , syncFailureHiddenSelector
+  , burstIdentifierSelector
   , burstSelectionTypesSelector
   , representsBurstSelector
   , sourceTypeSelector
@@ -273,6 +275,11 @@ syncFailureHidden :: IsPHAsset phAsset => phAsset -> IO Bool
 syncFailureHidden phAsset  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg phAsset (mkSelector "syncFailureHidden") retCULong []
 
+-- | @- burstIdentifier@
+burstIdentifier :: IsPHAsset phAsset => phAsset -> IO (Id NSString)
+burstIdentifier phAsset  =
+    sendMsg phAsset (mkSelector "burstIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- burstSelectionTypes@
 burstSelectionTypes :: IsPHAsset phAsset => phAsset -> IO PHAssetBurstSelectionType
 burstSelectionTypes phAsset  =
@@ -393,6 +400,10 @@ favoriteSelector = mkSelector "favorite"
 -- | @Selector@ for @syncFailureHidden@
 syncFailureHiddenSelector :: Selector
 syncFailureHiddenSelector = mkSelector "syncFailureHidden"
+
+-- | @Selector@ for @burstIdentifier@
+burstIdentifierSelector :: Selector
+burstIdentifierSelector = mkSelector "burstIdentifier"
 
 -- | @Selector@ for @burstSelectionTypes@
 burstSelectionTypesSelector :: Selector

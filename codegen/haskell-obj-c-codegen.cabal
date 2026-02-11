@@ -33,6 +33,7 @@ library
       ObjC.CodeGen.Generate.Method
       ObjC.CodeGen.Generate.ClassModule
       ObjC.CodeGen.Generate.Protocols
+      ObjC.CodeGen.Generate.DelegateModule
       ObjC.CodeGen.Generate.Package
   other-modules:
       Paths_haskell_obj_c_codegen

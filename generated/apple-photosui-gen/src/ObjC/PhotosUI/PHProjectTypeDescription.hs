@@ -18,6 +18,7 @@ module ObjC.PhotosUI.PHProjectTypeDescription
   , projectType
   , localizedTitle
   , localizedDescription
+  , localizedAttributedDescription
   , image
   , subtypeDescriptions
   , canProvideSubtypes
@@ -31,6 +32,7 @@ module ObjC.PhotosUI.PHProjectTypeDescription
   , projectTypeSelector
   , localizedTitleSelector
   , localizedDescriptionSelector
+  , localizedAttributedDescriptionSelector
   , imageSelector
   , subtypeDescriptionsSelector
   , canProvideSubtypesSelector
@@ -142,6 +144,11 @@ localizedDescription :: IsPHProjectTypeDescription phProjectTypeDescription => p
 localizedDescription phProjectTypeDescription  =
     sendMsg phProjectTypeDescription (mkSelector "localizedDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- localizedAttributedDescription@
+localizedAttributedDescription :: IsPHProjectTypeDescription phProjectTypeDescription => phProjectTypeDescription -> IO (Id NSAttributedString)
+localizedAttributedDescription phProjectTypeDescription  =
+    sendMsg phProjectTypeDescription (mkSelector "localizedAttributedDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Optional image to be associated with the project type in the picker; PNG images are recommended.
 --
 -- ObjC selector: @- image@
@@ -206,6 +213,10 @@ localizedTitleSelector = mkSelector "localizedTitle"
 -- | @Selector@ for @localizedDescription@
 localizedDescriptionSelector :: Selector
 localizedDescriptionSelector = mkSelector "localizedDescription"
+
+-- | @Selector@ for @localizedAttributedDescription@
+localizedAttributedDescriptionSelector :: Selector
+localizedAttributedDescriptionSelector = mkSelector "localizedAttributedDescription"
 
 -- | @Selector@ for @image@
 imageSelector :: Selector

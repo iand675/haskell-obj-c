@@ -11,6 +11,7 @@ module ObjC.AutomaticAssessmentConfiguration.AEAssessmentApplication
   , init_
   , new
   , bundleIdentifier
+  , teamIdentifier
   , requiresSignatureValidation
   , setRequiresSignatureValidation
   , initWithBundleIdentifierSelector
@@ -18,6 +19,7 @@ module ObjC.AutomaticAssessmentConfiguration.AEAssessmentApplication
   , initSelector
   , newSelector
   , bundleIdentifierSelector
+  , teamIdentifierSelector
   , requiresSignatureValidationSelector
   , setRequiresSignatureValidationSelector
 
@@ -69,6 +71,11 @@ bundleIdentifier :: IsAEAssessmentApplication aeAssessmentApplication => aeAsses
 bundleIdentifier aeAssessmentApplication  =
     sendMsg aeAssessmentApplication (mkSelector "bundleIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- teamIdentifier@
+teamIdentifier :: IsAEAssessmentApplication aeAssessmentApplication => aeAssessmentApplication -> IO (Id NSString)
+teamIdentifier aeAssessmentApplication  =
+    sendMsg aeAssessmentApplication (mkSelector "teamIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- requiresSignatureValidation@
 requiresSignatureValidation :: IsAEAssessmentApplication aeAssessmentApplication => aeAssessmentApplication -> IO Bool
 requiresSignatureValidation aeAssessmentApplication  =
@@ -102,6 +109,10 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @bundleIdentifier@
 bundleIdentifierSelector :: Selector
 bundleIdentifierSelector = mkSelector "bundleIdentifier"
+
+-- | @Selector@ for @teamIdentifier@
+teamIdentifierSelector :: Selector
+teamIdentifierSelector = mkSelector "teamIdentifier"
 
 -- | @Selector@ for @requiresSignatureValidation@
 requiresSignatureValidationSelector :: Selector

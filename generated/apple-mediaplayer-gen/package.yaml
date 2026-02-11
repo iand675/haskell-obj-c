@@ -18,6 +18,11 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.MediaPlayer.Delegate.MPMediaPlayback
+  - ObjC.MediaPlayer.Delegate.MPNowPlayingSessionDelegate
+  - ObjC.MediaPlayer.Delegate.MPPlayableContentDataSource
+  - ObjC.MediaPlayer.Delegate.MPPlayableContentDelegate
+  - ObjC.MediaPlayer.Delegate.MPSystemMusicPlayerController
   - ObjC.MediaPlayer.Enums
   - ObjC.MediaPlayer.Internal.Classes
   - ObjC.MediaPlayer.Internal.Enums

@@ -8,9 +8,15 @@ module ObjC.SensorKit.SRApplicationUsage
   , IsSRApplicationUsage(..)
   , bundleIdentifier
   , usageTime
+  , reportApplicationIdentifier
+  , textInputSessions
+  , supplementalCategories
   , relativeStartTime
   , bundleIdentifierSelector
   , usageTimeSelector
+  , reportApplicationIdentifierSelector
+  , textInputSessionsSelector
+  , supplementalCategoriesSelector
   , relativeStartTimeSelector
 
 
@@ -45,6 +51,37 @@ usageTime :: IsSRApplicationUsage srApplicationUsage => srApplicationUsage -> IO
 usageTime srApplicationUsage  =
     sendMsg srApplicationUsage (mkSelector "usageTime") retCDouble []
 
+-- | reportApplicationIdentifier
+--
+-- An application identifier that is valid for the duration of the report.
+--
+-- This is useful for identifying distinct application uses within the same report duration without revealing the actual application identifier.
+--
+-- ObjC selector: @- reportApplicationIdentifier@
+reportApplicationIdentifier :: IsSRApplicationUsage srApplicationUsage => srApplicationUsage -> IO (Id NSString)
+reportApplicationIdentifier srApplicationUsage  =
+    sendMsg srApplicationUsage (mkSelector "reportApplicationIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | textInputSessions
+--
+-- The text input session types that occurred during this application usage
+--
+-- The list of text input sessions describes the order and type of text input that may have occured during an application usage. Multiple sessions of the same text input type will appear as separate array entries. If no text input occurred, this array will be empty.
+--
+-- ObjC selector: @- textInputSessions@
+textInputSessions :: IsSRApplicationUsage srApplicationUsage => srApplicationUsage -> IO (Id NSArray)
+textInputSessions srApplicationUsage  =
+    sendMsg srApplicationUsage (mkSelector "textInputSessions") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | supplementalCategories
+--
+-- Additional categories that describe this app
+--
+-- ObjC selector: @- supplementalCategories@
+supplementalCategories :: IsSRApplicationUsage srApplicationUsage => srApplicationUsage -> IO (Id NSArray)
+supplementalCategories srApplicationUsage  =
+    sendMsg srApplicationUsage (mkSelector "supplementalCategories") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | relativeStartTime
 --
 -- App start time relative to the first app start time in the report interval
@@ -67,6 +104,18 @@ bundleIdentifierSelector = mkSelector "bundleIdentifier"
 -- | @Selector@ for @usageTime@
 usageTimeSelector :: Selector
 usageTimeSelector = mkSelector "usageTime"
+
+-- | @Selector@ for @reportApplicationIdentifier@
+reportApplicationIdentifierSelector :: Selector
+reportApplicationIdentifierSelector = mkSelector "reportApplicationIdentifier"
+
+-- | @Selector@ for @textInputSessions@
+textInputSessionsSelector :: Selector
+textInputSessionsSelector = mkSelector "textInputSessions"
+
+-- | @Selector@ for @supplementalCategories@
+supplementalCategoriesSelector :: Selector
+supplementalCategoriesSelector = mkSelector "supplementalCategories"
 
 -- | @Selector@ for @relativeStartTime@
 relativeStartTimeSelector :: Selector

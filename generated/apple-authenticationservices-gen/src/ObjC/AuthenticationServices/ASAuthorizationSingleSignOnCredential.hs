@@ -13,6 +13,7 @@ module ObjC.AuthenticationServices.ASAuthorizationSingleSignOnCredential
   , identityToken
   , authorizedScopes
   , authenticatedResponse
+  , privateKeys
   , newSelector
   , initSelector
   , stateSelector
@@ -20,6 +21,7 @@ module ObjC.AuthenticationServices.ASAuthorizationSingleSignOnCredential
   , identityTokenSelector
   , authorizedScopesSelector
   , authenticatedResponseSelector
+  , privateKeysSelector
 
 
   ) where
@@ -90,6 +92,13 @@ authenticatedResponse :: IsASAuthorizationSingleSignOnCredential asAuthorization
 authenticatedResponse asAuthorizationSingleSignOnCredential  =
     sendMsg asAuthorizationSingleSignOnCredential (mkSelector "authenticatedResponse") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | Private SecKeys returned from the AuthenticationServices extension.
+--
+-- ObjC selector: @- privateKeys@
+privateKeys :: IsASAuthorizationSingleSignOnCredential asAuthorizationSingleSignOnCredential => asAuthorizationSingleSignOnCredential -> IO (Id NSArray)
+privateKeys asAuthorizationSingleSignOnCredential  =
+    sendMsg asAuthorizationSingleSignOnCredential (mkSelector "privateKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -121,4 +130,8 @@ authorizedScopesSelector = mkSelector "authorizedScopes"
 -- | @Selector@ for @authenticatedResponse@
 authenticatedResponseSelector :: Selector
 authenticatedResponseSelector = mkSelector "authenticatedResponse"
+
+-- | @Selector@ for @privateKeys@
+privateKeysSelector :: Selector
+privateKeysSelector = mkSelector "privateKeys"
 

@@ -11,6 +11,8 @@
 module ObjC.Quartz.IKScannerDeviceView
   ( IKScannerDeviceView
   , IsIKScannerDeviceView(..)
+  , delegate
+  , setDelegate
   , mode
   , setMode
   , hasDisplayModeSimple
@@ -33,6 +35,8 @@ module ObjC.Quartz.IKScannerDeviceView
   , setDisplaysPostProcessApplicationControl
   , postProcessApplication
   , setPostProcessApplication
+  , delegateSelector
+  , setDelegateSelector
   , modeSelector
   , setModeSelector
   , hasDisplayModeSimpleSelector
@@ -83,6 +87,24 @@ import ObjC.Quartz.Internal.Classes
 import ObjC.Quartz.Internal.Enums
 import ObjC.AppKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | delegate
+--
+-- delegate of the IKScannerDeviceView.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> IO RawId
+delegate ikScannerDeviceView  =
+    fmap (RawId . castPtr) $ sendMsg ikScannerDeviceView (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- delegate of the IKScannerDeviceView.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> RawId -> IO ()
+setDelegate ikScannerDeviceView  value =
+    sendMsg ikScannerDeviceView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | mode
 --
@@ -290,6 +312,14 @@ setPostProcessApplication ikScannerDeviceView  value =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @mode@
 modeSelector :: Selector

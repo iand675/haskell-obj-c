@@ -19,11 +19,14 @@ module ObjC.IOBluetoothUI.IOBluetoothServiceBrowserController
   , getServiceBrowserControllerRef
   , discover
   , discoverAsSheetForWindow_withRecord
+  , discoverWithDeviceAttributes_serviceList_serviceRecord
   , setOptions
   , runModal
   , beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo
   , getResults
   , getOptions
+  , setSearchAttributes
+  , getSearchAttributes
   , addAllowedUUID
   , addAllowedUUIDArray
   , clearAllowedUUIDs
@@ -40,11 +43,14 @@ module ObjC.IOBluetoothUI.IOBluetoothServiceBrowserController
   , getServiceBrowserControllerRefSelector
   , discoverSelector
   , discoverAsSheetForWindow_withRecordSelector
+  , discoverWithDeviceAttributes_serviceList_serviceRecordSelector
   , setOptionsSelector
   , runModalSelector
   , beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfoSelector
   , getResultsSelector
   , getOptionsSelector
+  , setSearchAttributesSelector
+  , getSearchAttributesSelector
   , addAllowedUUIDSelector
   , addAllowedUUIDArraySelector
   , clearAllowedUUIDsSelector
@@ -202,6 +208,29 @@ discoverAsSheetForWindow_withRecord ioBluetoothServiceBrowserController  sheetWi
     withObjCPtr outRecord $ \raw_outRecord ->
         sendMsg ioBluetoothServiceBrowserController (mkSelector "discoverAsSheetForWindow:withRecord:") retCInt [argPtr (castPtr raw_sheetWindow :: Ptr ()), argPtr (castPtr raw_outRecord :: Ptr ())]
 
+-- | discoverWithDeviceAttributes:serviceList:serviceRecord:
+--
+-- Invoke an already created window controller to display, and run the modal dialog.
+--
+-- ***WARNING*** This method has been deprecated in favor of -setSearchAttributes:, -addAllowedUUID:, -runModal and -getResults.
+--
+-- @deviceArray@ — A NSArray of valid device type objects to allow.  Not implemented yet.
+--
+-- @serviceArray@ — A NSArray of valid UUIDs to allow. The array should contain NSData objects                                specifying the UUID to allow.  We currently only support 16-bit short UUID forms, but                                will allow for any of the 16, 32 or full 128-bit UUID forms.
+--
+-- @outRecord@ — Pointer to a (IOBluetoothSDPServiceRecord *) object.  This will get allocated                                and returned to the client if the user selects a service.
+--
+-- Returns: IOReturn -  kIOReturnSuccess  - on successful completion. kCanceledErr - User canceled.
+--
+-- This method will run the IOBluetoothServiceBrowserController browser window as a sheet for the window passed to it in sheetWindow.
+--
+-- ObjC selector: @- discoverWithDeviceAttributes:serviceList:serviceRecord:@
+discoverWithDeviceAttributes_serviceList_serviceRecord :: (IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController, IsNSArray serviceArray, IsIOBluetoothSDPServiceRecord outRecord) => ioBluetoothServiceBrowserController -> RawId -> serviceArray -> outRecord -> IO CInt
+discoverWithDeviceAttributes_serviceList_serviceRecord ioBluetoothServiceBrowserController  deviceAttributes serviceArray outRecord =
+  withObjCPtr serviceArray $ \raw_serviceArray ->
+    withObjCPtr outRecord $ \raw_outRecord ->
+        sendMsg ioBluetoothServiceBrowserController (mkSelector "discoverWithDeviceAttributes:serviceList:serviceRecord:") retCInt [argPtr (castPtr (unRawId deviceAttributes) :: Ptr ()), argPtr (castPtr raw_serviceArray :: Ptr ()), argPtr (castPtr raw_outRecord :: Ptr ())]
+
 -- | setOptions:
 --
 -- Modify the options for the window controller.
@@ -283,6 +312,34 @@ getResults ioBluetoothServiceBrowserController  =
 getOptions :: IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController => ioBluetoothServiceBrowserController -> IO CUInt
 getOptions ioBluetoothServiceBrowserController  =
     sendMsg ioBluetoothServiceBrowserController (mkSelector "getOptions") retCUInt []
+
+-- | setSearchAttributes:
+--
+-- Sets the search attributes that control the panel's search/inquiry behavior.
+--
+-- The device search attributes control the inquiry behavior of the panel.  They allow only devices				that match the specified attributes (i.e. class of device) to be displayed to the user.  Note that				this only covers attributes returned in an inquiry result and not actual SDP services on the device.
+--
+-- NOTE: This method is only available in Mac OS X 10.2.4 (Bluetooth v1.1) or later.
+--
+-- @searchAttributes@ — Attributes to control the panel's inquiry behavior.
+--
+-- ObjC selector: @- setSearchAttributes:@
+setSearchAttributes :: IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController => ioBluetoothServiceBrowserController -> Const RawId -> IO ()
+setSearchAttributes ioBluetoothServiceBrowserController  searchAttributes =
+    sendMsg ioBluetoothServiceBrowserController (mkSelector "setSearchAttributes:") retVoid [argPtr (castPtr (unRawId (unConst searchAttributes)) :: Ptr ())]
+
+-- | getSearchAttributes
+--
+-- Returns the search attributes that control the panel's search/inquiry behavior.
+--
+-- NOTE: This method is only available in Mac OS X 10.2.4 (Bluetooth v1.1) or later.
+--
+-- Returns: Returns the search attributes set by setSearchAttributes:
+--
+-- ObjC selector: @- getSearchAttributes@
+getSearchAttributes :: IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController => ioBluetoothServiceBrowserController -> IO (Const RawId)
+getSearchAttributes ioBluetoothServiceBrowserController  =
+    fmap Const $ fmap (RawId . castPtr) $ sendMsg ioBluetoothServiceBrowserController (mkSelector "getSearchAttributes") (retPtr retVoid) []
 
 -- | addAllowedUUID:
 --
@@ -446,6 +503,10 @@ discoverSelector = mkSelector "discover:"
 discoverAsSheetForWindow_withRecordSelector :: Selector
 discoverAsSheetForWindow_withRecordSelector = mkSelector "discoverAsSheetForWindow:withRecord:"
 
+-- | @Selector@ for @discoverWithDeviceAttributes:serviceList:serviceRecord:@
+discoverWithDeviceAttributes_serviceList_serviceRecordSelector :: Selector
+discoverWithDeviceAttributes_serviceList_serviceRecordSelector = mkSelector "discoverWithDeviceAttributes:serviceList:serviceRecord:"
+
 -- | @Selector@ for @setOptions:@
 setOptionsSelector :: Selector
 setOptionsSelector = mkSelector "setOptions:"
@@ -465,6 +526,14 @@ getResultsSelector = mkSelector "getResults"
 -- | @Selector@ for @getOptions@
 getOptionsSelector :: Selector
 getOptionsSelector = mkSelector "getOptions"
+
+-- | @Selector@ for @setSearchAttributes:@
+setSearchAttributesSelector :: Selector
+setSearchAttributesSelector = mkSelector "setSearchAttributes:"
+
+-- | @Selector@ for @getSearchAttributes@
+getSearchAttributesSelector :: Selector
+getSearchAttributesSelector = mkSelector "getSearchAttributes"
 
 -- | @Selector@ for @addAllowedUUID:@
 addAllowedUUIDSelector :: Selector

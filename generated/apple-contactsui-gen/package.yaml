@@ -19,4 +19,5 @@ library:
   exposed-modules:
   - ObjC.ContactsUI.CNContactPicker
   - ObjC.ContactsUI.CNContactViewController
+  - ObjC.ContactsUI.Delegate.CNContactPickerDelegate
   - ObjC.ContactsUI.Internal.Classes

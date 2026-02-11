@@ -62,10 +62,15 @@ module ObjC.AppKit.NSMenu
   , numberOfItems
   , autoenablesItems
   , setAutoenablesItems
+  , delegate
+  , setDelegate
   , menuBarHeight
+  , highlightedItem
   , minimumWidth
   , setMinimumWidth
   , size
+  , font
+  , setFont
   , allowsContextMenuPlugIns
   , setAllowsContextMenuPlugIns
   , automaticallyInsertsWritingToolsItems
@@ -82,6 +87,8 @@ module ObjC.AppKit.NSMenu
   , setPresentationStyle
   , selectionMode
   , setSelectionMode
+  , selectedItems
+  , setSelectedItems
   , initWithTitleSelector
   , initWithCoderSelector
   , popUpContextMenu_withEvent_forViewSelector
@@ -137,10 +144,15 @@ module ObjC.AppKit.NSMenu
   , numberOfItemsSelector
   , autoenablesItemsSelector
   , setAutoenablesItemsSelector
+  , delegateSelector
+  , setDelegateSelector
   , menuBarHeightSelector
+  , highlightedItemSelector
   , minimumWidthSelector
   , setMinimumWidthSelector
   , sizeSelector
+  , fontSelector
+  , setFontSelector
   , allowsContextMenuPlugInsSelector
   , setAllowsContextMenuPlugInsSelector
   , automaticallyInsertsWritingToolsItemsSelector
@@ -157,6 +169,8 @@ module ObjC.AppKit.NSMenu
   , setPresentationStyleSelector
   , selectionModeSelector
   , setSelectionModeSelector
+  , selectedItemsSelector
+  , setSelectedItemsSelector
 
   -- * Enum types
   , NSMenuPresentationStyle(NSMenuPresentationStyle)
@@ -537,10 +551,25 @@ setAutoenablesItems :: IsNSMenu nsMenu => nsMenu -> Bool -> IO ()
 setAutoenablesItems nsMenu  value =
     sendMsg nsMenu (mkSelector "setAutoenablesItems:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @- delegate@
+delegate :: IsNSMenu nsMenu => nsMenu -> IO RawId
+delegate nsMenu  =
+    fmap (RawId . castPtr) $ sendMsg nsMenu (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSMenu nsMenu => nsMenu -> RawId -> IO ()
+setDelegate nsMenu  value =
+    sendMsg nsMenu (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- menuBarHeight@
 menuBarHeight :: IsNSMenu nsMenu => nsMenu -> IO CDouble
 menuBarHeight nsMenu  =
     sendMsg nsMenu (mkSelector "menuBarHeight") retCDouble []
+
+-- | @- highlightedItem@
+highlightedItem :: IsNSMenu nsMenu => nsMenu -> IO (Id NSMenuItem)
+highlightedItem nsMenu  =
+    sendMsg nsMenu (mkSelector "highlightedItem") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- minimumWidth@
 minimumWidth :: IsNSMenu nsMenu => nsMenu -> IO CDouble
@@ -556,6 +585,17 @@ setMinimumWidth nsMenu  value =
 size :: IsNSMenu nsMenu => nsMenu -> IO NSSize
 size nsMenu  =
     sendMsgStret nsMenu (mkSelector "size") retNSSize []
+
+-- | @- font@
+font :: IsNSMenu nsMenu => nsMenu -> IO (Id NSFont)
+font nsMenu  =
+    sendMsg nsMenu (mkSelector "font") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setFont:@
+setFont :: (IsNSMenu nsMenu, IsNSFont value) => nsMenu -> value -> IO ()
+setFont nsMenu  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsMenu (mkSelector "setFont:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- allowsContextMenuPlugIns@
 allowsContextMenuPlugIns :: IsNSMenu nsMenu => nsMenu -> IO Bool
@@ -652,6 +692,29 @@ selectionMode nsMenu  =
 setSelectionMode :: IsNSMenu nsMenu => nsMenu -> NSMenuSelectionMode -> IO ()
 setSelectionMode nsMenu  value =
     sendMsg nsMenu (mkSelector "setSelectionMode:") retVoid [argCLong (coerce value)]
+
+-- | The menu items that are selected.
+--
+-- An item is selected when its state is @NSControl.StateValue.on@.
+--
+-- Note: This property is settable. Setting @selectedItems@ will select any items that are contained in the provided array, and deselect any previously selected items that are not in the array.
+--
+-- ObjC selector: @- selectedItems@
+selectedItems :: IsNSMenu nsMenu => nsMenu -> IO (Id NSArray)
+selectedItems nsMenu  =
+    sendMsg nsMenu (mkSelector "selectedItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The menu items that are selected.
+--
+-- An item is selected when its state is @NSControl.StateValue.on@.
+--
+-- Note: This property is settable. Setting @selectedItems@ will select any items that are contained in the provided array, and deselect any previously selected items that are not in the array.
+--
+-- ObjC selector: @- setSelectedItems:@
+setSelectedItems :: (IsNSMenu nsMenu, IsNSArray value) => nsMenu -> value -> IO ()
+setSelectedItems nsMenu  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsMenu (mkSelector "setSelectedItems:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -877,9 +940,21 @@ autoenablesItemsSelector = mkSelector "autoenablesItems"
 setAutoenablesItemsSelector :: Selector
 setAutoenablesItemsSelector = mkSelector "setAutoenablesItems:"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @menuBarHeight@
 menuBarHeightSelector :: Selector
 menuBarHeightSelector = mkSelector "menuBarHeight"
+
+-- | @Selector@ for @highlightedItem@
+highlightedItemSelector :: Selector
+highlightedItemSelector = mkSelector "highlightedItem"
 
 -- | @Selector@ for @minimumWidth@
 minimumWidthSelector :: Selector
@@ -892,6 +967,14 @@ setMinimumWidthSelector = mkSelector "setMinimumWidth:"
 -- | @Selector@ for @size@
 sizeSelector :: Selector
 sizeSelector = mkSelector "size"
+
+-- | @Selector@ for @font@
+fontSelector :: Selector
+fontSelector = mkSelector "font"
+
+-- | @Selector@ for @setFont:@
+setFontSelector :: Selector
+setFontSelector = mkSelector "setFont:"
 
 -- | @Selector@ for @allowsContextMenuPlugIns@
 allowsContextMenuPlugInsSelector :: Selector
@@ -956,4 +1039,12 @@ selectionModeSelector = mkSelector "selectionMode"
 -- | @Selector@ for @setSelectionMode:@
 setSelectionModeSelector :: Selector
 setSelectionModeSelector = mkSelector "setSelectionMode:"
+
+-- | @Selector@ for @selectedItems@
+selectedItemsSelector :: Selector
+selectedItemsSelector = mkSelector "selectedItems"
+
+-- | @Selector@ for @setSelectedItems:@
+setSelectedItemsSelector :: Selector
+setSelectedItemsSelector = mkSelector "setSelectedItems:"
 

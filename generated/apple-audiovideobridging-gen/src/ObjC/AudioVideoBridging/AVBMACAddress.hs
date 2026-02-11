@@ -11,6 +11,7 @@ module ObjC.AudioVideoBridging.AVBMACAddress
   ( AVBMACAddress
   , IsAVBMACAddress(..)
   , initWithBytes
+  , bytes
   , dataRepresentation
   , setDataRepresentation
   , stringRepresentation
@@ -18,6 +19,7 @@ module ObjC.AudioVideoBridging.AVBMACAddress
   , multicast
   , setMulticast
   , initWithBytesSelector
+  , bytesSelector
   , dataRepresentationSelector
   , setDataRepresentationSelector
   , stringRepresentationSelector
@@ -55,6 +57,15 @@ import ObjC.Foundation.Internal.Classes
 initWithBytes :: IsAVBMACAddress avbmacAddress => avbmacAddress -> Const (Ptr CUChar) -> IO (Id AVBMACAddress)
 initWithBytes avbmacAddress  bytes =
     sendMsg avbmacAddress (mkSelector "initWithBytes:") (retPtr retVoid) [argPtr (unConst bytes)] >>= ownedObject . castPtr
+
+-- | bytes
+--
+-- The .
+--
+-- ObjC selector: @- bytes@
+bytes :: IsAVBMACAddress avbmacAddress => avbmacAddress -> IO RawId
+bytes avbmacAddress  =
+    fmap (RawId . castPtr) $ sendMsg avbmacAddress (mkSelector "bytes") (retPtr retVoid) []
 
 -- | dataRepresentation
 --
@@ -119,6 +130,10 @@ setMulticast avbmacAddress  value =
 -- | @Selector@ for @initWithBytes:@
 initWithBytesSelector :: Selector
 initWithBytesSelector = mkSelector "initWithBytes:"
+
+-- | @Selector@ for @bytes@
+bytesSelector :: Selector
+bytesSelector = mkSelector "bytes"
 
 -- | @Selector@ for @dataRepresentation@
 dataRepresentationSelector :: Selector

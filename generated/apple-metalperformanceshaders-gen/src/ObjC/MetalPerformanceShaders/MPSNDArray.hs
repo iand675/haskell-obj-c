@@ -28,9 +28,12 @@ module ObjC.MetalPerformanceShaders.MPSNDArray
   , resourceSize
   , arrayViewWithCommandBuffer_descriptor_aliasing
   , arrayViewWithDescriptor
+  , arrayViewWithShape_strides
   , arrayViewWithDimensionCount_dimensionSizes_strides
   , exportDataWithCommandBuffer_toBuffer_destinationDataType_offset_rowStrides
   , importDataWithCommandBuffer_fromBuffer_sourceDataType_offset_rowStrides
+  , exportDataWithCommandBuffer_toImages_offset
+  , importDataWithCommandBuffer_fromImages_offset
   , readBytes_strideBytes
   , writeBytes_strideBytes
   , synchronizeOnCommandBuffer
@@ -39,6 +42,7 @@ module ObjC.MetalPerformanceShaders.MPSNDArray
   , dataType
   , dataTypeSize
   , numberOfDimensions
+  , device
   , parent
   , defaultAllocatorSelector
   , lengthOfDimensionSelector
@@ -51,9 +55,12 @@ module ObjC.MetalPerformanceShaders.MPSNDArray
   , resourceSizeSelector
   , arrayViewWithCommandBuffer_descriptor_aliasingSelector
   , arrayViewWithDescriptorSelector
+  , arrayViewWithShape_stridesSelector
   , arrayViewWithDimensionCount_dimensionSizes_stridesSelector
   , exportDataWithCommandBuffer_toBuffer_destinationDataType_offset_rowStridesSelector
   , importDataWithCommandBuffer_fromBuffer_sourceDataType_offset_rowStridesSelector
+  , exportDataWithCommandBuffer_toImages_offsetSelector
+  , importDataWithCommandBuffer_fromImages_offsetSelector
   , readBytes_strideBytesSelector
   , writeBytes_strideBytesSelector
   , synchronizeOnCommandBufferSelector
@@ -62,6 +69,7 @@ module ObjC.MetalPerformanceShaders.MPSNDArray
   , dataTypeSelector
   , dataTypeSizeSelector
   , numberOfDimensionsSelector
+  , deviceSelector
   , parentSelector
 
   -- * Enum types
@@ -248,6 +256,21 @@ arrayViewWithDescriptor mpsndArray  descriptor =
 --
 -- This operation always returns a new view of the same underlying MTLBuffer, but works only with contiguous buffers.
 --
+-- @shape@ — The new shape for the NDArray. Fastest running dimension last. If nil then current shape is used.
+--
+-- @strides@ — The strides for each dimension. Must be at least length of new shape. Last number must be one. Must be non-increasing.
+--
+-- Returns: A new MPSNDArray, if it is possible to make one. Otherwise nil is returned. The MPSNDArray is autoreleased.
+--
+-- ObjC selector: @- arrayViewWithShape:strides:@
+arrayViewWithShape_strides :: IsMPSNDArray mpsndArray => mpsndArray -> RawId -> RawId -> IO (Id MPSNDArray)
+arrayViewWithShape_strides mpsndArray  shape strides =
+    sendMsg mpsndArray (mkSelector "arrayViewWithShape:strides:") (retPtr retVoid) [argPtr (castPtr (unRawId shape) :: Ptr ()), argPtr (castPtr (unRawId strides) :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Make a new representation of a MPSNDArray with given strides and a new shape.
+--
+-- This operation always returns a new view of the same underlying MTLBuffer, but works only with contiguous buffers.
+--
 -- @numberOfDimensions@ — Number of dimensions in the new view.
 --
 -- @dimensionSizes@ — Size of each new dimension. Fastest running dimension first. Must be of length numberOfDimensions.
@@ -298,6 +321,36 @@ exportDataWithCommandBuffer_toBuffer_destinationDataType_offset_rowStrides mpsnd
 importDataWithCommandBuffer_fromBuffer_sourceDataType_offset_rowStrides :: IsMPSNDArray mpsndArray => mpsndArray -> RawId -> RawId -> MPSDataType -> CULong -> Ptr CLong -> IO ()
 importDataWithCommandBuffer_fromBuffer_sourceDataType_offset_rowStrides mpsndArray  cmdBuf buffer sourceDataType offset rowStrides =
     sendMsg mpsndArray (mkSelector "importDataWithCommandBuffer:fromBuffer:sourceDataType:offset:rowStrides:") retVoid [argPtr (castPtr (unRawId cmdBuf) :: Ptr ()), argPtr (castPtr (unRawId buffer) :: Ptr ()), argCUInt (coerce sourceDataType), argCULong offset, argPtr rowStrides]
+
+-- | Do a GPU side copy of the contents of a MPSNDArray to a MPSImageBatch.
+--
+-- To do a transpose or slice as part of the operation, make a MPSNDArray view first that encodes that operation.              The shape of the array must be [ C, W, H, N, 1, 1, ... ], where C is dimension 0 (normally the fastest running index)              and is mapped to feature channels in the destination image, W and H are mapped to x and y coordinates in the destination              image and N is mapped to the image batch index. You can use arrayViewWithCommandBuffer: to transpose, slice and reshape              the source array to layout the data in the desired way for the image(s).
+--
+-- @cmdBuf@ — The command buffer on which to encode the operation/
+--
+-- @images@ — The destination images. NOTE: you can use [images subarrayWithRange:...] to get a sub-batch of images.
+--
+-- @offset@ — The offset to the image where to write - the size of the operation is defined by the source array.                          Note: offset.featureChannel must be multiple of four, otherwise results are undefined.
+--
+-- ObjC selector: @- exportDataWithCommandBuffer:toImages:offset:@
+exportDataWithCommandBuffer_toImages_offset :: IsMPSNDArray mpsndArray => mpsndArray -> RawId -> RawId -> MPSImageCoordinate -> IO ()
+exportDataWithCommandBuffer_toImages_offset mpsndArray  cmdBuf images offset =
+    sendMsg mpsndArray (mkSelector "exportDataWithCommandBuffer:toImages:offset:") retVoid [argPtr (castPtr (unRawId cmdBuf) :: Ptr ()), argPtr (castPtr (unRawId images) :: Ptr ()), argMPSImageCoordinate offset]
+
+-- | Do a GPU side copy of the contents of a MPSImageBatch into a MPSNDArray.
+--
+-- This reverses exportDataWithCommandBuffer:toImages: function.
+--
+-- @cmdBuf@ — The command buffer on which to encode the operation.
+--
+-- @images@ — The source images. NOTE: you can use [images subarrayWithRange:...] to get a sub-batch of images.
+--
+-- @offset@ — The offset to the image where to read - the size of the operation is defined by the destination array.
+--
+-- ObjC selector: @- importDataWithCommandBuffer:fromImages:offset:@
+importDataWithCommandBuffer_fromImages_offset :: IsMPSNDArray mpsndArray => mpsndArray -> RawId -> RawId -> MPSImageCoordinate -> IO ()
+importDataWithCommandBuffer_fromImages_offset mpsndArray  cmdBuf images offset =
+    sendMsg mpsndArray (mkSelector "importDataWithCommandBuffer:fromImages:offset:") retVoid [argPtr (castPtr (unRawId cmdBuf) :: Ptr ()), argPtr (castPtr (unRawId images) :: Ptr ()), argMPSImageCoordinate offset]
 
 -- | Copy bytes from MPSNDArray into buffer
 --
@@ -374,6 +427,15 @@ numberOfDimensions :: IsMPSNDArray mpsndArray => mpsndArray -> IO CULong
 numberOfDimensions mpsndArray  =
     sendMsg mpsndArray (mkSelector "numberOfDimensions") retCULong []
 
+-- | device
+--
+-- The device on which the MSPNDArray may be used
+--
+-- ObjC selector: @- device@
+device :: IsMPSNDArray mpsndArray => mpsndArray -> IO RawId
+device mpsndArray  =
+    fmap (RawId . castPtr) $ sendMsg mpsndArray (mkSelector "device") (retPtr retVoid) []
+
 -- | The parent MPSNDArray that this object aliases
 --
 -- If the MPSNDArray was createrd as a array view of another MPSNDArray object, and aliases content              in the same MTLBuffer, the original MPSNDArray will be retained as the parent here. Two MPSNDArrays              alias if they share a common ancestor. Note that the parent may itself have a parent, and so forth.
@@ -431,6 +493,10 @@ arrayViewWithCommandBuffer_descriptor_aliasingSelector = mkSelector "arrayViewWi
 arrayViewWithDescriptorSelector :: Selector
 arrayViewWithDescriptorSelector = mkSelector "arrayViewWithDescriptor:"
 
+-- | @Selector@ for @arrayViewWithShape:strides:@
+arrayViewWithShape_stridesSelector :: Selector
+arrayViewWithShape_stridesSelector = mkSelector "arrayViewWithShape:strides:"
+
 -- | @Selector@ for @arrayViewWithDimensionCount:dimensionSizes:strides:@
 arrayViewWithDimensionCount_dimensionSizes_stridesSelector :: Selector
 arrayViewWithDimensionCount_dimensionSizes_stridesSelector = mkSelector "arrayViewWithDimensionCount:dimensionSizes:strides:"
@@ -442,6 +508,14 @@ exportDataWithCommandBuffer_toBuffer_destinationDataType_offset_rowStridesSelect
 -- | @Selector@ for @importDataWithCommandBuffer:fromBuffer:sourceDataType:offset:rowStrides:@
 importDataWithCommandBuffer_fromBuffer_sourceDataType_offset_rowStridesSelector :: Selector
 importDataWithCommandBuffer_fromBuffer_sourceDataType_offset_rowStridesSelector = mkSelector "importDataWithCommandBuffer:fromBuffer:sourceDataType:offset:rowStrides:"
+
+-- | @Selector@ for @exportDataWithCommandBuffer:toImages:offset:@
+exportDataWithCommandBuffer_toImages_offsetSelector :: Selector
+exportDataWithCommandBuffer_toImages_offsetSelector = mkSelector "exportDataWithCommandBuffer:toImages:offset:"
+
+-- | @Selector@ for @importDataWithCommandBuffer:fromImages:offset:@
+importDataWithCommandBuffer_fromImages_offsetSelector :: Selector
+importDataWithCommandBuffer_fromImages_offsetSelector = mkSelector "importDataWithCommandBuffer:fromImages:offset:"
 
 -- | @Selector@ for @readBytes:strideBytes:@
 readBytes_strideBytesSelector :: Selector
@@ -474,6 +548,10 @@ dataTypeSizeSelector = mkSelector "dataTypeSize"
 -- | @Selector@ for @numberOfDimensions@
 numberOfDimensionsSelector :: Selector
 numberOfDimensionsSelector = mkSelector "numberOfDimensions"
+
+-- | @Selector@ for @device@
+deviceSelector :: Selector
+deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @parent@
 parentSelector :: Selector

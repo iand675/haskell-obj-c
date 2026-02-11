@@ -8,10 +8,14 @@ module ObjC.ModelIO.MDLAnimationBindComponent
   , IsMDLAnimationBindComponent(..)
   , skeleton
   , setSkeleton
+  , jointAnimation
+  , setJointAnimation
   , jointPaths
   , setJointPaths
   , skeletonSelector
   , setSkeletonSelector
+  , jointAnimationSelector
+  , setJointAnimationSelector
   , jointPathsSelector
   , setJointPathsSelector
 
@@ -44,6 +48,16 @@ setSkeleton mdlAnimationBindComponent  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mdlAnimationBindComponent (mkSelector "setSkeleton:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- jointAnimation@
+jointAnimation :: IsMDLAnimationBindComponent mdlAnimationBindComponent => mdlAnimationBindComponent -> IO RawId
+jointAnimation mdlAnimationBindComponent  =
+    fmap (RawId . castPtr) $ sendMsg mdlAnimationBindComponent (mkSelector "jointAnimation") (retPtr retVoid) []
+
+-- | @- setJointAnimation:@
+setJointAnimation :: IsMDLAnimationBindComponent mdlAnimationBindComponent => mdlAnimationBindComponent -> RawId -> IO ()
+setJointAnimation mdlAnimationBindComponent  value =
+    sendMsg mdlAnimationBindComponent (mkSelector "setJointAnimation:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- jointPaths@
 jointPaths :: IsMDLAnimationBindComponent mdlAnimationBindComponent => mdlAnimationBindComponent -> IO (Id NSArray)
 jointPaths mdlAnimationBindComponent  =
@@ -66,6 +80,14 @@ skeletonSelector = mkSelector "skeleton"
 -- | @Selector@ for @setSkeleton:@
 setSkeletonSelector :: Selector
 setSkeletonSelector = mkSelector "setSkeleton:"
+
+-- | @Selector@ for @jointAnimation@
+jointAnimationSelector :: Selector
+jointAnimationSelector = mkSelector "jointAnimation"
+
+-- | @Selector@ for @setJointAnimation:@
+setJointAnimationSelector :: Selector
+setJointAnimationSelector = mkSelector "setJointAnimation:"
 
 -- | @Selector@ for @jointPaths@
 jointPathsSelector :: Selector

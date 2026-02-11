@@ -12,16 +12,20 @@ module ObjC.AppKit.NSLayoutAnchor
   , constraintEqualToAnchor_constant
   , constraintGreaterThanOrEqualToAnchor_constant
   , constraintLessThanOrEqualToAnchor_constant
+  , name
   , item
   , hasAmbiguousLayout
+  , constraintsAffectingLayout
   , constraintEqualToAnchorSelector
   , constraintGreaterThanOrEqualToAnchorSelector
   , constraintLessThanOrEqualToAnchorSelector
   , constraintEqualToAnchor_constantSelector
   , constraintGreaterThanOrEqualToAnchor_constantSelector
   , constraintLessThanOrEqualToAnchor_constantSelector
+  , nameSelector
   , itemSelector
   , hasAmbiguousLayoutSelector
+  , constraintsAffectingLayoutSelector
 
 
   ) where
@@ -77,6 +81,11 @@ constraintLessThanOrEqualToAnchor_constant nsLayoutAnchor  anchor c =
   withObjCPtr anchor $ \raw_anchor ->
       sendMsg nsLayoutAnchor (mkSelector "constraintLessThanOrEqualToAnchor:constant:") (retPtr retVoid) [argPtr (castPtr raw_anchor :: Ptr ()), argCDouble c] >>= retainedObject . castPtr
 
+-- | @- name@
+name :: IsNSLayoutAnchor nsLayoutAnchor => nsLayoutAnchor -> IO (Id NSString)
+name nsLayoutAnchor  =
+    sendMsg nsLayoutAnchor (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- item@
 item :: IsNSLayoutAnchor nsLayoutAnchor => nsLayoutAnchor -> IO RawId
 item nsLayoutAnchor  =
@@ -86,6 +95,11 @@ item nsLayoutAnchor  =
 hasAmbiguousLayout :: IsNSLayoutAnchor nsLayoutAnchor => nsLayoutAnchor -> IO Bool
 hasAmbiguousLayout nsLayoutAnchor  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsLayoutAnchor (mkSelector "hasAmbiguousLayout") retCULong []
+
+-- | @- constraintsAffectingLayout@
+constraintsAffectingLayout :: IsNSLayoutAnchor nsLayoutAnchor => nsLayoutAnchor -> IO (Id NSArray)
+constraintsAffectingLayout nsLayoutAnchor  =
+    sendMsg nsLayoutAnchor (mkSelector "constraintsAffectingLayout") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -115,6 +129,10 @@ constraintGreaterThanOrEqualToAnchor_constantSelector = mkSelector "constraintGr
 constraintLessThanOrEqualToAnchor_constantSelector :: Selector
 constraintLessThanOrEqualToAnchor_constantSelector = mkSelector "constraintLessThanOrEqualToAnchor:constant:"
 
+-- | @Selector@ for @name@
+nameSelector :: Selector
+nameSelector = mkSelector "name"
+
 -- | @Selector@ for @item@
 itemSelector :: Selector
 itemSelector = mkSelector "item"
@@ -122,4 +140,8 @@ itemSelector = mkSelector "item"
 -- | @Selector@ for @hasAmbiguousLayout@
 hasAmbiguousLayoutSelector :: Selector
 hasAmbiguousLayoutSelector = mkSelector "hasAmbiguousLayout"
+
+-- | @Selector@ for @constraintsAffectingLayout@
+constraintsAffectingLayoutSelector :: Selector
+constraintsAffectingLayoutSelector = mkSelector "constraintsAffectingLayout"
 

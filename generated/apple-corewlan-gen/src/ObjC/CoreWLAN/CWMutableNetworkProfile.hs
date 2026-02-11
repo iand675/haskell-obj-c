@@ -11,8 +11,12 @@
 module ObjC.CoreWLAN.CWMutableNetworkProfile
   ( CWMutableNetworkProfile
   , IsCWMutableNetworkProfile(..)
+  , ssidData
+  , setSsidData
   , security
   , setSecurity
+  , ssidDataSelector
+  , setSsidDataSelector
   , securitySelector
   , setSecuritySelector
 
@@ -54,6 +58,20 @@ import ObjC.CoreWLAN.Internal.Classes
 import ObjC.CoreWLAN.Internal.Enums
 import ObjC.Foundation.Internal.Classes
 
+-- | Set the service set identifier (SSID).
+--
+-- ObjC selector: @- ssidData@
+ssidData :: IsCWMutableNetworkProfile cwMutableNetworkProfile => cwMutableNetworkProfile -> IO RawId
+ssidData cwMutableNetworkProfile  =
+    fmap (RawId . castPtr) $ sendMsg cwMutableNetworkProfile (mkSelector "ssidData") (retPtr retVoid) []
+
+-- | Set the service set identifier (SSID).
+--
+-- ObjC selector: @- setSsidData:@
+setSsidData :: IsCWMutableNetworkProfile cwMutableNetworkProfile => cwMutableNetworkProfile -> RawId -> IO ()
+setSsidData cwMutableNetworkProfile  value =
+    sendMsg cwMutableNetworkProfile (mkSelector "setSsidData:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Set the security type.
 --
 -- ObjC selector: @- security@
@@ -71,6 +89,14 @@ setSecurity cwMutableNetworkProfile  value =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @ssidData@
+ssidDataSelector :: Selector
+ssidDataSelector = mkSelector "ssidData"
+
+-- | @Selector@ for @setSsidData:@
+setSsidDataSelector :: Selector
+setSsidDataSelector = mkSelector "setSsidData:"
 
 -- | @Selector@ for @security@
 securitySelector :: Selector

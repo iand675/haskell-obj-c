@@ -15,6 +15,7 @@ module ObjC.EventKit.EKCalendar
   , calendarForEntityType_eventStore
   , source
   , setSource
+  , calendarIdentifier
   , title
   , setTitle
   , type_
@@ -23,12 +24,15 @@ module ObjC.EventKit.EKCalendar
   , immutable
   , cgColor
   , setCGColor
+  , color
+  , setColor
   , supportedEventAvailabilities
   , allowedEntityTypes
   , calendarWithEventStoreSelector
   , calendarForEntityType_eventStoreSelector
   , sourceSelector
   , setSourceSelector
+  , calendarIdentifierSelector
   , titleSelector
   , setTitleSelector
   , typeSelector
@@ -37,6 +41,8 @@ module ObjC.EventKit.EKCalendar
   , immutableSelector
   , cgColorSelector
   , setCGColorSelector
+  , colorSelector
+  , setColorSelector
   , supportedEventAvailabilitiesSelector
   , allowedEntityTypesSelector
 
@@ -127,6 +133,15 @@ setSource ekCalendar  value =
   withObjCPtr value $ \raw_value ->
       sendMsg ekCalendar (mkSelector "setSource:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | calendarIdentifier
+--
+-- A unique identifier for the calendar. It is not sync-proof in that a full                sync will lose this identifier, so you should always have a back up plan for dealing                with a calendar that is no longer fetchable by this property, e.g. by title, type, color, etc.                Use [EKEventStore calendarWithIdentifier:] to look up the calendar by this value.
+--
+-- ObjC selector: @- calendarIdentifier@
+calendarIdentifier :: IsEKCalendar ekCalendar => ekCalendar -> IO RawId
+calendarIdentifier ekCalendar  =
+    fmap (RawId . castPtr) $ sendMsg ekCalendar (mkSelector "calendarIdentifier") (retPtr retVoid) []
+
 -- | title
 --
 -- The title of the calendar.
@@ -206,6 +221,28 @@ setCGColor :: IsEKCalendar ekCalendar => ekCalendar -> Ptr () -> IO ()
 setCGColor ekCalendar  value =
     sendMsg ekCalendar (mkSelector "setCGColor:") retVoid [argPtr value]
 
+-- | color
+--
+-- Returns the calendar color as a NSColor.
+--
+-- This will be nil for new calendars until you set it.
+--
+-- ObjC selector: @- color@
+color :: IsEKCalendar ekCalendar => ekCalendar -> IO RawId
+color ekCalendar  =
+    fmap (RawId . castPtr) $ sendMsg ekCalendar (mkSelector "color") (retPtr retVoid) []
+
+-- | color
+--
+-- Returns the calendar color as a NSColor.
+--
+-- This will be nil for new calendars until you set it.
+--
+-- ObjC selector: @- setColor:@
+setColor :: IsEKCalendar ekCalendar => ekCalendar -> RawId -> IO ()
+setColor ekCalendar  value =
+    sendMsg ekCalendar (mkSelector "setColor:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | supportedEventAvailabilities
 --
 -- Returns a bitfield of supported event availabilities, or EKCalendarEventAvailabilityNone                if this calendar does not support setting availability on an event.
@@ -240,6 +277,10 @@ sourceSelector = mkSelector "source"
 setSourceSelector :: Selector
 setSourceSelector = mkSelector "setSource:"
 
+-- | @Selector@ for @calendarIdentifier@
+calendarIdentifierSelector :: Selector
+calendarIdentifierSelector = mkSelector "calendarIdentifier"
+
 -- | @Selector@ for @title@
 titleSelector :: Selector
 titleSelector = mkSelector "title"
@@ -271,6 +312,14 @@ cgColorSelector = mkSelector "CGColor"
 -- | @Selector@ for @setCGColor:@
 setCGColorSelector :: Selector
 setCGColorSelector = mkSelector "setCGColor:"
+
+-- | @Selector@ for @color@
+colorSelector :: Selector
+colorSelector = mkSelector "color"
+
+-- | @Selector@ for @setColor:@
+setColorSelector :: Selector
+setColorSelector = mkSelector "setColor:"
 
 -- | @Selector@ for @supportedEventAvailabilities@
 supportedEventAvailabilitiesSelector :: Selector

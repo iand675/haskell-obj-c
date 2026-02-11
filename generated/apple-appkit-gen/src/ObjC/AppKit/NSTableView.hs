@@ -85,6 +85,10 @@ module ObjC.AppKit.NSTableView
   , focusedColumn
   , setFocusedColumn
   , performClickOnCellAtColumn_row
+  , dataSource
+  , setDataSource
+  , delegate
+  , setDelegate
   , headerView
   , setHeaderView
   , cornerView
@@ -154,6 +158,8 @@ module ObjC.AppKit.NSTableView
   , setFloatsGroupRows
   , rowActionsVisible
   , setRowActionsVisible
+  , hiddenRowIndexes
+  , registeredNibsByIdentifier
   , usesStaticContents
   , setUsesStaticContents
   , userInterfaceLayoutDirection
@@ -238,6 +244,10 @@ module ObjC.AppKit.NSTableView
   , focusedColumnSelector
   , setFocusedColumnSelector
   , performClickOnCellAtColumn_rowSelector
+  , dataSourceSelector
+  , setDataSourceSelector
+  , delegateSelector
+  , setDelegateSelector
   , headerViewSelector
   , setHeaderViewSelector
   , cornerViewSelector
@@ -307,6 +317,8 @@ module ObjC.AppKit.NSTableView
   , setFloatsGroupRowsSelector
   , rowActionsVisibleSelector
   , setRowActionsVisibleSelector
+  , hiddenRowIndexesSelector
+  , registeredNibsByIdentifierSelector
   , usesStaticContentsSelector
   , setUsesStaticContentsSelector
   , userInterfaceLayoutDirectionSelector
@@ -820,6 +832,26 @@ performClickOnCellAtColumn_row :: IsNSTableView nsTableView => nsTableView -> CL
 performClickOnCellAtColumn_row nsTableView  column row =
     sendMsg nsTableView (mkSelector "performClickOnCellAtColumn:row:") retVoid [argCLong column, argCLong row]
 
+-- | @- dataSource@
+dataSource :: IsNSTableView nsTableView => nsTableView -> IO RawId
+dataSource nsTableView  =
+    fmap (RawId . castPtr) $ sendMsg nsTableView (mkSelector "dataSource") (retPtr retVoid) []
+
+-- | @- setDataSource:@
+setDataSource :: IsNSTableView nsTableView => nsTableView -> RawId -> IO ()
+setDataSource nsTableView  value =
+    sendMsg nsTableView (mkSelector "setDataSource:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- delegate@
+delegate :: IsNSTableView nsTableView => nsTableView -> IO RawId
+delegate nsTableView  =
+    fmap (RawId . castPtr) $ sendMsg nsTableView (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSTableView nsTableView => nsTableView -> RawId -> IO ()
+setDelegate nsTableView  value =
+    sendMsg nsTableView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- headerView@
 headerView :: IsNSTableView nsTableView => nsTableView -> IO (Id NSTableHeaderView)
 headerView nsTableView  =
@@ -1172,6 +1204,16 @@ setRowActionsVisible :: IsNSTableView nsTableView => nsTableView -> Bool -> IO (
 setRowActionsVisible nsTableView  value =
     sendMsg nsTableView (mkSelector "setRowActionsVisible:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @- hiddenRowIndexes@
+hiddenRowIndexes :: IsNSTableView nsTableView => nsTableView -> IO (Id NSIndexSet)
+hiddenRowIndexes nsTableView  =
+    sendMsg nsTableView (mkSelector "hiddenRowIndexes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- registeredNibsByIdentifier@
+registeredNibsByIdentifier :: IsNSTableView nsTableView => nsTableView -> IO (Id NSDictionary)
+registeredNibsByIdentifier nsTableView  =
+    sendMsg nsTableView (mkSelector "registeredNibsByIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- usesStaticContents@
 usesStaticContents :: IsNSTableView nsTableView => nsTableView -> IO Bool
 usesStaticContents nsTableView  =
@@ -1518,6 +1560,22 @@ setFocusedColumnSelector = mkSelector "setFocusedColumn:"
 performClickOnCellAtColumn_rowSelector :: Selector
 performClickOnCellAtColumn_rowSelector = mkSelector "performClickOnCellAtColumn:row:"
 
+-- | @Selector@ for @dataSource@
+dataSourceSelector :: Selector
+dataSourceSelector = mkSelector "dataSource"
+
+-- | @Selector@ for @setDataSource:@
+setDataSourceSelector :: Selector
+setDataSourceSelector = mkSelector "setDataSource:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @headerView@
 headerViewSelector :: Selector
 headerViewSelector = mkSelector "headerView"
@@ -1793,6 +1851,14 @@ rowActionsVisibleSelector = mkSelector "rowActionsVisible"
 -- | @Selector@ for @setRowActionsVisible:@
 setRowActionsVisibleSelector :: Selector
 setRowActionsVisibleSelector = mkSelector "setRowActionsVisible:"
+
+-- | @Selector@ for @hiddenRowIndexes@
+hiddenRowIndexesSelector :: Selector
+hiddenRowIndexesSelector = mkSelector "hiddenRowIndexes"
+
+-- | @Selector@ for @registeredNibsByIdentifier@
+registeredNibsByIdentifierSelector :: Selector
+registeredNibsByIdentifierSelector = mkSelector "registeredNibsByIdentifier"
 
 -- | @Selector@ for @usesStaticContents@
 usesStaticContentsSelector :: Selector

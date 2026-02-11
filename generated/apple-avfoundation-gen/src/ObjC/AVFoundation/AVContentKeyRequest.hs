@@ -22,6 +22,7 @@ module ObjC.AVFoundation.AVContentKeyRequest
   , canProvidePersistableContentKey
   , contentKeySpecifier
   , contentKey
+  , originatingRecipient
   , renewsExpiringResponseData
   , makeStreamingContentKeyRequestDataForApp_contentIdentifier_options_completionHandlerSelector
   , processContentKeyResponseSelector
@@ -36,6 +37,7 @@ module ObjC.AVFoundation.AVContentKeyRequest
   , canProvidePersistableContentKeySelector
   , contentKeySpecifierSelector
   , contentKeySelector
+  , originatingRecipientSelector
   , renewsExpiringResponseDataSelector
 
   -- * Enum types
@@ -186,6 +188,21 @@ contentKey :: IsAVContentKeyRequest avContentKeyRequest => avContentKeyRequest -
 contentKey avContentKeyRequest  =
     sendMsg avContentKeyRequest (mkSelector "contentKey") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The AVContentKeyRecipient which initiated this request, if any.
+--
+-- The originatingRecipient is an AVFoundation object responsible for initiating an AVContentKeyRequest. For example, an AVURLAsset used for playback can trigger an AVContentKeyRequest.
+--
+-- If an application triggers key loading directly, for example with -[AVContentKeySession processContentKeyRequestWithIdentifier:initializationData:options:], the value of originatingRecipient will be nil.
+--
+-- The originatingRecipient of key requests from HLS interstitials will always be the corresponding interstitial AVURLAsset. To receive key requests for DRM-protected interstitial content, applications must ensure their AVContentKeySession is attached to these interstitial AVURLAssets.
+--
+-- These interstitial AVURLAssets may be retrieved from the primary AVURLAsset via AVPlayerInterstitialEventMonitor.
+--
+-- ObjC selector: @- originatingRecipient@
+originatingRecipient :: IsAVContentKeyRequest avContentKeyRequest => avContentKeyRequest -> IO RawId
+originatingRecipient avContentKeyRequest  =
+    fmap (RawId . castPtr) $ sendMsg avContentKeyRequest (mkSelector "originatingRecipient") (retPtr retVoid) []
+
 -- | Indicates whether the receiver represents a request to renew previously provided response data that is expiring or has expired.
 --
 -- ObjC selector: @- renewsExpiringResponseData@
@@ -248,6 +265,10 @@ contentKeySpecifierSelector = mkSelector "contentKeySpecifier"
 -- | @Selector@ for @contentKey@
 contentKeySelector :: Selector
 contentKeySelector = mkSelector "contentKey"
+
+-- | @Selector@ for @originatingRecipient@
+originatingRecipientSelector :: Selector
+originatingRecipientSelector = mkSelector "originatingRecipient"
 
 -- | @Selector@ for @renewsExpiringResponseData@
 renewsExpiringResponseDataSelector :: Selector

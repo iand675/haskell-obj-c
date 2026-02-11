@@ -12,9 +12,13 @@ module ObjC.Quartz.IKImageEditPanel
   , IsIKImageEditPanel(..)
   , sharedImageEditPanel
   , reloadData
+  , dataSource
+  , setDataSource
   , filterArray
   , sharedImageEditPanelSelector
   , reloadDataSelector
+  , dataSourceSelector
+  , setDataSourceSelector
   , filterArraySelector
 
 
@@ -56,6 +60,24 @@ reloadData :: IsIKImageEditPanel ikImageEditPanel => ikImageEditPanel -> IO ()
 reloadData ikImageEditPanel  =
     sendMsg ikImageEditPanel (mkSelector "reloadData") retVoid []
 
+-- | dataSource
+--
+-- Data source associated with an image editing panel
+--
+-- ObjC selector: @- dataSource@
+dataSource :: IsIKImageEditPanel ikImageEditPanel => ikImageEditPanel -> IO RawId
+dataSource ikImageEditPanel  =
+    fmap (RawId . castPtr) $ sendMsg ikImageEditPanel (mkSelector "dataSource") (retPtr retVoid) []
+
+-- | dataSource
+--
+-- Data source associated with an image editing panel
+--
+-- ObjC selector: @- setDataSource:@
+setDataSource :: IsIKImageEditPanel ikImageEditPanel => ikImageEditPanel -> RawId -> IO ()
+setDataSource ikImageEditPanel  value =
+    sendMsg ikImageEditPanel (mkSelector "setDataSource:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | filterArray
 --
 -- Array of filters reflecting the current user adjustments in the adjust or effects tab.
@@ -76,6 +98,14 @@ sharedImageEditPanelSelector = mkSelector "sharedImageEditPanel"
 -- | @Selector@ for @reloadData@
 reloadDataSelector :: Selector
 reloadDataSelector = mkSelector "reloadData"
+
+-- | @Selector@ for @dataSource@
+dataSourceSelector :: Selector
+dataSourceSelector = mkSelector "dataSource"
+
+-- | @Selector@ for @setDataSource:@
+setDataSourceSelector :: Selector
+setDataSourceSelector = mkSelector "setDataSource:"
 
 -- | @Selector@ for @filterArray@
 filterArraySelector :: Selector

@@ -7,11 +7,13 @@ module ObjC.MapKit.MKUserLocation
   ( MKUserLocation
   , IsMKUserLocation(..)
   , updating
+  , heading
   , title
   , setTitle
   , subtitle
   , setSubtitle
   , updatingSelector
+  , headingSelector
   , titleSelector
   , setTitleSelector
   , subtitleSelector
@@ -39,6 +41,11 @@ import ObjC.Foundation.Internal.Classes
 updating :: IsMKUserLocation mkUserLocation => mkUserLocation -> IO Bool
 updating mkUserLocation  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkUserLocation (mkSelector "updating") retCULong []
+
+-- | @- heading@
+heading :: IsMKUserLocation mkUserLocation => mkUserLocation -> IO RawId
+heading mkUserLocation  =
+    fmap (RawId . castPtr) $ sendMsg mkUserLocation (mkSelector "heading") (retPtr retVoid) []
 
 -- | @- title@
 title :: IsMKUserLocation mkUserLocation => mkUserLocation -> IO (Id NSString)
@@ -69,6 +76,10 @@ setSubtitle mkUserLocation  value =
 -- | @Selector@ for @updating@
 updatingSelector :: Selector
 updatingSelector = mkSelector "updating"
+
+-- | @Selector@ for @heading@
+headingSelector :: Selector
+headingSelector = mkSelector "heading"
 
 -- | @Selector@ for @title@
 titleSelector :: Selector

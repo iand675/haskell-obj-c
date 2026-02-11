@@ -20,6 +20,8 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphCompilationDescriptor
   , setDispatchQueue
   , optimizationProfile
   , setOptimizationProfile
+  , callables
+  , setCallables
   , reducedPrecisionFastMath
   , setReducedPrecisionFastMath
   , disableTypeInferenceSelector
@@ -33,6 +35,8 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphCompilationDescriptor
   , setDispatchQueueSelector
   , optimizationProfileSelector
   , setOptimizationProfileSelector
+  , callablesSelector
+  , setCallablesSelector
   , reducedPrecisionFastMathSelector
   , setReducedPrecisionFastMathSelector
 
@@ -157,6 +161,20 @@ setOptimizationProfile :: IsMPSGraphCompilationDescriptor mpsGraphCompilationDes
 setOptimizationProfile mpsGraphCompilationDescriptor  value =
     sendMsg mpsGraphCompilationDescriptor (mkSelector "setOptimizationProfile:") retVoid [argCULong (coerce value)]
 
+-- | The dictionary used during runtime to lookup the ``MPSGraphExecutable`` which correspond to the ``symbolName``.
+--
+-- ObjC selector: @- callables@
+callables :: IsMPSGraphCompilationDescriptor mpsGraphCompilationDescriptor => mpsGraphCompilationDescriptor -> IO RawId
+callables mpsGraphCompilationDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpsGraphCompilationDescriptor (mkSelector "callables") (retPtr retVoid) []
+
+-- | The dictionary used during runtime to lookup the ``MPSGraphExecutable`` which correspond to the ``symbolName``.
+--
+-- ObjC selector: @- setCallables:@
+setCallables :: IsMPSGraphCompilationDescriptor mpsGraphCompilationDescriptor => mpsGraphCompilationDescriptor -> RawId -> IO ()
+setCallables mpsGraphCompilationDescriptor  value =
+    sendMsg mpsGraphCompilationDescriptor (mkSelector "setCallables:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Across the executable allow reduced precision fast math optimizations.
 --
 -- ObjC selector: @- reducedPrecisionFastMath@
@@ -218,6 +236,14 @@ optimizationProfileSelector = mkSelector "optimizationProfile"
 -- | @Selector@ for @setOptimizationProfile:@
 setOptimizationProfileSelector :: Selector
 setOptimizationProfileSelector = mkSelector "setOptimizationProfile:"
+
+-- | @Selector@ for @callables@
+callablesSelector :: Selector
+callablesSelector = mkSelector "callables"
+
+-- | @Selector@ for @setCallables:@
+setCallablesSelector :: Selector
+setCallablesSelector = mkSelector "setCallables:"
 
 -- | @Selector@ for @reducedPrecisionFastMath@
 reducedPrecisionFastMathSelector :: Selector

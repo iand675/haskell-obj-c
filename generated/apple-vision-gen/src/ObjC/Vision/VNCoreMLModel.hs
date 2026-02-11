@@ -12,10 +12,14 @@ module ObjC.Vision.VNCoreMLModel
   , modelForMLModel_error
   , inputImageFeatureName
   , setInputImageFeatureName
+  , featureProvider
+  , setFeatureProvider
   , initSelector
   , modelForMLModel_errorSelector
   , inputImageFeatureNameSelector
   , setInputImageFeatureNameSelector
+  , featureProviderSelector
+  , setFeatureProviderSelector
 
 
   ) where
@@ -71,6 +75,20 @@ setInputImageFeatureName vnCoreMLModel  value =
   withObjCPtr value $ \raw_value ->
       sendMsg vnCoreMLModel (mkSelector "setInputImageFeatureName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | An optional object conforming to the MLFeatureProvider protocol that is used by the model during the predict call to support inputs that are not supplied by Vision. Vision will provide the image for the inputImageFeatureName from the the VNRequestHandler. A feature provider is necessary for models that have more than one input and require those parameters to be set. Models that only have one image input will not use the feature provider as that input will be set by Vision.
+--
+-- ObjC selector: @- featureProvider@
+featureProvider :: IsVNCoreMLModel vnCoreMLModel => vnCoreMLModel -> IO RawId
+featureProvider vnCoreMLModel  =
+    fmap (RawId . castPtr) $ sendMsg vnCoreMLModel (mkSelector "featureProvider") (retPtr retVoid) []
+
+-- | An optional object conforming to the MLFeatureProvider protocol that is used by the model during the predict call to support inputs that are not supplied by Vision. Vision will provide the image for the inputImageFeatureName from the the VNRequestHandler. A feature provider is necessary for models that have more than one input and require those parameters to be set. Models that only have one image input will not use the feature provider as that input will be set by Vision.
+--
+-- ObjC selector: @- setFeatureProvider:@
+setFeatureProvider :: IsVNCoreMLModel vnCoreMLModel => vnCoreMLModel -> RawId -> IO ()
+setFeatureProvider vnCoreMLModel  value =
+    sendMsg vnCoreMLModel (mkSelector "setFeatureProvider:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -90,4 +108,12 @@ inputImageFeatureNameSelector = mkSelector "inputImageFeatureName"
 -- | @Selector@ for @setInputImageFeatureName:@
 setInputImageFeatureNameSelector :: Selector
 setInputImageFeatureNameSelector = mkSelector "setInputImageFeatureName:"
+
+-- | @Selector@ for @featureProvider@
+featureProviderSelector :: Selector
+featureProviderSelector = mkSelector "featureProvider"
+
+-- | @Selector@ for @setFeatureProvider:@
+setFeatureProviderSelector :: Selector
+setFeatureProviderSelector = mkSelector "setFeatureProvider:"
 

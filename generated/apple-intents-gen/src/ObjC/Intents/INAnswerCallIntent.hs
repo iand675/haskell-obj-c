@@ -9,8 +9,10 @@ module ObjC.Intents.INAnswerCallIntent
   , IsINAnswerCallIntent(..)
   , initWithAudioRoute_callIdentifier
   , audioRoute
+  , callIdentifier
   , initWithAudioRoute_callIdentifierSelector
   , audioRouteSelector
+  , callIdentifierSelector
 
   -- * Enum types
   , INCallAudioRoute(INCallAudioRoute)
@@ -47,6 +49,11 @@ audioRoute :: IsINAnswerCallIntent inAnswerCallIntent => inAnswerCallIntent -> I
 audioRoute inAnswerCallIntent  =
     fmap (coerce :: CLong -> INCallAudioRoute) $ sendMsg inAnswerCallIntent (mkSelector "audioRoute") retCLong []
 
+-- | @- callIdentifier@
+callIdentifier :: IsINAnswerCallIntent inAnswerCallIntent => inAnswerCallIntent -> IO (Id NSString)
+callIdentifier inAnswerCallIntent  =
+    sendMsg inAnswerCallIntent (mkSelector "callIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -58,4 +65,8 @@ initWithAudioRoute_callIdentifierSelector = mkSelector "initWithAudioRoute:callI
 -- | @Selector@ for @audioRoute@
 audioRouteSelector :: Selector
 audioRouteSelector = mkSelector "audioRoute"
+
+-- | @Selector@ for @callIdentifier@
+callIdentifierSelector :: Selector
+callIdentifierSelector = mkSelector "callIdentifier"
 

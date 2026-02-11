@@ -24,6 +24,12 @@ library:
   - ObjC.AVKit.AVPlaybackSpeed
   - ObjC.AVKit.AVPlayerView
   - ObjC.AVKit.AVRoutePickerView
+  - ObjC.AVKit.Delegate.AVCaptureViewDelegate
+  - ObjC.AVKit.Delegate.AVPictureInPictureControllerDelegate
+  - ObjC.AVKit.Delegate.AVPictureInPictureSampleBufferPlaybackDelegate
+  - ObjC.AVKit.Delegate.AVPlayerViewDelegate
+  - ObjC.AVKit.Delegate.AVPlayerViewPictureInPictureDelegate
+  - ObjC.AVKit.Delegate.AVRoutePickerViewDelegate
   - ObjC.AVKit.Enums
   - ObjC.AVKit.Internal.Classes
   - ObjC.AVKit.Internal.Enums

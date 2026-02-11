@@ -16,6 +16,7 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.MetricKit.Delegate.MXMetricManagerSubscriber
   - ObjC.MetricKit.Enums
   - ObjC.MetricKit.Internal.Classes
   - ObjC.MetricKit.Internal.Enums

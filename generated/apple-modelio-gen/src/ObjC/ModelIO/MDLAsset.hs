@@ -44,8 +44,17 @@ module ObjC.ModelIO.MDLAsset
   , endTime
   , setEndTime
   , url
+  , resolver
+  , setResolver
+  , bufferAllocator
   , vertexDescriptor
   , count
+  , masters
+  , setMasters
+  , originals
+  , setOriginals
+  , animations
+  , setAnimations
   , initWithURLSelector
   , initWithURL_vertexDescriptor_bufferAllocatorSelector
   , initWithBufferAllocatorSelector
@@ -69,8 +78,17 @@ module ObjC.ModelIO.MDLAsset
   , endTimeSelector
   , setEndTimeSelector
   , urlSelector
+  , resolverSelector
+  , setResolverSelector
+  , bufferAllocatorSelector
   , vertexDescriptorSelector
   , countSelector
+  , mastersSelector
+  , setMastersSelector
+  , originalsSelector
+  , setOriginalsSelector
+  , animationsSelector
+  , setAnimationsSelector
 
   -- * Enum types
   , MDLProbePlacement(MDLProbePlacement)
@@ -360,6 +378,37 @@ url :: IsMDLAsset mdlAsset => mdlAsset -> IO (Id NSURL)
 url mdlAsset  =
     sendMsg mdlAsset (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | AssetResolver
+--
+-- Resolver asset that helps find associated files
+--
+-- The default asset resolver is the RelativeAssetResolver
+--
+-- ObjC selector: @- resolver@
+resolver :: IsMDLAsset mdlAsset => mdlAsset -> IO RawId
+resolver mdlAsset  =
+    fmap (RawId . castPtr) $ sendMsg mdlAsset (mkSelector "resolver") (retPtr retVoid) []
+
+-- | AssetResolver
+--
+-- Resolver asset that helps find associated files
+--
+-- The default asset resolver is the RelativeAssetResolver
+--
+-- ObjC selector: @- setResolver:@
+setResolver :: IsMDLAsset mdlAsset => mdlAsset -> RawId -> IO ()
+setResolver mdlAsset  value =
+    sendMsg mdlAsset (mkSelector "setResolver:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | bufferAllocator
+--
+-- Allocator used to create vertex and index buffers
+--
+-- ObjC selector: @- bufferAllocator@
+bufferAllocator :: IsMDLAsset mdlAsset => mdlAsset -> IO RawId
+bufferAllocator mdlAsset  =
+    fmap (RawId . castPtr) $ sendMsg mdlAsset (mkSelector "bufferAllocator") (retPtr retVoid) []
+
 -- | vertexDescriptor
 --
 -- Vertex descriptor set upon asset initialization
@@ -379,6 +428,64 @@ vertexDescriptor mdlAsset  =
 count :: IsMDLAsset mdlAsset => mdlAsset -> IO CULong
 count mdlAsset  =
     sendMsg mdlAsset (mkSelector "count") retCULong []
+
+-- | @- masters@
+masters :: IsMDLAsset mdlAsset => mdlAsset -> IO RawId
+masters mdlAsset  =
+    fmap (RawId . castPtr) $ sendMsg mdlAsset (mkSelector "masters") (retPtr retVoid) []
+
+-- | @- setMasters:@
+setMasters :: IsMDLAsset mdlAsset => mdlAsset -> RawId -> IO ()
+setMasters mdlAsset  value =
+    sendMsg mdlAsset (mkSelector "setMasters:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | originals
+--
+-- Original objects that can be instanced into the asset's object hierarchy
+--
+-- See: MDLObjectContainerComponent
+--
+-- ObjC selector: @- originals@
+originals :: IsMDLAsset mdlAsset => mdlAsset -> IO RawId
+originals mdlAsset  =
+    fmap (RawId . castPtr) $ sendMsg mdlAsset (mkSelector "originals") (retPtr retVoid) []
+
+-- | originals
+--
+-- Original objects that can be instanced into the asset's object hierarchy
+--
+-- See: MDLObjectContainerComponent
+--
+-- ObjC selector: @- setOriginals:@
+setOriginals :: IsMDLAsset mdlAsset => mdlAsset -> RawId -> IO ()
+setOriginals mdlAsset  value =
+    sendMsg mdlAsset (mkSelector "setOriginals:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | animations
+--
+-- Animations that can be bound to MDLObjects (
+--
+-- See: MDLAnimationBindComponent)
+--
+-- See: MDLObjectContainerComponent
+--
+-- ObjC selector: @- animations@
+animations :: IsMDLAsset mdlAsset => mdlAsset -> IO RawId
+animations mdlAsset  =
+    fmap (RawId . castPtr) $ sendMsg mdlAsset (mkSelector "animations") (retPtr retVoid) []
+
+-- | animations
+--
+-- Animations that can be bound to MDLObjects (
+--
+-- See: MDLAnimationBindComponent)
+--
+-- See: MDLObjectContainerComponent
+--
+-- ObjC selector: @- setAnimations:@
+setAnimations :: IsMDLAsset mdlAsset => mdlAsset -> RawId -> IO ()
+setAnimations mdlAsset  value =
+    sendMsg mdlAsset (mkSelector "setAnimations:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -476,6 +583,18 @@ setEndTimeSelector = mkSelector "setEndTime:"
 urlSelector :: Selector
 urlSelector = mkSelector "URL"
 
+-- | @Selector@ for @resolver@
+resolverSelector :: Selector
+resolverSelector = mkSelector "resolver"
+
+-- | @Selector@ for @setResolver:@
+setResolverSelector :: Selector
+setResolverSelector = mkSelector "setResolver:"
+
+-- | @Selector@ for @bufferAllocator@
+bufferAllocatorSelector :: Selector
+bufferAllocatorSelector = mkSelector "bufferAllocator"
+
 -- | @Selector@ for @vertexDescriptor@
 vertexDescriptorSelector :: Selector
 vertexDescriptorSelector = mkSelector "vertexDescriptor"
@@ -483,4 +602,28 @@ vertexDescriptorSelector = mkSelector "vertexDescriptor"
 -- | @Selector@ for @count@
 countSelector :: Selector
 countSelector = mkSelector "count"
+
+-- | @Selector@ for @masters@
+mastersSelector :: Selector
+mastersSelector = mkSelector "masters"
+
+-- | @Selector@ for @setMasters:@
+setMastersSelector :: Selector
+setMastersSelector = mkSelector "setMasters:"
+
+-- | @Selector@ for @originals@
+originalsSelector :: Selector
+originalsSelector = mkSelector "originals"
+
+-- | @Selector@ for @setOriginals:@
+setOriginalsSelector :: Selector
+setOriginalsSelector = mkSelector "setOriginals:"
+
+-- | @Selector@ for @animations@
+animationsSelector :: Selector
+animationsSelector = mkSelector "animations"
+
+-- | @Selector@ for @setAnimations:@
+setAnimationsSelector :: Selector
+setAnimationsSelector = mkSelector "setAnimations:"
 

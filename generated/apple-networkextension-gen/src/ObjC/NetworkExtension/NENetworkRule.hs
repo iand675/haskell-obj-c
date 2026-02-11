@@ -18,8 +18,10 @@ module ObjC.NetworkExtension.NENetworkRule
   , initWithRemoteNetworkEndpoint_remotePrefix_localNetworkEndpoint_localPrefix_protocol_direction
   , initWithRemoteNetwork_remotePrefix_localNetwork_localPrefix_protocol_direction
   , matchRemoteHostOrNetworkEndpoint
+  , matchRemoteEndpoint
   , matchRemotePrefix
   , matchLocalNetworkEndpoint
+  , matchLocalNetwork
   , matchLocalPrefix
   , matchProtocol
   , matchDirection
@@ -30,8 +32,10 @@ module ObjC.NetworkExtension.NENetworkRule
   , initWithRemoteNetworkEndpoint_remotePrefix_localNetworkEndpoint_localPrefix_protocol_directionSelector
   , initWithRemoteNetwork_remotePrefix_localNetwork_localPrefix_protocol_directionSelector
   , matchRemoteHostOrNetworkEndpointSelector
+  , matchRemoteEndpointSelector
   , matchRemotePrefixSelector
   , matchLocalNetworkEndpointSelector
+  , matchLocalNetworkSelector
   , matchLocalPrefixSelector
   , matchProtocolSelector
   , matchDirectionSelector
@@ -191,6 +195,15 @@ matchRemoteHostOrNetworkEndpoint :: IsNENetworkRule neNetworkRule => neNetworkRu
 matchRemoteHostOrNetworkEndpoint neNetworkRule  =
     sendMsg neNetworkRule (mkSelector "matchRemoteHostOrNetworkEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | matchRemoteEndpoint
+--
+-- The remote endpoint that the rule matches.
+--
+-- ObjC selector: @- matchRemoteEndpoint@
+matchRemoteEndpoint :: IsNENetworkRule neNetworkRule => neNetworkRule -> IO (Id NWHostEndpoint)
+matchRemoteEndpoint neNetworkRule  =
+    sendMsg neNetworkRule (mkSelector "matchRemoteEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | matchRemotePrefix
 --
 -- A number that specifies the remote sub-network that the rule matches. This property is set to NSNotFound for rules where matchRemoteEndpoint does not contain an IP address.
@@ -208,6 +221,15 @@ matchRemotePrefix neNetworkRule  =
 matchLocalNetworkEndpoint :: IsNENetworkRule neNetworkRule => neNetworkRule -> IO (Id NSObject)
 matchLocalNetworkEndpoint neNetworkRule  =
     sendMsg neNetworkRule (mkSelector "matchLocalNetworkEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | matchLocalNetwork
+--
+-- The local network that the rule matches.
+--
+-- ObjC selector: @- matchLocalNetwork@
+matchLocalNetwork :: IsNENetworkRule neNetworkRule => neNetworkRule -> IO (Id NWHostEndpoint)
+matchLocalNetwork neNetworkRule  =
+    sendMsg neNetworkRule (mkSelector "matchLocalNetwork") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | matchLocalPrefix
 --
@@ -268,6 +290,10 @@ initWithRemoteNetwork_remotePrefix_localNetwork_localPrefix_protocol_directionSe
 matchRemoteHostOrNetworkEndpointSelector :: Selector
 matchRemoteHostOrNetworkEndpointSelector = mkSelector "matchRemoteHostOrNetworkEndpoint"
 
+-- | @Selector@ for @matchRemoteEndpoint@
+matchRemoteEndpointSelector :: Selector
+matchRemoteEndpointSelector = mkSelector "matchRemoteEndpoint"
+
 -- | @Selector@ for @matchRemotePrefix@
 matchRemotePrefixSelector :: Selector
 matchRemotePrefixSelector = mkSelector "matchRemotePrefix"
@@ -275,6 +301,10 @@ matchRemotePrefixSelector = mkSelector "matchRemotePrefix"
 -- | @Selector@ for @matchLocalNetworkEndpoint@
 matchLocalNetworkEndpointSelector :: Selector
 matchLocalNetworkEndpointSelector = mkSelector "matchLocalNetworkEndpoint"
+
+-- | @Selector@ for @matchLocalNetwork@
+matchLocalNetworkSelector :: Selector
+matchLocalNetworkSelector = mkSelector "matchLocalNetwork"
 
 -- | @Selector@ for @matchLocalPrefix@
 matchLocalPrefixSelector :: Selector

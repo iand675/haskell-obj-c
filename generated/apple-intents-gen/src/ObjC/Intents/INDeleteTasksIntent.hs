@@ -9,9 +9,11 @@ module ObjC.Intents.INDeleteTasksIntent
   , initWithTaskList_tasks_all
   , taskList
   , tasks
+  , all_
   , initWithTaskList_tasks_allSelector
   , taskListSelector
   , tasksSelector
+  , allSelector
 
 
   ) where
@@ -49,6 +51,11 @@ tasks :: IsINDeleteTasksIntent inDeleteTasksIntent => inDeleteTasksIntent -> IO 
 tasks inDeleteTasksIntent  =
     sendMsg inDeleteTasksIntent (mkSelector "tasks") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- all@
+all_ :: IsINDeleteTasksIntent inDeleteTasksIntent => inDeleteTasksIntent -> IO (Id NSNumber)
+all_ inDeleteTasksIntent  =
+    sendMsg inDeleteTasksIntent (mkSelector "all") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -64,4 +71,8 @@ taskListSelector = mkSelector "taskList"
 -- | @Selector@ for @tasks@
 tasksSelector :: Selector
 tasksSelector = mkSelector "tasks"
+
+-- | @Selector@ for @all@
+allSelector :: Selector
+allSelector = mkSelector "all"
 

@@ -11,7 +11,9 @@ module ObjC.MLCompute.MLCTransposeLayer
   ( MLCTransposeLayer
   , IsMLCTransposeLayer(..)
   , layerWithDimensions
+  , dimensions
   , layerWithDimensionsSelector
+  , dimensionsSelector
 
 
   ) where
@@ -45,6 +47,17 @@ layerWithDimensions dimensions =
     withObjCPtr dimensions $ \raw_dimensions ->
       sendClassMsg cls' (mkSelector "layerWithDimensions:") (retPtr retVoid) [argPtr (castPtr raw_dimensions :: Ptr ())] >>= retainedObject . castPtr
 
+-- | dimensions
+--
+-- Permutes the dimensions according to 'dimensions'.
+--
+-- The returned tensor's dimension i will correspond to dimensions[i].
+--
+-- ObjC selector: @- dimensions@
+dimensions :: IsMLCTransposeLayer mlcTransposeLayer => mlcTransposeLayer -> IO (Id NSArray)
+dimensions mlcTransposeLayer  =
+    sendMsg mlcTransposeLayer (mkSelector "dimensions") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -52,4 +65,8 @@ layerWithDimensions dimensions =
 -- | @Selector@ for @layerWithDimensions:@
 layerWithDimensionsSelector :: Selector
 layerWithDimensionsSelector = mkSelector "layerWithDimensions:"
+
+-- | @Selector@ for @dimensions@
+dimensionsSelector :: Selector
+dimensionsSelector = mkSelector "dimensions"
 

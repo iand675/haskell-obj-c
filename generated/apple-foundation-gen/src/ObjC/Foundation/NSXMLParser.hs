@@ -12,6 +12,8 @@ module ObjC.Foundation.NSXMLParser
   , initWithStream
   , parse
   , abortParsing
+  , delegate
+  , setDelegate
   , shouldProcessNamespaces
   , setShouldProcessNamespaces
   , shouldReportNamespacePrefixes
@@ -32,6 +34,8 @@ module ObjC.Foundation.NSXMLParser
   , initWithStreamSelector
   , parseSelector
   , abortParsingSelector
+  , delegateSelector
+  , setDelegateSelector
   , shouldProcessNamespacesSelector
   , setShouldProcessNamespacesSelector
   , shouldReportNamespacePrefixesSelector
@@ -99,6 +103,16 @@ parse nsxmlParser  =
 abortParsing :: IsNSXMLParser nsxmlParser => nsxmlParser -> IO ()
 abortParsing nsxmlParser  =
     sendMsg nsxmlParser (mkSelector "abortParsing") retVoid []
+
+-- | @- delegate@
+delegate :: IsNSXMLParser nsxmlParser => nsxmlParser -> IO RawId
+delegate nsxmlParser  =
+    fmap (RawId . castPtr) $ sendMsg nsxmlParser (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSXMLParser nsxmlParser => nsxmlParser -> RawId -> IO ()
+setDelegate nsxmlParser  value =
+    sendMsg nsxmlParser (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- shouldProcessNamespaces@
 shouldProcessNamespaces :: IsNSXMLParser nsxmlParser => nsxmlParser -> IO Bool
@@ -199,6 +213,14 @@ parseSelector = mkSelector "parse"
 -- | @Selector@ for @abortParsing@
 abortParsingSelector :: Selector
 abortParsingSelector = mkSelector "abortParsing"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @shouldProcessNamespaces@
 shouldProcessNamespacesSelector :: Selector

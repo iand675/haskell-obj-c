@@ -6,8 +6,10 @@
 module ObjC.JavaRuntimeSupport.NSMenu
   ( NSMenu
   , IsNSMenu(..)
+  , javaMenuWithTitle
   , setJavaMenuDelegate
   , isJavaMenu
+  , javaMenuWithTitleSelector
   , setJavaMenuDelegateSelector
   , isJavaMenuSelector
 
@@ -29,6 +31,14 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.JavaRuntimeSupport.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | @+ javaMenuWithTitle:@
+javaMenuWithTitle :: IsNSString title => title -> IO RawId
+javaMenuWithTitle title =
+  do
+    cls' <- getRequiredClass "NSMenu"
+    withObjCPtr title $ \raw_title ->
+      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "javaMenuWithTitle:") (retPtr retVoid) [argPtr (castPtr raw_title :: Ptr ())]
+
 -- | @- setJavaMenuDelegate:@
 setJavaMenuDelegate :: IsNSMenu nsMenu => nsMenu -> RawId -> IO ()
 setJavaMenuDelegate nsMenu  delegate =
@@ -42,6 +52,10 @@ isJavaMenu nsMenu  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @javaMenuWithTitle:@
+javaMenuWithTitleSelector :: Selector
+javaMenuWithTitleSelector = mkSelector "javaMenuWithTitle:"
 
 -- | @Selector@ for @setJavaMenuDelegate:@
 setJavaMenuDelegateSelector :: Selector

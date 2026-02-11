@@ -49,6 +49,7 @@ module ObjC.Foundation.NSData
   , rangeOfData_options_range
   , enumerateByteRangesUsingBlock
   , length_
+  , bytes
   , description
   , getBytesSelector
   , dataWithContentsOfMappedFileSelector
@@ -90,6 +91,7 @@ module ObjC.Foundation.NSData
   , rangeOfData_options_rangeSelector
   , enumerateByteRangesUsingBlockSelector
   , lengthSelector
+  , bytesSelector
   , descriptionSelector
 
   -- * Enum types
@@ -393,6 +395,11 @@ length_ :: IsNSData nsData => nsData -> IO CULong
 length_ nsData  =
     sendMsg nsData (mkSelector "length") retCULong []
 
+-- | @- bytes@
+bytes :: IsNSData nsData => nsData -> IO RawId
+bytes nsData  =
+    fmap (RawId . castPtr) $ sendMsg nsData (mkSelector "bytes") (retPtr retVoid) []
+
 -- | @- description@
 description :: IsNSData nsData => nsData -> IO (Id NSString)
 description nsData  =
@@ -561,6 +568,10 @@ enumerateByteRangesUsingBlockSelector = mkSelector "enumerateByteRangesUsingBloc
 -- | @Selector@ for @length@
 lengthSelector :: Selector
 lengthSelector = mkSelector "length"
+
+-- | @Selector@ for @bytes@
+bytesSelector :: Selector
+bytesSelector = mkSelector "bytes"
 
 -- | @Selector@ for @description@
 descriptionSelector :: Selector

@@ -15,11 +15,13 @@ module ObjC.LocalAuthenticationEmbeddedUI.LAAuthenticationView
   , initWithCoder
   , initWithContext
   , initWithContext_controlSize
+  , context
   , controlSize
   , initWithFrameSelector
   , initWithCoderSelector
   , initWithContextSelector
   , initWithContext_controlSizeSelector
+  , contextSelector
   , controlSizeSelector
 
   -- * Enum types
@@ -88,6 +90,13 @@ initWithContext_controlSize laAuthenticationView  context controlSize =
   withObjCPtr context $ \raw_context ->
       sendMsg laAuthenticationView (mkSelector "initWithContext:controlSize:") (retPtr retVoid) [argPtr (castPtr raw_context :: Ptr ()), argCULong (coerce controlSize)] >>= ownedObject . castPtr
 
+-- | @LAContext@ instance passed to the initializer.
+--
+-- ObjC selector: @- context@
+context :: IsLAAuthenticationView laAuthenticationView => laAuthenticationView -> IO (Id LAContext)
+context laAuthenticationView  =
+    sendMsg laAuthenticationView (mkSelector "context") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @NSControlSize@ instance passed to the initializer.
 --
 -- ObjC selector: @- controlSize@
@@ -114,6 +123,10 @@ initWithContextSelector = mkSelector "initWithContext:"
 -- | @Selector@ for @initWithContext:controlSize:@
 initWithContext_controlSizeSelector :: Selector
 initWithContext_controlSizeSelector = mkSelector "initWithContext:controlSize:"
+
+-- | @Selector@ for @context@
+contextSelector :: Selector
+contextSelector = mkSelector "context"
 
 -- | @Selector@ for @controlSize@
 controlSizeSelector :: Selector

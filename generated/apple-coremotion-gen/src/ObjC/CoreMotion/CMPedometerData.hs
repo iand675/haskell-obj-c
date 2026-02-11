@@ -12,12 +12,18 @@ module ObjC.CoreMotion.CMPedometerData
   , distance
   , floorsAscended
   , floorsDescended
+  , currentPace
+  , currentCadence
+  , averageActivePace
   , startDateSelector
   , endDateSelector
   , numberOfStepsSelector
   , distanceSelector
   , floorsAscendedSelector
   , floorsDescendedSelector
+  , currentPaceSelector
+  , currentCadenceSelector
+  , averageActivePaceSelector
 
 
   ) where
@@ -67,6 +73,21 @@ floorsDescended :: IsCMPedometerData cmPedometerData => cmPedometerData -> IO (I
 floorsDescended cmPedometerData  =
     sendMsg cmPedometerData (mkSelector "floorsDescended") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- currentPace@
+currentPace :: IsCMPedometerData cmPedometerData => cmPedometerData -> IO RawId
+currentPace cmPedometerData  =
+    fmap (RawId . castPtr) $ sendMsg cmPedometerData (mkSelector "currentPace") (retPtr retVoid) []
+
+-- | @- currentCadence@
+currentCadence :: IsCMPedometerData cmPedometerData => cmPedometerData -> IO RawId
+currentCadence cmPedometerData  =
+    fmap (RawId . castPtr) $ sendMsg cmPedometerData (mkSelector "currentCadence") (retPtr retVoid) []
+
+-- | @- averageActivePace@
+averageActivePace :: IsCMPedometerData cmPedometerData => cmPedometerData -> IO RawId
+averageActivePace cmPedometerData  =
+    fmap (RawId . castPtr) $ sendMsg cmPedometerData (mkSelector "averageActivePace") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -94,4 +115,16 @@ floorsAscendedSelector = mkSelector "floorsAscended"
 -- | @Selector@ for @floorsDescended@
 floorsDescendedSelector :: Selector
 floorsDescendedSelector = mkSelector "floorsDescended"
+
+-- | @Selector@ for @currentPace@
+currentPaceSelector :: Selector
+currentPaceSelector = mkSelector "currentPace"
+
+-- | @Selector@ for @currentCadence@
+currentCadenceSelector :: Selector
+currentCadenceSelector = mkSelector "currentCadence"
+
+-- | @Selector@ for @averageActivePace@
+averageActivePaceSelector :: Selector
+averageActivePaceSelector = mkSelector "averageActivePace"
 

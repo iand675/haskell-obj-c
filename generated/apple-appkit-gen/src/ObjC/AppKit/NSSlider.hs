@@ -38,6 +38,8 @@ module ObjC.AppKit.NSSlider
   , knobThickness
   , vertical
   , setVertical
+  , trackFillColor
+  , setTrackFillColor
   , tintProminence
   , setTintProminence
   , numberOfTickMarks
@@ -77,6 +79,8 @@ module ObjC.AppKit.NSSlider
   , knobThicknessSelector
   , verticalSelector
   , setVerticalSelector
+  , trackFillColorSelector
+  , setTrackFillColorSelector
   , tintProminenceSelector
   , setTintProminenceSelector
   , numberOfTickMarksSelector
@@ -311,6 +315,17 @@ setVertical :: IsNSSlider nsSlider => nsSlider -> Bool -> IO ()
 setVertical nsSlider  value =
     sendMsg nsSlider (mkSelector "setVertical:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @- trackFillColor@
+trackFillColor :: IsNSSlider nsSlider => nsSlider -> IO (Id NSColor)
+trackFillColor nsSlider  =
+    sendMsg nsSlider (mkSelector "trackFillColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setTrackFillColor:@
+setTrackFillColor :: (IsNSSlider nsSlider, IsNSColor value) => nsSlider -> value -> IO ()
+setTrackFillColor nsSlider  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsSlider (mkSelector "setTrackFillColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | The tint prominence of the slider. The automatic behavior for a regular slider tints its track fill, while a slider with tick marks is untinted. Setting the tint prominence will override this default behavior and choose an explicit track fill tint behavior. See ``NSTintProminence`` for a list of possible values.
 --
 -- ObjC selector: @- tintProminence@
@@ -482,6 +497,14 @@ verticalSelector = mkSelector "vertical"
 -- | @Selector@ for @setVertical:@
 setVerticalSelector :: Selector
 setVerticalSelector = mkSelector "setVertical:"
+
+-- | @Selector@ for @trackFillColor@
+trackFillColorSelector :: Selector
+trackFillColorSelector = mkSelector "trackFillColor"
+
+-- | @Selector@ for @setTrackFillColor:@
+setTrackFillColorSelector :: Selector
+setTrackFillColorSelector = mkSelector "setTrackFillColor:"
 
 -- | @Selector@ for @tintProminence@
 tintProminenceSelector :: Selector

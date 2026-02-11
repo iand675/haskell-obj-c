@@ -8,6 +8,9 @@ module ObjC.Matter.MTRDeviceControllerFactoryParams
   , IsMTRDeviceControllerFactoryParams(..)
   , init_
   , initWithStorage
+  , storage
+  , otaProviderDelegate
+  , setOtaProviderDelegate
   , productAttestationAuthorityCertificates
   , setProductAttestationAuthorityCertificates
   , certificationDeclarationCertificates
@@ -18,6 +21,9 @@ module ObjC.Matter.MTRDeviceControllerFactoryParams
   , setShouldStartServer
   , initSelector
   , initWithStorageSelector
+  , storageSelector
+  , otaProviderDelegateSelector
+  , setOtaProviderDelegateSelector
   , productAttestationAuthorityCertificatesSelector
   , setProductAttestationAuthorityCertificatesSelector
   , certificationDeclarationCertificatesSelector
@@ -54,6 +60,21 @@ init_ mtrDeviceControllerFactoryParams  =
 initWithStorage :: IsMTRDeviceControllerFactoryParams mtrDeviceControllerFactoryParams => mtrDeviceControllerFactoryParams -> RawId -> IO (Id MTRDeviceControllerFactoryParams)
 initWithStorage mtrDeviceControllerFactoryParams  storage =
     sendMsg mtrDeviceControllerFactoryParams (mkSelector "initWithStorage:") (retPtr retVoid) [argPtr (castPtr (unRawId storage) :: Ptr ())] >>= ownedObject . castPtr
+
+-- | @- storage@
+storage :: IsMTRDeviceControllerFactoryParams mtrDeviceControllerFactoryParams => mtrDeviceControllerFactoryParams -> IO RawId
+storage mtrDeviceControllerFactoryParams  =
+    fmap (RawId . castPtr) $ sendMsg mtrDeviceControllerFactoryParams (mkSelector "storage") (retPtr retVoid) []
+
+-- | @- otaProviderDelegate@
+otaProviderDelegate :: IsMTRDeviceControllerFactoryParams mtrDeviceControllerFactoryParams => mtrDeviceControllerFactoryParams -> IO RawId
+otaProviderDelegate mtrDeviceControllerFactoryParams  =
+    fmap (RawId . castPtr) $ sendMsg mtrDeviceControllerFactoryParams (mkSelector "otaProviderDelegate") (retPtr retVoid) []
+
+-- | @- setOtaProviderDelegate:@
+setOtaProviderDelegate :: IsMTRDeviceControllerFactoryParams mtrDeviceControllerFactoryParams => mtrDeviceControllerFactoryParams -> RawId -> IO ()
+setOtaProviderDelegate mtrDeviceControllerFactoryParams  value =
+    sendMsg mtrDeviceControllerFactoryParams (mkSelector "setOtaProviderDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- productAttestationAuthorityCertificates@
 productAttestationAuthorityCertificates :: IsMTRDeviceControllerFactoryParams mtrDeviceControllerFactoryParams => mtrDeviceControllerFactoryParams -> IO (Id NSArray)
@@ -109,6 +130,18 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @initWithStorage:@
 initWithStorageSelector :: Selector
 initWithStorageSelector = mkSelector "initWithStorage:"
+
+-- | @Selector@ for @storage@
+storageSelector :: Selector
+storageSelector = mkSelector "storage"
+
+-- | @Selector@ for @otaProviderDelegate@
+otaProviderDelegateSelector :: Selector
+otaProviderDelegateSelector = mkSelector "otaProviderDelegate"
+
+-- | @Selector@ for @setOtaProviderDelegate:@
+setOtaProviderDelegateSelector :: Selector
+setOtaProviderDelegateSelector = mkSelector "setOtaProviderDelegate:"
 
 -- | @Selector@ for @productAttestationAuthorityCertificates@
 productAttestationAuthorityCertificatesSelector :: Selector

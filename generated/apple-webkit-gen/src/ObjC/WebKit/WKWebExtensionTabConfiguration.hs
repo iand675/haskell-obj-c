@@ -12,7 +12,9 @@ module ObjC.WebKit.WKWebExtensionTabConfiguration
   , IsWKWebExtensionTabConfiguration(..)
   , new
   , init_
+  , window
   , index
+  , parentTab
   , url
   , shouldBeActive
   , shouldAddToSelection
@@ -21,7 +23,9 @@ module ObjC.WebKit.WKWebExtensionTabConfiguration
   , shouldReaderModeBeActive
   , newSelector
   , initSelector
+  , windowSelector
   , indexSelector
+  , parentTabSelector
   , urlSelector
   , shouldBeActiveSelector
   , shouldAddToSelectionSelector
@@ -59,12 +63,30 @@ init_ :: IsWKWebExtensionTabConfiguration wkWebExtensionTabConfiguration => wkWe
 init_ wkWebExtensionTabConfiguration  =
     sendMsg wkWebExtensionTabConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | Indicates the window where the tab should be opened.
+--
+-- If this property is @nil@, no window was specified.
+--
+-- ObjC selector: @- window@
+window :: IsWKWebExtensionTabConfiguration wkWebExtensionTabConfiguration => wkWebExtensionTabConfiguration -> IO RawId
+window wkWebExtensionTabConfiguration  =
+    fmap (RawId . castPtr) $ sendMsg wkWebExtensionTabConfiguration (mkSelector "window") (retPtr retVoid) []
+
 -- | Indicates the position where the tab should be opened within the window.
 --
 -- ObjC selector: @- index@
 index :: IsWKWebExtensionTabConfiguration wkWebExtensionTabConfiguration => wkWebExtensionTabConfiguration -> IO CULong
 index wkWebExtensionTabConfiguration  =
     sendMsg wkWebExtensionTabConfiguration (mkSelector "index") retCULong []
+
+-- | Indicates the parent tab with which the tab should be related.
+--
+-- If this property is @nil@, no parent tab was specified.
+--
+-- ObjC selector: @- parentTab@
+parentTab :: IsWKWebExtensionTabConfiguration wkWebExtensionTabConfiguration => wkWebExtensionTabConfiguration -> IO RawId
+parentTab wkWebExtensionTabConfiguration  =
+    fmap (RawId . castPtr) $ sendMsg wkWebExtensionTabConfiguration (mkSelector "parentTab") (retPtr retVoid) []
 
 -- | Indicates the initial URL for the tab.
 --
@@ -126,9 +148,17 @@ newSelector = mkSelector "new"
 initSelector :: Selector
 initSelector = mkSelector "init"
 
+-- | @Selector@ for @window@
+windowSelector :: Selector
+windowSelector = mkSelector "window"
+
 -- | @Selector@ for @index@
 indexSelector :: Selector
 indexSelector = mkSelector "index"
+
+-- | @Selector@ for @parentTab@
+parentTabSelector :: Selector
+parentTabSelector = mkSelector "parentTab"
 
 -- | @Selector@ for @url@
 urlSelector :: Selector

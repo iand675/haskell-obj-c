@@ -17,9 +17,13 @@ module ObjC.Virtualization.VZLinuxRosettaDirectoryShare
   , IsVZLinuxRosettaDirectoryShare(..)
   , initWithError
   , installRosettaWithCompletionHandler
+  , options
+  , setOptions
   , availability
   , initWithErrorSelector
   , installRosettaWithCompletionHandlerSelector
+  , optionsSelector
+  , setOptionsSelector
   , availabilitySelector
 
   -- * Enum types
@@ -75,6 +79,21 @@ installRosettaWithCompletionHandler completionHandler =
     cls' <- getRequiredClass "VZLinuxRosettaDirectoryShare"
     sendClassMsg cls' (mkSelector "installRosettaWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
 
+-- | Enable translation caching and configure the socket communication type for Rosetta.
+--
+-- ObjC selector: @- options@
+options :: IsVZLinuxRosettaDirectoryShare vzLinuxRosettaDirectoryShare => vzLinuxRosettaDirectoryShare -> IO (Id VZLinuxRosettaCachingOptions)
+options vzLinuxRosettaDirectoryShare  =
+    sendMsg vzLinuxRosettaDirectoryShare (mkSelector "options") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Enable translation caching and configure the socket communication type for Rosetta.
+--
+-- ObjC selector: @- setOptions:@
+setOptions :: (IsVZLinuxRosettaDirectoryShare vzLinuxRosettaDirectoryShare, IsVZLinuxRosettaCachingOptions value) => vzLinuxRosettaDirectoryShare -> value -> IO ()
+setOptions vzLinuxRosettaDirectoryShare  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg vzLinuxRosettaDirectoryShare (mkSelector "setOptions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | Check the availability of Rosetta support for the directory share.
 --
 -- ObjC selector: @+ availability@
@@ -95,6 +114,14 @@ initWithErrorSelector = mkSelector "initWithError:"
 -- | @Selector@ for @installRosettaWithCompletionHandler:@
 installRosettaWithCompletionHandlerSelector :: Selector
 installRosettaWithCompletionHandlerSelector = mkSelector "installRosettaWithCompletionHandler:"
+
+-- | @Selector@ for @options@
+optionsSelector :: Selector
+optionsSelector = mkSelector "options"
+
+-- | @Selector@ for @setOptions:@
+setOptionsSelector :: Selector
+setOptionsSelector = mkSelector "setOptions:"
 
 -- | @Selector@ for @availability@
 availabilitySelector :: Selector

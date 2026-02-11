@@ -14,6 +14,7 @@ module ObjC.AVFAudio.AVAudioApplication
   , setInputMuteStateChangeHandler_error
   , requestRecordPermissionWithCompletionHandler
   , requestMicrophoneInjectionPermissionWithCompletionHandler
+  , sharedInstance
   , inputMuted
   , recordPermission
   , microphoneInjectionPermission
@@ -22,6 +23,7 @@ module ObjC.AVFAudio.AVAudioApplication
   , setInputMuteStateChangeHandler_errorSelector
   , requestRecordPermissionWithCompletionHandlerSelector
   , requestMicrophoneInjectionPermissionWithCompletionHandlerSelector
+  , sharedInstanceSelector
   , inputMutedSelector
   , recordPermissionSelector
   , microphoneInjectionPermissionSelector
@@ -106,6 +108,15 @@ requestMicrophoneInjectionPermissionWithCompletionHandler response =
     cls' <- getRequiredClass "AVAudioApplication"
     sendClassMsg cls' (mkSelector "requestMicrophoneInjectionPermissionWithCompletionHandler:") retVoid [argPtr (castPtr response :: Ptr ())]
 
+-- | Returns the singleton instance
+--
+-- ObjC selector: @+ sharedInstance@
+sharedInstance :: IO (Id AVAudioApplication)
+sharedInstance  =
+  do
+    cls' <- getRequiredClass "AVAudioApplication"
+    sendClassMsg cls' (mkSelector "sharedInstance") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Get the input muted state - return value is boolean 0 for unmuted or value 1 for muted (input samples zeroed out)
 --
 -- ObjC selector: @- inputMuted@
@@ -150,6 +161,10 @@ requestRecordPermissionWithCompletionHandlerSelector = mkSelector "requestRecord
 -- | @Selector@ for @requestMicrophoneInjectionPermissionWithCompletionHandler:@
 requestMicrophoneInjectionPermissionWithCompletionHandlerSelector :: Selector
 requestMicrophoneInjectionPermissionWithCompletionHandlerSelector = mkSelector "requestMicrophoneInjectionPermissionWithCompletionHandler:"
+
+-- | @Selector@ for @sharedInstance@
+sharedInstanceSelector :: Selector
+sharedInstanceSelector = mkSelector "sharedInstance"
 
 -- | @Selector@ for @inputMuted@
 inputMutedSelector :: Selector

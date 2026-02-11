@@ -13,11 +13,13 @@ module ObjC.AVFAudio.AVAudioPCMBuffer
   ( AVAudioPCMBuffer
   , IsAVAudioPCMBuffer(..)
   , initWithPCMFormat_frameCapacity
+  , initWithPCMFormat_bufferListNoCopy_deallocator
   , frameCapacity
   , frameLength
   , setFrameLength
   , stride
   , initWithPCMFormat_frameCapacitySelector
+  , initWithPCMFormat_bufferListNoCopy_deallocatorSelector
   , frameCapacitySelector
   , frameLengthSelector
   , setFrameLengthSelector
@@ -58,6 +60,30 @@ initWithPCMFormat_frameCapacity :: (IsAVAudioPCMBuffer avAudioPCMBuffer, IsAVAud
 initWithPCMFormat_frameCapacity avAudioPCMBuffer  format frameCapacity =
   withObjCPtr format $ \raw_format ->
       sendMsg avAudioPCMBuffer (mkSelector "initWithPCMFormat:frameCapacity:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ()), argCUInt frameCapacity] >>= ownedObject . castPtr
+
+-- | initWithPCMFormat:bufferListNoCopy:deallocator:
+--
+-- Initialize a buffer that is to contain PCM audio samples with a given AudioBufferList			  without copying samples and a custom deallocator block.
+--
+-- @format@ — The format of the PCM audio to be contained in the buffer.
+--
+-- @bufferList@ — The buffer list with allocated memory to contain the PCM audio data.
+--
+-- @deallocator@ — A block to invoke when the resulting AVAudioPCMBuffer object is deallocated.
+--
+-- An exception is raised if the format is not PCM.
+--
+-- Returns nil in the following cases:		- if the format has zero bytes per frame (format.streamDescription->mBytesPerFrame == 0)		- if supplied buffer has zero number of buffers		- if each buffer's data byte size are not equal or if any of the buffers' data byte size is zero		- if there is a mismatch between the format's number of buffers and the AudioBufferList's size			(1 if interleaved, mChannelsPerFrame if deinterleaved)		- if the AudioBufferList's pointer to the buffer of audio data is null.
+--
+-- Use the deallocator block to define your own deallocation behavior for the provided AudioBufferList's		underlying memory.
+--
+-- The AudioBufferList passed to the deallocator is identical to the one which was passed to the initializer,		in terms of the buffer count, and each buffer's mData and mDataByteSize members.
+--
+-- ObjC selector: @- initWithPCMFormat:bufferListNoCopy:deallocator:@
+initWithPCMFormat_bufferListNoCopy_deallocator :: (IsAVAudioPCMBuffer avAudioPCMBuffer, IsAVAudioFormat format) => avAudioPCMBuffer -> format -> Const RawId -> Ptr () -> IO (Id AVAudioPCMBuffer)
+initWithPCMFormat_bufferListNoCopy_deallocator avAudioPCMBuffer  format bufferList deallocator =
+  withObjCPtr format $ \raw_format ->
+      sendMsg avAudioPCMBuffer (mkSelector "initWithPCMFormat:bufferListNoCopy:deallocator:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ()), argPtr (castPtr (unRawId (unConst bufferList)) :: Ptr ()), argPtr (castPtr deallocator :: Ptr ())] >>= ownedObject . castPtr
 
 -- | frameCapacity
 --
@@ -108,6 +134,10 @@ stride avAudioPCMBuffer  =
 -- | @Selector@ for @initWithPCMFormat:frameCapacity:@
 initWithPCMFormat_frameCapacitySelector :: Selector
 initWithPCMFormat_frameCapacitySelector = mkSelector "initWithPCMFormat:frameCapacity:"
+
+-- | @Selector@ for @initWithPCMFormat:bufferListNoCopy:deallocator:@
+initWithPCMFormat_bufferListNoCopy_deallocatorSelector :: Selector
+initWithPCMFormat_bufferListNoCopy_deallocatorSelector = mkSelector "initWithPCMFormat:bufferListNoCopy:deallocator:"
 
 -- | @Selector@ for @frameCapacity@
 frameCapacitySelector :: Selector

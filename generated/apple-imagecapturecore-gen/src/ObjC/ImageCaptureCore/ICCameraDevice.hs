@@ -31,6 +31,7 @@ module ObjC.ImageCaptureCore.ICCameraDevice
   , locked
   , accessRestrictedAppleDevice
   , iCloudPhotosEnabled
+  , mountPoint
   , mediaPresentation
   , setMediaPresentation
   , timeOffset
@@ -59,6 +60,7 @@ module ObjC.ImageCaptureCore.ICCameraDevice
   , lockedSelector
   , accessRestrictedAppleDeviceSelector
   , iCloudPhotosEnabledSelector
+  , mountPointSelector
   , mediaPresentationSelector
   , setMediaPresentationSelector
   , timeOffsetSelector
@@ -294,6 +296,15 @@ iCloudPhotosEnabled :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO B
 iCloudPhotosEnabled icCameraDevice  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg icCameraDevice (mkSelector "iCloudPhotosEnabled") retCULong []
 
+-- | mountPoint
+--
+-- Filesystem mount point for a device with transportType of ICTransportTypeMassStorage. This will be NULL for all other devices.
+--
+-- ObjC selector: @- mountPoint@
+mountPoint :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO RawId
+mountPoint icCameraDevice  =
+    fmap (RawId . castPtr) $ sendMsg icCameraDevice (mkSelector "mountPoint") (retPtr retVoid) []
+
 -- | mediaPresentation
 --
 -- The media presentation describes the visible assets from a device that may contain multiple formats of each media asset.  The asigngments are of the type ICMediaPresentation enumeration.  This property is available only if the capability ICCameraDeviceSupportsHEIF is  present.
@@ -459,6 +470,10 @@ accessRestrictedAppleDeviceSelector = mkSelector "accessRestrictedAppleDevice"
 -- | @Selector@ for @iCloudPhotosEnabled@
 iCloudPhotosEnabledSelector :: Selector
 iCloudPhotosEnabledSelector = mkSelector "iCloudPhotosEnabled"
+
+-- | @Selector@ for @mountPoint@
+mountPointSelector :: Selector
+mountPointSelector = mkSelector "mountPoint"
 
 -- | @Selector@ for @mediaPresentation@
 mediaPresentationSelector :: Selector

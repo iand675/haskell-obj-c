@@ -10,10 +10,14 @@ module ObjC.MetalPerformanceShaders.MPSNNReshape
   , initWithCoder_device
   , encodeToCommandBuffer_sourceImage_reshapedWidth_reshapedHeight_reshapedFeatureChannels
   , encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannels
+  , encodeBatchToCommandBuffer_sourceImages_reshapedWidth_reshapedHeight_reshapedFeatureChannels
+  , encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannels
   , initWithDeviceSelector
   , initWithCoder_deviceSelector
   , encodeToCommandBuffer_sourceImage_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector
   , encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector
+  , encodeBatchToCommandBuffer_sourceImages_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector
+  , encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector
 
 
   ) where
@@ -91,6 +95,44 @@ encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporary_r
     withObjCPtr outState $ \raw_outState ->
         sendMsg mpsnnReshape (mkSelector "encodeToCommandBuffer:sourceImage:destinationState:destinationStateIsTemporary:reshapedWidth:reshapedHeight:reshapedFeatureChannels:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_outState :: Ptr ()), argCULong (if isTemporary then 1 else 0), argCULong reshapedWidth, argCULong reshapedHeight, argCULong reshapedFeatureChannels] >>= retainedObject . castPtr
 
+-- | Encode a reshape to a command buffer for a given shape.
+--
+-- @commandBuffer@ — The command buffer on which to encode the reshape operation.
+--
+-- @sourceImages@ — The image batch containing images to be reshaped.
+--
+-- @reshapedWidth@ — The width of the resulting reshaped images.
+--
+-- @reshapedHeight@ — The height of the resulting reshaped images.
+--
+-- @reshapedFeatureChannels@ — The number of feature channels in each of the resulting reshaped images.
+--
+-- ObjC selector: @- encodeBatchToCommandBuffer:sourceImages:reshapedWidth:reshapedHeight:reshapedFeatureChannels:@
+encodeBatchToCommandBuffer_sourceImages_reshapedWidth_reshapedHeight_reshapedFeatureChannels :: IsMPSNNReshape mpsnnReshape => mpsnnReshape -> RawId -> RawId -> CULong -> CULong -> CULong -> IO RawId
+encodeBatchToCommandBuffer_sourceImages_reshapedWidth_reshapedHeight_reshapedFeatureChannels mpsnnReshape  commandBuffer sourceImages reshapedWidth reshapedHeight reshapedFeatureChannels =
+    fmap (RawId . castPtr) $ sendMsg mpsnnReshape (mkSelector "encodeBatchToCommandBuffer:sourceImages:reshapedWidth:reshapedHeight:reshapedFeatureChannels:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argCULong reshapedWidth, argCULong reshapedHeight, argCULong reshapedFeatureChannels]
+
+-- | Encode a reshape to a command buffer for a given shape.
+--
+-- @commandBuffer@ — The command buffer on which to encode the reshape operation.
+--
+-- @outStates@ — A batch of states to be created and autoreleased which will hold information about this execution                                  to be provided to a subsequent gradient pass.
+--
+-- @isTemporary@ — YES if the states are to be created as temporary states, NO otherwise.
+--
+-- @sourceImages@ — The batch of input images to be reshaped.
+--
+-- @reshapedWidth@ — The width of the resulting reshaped images.
+--
+-- @reshapedHeight@ — The height of the resulting reshaped images.
+--
+-- @reshapedFeatureChannels@ — The number of feature channels in each of the resulting reshaped images.
+--
+-- ObjC selector: @- encodeBatchToCommandBuffer:sourceImages:destinationStates:destinationStateIsTemporary:reshapedWidth:reshapedHeight:reshapedFeatureChannels:@
+encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannels :: IsMPSNNReshape mpsnnReshape => mpsnnReshape -> RawId -> RawId -> RawId -> Bool -> CULong -> CULong -> CULong -> IO RawId
+encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannels mpsnnReshape  commandBuffer sourceImages outStates isTemporary reshapedWidth reshapedHeight reshapedFeatureChannels =
+    fmap (RawId . castPtr) $ sendMsg mpsnnReshape (mkSelector "encodeBatchToCommandBuffer:sourceImages:destinationStates:destinationStateIsTemporary:reshapedWidth:reshapedHeight:reshapedFeatureChannels:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr (unRawId outStates) :: Ptr ()), argCULong (if isTemporary then 1 else 0), argCULong reshapedWidth, argCULong reshapedHeight, argCULong reshapedFeatureChannels]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -110,4 +152,12 @@ encodeToCommandBuffer_sourceImage_reshapedWidth_reshapedHeight_reshapedFeatureCh
 -- | @Selector@ for @encodeToCommandBuffer:sourceImage:destinationState:destinationStateIsTemporary:reshapedWidth:reshapedHeight:reshapedFeatureChannels:@
 encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector :: Selector
 encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector = mkSelector "encodeToCommandBuffer:sourceImage:destinationState:destinationStateIsTemporary:reshapedWidth:reshapedHeight:reshapedFeatureChannels:"
+
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:reshapedWidth:reshapedHeight:reshapedFeatureChannels:@
+encodeBatchToCommandBuffer_sourceImages_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:reshapedWidth:reshapedHeight:reshapedFeatureChannels:"
+
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:destinationStates:destinationStateIsTemporary:reshapedWidth:reshapedHeight:reshapedFeatureChannels:@
+encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:destinationStates:destinationStateIsTemporary:reshapedWidth:reshapedHeight:reshapedFeatureChannels:"
 

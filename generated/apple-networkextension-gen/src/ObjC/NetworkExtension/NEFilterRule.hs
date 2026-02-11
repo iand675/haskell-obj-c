@@ -12,8 +12,10 @@ module ObjC.NetworkExtension.NEFilterRule
   ( NEFilterRule
   , IsNEFilterRule(..)
   , initWithNetworkRule_action
+  , networkRule
   , action
   , initWithNetworkRule_actionSelector
+  , networkRuleSelector
   , actionSelector
 
   -- * Enum types
@@ -56,6 +58,15 @@ initWithNetworkRule_action neFilterRule  networkRule action =
   withObjCPtr networkRule $ \raw_networkRule ->
       sendMsg neFilterRule (mkSelector "initWithNetworkRule:action:") (retPtr retVoid) [argPtr (castPtr raw_networkRule :: Ptr ()), argCLong (coerce action)] >>= ownedObject . castPtr
 
+-- | matchNetworkRule
+--
+-- The NENetworkRule that defines the network traffic characteristics that this rule matches.
+--
+-- ObjC selector: @- networkRule@
+networkRule :: IsNEFilterRule neFilterRule => neFilterRule -> IO (Id NENetworkRule)
+networkRule neFilterRule  =
+    sendMsg neFilterRule (mkSelector "networkRule") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | action
 --
 -- The action to take when this rule matches network traffic.
@@ -72,6 +83,10 @@ action neFilterRule  =
 -- | @Selector@ for @initWithNetworkRule:action:@
 initWithNetworkRule_actionSelector :: Selector
 initWithNetworkRule_actionSelector = mkSelector "initWithNetworkRule:action:"
+
+-- | @Selector@ for @networkRule@
+networkRuleSelector :: Selector
+networkRuleSelector = mkSelector "networkRule"
 
 -- | @Selector@ for @action@
 actionSelector :: Selector

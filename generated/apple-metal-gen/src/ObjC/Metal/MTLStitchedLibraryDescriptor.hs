@@ -13,10 +13,18 @@ module ObjC.Metal.MTLStitchedLibraryDescriptor
   , IsMTLStitchedLibraryDescriptor(..)
   , functionGraphs
   , setFunctionGraphs
+  , functions
+  , setFunctions
+  , binaryArchives
+  , setBinaryArchives
   , options
   , setOptions
   , functionGraphsSelector
   , setFunctionGraphsSelector
+  , functionsSelector
+  , setFunctionsSelector
+  , binaryArchivesSelector
+  , setBinaryArchivesSelector
   , optionsSelector
   , setOptionsSelector
 
@@ -55,6 +63,40 @@ setFunctionGraphs mtlStitchedLibraryDescriptor  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mtlStitchedLibraryDescriptor (mkSelector "setFunctionGraphs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- functions@
+functions :: IsMTLStitchedLibraryDescriptor mtlStitchedLibraryDescriptor => mtlStitchedLibraryDescriptor -> IO (Id NSArray)
+functions mtlStitchedLibraryDescriptor  =
+    sendMsg mtlStitchedLibraryDescriptor (mkSelector "functions") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setFunctions:@
+setFunctions :: (IsMTLStitchedLibraryDescriptor mtlStitchedLibraryDescriptor, IsNSArray value) => mtlStitchedLibraryDescriptor -> value -> IO ()
+setFunctions mtlStitchedLibraryDescriptor  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mtlStitchedLibraryDescriptor (mkSelector "setFunctions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | binaryArchives
+--
+-- The array of archives to be searched.
+--
+-- Binary archives to be searched for precompiled stitched libraries during the compilation of this library.
+--
+-- ObjC selector: @- binaryArchives@
+binaryArchives :: IsMTLStitchedLibraryDescriptor mtlStitchedLibraryDescriptor => mtlStitchedLibraryDescriptor -> IO (Id NSArray)
+binaryArchives mtlStitchedLibraryDescriptor  =
+    sendMsg mtlStitchedLibraryDescriptor (mkSelector "binaryArchives") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | binaryArchives
+--
+-- The array of archives to be searched.
+--
+-- Binary archives to be searched for precompiled stitched libraries during the compilation of this library.
+--
+-- ObjC selector: @- setBinaryArchives:@
+setBinaryArchives :: (IsMTLStitchedLibraryDescriptor mtlStitchedLibraryDescriptor, IsNSArray value) => mtlStitchedLibraryDescriptor -> value -> IO ()
+setBinaryArchives mtlStitchedLibraryDescriptor  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mtlStitchedLibraryDescriptor (mkSelector "setBinaryArchives:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | options
 --
 -- The options to use for this new MTLLibrary.
@@ -84,6 +126,22 @@ functionGraphsSelector = mkSelector "functionGraphs"
 -- | @Selector@ for @setFunctionGraphs:@
 setFunctionGraphsSelector :: Selector
 setFunctionGraphsSelector = mkSelector "setFunctionGraphs:"
+
+-- | @Selector@ for @functions@
+functionsSelector :: Selector
+functionsSelector = mkSelector "functions"
+
+-- | @Selector@ for @setFunctions:@
+setFunctionsSelector :: Selector
+setFunctionsSelector = mkSelector "setFunctions:"
+
+-- | @Selector@ for @binaryArchives@
+binaryArchivesSelector :: Selector
+binaryArchivesSelector = mkSelector "binaryArchives"
+
+-- | @Selector@ for @setBinaryArchives:@
+setBinaryArchivesSelector :: Selector
+setBinaryArchivesSelector = mkSelector "setBinaryArchives:"
 
 -- | @Selector@ for @options@
 optionsSelector :: Selector

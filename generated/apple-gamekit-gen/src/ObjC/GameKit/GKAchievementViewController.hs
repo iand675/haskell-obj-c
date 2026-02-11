@@ -8,6 +8,10 @@
 module ObjC.GameKit.GKAchievementViewController
   ( GKAchievementViewController
   , IsGKAchievementViewController(..)
+  , achievementDelegate
+  , setAchievementDelegate
+  , achievementDelegateSelector
+  , setAchievementDelegateSelector
 
 
   ) where
@@ -28,7 +32,25 @@ import ObjC.GameKit.Internal.Classes
 import ObjC.AppKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | @- achievementDelegate@
+achievementDelegate :: IsGKAchievementViewController gkAchievementViewController => gkAchievementViewController -> IO RawId
+achievementDelegate gkAchievementViewController  =
+    fmap (RawId . castPtr) $ sendMsg gkAchievementViewController (mkSelector "achievementDelegate") (retPtr retVoid) []
+
+-- | @- setAchievementDelegate:@
+setAchievementDelegate :: IsGKAchievementViewController gkAchievementViewController => gkAchievementViewController -> RawId -> IO ()
+setAchievementDelegate gkAchievementViewController  value =
+    sendMsg gkAchievementViewController (mkSelector "setAchievementDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @achievementDelegate@
+achievementDelegateSelector :: Selector
+achievementDelegateSelector = mkSelector "achievementDelegate"
+
+-- | @Selector@ for @setAchievementDelegate:@
+setAchievementDelegateSelector :: Selector
+setAchievementDelegateSelector = mkSelector "setAchievementDelegate:"
 

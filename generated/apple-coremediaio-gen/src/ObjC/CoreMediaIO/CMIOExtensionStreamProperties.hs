@@ -15,6 +15,20 @@ module ObjC.CoreMediaIO.CMIOExtensionStreamProperties
   , streamPropertiesWithDictionary
   , initWithDictionary
   , setPropertyState_forProperty
+  , activeFormatIndex
+  , setActiveFormatIndex
+  , frameDuration
+  , setFrameDuration
+  , maxFrameDuration
+  , setMaxFrameDuration
+  , sinkBufferQueueSize
+  , setSinkBufferQueueSize
+  , sinkBuffersRequiredForStartup
+  , setSinkBuffersRequiredForStartup
+  , sinkBufferUnderrunCount
+  , setSinkBufferUnderrunCount
+  , sinkEndOfData
+  , setSinkEndOfData
   , propertiesDictionary
   , setPropertiesDictionary
   , initSelector
@@ -22,6 +36,20 @@ module ObjC.CoreMediaIO.CMIOExtensionStreamProperties
   , streamPropertiesWithDictionarySelector
   , initWithDictionarySelector
   , setPropertyState_forPropertySelector
+  , activeFormatIndexSelector
+  , setActiveFormatIndexSelector
+  , frameDurationSelector
+  , setFrameDurationSelector
+  , maxFrameDurationSelector
+  , setMaxFrameDurationSelector
+  , sinkBufferQueueSizeSelector
+  , setSinkBufferQueueSizeSelector
+  , sinkBuffersRequiredForStartupSelector
+  , setSinkBuffersRequiredForStartupSelector
+  , sinkBufferUnderrunCountSelector
+  , setSinkBufferUnderrunCountSelector
+  , sinkEndOfDataSelector
+  , setSinkEndOfDataSelector
   , propertiesDictionarySelector
   , setPropertiesDictionarySelector
 
@@ -102,6 +130,167 @@ setPropertyState_forProperty cmioExtensionStreamProperties  propertyState proper
     withObjCPtr property $ \raw_property ->
         sendMsg cmioExtensionStreamProperties (mkSelector "setPropertyState:forProperty:") retVoid [argPtr (castPtr raw_propertyState :: Ptr ()), argPtr (castPtr raw_property :: Ptr ())]
 
+-- | activeFormatIndex
+--
+-- The active format index.
+--
+-- The property key is CMIOExtensionPropertyStreamActiveFormatIndex.
+--
+-- ObjC selector: @- activeFormatIndex@
+activeFormatIndex :: IsCMIOExtensionStreamProperties cmioExtensionStreamProperties => cmioExtensionStreamProperties -> IO (Id NSNumber)
+activeFormatIndex cmioExtensionStreamProperties  =
+    sendMsg cmioExtensionStreamProperties (mkSelector "activeFormatIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | activeFormatIndex
+--
+-- The active format index.
+--
+-- The property key is CMIOExtensionPropertyStreamActiveFormatIndex.
+--
+-- ObjC selector: @- setActiveFormatIndex:@
+setActiveFormatIndex :: (IsCMIOExtensionStreamProperties cmioExtensionStreamProperties, IsNSNumber value) => cmioExtensionStreamProperties -> value -> IO ()
+setActiveFormatIndex cmioExtensionStreamProperties  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg cmioExtensionStreamProperties (mkSelector "setActiveFormatIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | frameDuration
+--
+-- The frame duration.
+--
+-- The property key is CMIOExtensionPropertyStreamFrameDuration. The dictionary needs to be a dictionary representing a CMTime struct that is consistent with the frame duration specification provided by the current active format.
+--
+-- ObjC selector: @- frameDuration@
+frameDuration :: IsCMIOExtensionStreamProperties cmioExtensionStreamProperties => cmioExtensionStreamProperties -> IO (Id NSDictionary)
+frameDuration cmioExtensionStreamProperties  =
+    sendMsg cmioExtensionStreamProperties (mkSelector "frameDuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | frameDuration
+--
+-- The frame duration.
+--
+-- The property key is CMIOExtensionPropertyStreamFrameDuration. The dictionary needs to be a dictionary representing a CMTime struct that is consistent with the frame duration specification provided by the current active format.
+--
+-- ObjC selector: @- setFrameDuration:@
+setFrameDuration :: (IsCMIOExtensionStreamProperties cmioExtensionStreamProperties, IsNSDictionary value) => cmioExtensionStreamProperties -> value -> IO ()
+setFrameDuration cmioExtensionStreamProperties  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg cmioExtensionStreamProperties (mkSelector "setFrameDuration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | maxFrameDuration
+--
+-- The maximum frame duration.
+--
+-- The property key is CMIOExtensionPropertyStreamMaxFrameDuration. The dictionary needs to be a dictionary representing a CMTime struct that is consistent with the frame duration specification provided by the current active format.
+--
+-- ObjC selector: @- maxFrameDuration@
+maxFrameDuration :: IsCMIOExtensionStreamProperties cmioExtensionStreamProperties => cmioExtensionStreamProperties -> IO (Id NSDictionary)
+maxFrameDuration cmioExtensionStreamProperties  =
+    sendMsg cmioExtensionStreamProperties (mkSelector "maxFrameDuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | maxFrameDuration
+--
+-- The maximum frame duration.
+--
+-- The property key is CMIOExtensionPropertyStreamMaxFrameDuration. The dictionary needs to be a dictionary representing a CMTime struct that is consistent with the frame duration specification provided by the current active format.
+--
+-- ObjC selector: @- setMaxFrameDuration:@
+setMaxFrameDuration :: (IsCMIOExtensionStreamProperties cmioExtensionStreamProperties, IsNSDictionary value) => cmioExtensionStreamProperties -> value -> IO ()
+setMaxFrameDuration cmioExtensionStreamProperties  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg cmioExtensionStreamProperties (mkSelector "setMaxFrameDuration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | sinkBufferQueueSize
+--
+-- The sink stream property buffer queue size.
+--
+-- The property key is CMIOExtensionPropertyStreamSinkBufferQueueSize.
+--
+-- ObjC selector: @- sinkBufferQueueSize@
+sinkBufferQueueSize :: IsCMIOExtensionStreamProperties cmioExtensionStreamProperties => cmioExtensionStreamProperties -> IO (Id NSNumber)
+sinkBufferQueueSize cmioExtensionStreamProperties  =
+    sendMsg cmioExtensionStreamProperties (mkSelector "sinkBufferQueueSize") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | sinkBufferQueueSize
+--
+-- The sink stream property buffer queue size.
+--
+-- The property key is CMIOExtensionPropertyStreamSinkBufferQueueSize.
+--
+-- ObjC selector: @- setSinkBufferQueueSize:@
+setSinkBufferQueueSize :: (IsCMIOExtensionStreamProperties cmioExtensionStreamProperties, IsNSNumber value) => cmioExtensionStreamProperties -> value -> IO ()
+setSinkBufferQueueSize cmioExtensionStreamProperties  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg cmioExtensionStreamProperties (mkSelector "setSinkBufferQueueSize:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | sinkBuffersRequiredForStartup
+--
+-- The sink stream property for number of buffers required for startup.
+--
+-- The property key is CMIOExtensionPropertyStreamSinkBuffersRequiredForStartup.
+--
+-- ObjC selector: @- sinkBuffersRequiredForStartup@
+sinkBuffersRequiredForStartup :: IsCMIOExtensionStreamProperties cmioExtensionStreamProperties => cmioExtensionStreamProperties -> IO (Id NSNumber)
+sinkBuffersRequiredForStartup cmioExtensionStreamProperties  =
+    sendMsg cmioExtensionStreamProperties (mkSelector "sinkBuffersRequiredForStartup") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | sinkBuffersRequiredForStartup
+--
+-- The sink stream property for number of buffers required for startup.
+--
+-- The property key is CMIOExtensionPropertyStreamSinkBuffersRequiredForStartup.
+--
+-- ObjC selector: @- setSinkBuffersRequiredForStartup:@
+setSinkBuffersRequiredForStartup :: (IsCMIOExtensionStreamProperties cmioExtensionStreamProperties, IsNSNumber value) => cmioExtensionStreamProperties -> value -> IO ()
+setSinkBuffersRequiredForStartup cmioExtensionStreamProperties  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg cmioExtensionStreamProperties (mkSelector "setSinkBuffersRequiredForStartup:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | sinkBufferUnderrunCount
+--
+-- The sink stream property buffer underrun count.
+--
+-- The property key is CMIOExtensionPropertyStreamSinkBufferUnderrunCount.
+--
+-- ObjC selector: @- sinkBufferUnderrunCount@
+sinkBufferUnderrunCount :: IsCMIOExtensionStreamProperties cmioExtensionStreamProperties => cmioExtensionStreamProperties -> IO (Id NSNumber)
+sinkBufferUnderrunCount cmioExtensionStreamProperties  =
+    sendMsg cmioExtensionStreamProperties (mkSelector "sinkBufferUnderrunCount") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | sinkBufferUnderrunCount
+--
+-- The sink stream property buffer underrun count.
+--
+-- The property key is CMIOExtensionPropertyStreamSinkBufferUnderrunCount.
+--
+-- ObjC selector: @- setSinkBufferUnderrunCount:@
+setSinkBufferUnderrunCount :: (IsCMIOExtensionStreamProperties cmioExtensionStreamProperties, IsNSNumber value) => cmioExtensionStreamProperties -> value -> IO ()
+setSinkBufferUnderrunCount cmioExtensionStreamProperties  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg cmioExtensionStreamProperties (mkSelector "setSinkBufferUnderrunCount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | sinkEndOfData
+--
+-- The sink stream property end of data.
+--
+-- The property key is CMIOExtensionPropertyStreamSinkEndOfData.
+--
+-- ObjC selector: @- sinkEndOfData@
+sinkEndOfData :: IsCMIOExtensionStreamProperties cmioExtensionStreamProperties => cmioExtensionStreamProperties -> IO (Id NSNumber)
+sinkEndOfData cmioExtensionStreamProperties  =
+    sendMsg cmioExtensionStreamProperties (mkSelector "sinkEndOfData") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | sinkEndOfData
+--
+-- The sink stream property end of data.
+--
+-- The property key is CMIOExtensionPropertyStreamSinkEndOfData.
+--
+-- ObjC selector: @- setSinkEndOfData:@
+setSinkEndOfData :: (IsCMIOExtensionStreamProperties cmioExtensionStreamProperties, IsNSNumber value) => cmioExtensionStreamProperties -> value -> IO ()
+setSinkEndOfData cmioExtensionStreamProperties  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg cmioExtensionStreamProperties (mkSelector "setSinkEndOfData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | propertiesDictionary
 --
 -- The dictionary of properties.
@@ -148,6 +337,62 @@ initWithDictionarySelector = mkSelector "initWithDictionary:"
 -- | @Selector@ for @setPropertyState:forProperty:@
 setPropertyState_forPropertySelector :: Selector
 setPropertyState_forPropertySelector = mkSelector "setPropertyState:forProperty:"
+
+-- | @Selector@ for @activeFormatIndex@
+activeFormatIndexSelector :: Selector
+activeFormatIndexSelector = mkSelector "activeFormatIndex"
+
+-- | @Selector@ for @setActiveFormatIndex:@
+setActiveFormatIndexSelector :: Selector
+setActiveFormatIndexSelector = mkSelector "setActiveFormatIndex:"
+
+-- | @Selector@ for @frameDuration@
+frameDurationSelector :: Selector
+frameDurationSelector = mkSelector "frameDuration"
+
+-- | @Selector@ for @setFrameDuration:@
+setFrameDurationSelector :: Selector
+setFrameDurationSelector = mkSelector "setFrameDuration:"
+
+-- | @Selector@ for @maxFrameDuration@
+maxFrameDurationSelector :: Selector
+maxFrameDurationSelector = mkSelector "maxFrameDuration"
+
+-- | @Selector@ for @setMaxFrameDuration:@
+setMaxFrameDurationSelector :: Selector
+setMaxFrameDurationSelector = mkSelector "setMaxFrameDuration:"
+
+-- | @Selector@ for @sinkBufferQueueSize@
+sinkBufferQueueSizeSelector :: Selector
+sinkBufferQueueSizeSelector = mkSelector "sinkBufferQueueSize"
+
+-- | @Selector@ for @setSinkBufferQueueSize:@
+setSinkBufferQueueSizeSelector :: Selector
+setSinkBufferQueueSizeSelector = mkSelector "setSinkBufferQueueSize:"
+
+-- | @Selector@ for @sinkBuffersRequiredForStartup@
+sinkBuffersRequiredForStartupSelector :: Selector
+sinkBuffersRequiredForStartupSelector = mkSelector "sinkBuffersRequiredForStartup"
+
+-- | @Selector@ for @setSinkBuffersRequiredForStartup:@
+setSinkBuffersRequiredForStartupSelector :: Selector
+setSinkBuffersRequiredForStartupSelector = mkSelector "setSinkBuffersRequiredForStartup:"
+
+-- | @Selector@ for @sinkBufferUnderrunCount@
+sinkBufferUnderrunCountSelector :: Selector
+sinkBufferUnderrunCountSelector = mkSelector "sinkBufferUnderrunCount"
+
+-- | @Selector@ for @setSinkBufferUnderrunCount:@
+setSinkBufferUnderrunCountSelector :: Selector
+setSinkBufferUnderrunCountSelector = mkSelector "setSinkBufferUnderrunCount:"
+
+-- | @Selector@ for @sinkEndOfData@
+sinkEndOfDataSelector :: Selector
+sinkEndOfDataSelector = mkSelector "sinkEndOfData"
+
+-- | @Selector@ for @setSinkEndOfData:@
+setSinkEndOfDataSelector :: Selector
+setSinkEndOfDataSelector = mkSelector "setSinkEndOfData:"
 
 -- | @Selector@ for @propertiesDictionary@
 propertiesDictionarySelector :: Selector

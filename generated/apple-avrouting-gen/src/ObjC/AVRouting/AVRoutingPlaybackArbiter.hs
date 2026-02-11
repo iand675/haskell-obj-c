@@ -13,9 +13,17 @@ module ObjC.AVRouting.AVRoutingPlaybackArbiter
   , sharedRoutingPlaybackArbiter
   , init_
   , new
+  , preferredParticipantForNonMixableAudioRoutes
+  , setPreferredParticipantForNonMixableAudioRoutes
+  , preferredParticipantForExternalPlayback
+  , setPreferredParticipantForExternalPlayback
   , sharedRoutingPlaybackArbiterSelector
   , initSelector
   , newSelector
+  , preferredParticipantForNonMixableAudioRoutesSelector
+  , setPreferredParticipantForNonMixableAudioRoutesSelector
+  , preferredParticipantForExternalPlaybackSelector
+  , setPreferredParticipantForExternalPlaybackSelector
 
 
   ) where
@@ -56,6 +64,50 @@ new  =
     cls' <- getRequiredClass "AVRoutingPlaybackArbiter"
     sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | The participant that has priority to play audio when it's not possible to play multiple audio sources concurrently.
+--
+-- This participant takes precedence over all other participants to play audio in non-mixable audio routes when concurrent audio playback isn't possible, and only a single participant can play audio. The system unmutes this participant's audio, and mutes the audio of all other participants.
+--
+-- By default, this value is @nil@. When the current preferred participant finishes, the system sets this value to @nil@. If this value is @nil@, the arbiter doesn't impose any priority on the participants, and the participant that's unmuted is based on the existing selection mechanism.
+--
+-- ObjC selector: @- preferredParticipantForNonMixableAudioRoutes@
+preferredParticipantForNonMixableAudioRoutes :: IsAVRoutingPlaybackArbiter avRoutingPlaybackArbiter => avRoutingPlaybackArbiter -> IO RawId
+preferredParticipantForNonMixableAudioRoutes avRoutingPlaybackArbiter  =
+    fmap (RawId . castPtr) $ sendMsg avRoutingPlaybackArbiter (mkSelector "preferredParticipantForNonMixableAudioRoutes") (retPtr retVoid) []
+
+-- | The participant that has priority to play audio when it's not possible to play multiple audio sources concurrently.
+--
+-- This participant takes precedence over all other participants to play audio in non-mixable audio routes when concurrent audio playback isn't possible, and only a single participant can play audio. The system unmutes this participant's audio, and mutes the audio of all other participants.
+--
+-- By default, this value is @nil@. When the current preferred participant finishes, the system sets this value to @nil@. If this value is @nil@, the arbiter doesn't impose any priority on the participants, and the participant that's unmuted is based on the existing selection mechanism.
+--
+-- ObjC selector: @- setPreferredParticipantForNonMixableAudioRoutes:@
+setPreferredParticipantForNonMixableAudioRoutes :: IsAVRoutingPlaybackArbiter avRoutingPlaybackArbiter => avRoutingPlaybackArbiter -> RawId -> IO ()
+setPreferredParticipantForNonMixableAudioRoutes avRoutingPlaybackArbiter  value =
+    sendMsg avRoutingPlaybackArbiter (mkSelector "setPreferredParticipantForNonMixableAudioRoutes:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | The participant that has priority to play on external playback interfaces.
+--
+-- This participant takes precedence over all others to play on external playback interfaces (specifically for AirPlay video and Apple Lightning Digital AV Adapters).
+--
+-- By default, this value is @nil@. When the value is @nil@, the arbiter doesn't impose any priority on the participants, and the participant that is selected to playback externally falls back to the existing selection mechanism.
+--
+-- ObjC selector: @- preferredParticipantForExternalPlayback@
+preferredParticipantForExternalPlayback :: IsAVRoutingPlaybackArbiter avRoutingPlaybackArbiter => avRoutingPlaybackArbiter -> IO RawId
+preferredParticipantForExternalPlayback avRoutingPlaybackArbiter  =
+    fmap (RawId . castPtr) $ sendMsg avRoutingPlaybackArbiter (mkSelector "preferredParticipantForExternalPlayback") (retPtr retVoid) []
+
+-- | The participant that has priority to play on external playback interfaces.
+--
+-- This participant takes precedence over all others to play on external playback interfaces (specifically for AirPlay video and Apple Lightning Digital AV Adapters).
+--
+-- By default, this value is @nil@. When the value is @nil@, the arbiter doesn't impose any priority on the participants, and the participant that is selected to playback externally falls back to the existing selection mechanism.
+--
+-- ObjC selector: @- setPreferredParticipantForExternalPlayback:@
+setPreferredParticipantForExternalPlayback :: IsAVRoutingPlaybackArbiter avRoutingPlaybackArbiter => avRoutingPlaybackArbiter -> RawId -> IO ()
+setPreferredParticipantForExternalPlayback avRoutingPlaybackArbiter  value =
+    sendMsg avRoutingPlaybackArbiter (mkSelector "setPreferredParticipantForExternalPlayback:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -71,4 +123,20 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @new@
 newSelector :: Selector
 newSelector = mkSelector "new"
+
+-- | @Selector@ for @preferredParticipantForNonMixableAudioRoutes@
+preferredParticipantForNonMixableAudioRoutesSelector :: Selector
+preferredParticipantForNonMixableAudioRoutesSelector = mkSelector "preferredParticipantForNonMixableAudioRoutes"
+
+-- | @Selector@ for @setPreferredParticipantForNonMixableAudioRoutes:@
+setPreferredParticipantForNonMixableAudioRoutesSelector :: Selector
+setPreferredParticipantForNonMixableAudioRoutesSelector = mkSelector "setPreferredParticipantForNonMixableAudioRoutes:"
+
+-- | @Selector@ for @preferredParticipantForExternalPlayback@
+preferredParticipantForExternalPlaybackSelector :: Selector
+preferredParticipantForExternalPlaybackSelector = mkSelector "preferredParticipantForExternalPlayback"
+
+-- | @Selector@ for @setPreferredParticipantForExternalPlayback:@
+setPreferredParticipantForExternalPlaybackSelector :: Selector
+setPreferredParticipantForExternalPlaybackSelector = mkSelector "setPreferredParticipantForExternalPlayback:"
 

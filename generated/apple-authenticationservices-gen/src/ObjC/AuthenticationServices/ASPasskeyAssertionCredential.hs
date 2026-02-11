@@ -17,6 +17,8 @@ module ObjC.AuthenticationServices.ASPasskeyAssertionCredential
   , clientDataHash
   , authenticatorData
   , credentialID
+  , extensionOutput
+  , setExtensionOutput
   , initWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialIDSelector
   , initWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialID_extensionOutputSelector
   , credentialWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialIDSelector
@@ -26,6 +28,8 @@ module ObjC.AuthenticationServices.ASPasskeyAssertionCredential
   , clientDataHashSelector
   , authenticatorDataSelector
   , credentialIDSelector
+  , extensionOutputSelector
+  , setExtensionOutputSelector
 
 
   ) where
@@ -149,6 +153,21 @@ credentialID :: IsASPasskeyAssertionCredential asPasskeyAssertionCredential => a
 credentialID asPasskeyAssertionCredential  =
     sendMsg asPasskeyAssertionCredential (mkSelector "credentialID") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The outputs of WebAuthn extensions processed by the credential provider.
+--
+-- ObjC selector: @- extensionOutput@
+extensionOutput :: IsASPasskeyAssertionCredential asPasskeyAssertionCredential => asPasskeyAssertionCredential -> IO (Id ASPasskeyAssertionCredentialExtensionOutput)
+extensionOutput asPasskeyAssertionCredential  =
+    sendMsg asPasskeyAssertionCredential (mkSelector "extensionOutput") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The outputs of WebAuthn extensions processed by the credential provider.
+--
+-- ObjC selector: @- setExtensionOutput:@
+setExtensionOutput :: (IsASPasskeyAssertionCredential asPasskeyAssertionCredential, IsASPasskeyAssertionCredentialExtensionOutput value) => asPasskeyAssertionCredential -> value -> IO ()
+setExtensionOutput asPasskeyAssertionCredential  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asPasskeyAssertionCredential (mkSelector "setExtensionOutput:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -188,4 +207,12 @@ authenticatorDataSelector = mkSelector "authenticatorData"
 -- | @Selector@ for @credentialID@
 credentialIDSelector :: Selector
 credentialIDSelector = mkSelector "credentialID"
+
+-- | @Selector@ for @extensionOutput@
+extensionOutputSelector :: Selector
+extensionOutputSelector = mkSelector "extensionOutput"
+
+-- | @Selector@ for @setExtensionOutput:@
+setExtensionOutputSelector :: Selector
+setExtensionOutputSelector = mkSelector "setExtensionOutput:"
 

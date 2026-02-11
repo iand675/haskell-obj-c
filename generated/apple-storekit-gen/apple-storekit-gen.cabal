@@ -12,6 +12,13 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.StoreKit.Delegate.SKCloudServiceSetupViewControllerDelegate
+      ObjC.StoreKit.Delegate.SKOverlayDelegate
+      ObjC.StoreKit.Delegate.SKPaymentQueueDelegate
+      ObjC.StoreKit.Delegate.SKPaymentTransactionObserver
+      ObjC.StoreKit.Delegate.SKProductsRequestDelegate
+      ObjC.StoreKit.Delegate.SKRequestDelegate
+      ObjC.StoreKit.Delegate.SKStoreProductViewControllerDelegate
       ObjC.StoreKit.Enums
       ObjC.StoreKit.Internal.Classes
       ObjC.StoreKit.Internal.Enums

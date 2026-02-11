@@ -13,6 +13,8 @@ module ObjC.AppKit.NSAnimationContext
   , currentContext
   , duration
   , setDuration
+  , timingFunction
+  , setTimingFunction
   , completionHandler
   , setCompletionHandler
   , allowsImplicitAnimation
@@ -24,6 +26,8 @@ module ObjC.AppKit.NSAnimationContext
   , currentContextSelector
   , durationSelector
   , setDurationSelector
+  , timingFunctionSelector
+  , setTimingFunctionSelector
   , completionHandlerSelector
   , setCompletionHandlerSelector
   , allowsImplicitAnimationSelector
@@ -92,6 +96,17 @@ setDuration :: IsNSAnimationContext nsAnimationContext => nsAnimationContext -> 
 setDuration nsAnimationContext  value =
     sendMsg nsAnimationContext (mkSelector "setDuration:") retVoid [argCDouble value]
 
+-- | @- timingFunction@
+timingFunction :: IsNSAnimationContext nsAnimationContext => nsAnimationContext -> IO (Id CAMediaTimingFunction)
+timingFunction nsAnimationContext  =
+    sendMsg nsAnimationContext (mkSelector "timingFunction") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setTimingFunction:@
+setTimingFunction :: (IsNSAnimationContext nsAnimationContext, IsCAMediaTimingFunction value) => nsAnimationContext -> value -> IO ()
+setTimingFunction nsAnimationContext  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsAnimationContext (mkSelector "setTimingFunction:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- completionHandler@
 completionHandler :: IsNSAnimationContext nsAnimationContext => nsAnimationContext -> IO (Ptr ())
 completionHandler nsAnimationContext  =
@@ -143,6 +158,14 @@ durationSelector = mkSelector "duration"
 -- | @Selector@ for @setDuration:@
 setDurationSelector :: Selector
 setDurationSelector = mkSelector "setDuration:"
+
+-- | @Selector@ for @timingFunction@
+timingFunctionSelector :: Selector
+timingFunctionSelector = mkSelector "timingFunction"
+
+-- | @Selector@ for @setTimingFunction:@
+setTimingFunctionSelector :: Selector
+setTimingFunctionSelector = mkSelector "setTimingFunction:"
 
 -- | @Selector@ for @completionHandler@
 completionHandlerSelector :: Selector

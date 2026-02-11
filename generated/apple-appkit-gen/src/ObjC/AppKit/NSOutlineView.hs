@@ -32,6 +32,10 @@ module ObjC.AppKit.NSOutlineView
   , insertRowsAtIndexes_withAnimation
   , removeRowsAtIndexes_withAnimation
   , moveRowAtIndex_toIndex
+  , delegate
+  , setDelegate
+  , dataSource
+  , setDataSource
   , outlineTableColumn
   , setOutlineTableColumn
   , indentationPerLevel
@@ -71,6 +75,10 @@ module ObjC.AppKit.NSOutlineView
   , insertRowsAtIndexes_withAnimationSelector
   , removeRowsAtIndexes_withAnimationSelector
   , moveRowAtIndex_toIndexSelector
+  , delegateSelector
+  , setDelegateSelector
+  , dataSourceSelector
+  , setDataSourceSelector
   , outlineTableColumnSelector
   , setOutlineTableColumnSelector
   , indentationPerLevelSelector
@@ -247,6 +255,26 @@ moveRowAtIndex_toIndex :: IsNSOutlineView nsOutlineView => nsOutlineView -> CLon
 moveRowAtIndex_toIndex nsOutlineView  oldIndex newIndex =
     sendMsg nsOutlineView (mkSelector "moveRowAtIndex:toIndex:") retVoid [argCLong oldIndex, argCLong newIndex]
 
+-- | @- delegate@
+delegate :: IsNSOutlineView nsOutlineView => nsOutlineView -> IO RawId
+delegate nsOutlineView  =
+    fmap (RawId . castPtr) $ sendMsg nsOutlineView (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSOutlineView nsOutlineView => nsOutlineView -> RawId -> IO ()
+setDelegate nsOutlineView  value =
+    sendMsg nsOutlineView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- dataSource@
+dataSource :: IsNSOutlineView nsOutlineView => nsOutlineView -> IO RawId
+dataSource nsOutlineView  =
+    fmap (RawId . castPtr) $ sendMsg nsOutlineView (mkSelector "dataSource") (retPtr retVoid) []
+
+-- | @- setDataSource:@
+setDataSource :: IsNSOutlineView nsOutlineView => nsOutlineView -> RawId -> IO ()
+setDataSource nsOutlineView  value =
+    sendMsg nsOutlineView (mkSelector "setDataSource:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- outlineTableColumn@
 outlineTableColumn :: IsNSOutlineView nsOutlineView => nsOutlineView -> IO (Id NSTableColumn)
 outlineTableColumn nsOutlineView  =
@@ -421,6 +449,22 @@ removeRowsAtIndexes_withAnimationSelector = mkSelector "removeRowsAtIndexes:with
 -- | @Selector@ for @moveRowAtIndex:toIndex:@
 moveRowAtIndex_toIndexSelector :: Selector
 moveRowAtIndex_toIndexSelector = mkSelector "moveRowAtIndex:toIndex:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @dataSource@
+dataSourceSelector :: Selector
+dataSourceSelector = mkSelector "dataSource"
+
+-- | @Selector@ for @setDataSource:@
+setDataSourceSelector :: Selector
+setDataSourceSelector = mkSelector "setDataSource:"
 
 -- | @Selector@ for @outlineTableColumn@
 outlineTableColumnSelector :: Selector

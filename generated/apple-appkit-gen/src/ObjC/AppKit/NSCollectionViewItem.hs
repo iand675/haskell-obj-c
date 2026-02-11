@@ -12,11 +12,21 @@ module ObjC.AppKit.NSCollectionViewItem
   , setSelected
   , highlightState
   , setHighlightState
+  , imageView
+  , setImageView
+  , textField
+  , setTextField
+  , draggingImageComponents
   , collectionViewSelector
   , selectedSelector
   , setSelectedSelector
   , highlightStateSelector
   , setHighlightStateSelector
+  , imageViewSelector
+  , setImageViewSelector
+  , textFieldSelector
+  , setTextFieldSelector
+  , draggingImageComponentsSelector
 
   -- * Enum types
   , NSCollectionViewItemHighlightState(NSCollectionViewItemHighlightState)
@@ -68,6 +78,33 @@ setHighlightState :: IsNSCollectionViewItem nsCollectionViewItem => nsCollection
 setHighlightState nsCollectionViewItem  value =
     sendMsg nsCollectionViewItem (mkSelector "setHighlightState:") retVoid [argCLong (coerce value)]
 
+-- | @- imageView@
+imageView :: IsNSCollectionViewItem nsCollectionViewItem => nsCollectionViewItem -> IO (Id NSImageView)
+imageView nsCollectionViewItem  =
+    sendMsg nsCollectionViewItem (mkSelector "imageView") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setImageView:@
+setImageView :: (IsNSCollectionViewItem nsCollectionViewItem, IsNSImageView value) => nsCollectionViewItem -> value -> IO ()
+setImageView nsCollectionViewItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsCollectionViewItem (mkSelector "setImageView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- textField@
+textField :: IsNSCollectionViewItem nsCollectionViewItem => nsCollectionViewItem -> IO (Id NSTextField)
+textField nsCollectionViewItem  =
+    sendMsg nsCollectionViewItem (mkSelector "textField") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setTextField:@
+setTextField :: (IsNSCollectionViewItem nsCollectionViewItem, IsNSTextField value) => nsCollectionViewItem -> value -> IO ()
+setTextField nsCollectionViewItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsCollectionViewItem (mkSelector "setTextField:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- draggingImageComponents@
+draggingImageComponents :: IsNSCollectionViewItem nsCollectionViewItem => nsCollectionViewItem -> IO (Id NSArray)
+draggingImageComponents nsCollectionViewItem  =
+    sendMsg nsCollectionViewItem (mkSelector "draggingImageComponents") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -91,4 +128,24 @@ highlightStateSelector = mkSelector "highlightState"
 -- | @Selector@ for @setHighlightState:@
 setHighlightStateSelector :: Selector
 setHighlightStateSelector = mkSelector "setHighlightState:"
+
+-- | @Selector@ for @imageView@
+imageViewSelector :: Selector
+imageViewSelector = mkSelector "imageView"
+
+-- | @Selector@ for @setImageView:@
+setImageViewSelector :: Selector
+setImageViewSelector = mkSelector "setImageView:"
+
+-- | @Selector@ for @textField@
+textFieldSelector :: Selector
+textFieldSelector = mkSelector "textField"
+
+-- | @Selector@ for @setTextField:@
+setTextFieldSelector :: Selector
+setTextFieldSelector = mkSelector "setTextField:"
+
+-- | @Selector@ for @draggingImageComponents@
+draggingImageComponentsSelector :: Selector
+draggingImageComponentsSelector = mkSelector "draggingImageComponents"
 

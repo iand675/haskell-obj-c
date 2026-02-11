@@ -24,6 +24,8 @@ module ObjC.Quartz.IKCameraDeviceView
   , setCustomRotateControl
   , setCustomDeleteControl
   , setShowStatusInfoAsWindowSubtitle
+  , delegate
+  , setDelegate
   , mode
   , setMode
   , hasDisplayModeTable
@@ -63,6 +65,8 @@ module ObjC.Quartz.IKCameraDeviceView
   , setCustomRotateControlSelector
   , setCustomDeleteControlSelector
   , setShowStatusInfoAsWindowSubtitleSelector
+  , delegateSelector
+  , setDelegateSelector
   , modeSelector
   , setModeSelector
   , hasDisplayModeTableSelector
@@ -240,6 +244,24 @@ setCustomDeleteControl ikCameraDeviceView  control =
 setShowStatusInfoAsWindowSubtitle :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> Bool -> IO ()
 setShowStatusInfoAsWindowSubtitle ikCameraDeviceView  value =
     sendMsg ikCameraDeviceView (mkSelector "setShowStatusInfoAsWindowSubtitle:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | delegate
+--
+-- Delegate of the IKCameraDeviceView.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> IO RawId
+delegate ikCameraDeviceView  =
+    fmap (RawId . castPtr) $ sendMsg ikCameraDeviceView (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- Delegate of the IKCameraDeviceView.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> RawId -> IO ()
+setDelegate ikCameraDeviceView  value =
+    sendMsg ikCameraDeviceView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | mode
 --
@@ -534,6 +556,14 @@ setCustomDeleteControlSelector = mkSelector "setCustomDeleteControl:"
 -- | @Selector@ for @setShowStatusInfoAsWindowSubtitle:@
 setShowStatusInfoAsWindowSubtitleSelector :: Selector
 setShowStatusInfoAsWindowSubtitleSelector = mkSelector "setShowStatusInfoAsWindowSubtitle:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @mode@
 modeSelector :: Selector

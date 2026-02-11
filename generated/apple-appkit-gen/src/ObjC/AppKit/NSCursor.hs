@@ -30,10 +30,26 @@ module ObjC.AppKit.NSCursor
   , arrowCursor
   , crosshairCursor
   , disappearingItemCursor
+  , operationNotAllowedCursor
+  , dragLinkCursor
+  , dragCopyCursor
+  , contextualMenuCursor
   , pointingHandCursor
   , closedHandCursor
   , openHandCursor
   , iBeamCursor
+  , iBeamCursorForVerticalLayout
+  , zoomInCursor
+  , zoomOutCursor
+  , columnResizeCursor
+  , rowResizeCursor
+  , currentSystemCursor
+  , resizeLeftCursor
+  , resizeRightCursor
+  , resizeLeftRightCursor
+  , resizeUpCursor
+  , resizeDownCursor
+  , resizeUpDownCursor
   , initWithImage_hotSpotSelector
   , initWithCoderSelector
   , hideSelector
@@ -56,10 +72,26 @@ module ObjC.AppKit.NSCursor
   , arrowCursorSelector
   , crosshairCursorSelector
   , disappearingItemCursorSelector
+  , operationNotAllowedCursorSelector
+  , dragLinkCursorSelector
+  , dragCopyCursorSelector
+  , contextualMenuCursorSelector
   , pointingHandCursorSelector
   , closedHandCursorSelector
   , openHandCursorSelector
   , iBeamCursorSelector
+  , iBeamCursorForVerticalLayoutSelector
+  , zoomInCursorSelector
+  , zoomOutCursorSelector
+  , columnResizeCursorSelector
+  , rowResizeCursorSelector
+  , currentSystemCursorSelector
+  , resizeLeftCursorSelector
+  , resizeRightCursorSelector
+  , resizeLeftRightCursorSelector
+  , resizeUpCursorSelector
+  , resizeDownCursorSelector
+  , resizeUpDownCursorSelector
 
   -- * Enum types
   , NSCursorFrameResizeDirections(NSCursorFrameResizeDirections)
@@ -257,6 +289,34 @@ disappearingItemCursor  =
     cls' <- getRequiredClass "NSCursor"
     sendClassMsg cls' (mkSelector "disappearingItemCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @+ operationNotAllowedCursor@
+operationNotAllowedCursor :: IO (Id NSCursor)
+operationNotAllowedCursor  =
+  do
+    cls' <- getRequiredClass "NSCursor"
+    sendClassMsg cls' (mkSelector "operationNotAllowedCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ dragLinkCursor@
+dragLinkCursor :: IO (Id NSCursor)
+dragLinkCursor  =
+  do
+    cls' <- getRequiredClass "NSCursor"
+    sendClassMsg cls' (mkSelector "dragLinkCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ dragCopyCursor@
+dragCopyCursor :: IO (Id NSCursor)
+dragCopyCursor  =
+  do
+    cls' <- getRequiredClass "NSCursor"
+    sendClassMsg cls' (mkSelector "dragCopyCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ contextualMenuCursor@
+contextualMenuCursor :: IO (Id NSCursor)
+contextualMenuCursor  =
+  do
+    cls' <- getRequiredClass "NSCursor"
+    sendClassMsg cls' (mkSelector "contextualMenuCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @+ pointingHandCursor@
 pointingHandCursor :: IO (Id NSCursor)
 pointingHandCursor  =
@@ -284,6 +344,100 @@ iBeamCursor  =
   do
     cls' <- getRequiredClass "NSCursor"
     sendClassMsg cls' (mkSelector "IBeamCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ IBeamCursorForVerticalLayout@
+iBeamCursorForVerticalLayout :: IO (Id NSCursor)
+iBeamCursorForVerticalLayout  =
+  do
+    cls' <- getRequiredClass "NSCursor"
+    sendClassMsg cls' (mkSelector "IBeamCursorForVerticalLayout") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Returns the zoom-in cursor. - Note: This cursor is used to indicate zooming in on (magnifying) a canvas or object.
+--
+-- ObjC selector: @+ zoomInCursor@
+zoomInCursor :: IO (Id NSCursor)
+zoomInCursor  =
+  do
+    cls' <- getRequiredClass "NSCursor"
+    sendClassMsg cls' (mkSelector "zoomInCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Returns the zoom-out cursor. - Note: This cursor is used to indicate zooming out of a canvas or object.
+--
+-- ObjC selector: @+ zoomOutCursor@
+zoomOutCursor :: IO (Id NSCursor)
+zoomOutCursor  =
+  do
+    cls' <- getRequiredClass "NSCursor"
+    sendClassMsg cls' (mkSelector "zoomOutCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Returns the cursor for resizing a column (vertical divider) in either direction.
+--
+-- ObjC selector: @+ columnResizeCursor@
+columnResizeCursor :: IO (Id NSCursor)
+columnResizeCursor  =
+  do
+    cls' <- getRequiredClass "NSCursor"
+    sendClassMsg cls' (mkSelector "columnResizeCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Returns the cursor for resizing a row (horizontal divider) in either direction.
+--
+-- ObjC selector: @+ rowResizeCursor@
+rowResizeCursor :: IO (Id NSCursor)
+rowResizeCursor  =
+  do
+    cls' <- getRequiredClass "NSCursor"
+    sendClassMsg cls' (mkSelector "rowResizeCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | This property will always be @nil@ in a future version of macOS.
+--
+-- ObjC selector: @+ currentSystemCursor@
+currentSystemCursor :: IO (Id NSCursor)
+currentSystemCursor  =
+  do
+    cls' <- getRequiredClass "NSCursor"
+    sendClassMsg cls' (mkSelector "currentSystemCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ resizeLeftCursor@
+resizeLeftCursor :: IO (Id NSCursor)
+resizeLeftCursor  =
+  do
+    cls' <- getRequiredClass "NSCursor"
+    sendClassMsg cls' (mkSelector "resizeLeftCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ resizeRightCursor@
+resizeRightCursor :: IO (Id NSCursor)
+resizeRightCursor  =
+  do
+    cls' <- getRequiredClass "NSCursor"
+    sendClassMsg cls' (mkSelector "resizeRightCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ resizeLeftRightCursor@
+resizeLeftRightCursor :: IO (Id NSCursor)
+resizeLeftRightCursor  =
+  do
+    cls' <- getRequiredClass "NSCursor"
+    sendClassMsg cls' (mkSelector "resizeLeftRightCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ resizeUpCursor@
+resizeUpCursor :: IO (Id NSCursor)
+resizeUpCursor  =
+  do
+    cls' <- getRequiredClass "NSCursor"
+    sendClassMsg cls' (mkSelector "resizeUpCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ resizeDownCursor@
+resizeDownCursor :: IO (Id NSCursor)
+resizeDownCursor  =
+  do
+    cls' <- getRequiredClass "NSCursor"
+    sendClassMsg cls' (mkSelector "resizeDownCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ resizeUpDownCursor@
+resizeUpDownCursor :: IO (Id NSCursor)
+resizeUpDownCursor  =
+  do
+    cls' <- getRequiredClass "NSCursor"
+    sendClassMsg cls' (mkSelector "resizeUpDownCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -377,6 +531,22 @@ crosshairCursorSelector = mkSelector "crosshairCursor"
 disappearingItemCursorSelector :: Selector
 disappearingItemCursorSelector = mkSelector "disappearingItemCursor"
 
+-- | @Selector@ for @operationNotAllowedCursor@
+operationNotAllowedCursorSelector :: Selector
+operationNotAllowedCursorSelector = mkSelector "operationNotAllowedCursor"
+
+-- | @Selector@ for @dragLinkCursor@
+dragLinkCursorSelector :: Selector
+dragLinkCursorSelector = mkSelector "dragLinkCursor"
+
+-- | @Selector@ for @dragCopyCursor@
+dragCopyCursorSelector :: Selector
+dragCopyCursorSelector = mkSelector "dragCopyCursor"
+
+-- | @Selector@ for @contextualMenuCursor@
+contextualMenuCursorSelector :: Selector
+contextualMenuCursorSelector = mkSelector "contextualMenuCursor"
+
 -- | @Selector@ for @pointingHandCursor@
 pointingHandCursorSelector :: Selector
 pointingHandCursorSelector = mkSelector "pointingHandCursor"
@@ -392,4 +562,52 @@ openHandCursorSelector = mkSelector "openHandCursor"
 -- | @Selector@ for @IBeamCursor@
 iBeamCursorSelector :: Selector
 iBeamCursorSelector = mkSelector "IBeamCursor"
+
+-- | @Selector@ for @IBeamCursorForVerticalLayout@
+iBeamCursorForVerticalLayoutSelector :: Selector
+iBeamCursorForVerticalLayoutSelector = mkSelector "IBeamCursorForVerticalLayout"
+
+-- | @Selector@ for @zoomInCursor@
+zoomInCursorSelector :: Selector
+zoomInCursorSelector = mkSelector "zoomInCursor"
+
+-- | @Selector@ for @zoomOutCursor@
+zoomOutCursorSelector :: Selector
+zoomOutCursorSelector = mkSelector "zoomOutCursor"
+
+-- | @Selector@ for @columnResizeCursor@
+columnResizeCursorSelector :: Selector
+columnResizeCursorSelector = mkSelector "columnResizeCursor"
+
+-- | @Selector@ for @rowResizeCursor@
+rowResizeCursorSelector :: Selector
+rowResizeCursorSelector = mkSelector "rowResizeCursor"
+
+-- | @Selector@ for @currentSystemCursor@
+currentSystemCursorSelector :: Selector
+currentSystemCursorSelector = mkSelector "currentSystemCursor"
+
+-- | @Selector@ for @resizeLeftCursor@
+resizeLeftCursorSelector :: Selector
+resizeLeftCursorSelector = mkSelector "resizeLeftCursor"
+
+-- | @Selector@ for @resizeRightCursor@
+resizeRightCursorSelector :: Selector
+resizeRightCursorSelector = mkSelector "resizeRightCursor"
+
+-- | @Selector@ for @resizeLeftRightCursor@
+resizeLeftRightCursorSelector :: Selector
+resizeLeftRightCursorSelector = mkSelector "resizeLeftRightCursor"
+
+-- | @Selector@ for @resizeUpCursor@
+resizeUpCursorSelector :: Selector
+resizeUpCursorSelector = mkSelector "resizeUpCursor"
+
+-- | @Selector@ for @resizeDownCursor@
+resizeDownCursorSelector :: Selector
+resizeDownCursorSelector = mkSelector "resizeDownCursor"
+
+-- | @Selector@ for @resizeUpDownCursor@
+resizeUpDownCursorSelector :: Selector
+resizeUpDownCursorSelector = mkSelector "resizeUpDownCursor"
 

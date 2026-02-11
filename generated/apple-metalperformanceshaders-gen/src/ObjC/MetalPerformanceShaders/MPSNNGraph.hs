@@ -31,12 +31,21 @@ module ObjC.MetalPerformanceShaders.MPSNNGraph
   , initWithDevice
   , reloadFromDataSources
   , encodeToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStates
+  , encodeBatchToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStates
   , encodeToCommandBuffer_sourceImages
+  , encodeBatchToCommandBuffer_sourceImages_sourceStates
   , executeAsyncWithSourceImages_completionHandler
   , readCountForSourceImageAtIndex
   , readCountForSourceStateAtIndex
+  , sourceImageHandles
+  , sourceStateHandles
+  , intermediateImageHandles
+  , resultStateHandles
+  , resultHandle
   , outputStateIsTemporary
   , setOutputStateIsTemporary
+  , destinationImageAllocator
+  , setDestinationImageAllocator
   , format
   , setFormat
   , resultImageIsNeeded
@@ -50,12 +59,21 @@ module ObjC.MetalPerformanceShaders.MPSNNGraph
   , initWithDeviceSelector
   , reloadFromDataSourcesSelector
   , encodeToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStatesSelector
+  , encodeBatchToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStatesSelector
   , encodeToCommandBuffer_sourceImagesSelector
+  , encodeBatchToCommandBuffer_sourceImages_sourceStatesSelector
   , executeAsyncWithSourceImages_completionHandlerSelector
   , readCountForSourceImageAtIndexSelector
   , readCountForSourceStateAtIndexSelector
+  , sourceImageHandlesSelector
+  , sourceStateHandlesSelector
+  , intermediateImageHandlesSelector
+  , resultStateHandlesSelector
+  , resultHandleSelector
   , outputStateIsTemporarySelector
   , setOutputStateIsTemporarySelector
+  , destinationImageAllocatorSelector
+  , setDestinationImageAllocatorSelector
   , formatSelector
   , setFormatSelector
   , resultImageIsNeededSelector
@@ -215,6 +233,31 @@ encodeToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationSt
 
 -- | Encode the graph to a MTLCommandBuffer
 --
+-- This interface is like the other except that it operates on a batch of images all                  at once.  In addition, you may specify whether the result is needed.
+--
+-- @commandBuffer@ — The command buffer. If the command buffer is a MPSCommandBuffer,                                      the work will be committed to Metal in small pieces so that                                      the CPU-side latency is much reduced.
+--
+-- @sourceImages@ — A list of MPSImages to use as the source images for the graph.                                      These should be in the same order as the list returned from MPSNNGraph.sourceImageHandles.                                      The images may be image arrays. Typically, this is only one or two images                                      such as a .JPG decoded into a MPSImage*.  If the sourceImages are MPSTemporaryImages,                                      the graph will decrement the readCount by 1, even if the graph actually                                      reads an image multiple times.
+--
+-- @sourceStates@ — A list of MPSState objects to use as state for a graph.                                      These should be in the same order as the list returned from MPSNNGraph.sourceStateHandles.                                      May be nil, if there is no source state. If the sourceStates are temporary,                                      the graph will decrement the readCount by 1, even if the graph actually                                      reads the state multiple times.
+--
+-- @intermediateImages@ — An optional NSMutableArray to receive any MPSImage objects exported as part of its operation.                                      These are only the images that were tagged with MPSNNImageNode.exportFromGraph = YES. The                                      identity of the states is given by -resultStateHandles.  If temporary, each intermediateImage                                      will have a readCount of 1.  If the result was tagged exportFromGraph = YES, it will be here                                      too, with a readCount of 2. To be able to access the images from outside the graph on the CPU,                                      your application must also set MPSNNImageNode.synchronizeResource = YES,                                      and MPSNNImageNode.imageAllocator = [MPSImage defaultAllocator]; The defaultAllocator creates                                      a permanent image that can be read with readBytes.
+--
+-- @destinationStates@ — An optional NSMutableArray to receive any MPSState objects created as part of its operation.                                      The identity of the states is given by -resultStateHandles.
+--
+-- Returns: A MPSImageBatch or MPSTemporaryImageBatch allocated per the destinationImageAllocator containing the output of the graph.              It will be automatically released when commandBuffer completes. If resultIsNeeded == NO, then this              will return nil.
+--
+-- ObjC selector: @- encodeBatchToCommandBuffer:sourceImages:sourceStates:intermediateImages:destinationStates:@
+encodeBatchToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStates :: (IsMPSNNGraph mpsnnGraph, IsNSArray sourceImages, IsNSArray sourceStates, IsNSMutableArray intermediateImages, IsNSMutableArray destinationStates) => mpsnnGraph -> RawId -> sourceImages -> sourceStates -> intermediateImages -> destinationStates -> IO RawId
+encodeBatchToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStates mpsnnGraph  commandBuffer sourceImages sourceStates intermediateImages destinationStates =
+  withObjCPtr sourceImages $ \raw_sourceImages ->
+    withObjCPtr sourceStates $ \raw_sourceStates ->
+      withObjCPtr intermediateImages $ \raw_intermediateImages ->
+        withObjCPtr destinationStates $ \raw_destinationStates ->
+            fmap (RawId . castPtr) $ sendMsg mpsnnGraph (mkSelector "encodeBatchToCommandBuffer:sourceImages:sourceStates:intermediateImages:destinationStates:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImages :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_intermediateImages :: Ptr ()), argPtr (castPtr raw_destinationStates :: Ptr ())]
+
+-- | Encode the graph to a MTLCommandBuffer
+--
 -- IMPORTANT:  Please use [MTLCommandBuffer addCompletedHandler:] to determine when this work is                  done. Use CPU time that would have been spent waiting for the GPU to encode the next command                  buffer and commit it too.  That way, the work for the next command buffer is ready to go the                  moment the GPU is done. This will keep the GPU busy and running at top speed.
 --
 -- Those who ignore this advice and use [MTLCommandBuffer waitUntilCompleted] instead will likely                  cause their code to slow down by a factor of two or more. The CPU clock spins down while it                  waits for the GPU. When the GPU completes, the CPU runs slowly for a while until it spins up.                  The GPU has to wait for the CPU to  encode more work (at low clock), giving it plenty of time to                  spin its own clock down. In typical CNN graph usage, neither may ever reach maximum clock                  frequency, causing slow down far beyond what otherwise would be expected from simple failure                  to schedule CPU and GPU work concurrently. Regrattably, it is probable that every performance                  benchmark you see on the net will be based on [MTLCommandBuffer waitUntilCompleted].
@@ -230,6 +273,15 @@ encodeToCommandBuffer_sourceImages :: (IsMPSNNGraph mpsnnGraph, IsNSArray source
 encodeToCommandBuffer_sourceImages mpsnnGraph  commandBuffer sourceImages =
   withObjCPtr sourceImages $ \raw_sourceImages ->
       sendMsg mpsnnGraph (mkSelector "encodeToCommandBuffer:sourceImages:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImages :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Convenience method to encode a batch of images
+--
+-- ObjC selector: @- encodeBatchToCommandBuffer:sourceImages:sourceStates:@
+encodeBatchToCommandBuffer_sourceImages_sourceStates :: (IsMPSNNGraph mpsnnGraph, IsNSArray sourceImages, IsNSArray sourceStates) => mpsnnGraph -> RawId -> sourceImages -> sourceStates -> IO RawId
+encodeBatchToCommandBuffer_sourceImages_sourceStates mpsnnGraph  commandBuffer sourceImages sourceStates =
+  withObjCPtr sourceImages $ \raw_sourceImages ->
+    withObjCPtr sourceStates $ \raw_sourceStates ->
+        fmap (RawId . castPtr) $ sendMsg mpsnnGraph (mkSelector "encodeBatchToCommandBuffer:sourceImages:sourceStates:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImages :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ())]
 
 -- | Convenience method to execute a graph without having to manage many Metal details
 --
@@ -289,6 +341,45 @@ readCountForSourceStateAtIndex :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> CULon
 readCountForSourceStateAtIndex mpsnnGraph  index =
     sendMsg mpsnnGraph (mkSelector "readCountForSourceStateAtIndex:") retCULong [argCULong index]
 
+-- | Get a list of identifiers for source images needed to calculate the result image
+--
+-- ObjC selector: @- sourceImageHandles@
+sourceImageHandles :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> IO (Id NSArray)
+sourceImageHandles mpsnnGraph  =
+    sendMsg mpsnnGraph (mkSelector "sourceImageHandles") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Get a list of identifiers for source state objects needed to calculate the result image
+--
+-- Not guaranteed to be in the same order as resultStateHandles
+--
+-- ObjC selector: @- sourceStateHandles@
+sourceStateHandles :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> IO (Id NSArray)
+sourceStateHandles mpsnnGraph  =
+    sendMsg mpsnnGraph (mkSelector "sourceStateHandles") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Get a list of identifiers for intermediate images objects produced by the graph
+--
+-- ObjC selector: @- intermediateImageHandles@
+intermediateImageHandles :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> IO (Id NSArray)
+intermediateImageHandles mpsnnGraph  =
+    sendMsg mpsnnGraph (mkSelector "intermediateImageHandles") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Get a list of identifiers for result state objects produced by the graph
+--
+-- Not guaranteed to be in the same order as sourceStateHandles
+--
+-- ObjC selector: @- resultStateHandles@
+resultStateHandles :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> IO (Id NSArray)
+resultStateHandles mpsnnGraph  =
+    sendMsg mpsnnGraph (mkSelector "resultStateHandles") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Get a handle for the graph result image
+--
+-- ObjC selector: @- resultHandle@
+resultHandle :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> IO RawId
+resultHandle mpsnnGraph  =
+    fmap (RawId . castPtr) $ sendMsg mpsnnGraph (mkSelector "resultHandle") (retPtr retVoid) []
+
 -- | Should MPSState objects produced by -encodeToCommandBuffer... be temporary objects.
 --
 -- See MPSState description. Default: NO
@@ -306,6 +397,24 @@ outputStateIsTemporary mpsnnGraph  =
 setOutputStateIsTemporary :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> Bool -> IO ()
 setOutputStateIsTemporary mpsnnGraph  value =
     sendMsg mpsnnGraph (mkSelector "setOutputStateIsTemporary:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | Method to allocate the result image from -encodeToCommandBuffer...
+--
+-- This property overrides the allocator for the final result image in              the graph. Default: MPSImage.defaultAllocator
+--
+-- ObjC selector: @- destinationImageAllocator@
+destinationImageAllocator :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> IO RawId
+destinationImageAllocator mpsnnGraph  =
+    fmap (RawId . castPtr) $ sendMsg mpsnnGraph (mkSelector "destinationImageAllocator") (retPtr retVoid) []
+
+-- | Method to allocate the result image from -encodeToCommandBuffer...
+--
+-- This property overrides the allocator for the final result image in              the graph. Default: MPSImage.defaultAllocator
+--
+-- ObjC selector: @- setDestinationImageAllocator:@
+setDestinationImageAllocator :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> RawId -> IO ()
+setDestinationImageAllocator mpsnnGraph  value =
+    sendMsg mpsnnGraph (mkSelector "setDestinationImageAllocator:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | The default storage format used for graph intermediate images
 --
@@ -378,9 +487,17 @@ reloadFromDataSourcesSelector = mkSelector "reloadFromDataSources"
 encodeToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStatesSelector :: Selector
 encodeToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStatesSelector = mkSelector "encodeToCommandBuffer:sourceImages:sourceStates:intermediateImages:destinationStates:"
 
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:sourceStates:intermediateImages:destinationStates:@
+encodeBatchToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStatesSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStatesSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:sourceStates:intermediateImages:destinationStates:"
+
 -- | @Selector@ for @encodeToCommandBuffer:sourceImages:@
 encodeToCommandBuffer_sourceImagesSelector :: Selector
 encodeToCommandBuffer_sourceImagesSelector = mkSelector "encodeToCommandBuffer:sourceImages:"
+
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:sourceStates:@
+encodeBatchToCommandBuffer_sourceImages_sourceStatesSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_sourceStatesSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:sourceStates:"
 
 -- | @Selector@ for @executeAsyncWithSourceImages:completionHandler:@
 executeAsyncWithSourceImages_completionHandlerSelector :: Selector
@@ -394,6 +511,26 @@ readCountForSourceImageAtIndexSelector = mkSelector "readCountForSourceImageAtIn
 readCountForSourceStateAtIndexSelector :: Selector
 readCountForSourceStateAtIndexSelector = mkSelector "readCountForSourceStateAtIndex:"
 
+-- | @Selector@ for @sourceImageHandles@
+sourceImageHandlesSelector :: Selector
+sourceImageHandlesSelector = mkSelector "sourceImageHandles"
+
+-- | @Selector@ for @sourceStateHandles@
+sourceStateHandlesSelector :: Selector
+sourceStateHandlesSelector = mkSelector "sourceStateHandles"
+
+-- | @Selector@ for @intermediateImageHandles@
+intermediateImageHandlesSelector :: Selector
+intermediateImageHandlesSelector = mkSelector "intermediateImageHandles"
+
+-- | @Selector@ for @resultStateHandles@
+resultStateHandlesSelector :: Selector
+resultStateHandlesSelector = mkSelector "resultStateHandles"
+
+-- | @Selector@ for @resultHandle@
+resultHandleSelector :: Selector
+resultHandleSelector = mkSelector "resultHandle"
+
 -- | @Selector@ for @outputStateIsTemporary@
 outputStateIsTemporarySelector :: Selector
 outputStateIsTemporarySelector = mkSelector "outputStateIsTemporary"
@@ -401,6 +538,14 @@ outputStateIsTemporarySelector = mkSelector "outputStateIsTemporary"
 -- | @Selector@ for @setOutputStateIsTemporary:@
 setOutputStateIsTemporarySelector :: Selector
 setOutputStateIsTemporarySelector = mkSelector "setOutputStateIsTemporary:"
+
+-- | @Selector@ for @destinationImageAllocator@
+destinationImageAllocatorSelector :: Selector
+destinationImageAllocatorSelector = mkSelector "destinationImageAllocator"
+
+-- | @Selector@ for @setDestinationImageAllocator:@
+setDestinationImageAllocatorSelector :: Selector
+setDestinationImageAllocatorSelector = mkSelector "setDestinationImageAllocator:"
 
 -- | @Selector@ for @format@
 formatSelector :: Selector

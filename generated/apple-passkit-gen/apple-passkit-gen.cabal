@@ -12,6 +12,10 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.PassKit.Delegate.PKIdentityDocumentDescriptor
+      ObjC.PassKit.Delegate.PKPaymentAuthorizationControllerDelegate
+      ObjC.PassKit.Delegate.PKPaymentAuthorizationViewControllerDelegate
+      ObjC.PassKit.Delegate.PKVehicleConnectionDelegate
       ObjC.PassKit.Enums
       ObjC.PassKit.Internal.Classes
       ObjC.PassKit.Internal.Enums

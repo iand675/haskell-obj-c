@@ -85,16 +85,24 @@ module ObjC.AppKit.NSImage
   , tiffRepresentation
   , representations
   , valid
+  , delegate
+  , setDelegate
+  , imageTypes
+  , imageUnfilteredTypes
   , cacheMode
   , setCacheMode
   , alignmentRect
   , setAlignmentRect
   , template
   , setTemplate
+  , accessibilityDescription
+  , setAccessibilityDescription
   , capInsets
   , setCapInsets
   , resizingMode
   , setResizingMode
+  , symbolConfiguration
+  , locale
   , imageNamedSelector
   , imageWithSystemSymbolName_accessibilityDescriptionSelector
   , imageWithSystemSymbolName_variableValue_accessibilityDescriptionSelector
@@ -173,16 +181,24 @@ module ObjC.AppKit.NSImage
   , tiffRepresentationSelector
   , representationsSelector
   , validSelector
+  , delegateSelector
+  , setDelegateSelector
+  , imageTypesSelector
+  , imageUnfilteredTypesSelector
   , cacheModeSelector
   , setCacheModeSelector
   , alignmentRectSelector
   , setAlignmentRectSelector
   , templateSelector
   , setTemplateSelector
+  , accessibilityDescriptionSelector
+  , setAccessibilityDescriptionSelector
   , capInsetsSelector
   , setCapInsetsSelector
   , resizingModeSelector
   , setResizingModeSelector
+  , symbolConfigurationSelector
+  , localeSelector
 
   -- * Enum types
   , NSCompositingOperation(NSCompositingOperation)
@@ -734,6 +750,30 @@ valid :: IsNSImage nsImage => nsImage -> IO Bool
 valid nsImage  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsImage (mkSelector "valid") retCULong []
 
+-- | @- delegate@
+delegate :: IsNSImage nsImage => nsImage -> IO RawId
+delegate nsImage  =
+    fmap (RawId . castPtr) $ sendMsg nsImage (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSImage nsImage => nsImage -> RawId -> IO ()
+setDelegate nsImage  value =
+    sendMsg nsImage (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @+ imageTypes@
+imageTypes :: IO (Id NSArray)
+imageTypes  =
+  do
+    cls' <- getRequiredClass "NSImage"
+    sendClassMsg cls' (mkSelector "imageTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ imageUnfilteredTypes@
+imageUnfilteredTypes :: IO (Id NSArray)
+imageUnfilteredTypes  =
+  do
+    cls' <- getRequiredClass "NSImage"
+    sendClassMsg cls' (mkSelector "imageUnfilteredTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- cacheMode@
 cacheMode :: IsNSImage nsImage => nsImage -> IO NSImageCacheMode
 cacheMode nsImage  =
@@ -764,6 +804,17 @@ setTemplate :: IsNSImage nsImage => nsImage -> Bool -> IO ()
 setTemplate nsImage  value =
     sendMsg nsImage (mkSelector "setTemplate:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @- accessibilityDescription@
+accessibilityDescription :: IsNSImage nsImage => nsImage -> IO (Id NSString)
+accessibilityDescription nsImage  =
+    sendMsg nsImage (mkSelector "accessibilityDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setAccessibilityDescription:@
+setAccessibilityDescription :: (IsNSImage nsImage, IsNSString value) => nsImage -> value -> IO ()
+setAccessibilityDescription nsImage  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsImage (mkSelector "setAccessibilityDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- capInsets@
 capInsets :: IsNSImage nsImage => nsImage -> IO NSEdgeInsets
 capInsets nsImage  =
@@ -783,6 +834,18 @@ resizingMode nsImage  =
 setResizingMode :: IsNSImage nsImage => nsImage -> NSImageResizingMode -> IO ()
 setResizingMode nsImage  value =
     sendMsg nsImage (mkSelector "setResizingMode:") retVoid [argCLong (coerce value)]
+
+-- | @- symbolConfiguration@
+symbolConfiguration :: IsNSImage nsImage => nsImage -> IO (Id NSImageSymbolConfiguration)
+symbolConfiguration nsImage  =
+    sendMsg nsImage (mkSelector "symbolConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The image’s preferred locale for resolving representations, if one has been specified using @-imageWithLocale:@. Otherwise, @nil@.
+--
+-- ObjC selector: @- locale@
+locale :: IsNSImage nsImage => nsImage -> IO (Id NSLocale)
+locale nsImage  =
+    sendMsg nsImage (mkSelector "locale") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -1100,6 +1163,22 @@ representationsSelector = mkSelector "representations"
 validSelector :: Selector
 validSelector = mkSelector "valid"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @imageTypes@
+imageTypesSelector :: Selector
+imageTypesSelector = mkSelector "imageTypes"
+
+-- | @Selector@ for @imageUnfilteredTypes@
+imageUnfilteredTypesSelector :: Selector
+imageUnfilteredTypesSelector = mkSelector "imageUnfilteredTypes"
+
 -- | @Selector@ for @cacheMode@
 cacheModeSelector :: Selector
 cacheModeSelector = mkSelector "cacheMode"
@@ -1124,6 +1203,14 @@ templateSelector = mkSelector "template"
 setTemplateSelector :: Selector
 setTemplateSelector = mkSelector "setTemplate:"
 
+-- | @Selector@ for @accessibilityDescription@
+accessibilityDescriptionSelector :: Selector
+accessibilityDescriptionSelector = mkSelector "accessibilityDescription"
+
+-- | @Selector@ for @setAccessibilityDescription:@
+setAccessibilityDescriptionSelector :: Selector
+setAccessibilityDescriptionSelector = mkSelector "setAccessibilityDescription:"
+
 -- | @Selector@ for @capInsets@
 capInsetsSelector :: Selector
 capInsetsSelector = mkSelector "capInsets"
@@ -1139,4 +1226,12 @@ resizingModeSelector = mkSelector "resizingMode"
 -- | @Selector@ for @setResizingMode:@
 setResizingModeSelector :: Selector
 setResizingModeSelector = mkSelector "setResizingMode:"
+
+-- | @Selector@ for @symbolConfiguration@
+symbolConfigurationSelector :: Selector
+symbolConfigurationSelector = mkSelector "symbolConfiguration"
+
+-- | @Selector@ for @locale@
+localeSelector :: Selector
+localeSelector = mkSelector "locale"
 

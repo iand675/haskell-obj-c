@@ -11,9 +11,13 @@ module ObjC.PassKit.PKIdentityIntentToStore
   , mayStoreIntentForDays
   , init_
   , new
+  , willNotStoreIntent
+  , mayStoreIntent
   , mayStoreIntentForDaysSelector
   , initSelector
   , newSelector
+  , willNotStoreIntentSelector
+  , mayStoreIntentSelector
 
 
   ) where
@@ -54,6 +58,24 @@ new  =
     cls' <- getRequiredClass "PKIdentityIntentToStore"
     sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | Indicates the data element returned in the response will not be stored for a period longer than necessary to process the result in realtime.
+--
+-- ObjC selector: @+ willNotStoreIntent@
+willNotStoreIntent :: IO (Id PKIdentityIntentToStore)
+willNotStoreIntent  =
+  do
+    cls' <- getRequiredClass "PKIdentityIntentToStore"
+    sendClassMsg cls' (mkSelector "willNotStoreIntent") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Indicates the data element may be stored for an indefinite length of time.
+--
+-- ObjC selector: @+ mayStoreIntent@
+mayStoreIntent :: IO (Id PKIdentityIntentToStore)
+mayStoreIntent  =
+  do
+    cls' <- getRequiredClass "PKIdentityIntentToStore"
+    sendClassMsg cls' (mkSelector "mayStoreIntent") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -69,4 +91,12 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @new@
 newSelector :: Selector
 newSelector = mkSelector "new"
+
+-- | @Selector@ for @willNotStoreIntent@
+willNotStoreIntentSelector :: Selector
+willNotStoreIntentSelector = mkSelector "willNotStoreIntent"
+
+-- | @Selector@ for @mayStoreIntent@
+mayStoreIntentSelector :: Selector
+mayStoreIntentSelector = mkSelector "mayStoreIntent"
 

@@ -8,9 +8,13 @@ module ObjC.Intents.NSUserActivity
   ( NSUserActivity
   , IsNSUserActivity(..)
   , interaction
+  , suggestedInvocationPhrase
+  , setSuggestedInvocationPhrase
   , shortcutAvailability
   , setShortcutAvailability
   , interactionSelector
+  , suggestedInvocationPhraseSelector
+  , setSuggestedInvocationPhraseSelector
   , shortcutAvailabilitySelector
   , setShortcutAvailabilitySelector
 
@@ -47,6 +51,17 @@ interaction :: IsNSUserActivity nsUserActivity => nsUserActivity -> IO (Id INInt
 interaction nsUserActivity  =
     sendMsg nsUserActivity (mkSelector "interaction") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- suggestedInvocationPhrase@
+suggestedInvocationPhrase :: IsNSUserActivity nsUserActivity => nsUserActivity -> IO (Id NSString)
+suggestedInvocationPhrase nsUserActivity  =
+    sendMsg nsUserActivity (mkSelector "suggestedInvocationPhrase") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setSuggestedInvocationPhrase:@
+setSuggestedInvocationPhrase :: (IsNSUserActivity nsUserActivity, IsNSString value) => nsUserActivity -> value -> IO ()
+setSuggestedInvocationPhrase nsUserActivity  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsUserActivity (mkSelector "setSuggestedInvocationPhrase:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- shortcutAvailability@
 shortcutAvailability :: IsNSUserActivity nsUserActivity => nsUserActivity -> IO INShortcutAvailabilityOptions
 shortcutAvailability nsUserActivity  =
@@ -64,6 +79,14 @@ setShortcutAvailability nsUserActivity  value =
 -- | @Selector@ for @interaction@
 interactionSelector :: Selector
 interactionSelector = mkSelector "interaction"
+
+-- | @Selector@ for @suggestedInvocationPhrase@
+suggestedInvocationPhraseSelector :: Selector
+suggestedInvocationPhraseSelector = mkSelector "suggestedInvocationPhrase"
+
+-- | @Selector@ for @setSuggestedInvocationPhrase:@
+setSuggestedInvocationPhraseSelector :: Selector
+setSuggestedInvocationPhraseSelector = mkSelector "setSuggestedInvocationPhrase:"
 
 -- | @Selector@ for @shortcutAvailability@
 shortcutAvailabilitySelector :: Selector

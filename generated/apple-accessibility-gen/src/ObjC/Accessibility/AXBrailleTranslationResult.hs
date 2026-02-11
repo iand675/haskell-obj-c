@@ -11,9 +11,11 @@ module ObjC.Accessibility.AXBrailleTranslationResult
   , init_
   , new
   , resultString
+  , locationMap
   , initSelector
   , newSelector
   , resultStringSelector
+  , locationMapSelector
 
 
   ) where
@@ -52,6 +54,13 @@ resultString :: IsAXBrailleTranslationResult axBrailleTranslationResult => axBra
 resultString axBrailleTranslationResult  =
     sendMsg axBrailleTranslationResult (mkSelector "resultString") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | An array of integers that has the same length as the resultString. locationMap[i]-th character in the input string corresponds to resultString[i].
+--
+-- ObjC selector: @- locationMap@
+locationMap :: IsAXBrailleTranslationResult axBrailleTranslationResult => axBrailleTranslationResult -> IO (Id NSArray)
+locationMap axBrailleTranslationResult  =
+    sendMsg axBrailleTranslationResult (mkSelector "locationMap") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -67,4 +76,8 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @resultString@
 resultStringSelector :: Selector
 resultStringSelector = mkSelector "resultString"
+
+-- | @Selector@ for @locationMap@
+locationMapSelector :: Selector
+locationMapSelector = mkSelector "locationMap"
 

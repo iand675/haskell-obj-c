@@ -31,6 +31,7 @@ module ObjC.PHASE.PHASESoundEvent
   , metaParameters
   , mixers
   , pushStreamNodes
+  , pullStreamNodes
   , indefinite
   , initSelector
   , newSelector
@@ -50,6 +51,7 @@ module ObjC.PHASE.PHASESoundEvent
   , metaParametersSelector
   , mixersSelector
   , pushStreamNodesSelector
+  , pullStreamNodesSelector
   , indefiniteSelector
 
   -- * Enum types
@@ -291,6 +293,15 @@ pushStreamNodes :: IsPHASESoundEvent phaseSoundEvent => phaseSoundEvent -> IO (I
 pushStreamNodes phaseSoundEvent  =
     sendMsg phaseSoundEvent (mkSelector "pushStreamNodes") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | pullStreamNodes
+--
+-- A Dictionary containing the pull stream nodes associated with this sound event, for setting renderBlocks on.
+--
+-- ObjC selector: @- pullStreamNodes@
+pullStreamNodes :: IsPHASESoundEvent phaseSoundEvent => phaseSoundEvent -> IO (Id NSDictionary)
+pullStreamNodes phaseSoundEvent  =
+    sendMsg phaseSoundEvent (mkSelector "pullStreamNodes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | indefinite
 --
 -- A boolean that tell if this sound event will run indefinitely, or finish executing on its own
@@ -375,6 +386,10 @@ mixersSelector = mkSelector "mixers"
 -- | @Selector@ for @pushStreamNodes@
 pushStreamNodesSelector :: Selector
 pushStreamNodesSelector = mkSelector "pushStreamNodes"
+
+-- | @Selector@ for @pullStreamNodes@
+pullStreamNodesSelector :: Selector
+pullStreamNodesSelector = mkSelector "pullStreamNodes"
 
 -- | @Selector@ for @indefinite@
 indefiniteSelector :: Selector

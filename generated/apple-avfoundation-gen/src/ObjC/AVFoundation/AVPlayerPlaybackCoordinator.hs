@@ -14,10 +14,16 @@ module ObjC.AVFoundation.AVPlayerPlaybackCoordinator
   , new
   , coordinateUsingCoordinationMedium_error
   , player
+  , delegate
+  , setDelegate
+  , playbackCoordinationMedium
   , initSelector
   , newSelector
   , coordinateUsingCoordinationMedium_errorSelector
   , playerSelector
+  , delegateSelector
+  , setDelegateSelector
+  , playbackCoordinationMediumSelector
 
 
   ) where
@@ -69,6 +75,29 @@ player :: IsAVPlayerPlaybackCoordinator avPlayerPlaybackCoordinator => avPlayerP
 player avPlayerPlaybackCoordinator  =
     sendMsg avPlayerPlaybackCoordinator (mkSelector "player") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | An object implementing the AVPlaybackCoordinatorDelegate protocol.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsAVPlayerPlaybackCoordinator avPlayerPlaybackCoordinator => avPlayerPlaybackCoordinator -> IO RawId
+delegate avPlayerPlaybackCoordinator  =
+    fmap (RawId . castPtr) $ sendMsg avPlayerPlaybackCoordinator (mkSelector "delegate") (retPtr retVoid) []
+
+-- | An object implementing the AVPlaybackCoordinatorDelegate protocol.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsAVPlayerPlaybackCoordinator avPlayerPlaybackCoordinator => avPlayerPlaybackCoordinator -> RawId -> IO ()
+setDelegate avPlayerPlaybackCoordinator  value =
+    sendMsg avPlayerPlaybackCoordinator (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | The AVPlaybackCoordinationMedium this playback coordinator is connected to.
+--
+-- This is the AVPlaybackCoordinationMedium the playback coordinator is connected to. If not NULL, the playback coordinator is connected to the specified coordination medium. The playback coordinator is not available to coordinate with a group session. If NULL, the playback coordinator is not connected to any playback coordination medium. The playback coordinator is available to coordinate with a group session through the @coordinateWithSession@ API.
+--
+-- ObjC selector: @- playbackCoordinationMedium@
+playbackCoordinationMedium :: IsAVPlayerPlaybackCoordinator avPlayerPlaybackCoordinator => avPlayerPlaybackCoordinator -> IO (Id AVPlaybackCoordinationMedium)
+playbackCoordinationMedium avPlayerPlaybackCoordinator  =
+    sendMsg avPlayerPlaybackCoordinator (mkSelector "playbackCoordinationMedium") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -88,4 +117,16 @@ coordinateUsingCoordinationMedium_errorSelector = mkSelector "coordinateUsingCoo
 -- | @Selector@ for @player@
 playerSelector :: Selector
 playerSelector = mkSelector "player"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @playbackCoordinationMedium@
+playbackCoordinationMediumSelector :: Selector
+playbackCoordinationMediumSelector = mkSelector "playbackCoordinationMedium"
 

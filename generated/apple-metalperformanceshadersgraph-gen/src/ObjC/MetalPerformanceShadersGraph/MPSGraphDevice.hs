@@ -11,8 +11,10 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphDevice
   , IsMPSGraphDevice(..)
   , deviceWithMTLDevice
   , type_
+  , metalDevice
   , deviceWithMTLDeviceSelector
   , typeSelector
+  , metalDeviceSelector
 
   -- * Enum types
   , MPSGraphDeviceType(MPSGraphDeviceType)
@@ -54,6 +56,13 @@ type_ :: IsMPSGraphDevice mpsGraphDevice => mpsGraphDevice -> IO MPSGraphDeviceT
 type_ mpsGraphDevice  =
     fmap (coerce :: CUInt -> MPSGraphDeviceType) $ sendMsg mpsGraphDevice (mkSelector "type") retCUInt []
 
+-- | If device type is Metal then returns the corresponding MTLDevice else nil.
+--
+-- ObjC selector: @- metalDevice@
+metalDevice :: IsMPSGraphDevice mpsGraphDevice => mpsGraphDevice -> IO RawId
+metalDevice mpsGraphDevice  =
+    fmap (RawId . castPtr) $ sendMsg mpsGraphDevice (mkSelector "metalDevice") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -65,4 +74,8 @@ deviceWithMTLDeviceSelector = mkSelector "deviceWithMTLDevice:"
 -- | @Selector@ for @type@
 typeSelector :: Selector
 typeSelector = mkSelector "type"
+
+-- | @Selector@ for @metalDevice@
+metalDeviceSelector :: Selector
+metalDeviceSelector = mkSelector "metalDevice"
 

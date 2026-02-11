@@ -15,7 +15,9 @@ module ObjC.CoreImage.CIQRCodeFeature
   ( CIQRCodeFeature
   , IsCIQRCodeFeature(..)
   , messageString
+  , symbolDescriptor
   , messageStringSelector
+  , symbolDescriptorSelector
 
 
   ) where
@@ -42,6 +44,15 @@ messageString :: IsCIQRCodeFeature ciqrCodeFeature => ciqrCodeFeature -> IO (Id 
 messageString ciqrCodeFeature  =
     sendMsg ciqrCodeFeature (mkSelector "messageString") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | An abstract representation of a QR Code symbol.
+--
+-- The property is a ``CIQRCodeDescriptor`` instance that contains the payload, symbol version,  mask pattern, and error correction level, so the QR Code can be reproduced.
+--
+-- ObjC selector: @- symbolDescriptor@
+symbolDescriptor :: IsCIQRCodeFeature ciqrCodeFeature => ciqrCodeFeature -> IO RawId
+symbolDescriptor ciqrCodeFeature  =
+    fmap (RawId . castPtr) $ sendMsg ciqrCodeFeature (mkSelector "symbolDescriptor") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -49,4 +60,8 @@ messageString ciqrCodeFeature  =
 -- | @Selector@ for @messageString@
 messageStringSelector :: Selector
 messageStringSelector = mkSelector "messageString"
+
+-- | @Selector@ for @symbolDescriptor@
+symbolDescriptorSelector :: Selector
+symbolDescriptorSelector = mkSelector "symbolDescriptor"
 

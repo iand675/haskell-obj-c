@@ -13,10 +13,14 @@ module ObjC.ContactsUI.CNContactPicker
   , close
   , displayedKeys
   , setDisplayedKeys
+  , delegate
+  , setDelegate
   , showRelativeToRect_ofView_preferredEdgeSelector
   , closeSelector
   , displayedKeysSelector
   , setDisplayedKeysSelector
+  , delegateSelector
+  , setDelegateSelector
 
   -- * Enum types
   , NSRectEdge(NSRectEdge)
@@ -83,6 +87,20 @@ setDisplayedKeys cnContactPicker  value =
   withObjCPtr value $ \raw_value ->
       sendMsg cnContactPicker (mkSelector "setDisplayedKeys:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | The picker delegate to be notified when the user chooses a contact or value.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsCNContactPicker cnContactPicker => cnContactPicker -> IO RawId
+delegate cnContactPicker  =
+    fmap (RawId . castPtr) $ sendMsg cnContactPicker (mkSelector "delegate") (retPtr retVoid) []
+
+-- | The picker delegate to be notified when the user chooses a contact or value.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsCNContactPicker cnContactPicker => cnContactPicker -> RawId -> IO ()
+setDelegate cnContactPicker  value =
+    sendMsg cnContactPicker (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -102,4 +120,12 @@ displayedKeysSelector = mkSelector "displayedKeys"
 -- | @Selector@ for @setDisplayedKeys:@
 setDisplayedKeysSelector :: Selector
 setDisplayedKeysSelector = mkSelector "setDisplayedKeys:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

@@ -49,6 +49,10 @@ module ObjC.WebKit.WKWebView
   , fetchDataOfTypes_completionHandler
   , restoreData_completionHandler
   , configuration
+  , navigationDelegate
+  , setNavigationDelegate
+  , uiDelegate
+  , setUIDelegate
   , backForwardList
   , title
   , url
@@ -77,6 +81,9 @@ module ObjC.WebKit.WKWebView
   , interactionState
   , setInteractionState
   , isBlockedByScreenTime
+  , themeColor
+  , underPageBackgroundColor
+  , setUnderPageBackgroundColor
   , fullscreenState
   , minimumViewportInset
   , maximumViewportInset
@@ -128,6 +135,10 @@ module ObjC.WebKit.WKWebView
   , fetchDataOfTypes_completionHandlerSelector
   , restoreData_completionHandlerSelector
   , configurationSelector
+  , navigationDelegateSelector
+  , setNavigationDelegateSelector
+  , uiDelegateSelector
+  , setUIDelegateSelector
   , backForwardListSelector
   , titleSelector
   , urlSelector
@@ -156,6 +167,9 @@ module ObjC.WebKit.WKWebView
   , interactionStateSelector
   , setInteractionStateSelector
   , isBlockedByScreenTimeSelector
+  , themeColorSelector
+  , underPageBackgroundColorSelector
+  , setUnderPageBackgroundColorSelector
   , fullscreenStateSelector
   , minimumViewportInsetSelector
   , maximumViewportInsetSelector
@@ -587,6 +601,34 @@ configuration :: IsWKWebView wkWebView => wkWebView -> IO (Id WKWebViewConfigura
 configuration wkWebView  =
     sendMsg wkWebView (mkSelector "configuration") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The web view's navigation delegate.
+--
+-- ObjC selector: @- navigationDelegate@
+navigationDelegate :: IsWKWebView wkWebView => wkWebView -> IO RawId
+navigationDelegate wkWebView  =
+    fmap (RawId . castPtr) $ sendMsg wkWebView (mkSelector "navigationDelegate") (retPtr retVoid) []
+
+-- | The web view's navigation delegate.
+--
+-- ObjC selector: @- setNavigationDelegate:@
+setNavigationDelegate :: IsWKWebView wkWebView => wkWebView -> RawId -> IO ()
+setNavigationDelegate wkWebView  value =
+    sendMsg wkWebView (mkSelector "setNavigationDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | The web view's user interface delegate.
+--
+-- ObjC selector: @- UIDelegate@
+uiDelegate :: IsWKWebView wkWebView => wkWebView -> IO RawId
+uiDelegate wkWebView  =
+    fmap (RawId . castPtr) $ sendMsg wkWebView (mkSelector "UIDelegate") (retPtr retVoid) []
+
+-- | The web view's user interface delegate.
+--
+-- ObjC selector: @- setUIDelegate:@
+setUIDelegate :: IsWKWebView wkWebView => wkWebView -> RawId -> IO ()
+setUIDelegate wkWebView  value =
+    sendMsg wkWebView (mkSelector "setUIDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | The web view's back-forward list.
 --
 -- ObjC selector: @- backForwardList@
@@ -820,6 +862,22 @@ setInteractionState wkWebView  value =
 isBlockedByScreenTime :: IsWKWebView wkWebView => wkWebView -> IO Bool
 isBlockedByScreenTime wkWebView  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebView (mkSelector "isBlockedByScreenTime") retCULong []
+
+-- | @- themeColor@
+themeColor :: IsWKWebView wkWebView => wkWebView -> IO (Id NSColor)
+themeColor wkWebView  =
+    sendMsg wkWebView (mkSelector "themeColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- underPageBackgroundColor@
+underPageBackgroundColor :: IsWKWebView wkWebView => wkWebView -> IO (Id NSColor)
+underPageBackgroundColor wkWebView  =
+    sendMsg wkWebView (mkSelector "underPageBackgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setUnderPageBackgroundColor:@
+setUnderPageBackgroundColor :: (IsWKWebView wkWebView, IsNSColor value) => wkWebView -> value -> IO ()
+setUnderPageBackgroundColor wkWebView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg wkWebView (mkSelector "setUnderPageBackgroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | A WKWebView's fullscreen state.
 --
@@ -1069,6 +1127,22 @@ restoreData_completionHandlerSelector = mkSelector "restoreData:completionHandle
 configurationSelector :: Selector
 configurationSelector = mkSelector "configuration"
 
+-- | @Selector@ for @navigationDelegate@
+navigationDelegateSelector :: Selector
+navigationDelegateSelector = mkSelector "navigationDelegate"
+
+-- | @Selector@ for @setNavigationDelegate:@
+setNavigationDelegateSelector :: Selector
+setNavigationDelegateSelector = mkSelector "setNavigationDelegate:"
+
+-- | @Selector@ for @UIDelegate@
+uiDelegateSelector :: Selector
+uiDelegateSelector = mkSelector "UIDelegate"
+
+-- | @Selector@ for @setUIDelegate:@
+setUIDelegateSelector :: Selector
+setUIDelegateSelector = mkSelector "setUIDelegate:"
+
 -- | @Selector@ for @backForwardList@
 backForwardListSelector :: Selector
 backForwardListSelector = mkSelector "backForwardList"
@@ -1180,6 +1254,18 @@ setInteractionStateSelector = mkSelector "setInteractionState:"
 -- | @Selector@ for @isBlockedByScreenTime@
 isBlockedByScreenTimeSelector :: Selector
 isBlockedByScreenTimeSelector = mkSelector "isBlockedByScreenTime"
+
+-- | @Selector@ for @themeColor@
+themeColorSelector :: Selector
+themeColorSelector = mkSelector "themeColor"
+
+-- | @Selector@ for @underPageBackgroundColor@
+underPageBackgroundColorSelector :: Selector
+underPageBackgroundColorSelector = mkSelector "underPageBackgroundColor"
+
+-- | @Selector@ for @setUnderPageBackgroundColor:@
+setUnderPageBackgroundColorSelector :: Selector
+setUnderPageBackgroundColorSelector = mkSelector "setUnderPageBackgroundColor:"
 
 -- | @Selector@ for @fullscreenState@
 fullscreenStateSelector :: Selector

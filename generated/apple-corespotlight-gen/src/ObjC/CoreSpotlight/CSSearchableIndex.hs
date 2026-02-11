@@ -19,6 +19,8 @@ module ObjC.CoreSpotlight.CSSearchableIndex
   , endIndexBatchWithExpectedClientState_newClientState_completionHandler
   , endIndexBatchWithClientState_completionHandler
   , fetchLastClientStateWithCompletionHandler
+  , indexDelegate
+  , setIndexDelegate
   , isIndexingAvailableSelector
   , defaultSearchableIndexSelector
   , initWithNameSelector
@@ -32,6 +34,8 @@ module ObjC.CoreSpotlight.CSSearchableIndex
   , endIndexBatchWithExpectedClientState_newClientState_completionHandlerSelector
   , endIndexBatchWithClientState_completionHandlerSelector
   , fetchLastClientStateWithCompletionHandlerSelector
+  , indexDelegateSelector
+  , setIndexDelegateSelector
 
 
   ) where
@@ -133,6 +137,16 @@ fetchLastClientStateWithCompletionHandler :: IsCSSearchableIndex csSearchableInd
 fetchLastClientStateWithCompletionHandler csSearchableIndex  completionHandler =
     sendMsg csSearchableIndex (mkSelector "fetchLastClientStateWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
 
+-- | @- indexDelegate@
+indexDelegate :: IsCSSearchableIndex csSearchableIndex => csSearchableIndex -> IO RawId
+indexDelegate csSearchableIndex  =
+    fmap (RawId . castPtr) $ sendMsg csSearchableIndex (mkSelector "indexDelegate") (retPtr retVoid) []
+
+-- | @- setIndexDelegate:@
+setIndexDelegate :: IsCSSearchableIndex csSearchableIndex => csSearchableIndex -> RawId -> IO ()
+setIndexDelegate csSearchableIndex  value =
+    sendMsg csSearchableIndex (mkSelector "setIndexDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -188,4 +202,12 @@ endIndexBatchWithClientState_completionHandlerSelector = mkSelector "endIndexBat
 -- | @Selector@ for @fetchLastClientStateWithCompletionHandler:@
 fetchLastClientStateWithCompletionHandlerSelector :: Selector
 fetchLastClientStateWithCompletionHandlerSelector = mkSelector "fetchLastClientStateWithCompletionHandler:"
+
+-- | @Selector@ for @indexDelegate@
+indexDelegateSelector :: Selector
+indexDelegateSelector = mkSelector "indexDelegate"
+
+-- | @Selector@ for @setIndexDelegate:@
+setIndexDelegateSelector :: Selector
+setIndexDelegateSelector = mkSelector "setIndexDelegate:"
 

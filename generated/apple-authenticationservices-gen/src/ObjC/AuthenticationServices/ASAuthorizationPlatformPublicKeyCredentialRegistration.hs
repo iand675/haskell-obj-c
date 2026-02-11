@@ -10,9 +10,13 @@ module ObjC.AuthenticationServices.ASAuthorizationPlatformPublicKeyCredentialReg
   , new
   , init_
   , attachment
+  , largeBlob
+  , prf
   , newSelector
   , initSelector
   , attachmentSelector
+  , largeBlobSelector
+  , prfSelector
 
   -- * Enum types
   , ASAuthorizationPublicKeyCredentialAttachment(ASAuthorizationPublicKeyCredentialAttachment)
@@ -54,6 +58,16 @@ attachment :: IsASAuthorizationPlatformPublicKeyCredentialRegistration asAuthori
 attachment asAuthorizationPlatformPublicKeyCredentialRegistration  =
     fmap (coerce :: CLong -> ASAuthorizationPublicKeyCredentialAttachment) $ sendMsg asAuthorizationPlatformPublicKeyCredentialRegistration (mkSelector "attachment") retCLong []
 
+-- | @- largeBlob@
+largeBlob :: IsASAuthorizationPlatformPublicKeyCredentialRegistration asAuthorizationPlatformPublicKeyCredentialRegistration => asAuthorizationPlatformPublicKeyCredentialRegistration -> IO (Id ASAuthorizationPublicKeyCredentialLargeBlobRegistrationOutput)
+largeBlob asAuthorizationPlatformPublicKeyCredentialRegistration  =
+    sendMsg asAuthorizationPlatformPublicKeyCredentialRegistration (mkSelector "largeBlob") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- prf@
+prf :: IsASAuthorizationPlatformPublicKeyCredentialRegistration asAuthorizationPlatformPublicKeyCredentialRegistration => asAuthorizationPlatformPublicKeyCredentialRegistration -> IO (Id ASAuthorizationPublicKeyCredentialPRFRegistrationOutput)
+prf asAuthorizationPlatformPublicKeyCredentialRegistration  =
+    sendMsg asAuthorizationPlatformPublicKeyCredentialRegistration (mkSelector "prf") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -69,4 +83,12 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @attachment@
 attachmentSelector :: Selector
 attachmentSelector = mkSelector "attachment"
+
+-- | @Selector@ for @largeBlob@
+largeBlobSelector :: Selector
+largeBlobSelector = mkSelector "largeBlob"
+
+-- | @Selector@ for @prf@
+prfSelector :: Selector
+prfSelector = mkSelector "prf"
 

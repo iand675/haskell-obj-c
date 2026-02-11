@@ -29,8 +29,14 @@ module ObjC.AccessorySetupKit.ASDiscoveryDescriptor
   , setSSID
   , ssidPrefix
   , setSSIDPrefix
+  , wifiAwareServiceName
+  , setWifiAwareServiceName
   , wifiAwareServiceRole
   , setWifiAwareServiceRole
+  , wifiAwareModelNameMatch
+  , setWifiAwareModelNameMatch
+  , wifiAwareVendorNameMatch
+  , setWifiAwareVendorNameMatch
   , supportedOptionsSelector
   , setSupportedOptionsSelector
   , bluetoothCompanyIdentifierSelector
@@ -53,8 +59,14 @@ module ObjC.AccessorySetupKit.ASDiscoveryDescriptor
   , setSSIDSelector
   , ssidPrefixSelector
   , setSSIDPrefixSelector
+  , wifiAwareServiceNameSelector
+  , setWifiAwareServiceNameSelector
   , wifiAwareServiceRoleSelector
   , setWifiAwareServiceRoleSelector
+  , wifiAwareModelNameMatchSelector
+  , setWifiAwareModelNameMatchSelector
+  , wifiAwareVendorNameMatchSelector
+  , setWifiAwareVendorNameMatchSelector
 
   -- * Enum types
   , ASAccessorySupportOptions(ASAccessorySupportOptions)
@@ -258,6 +270,21 @@ setSSIDPrefix asDiscoveryDescriptor  value =
   withObjCPtr value $ \raw_value ->
       sendMsg asDiscoveryDescriptor (mkSelector "setSSIDPrefix:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | The accessory's Wi-Fi Aware's service name if available.
+--
+-- ObjC selector: @- wifiAwareServiceName@
+wifiAwareServiceName :: IsASDiscoveryDescriptor asDiscoveryDescriptor => asDiscoveryDescriptor -> IO (Id NSString)
+wifiAwareServiceName asDiscoveryDescriptor  =
+    sendMsg asDiscoveryDescriptor (mkSelector "wifiAwareServiceName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The accessory's Wi-Fi Aware's service name if available.
+--
+-- ObjC selector: @- setWifiAwareServiceName:@
+setWifiAwareServiceName :: (IsASDiscoveryDescriptor asDiscoveryDescriptor, IsNSString value) => asDiscoveryDescriptor -> value -> IO ()
+setWifiAwareServiceName asDiscoveryDescriptor  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asDiscoveryDescriptor (mkSelector "setWifiAwareServiceName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | The role of the accessory's Wi-Fi Aware's service.
 --
 -- This property defaults to ``ASDiscoveryDescriptor/WiFiAwareServiceRole/subscriber``
@@ -275,6 +302,36 @@ wifiAwareServiceRole asDiscoveryDescriptor  =
 setWifiAwareServiceRole :: IsASDiscoveryDescriptor asDiscoveryDescriptor => asDiscoveryDescriptor -> ASDiscoveryDescriptorWiFiAwareServiceRole -> IO ()
 setWifiAwareServiceRole asDiscoveryDescriptor  value =
     sendMsg asDiscoveryDescriptor (mkSelector "setWifiAwareServiceRole:") retVoid [argCLong (coerce value)]
+
+-- | The accessory's Wi-Fi Aware model name and matching options.
+--
+-- ObjC selector: @- wifiAwareModelNameMatch@
+wifiAwareModelNameMatch :: IsASDiscoveryDescriptor asDiscoveryDescriptor => asDiscoveryDescriptor -> IO (Id ASPropertyCompareString)
+wifiAwareModelNameMatch asDiscoveryDescriptor  =
+    sendMsg asDiscoveryDescriptor (mkSelector "wifiAwareModelNameMatch") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The accessory's Wi-Fi Aware model name and matching options.
+--
+-- ObjC selector: @- setWifiAwareModelNameMatch:@
+setWifiAwareModelNameMatch :: (IsASDiscoveryDescriptor asDiscoveryDescriptor, IsASPropertyCompareString value) => asDiscoveryDescriptor -> value -> IO ()
+setWifiAwareModelNameMatch asDiscoveryDescriptor  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asDiscoveryDescriptor (mkSelector "setWifiAwareModelNameMatch:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The accessory's Wi-Fi Aware vendor name and matching options.
+--
+-- ObjC selector: @- wifiAwareVendorNameMatch@
+wifiAwareVendorNameMatch :: IsASDiscoveryDescriptor asDiscoveryDescriptor => asDiscoveryDescriptor -> IO (Id ASPropertyCompareString)
+wifiAwareVendorNameMatch asDiscoveryDescriptor  =
+    sendMsg asDiscoveryDescriptor (mkSelector "wifiAwareVendorNameMatch") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The accessory's Wi-Fi Aware vendor name and matching options.
+--
+-- ObjC selector: @- setWifiAwareVendorNameMatch:@
+setWifiAwareVendorNameMatch :: (IsASDiscoveryDescriptor asDiscoveryDescriptor, IsASPropertyCompareString value) => asDiscoveryDescriptor -> value -> IO ()
+setWifiAwareVendorNameMatch asDiscoveryDescriptor  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asDiscoveryDescriptor (mkSelector "setWifiAwareVendorNameMatch:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -368,6 +425,14 @@ ssidPrefixSelector = mkSelector "SSIDPrefix"
 setSSIDPrefixSelector :: Selector
 setSSIDPrefixSelector = mkSelector "setSSIDPrefix:"
 
+-- | @Selector@ for @wifiAwareServiceName@
+wifiAwareServiceNameSelector :: Selector
+wifiAwareServiceNameSelector = mkSelector "wifiAwareServiceName"
+
+-- | @Selector@ for @setWifiAwareServiceName:@
+setWifiAwareServiceNameSelector :: Selector
+setWifiAwareServiceNameSelector = mkSelector "setWifiAwareServiceName:"
+
 -- | @Selector@ for @wifiAwareServiceRole@
 wifiAwareServiceRoleSelector :: Selector
 wifiAwareServiceRoleSelector = mkSelector "wifiAwareServiceRole"
@@ -375,4 +440,20 @@ wifiAwareServiceRoleSelector = mkSelector "wifiAwareServiceRole"
 -- | @Selector@ for @setWifiAwareServiceRole:@
 setWifiAwareServiceRoleSelector :: Selector
 setWifiAwareServiceRoleSelector = mkSelector "setWifiAwareServiceRole:"
+
+-- | @Selector@ for @wifiAwareModelNameMatch@
+wifiAwareModelNameMatchSelector :: Selector
+wifiAwareModelNameMatchSelector = mkSelector "wifiAwareModelNameMatch"
+
+-- | @Selector@ for @setWifiAwareModelNameMatch:@
+setWifiAwareModelNameMatchSelector :: Selector
+setWifiAwareModelNameMatchSelector = mkSelector "setWifiAwareModelNameMatch:"
+
+-- | @Selector@ for @wifiAwareVendorNameMatch@
+wifiAwareVendorNameMatchSelector :: Selector
+wifiAwareVendorNameMatchSelector = mkSelector "wifiAwareVendorNameMatch"
+
+-- | @Selector@ for @setWifiAwareVendorNameMatch:@
+setWifiAwareVendorNameMatchSelector :: Selector
+setWifiAwareVendorNameMatchSelector = mkSelector "setWifiAwareVendorNameMatch:"
 

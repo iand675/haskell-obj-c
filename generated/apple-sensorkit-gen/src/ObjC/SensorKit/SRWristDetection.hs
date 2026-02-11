@@ -10,9 +10,13 @@ module ObjC.SensorKit.SRWristDetection
   , onWrist
   , wristLocation
   , crownOrientation
+  , onWristDate
+  , offWristDate
   , onWristSelector
   , wristLocationSelector
   , crownOrientationSelector
+  , onWristDateSelector
+  , offWristDateSelector
 
   -- * Enum types
   , SRCrownOrientation(SRCrownOrientation)
@@ -55,6 +59,28 @@ crownOrientation :: IsSRWristDetection srWristDetection => srWristDetection -> I
 crownOrientation srWristDetection  =
     fmap (coerce :: CLong -> SRCrownOrientation) $ sendMsg srWristDetection (mkSelector "crownOrientation") retCLong []
 
+-- | onWristDate
+--
+-- Start date of the recent on-wrist state.
+--
+-- - When the state changes from off-wrist to on-wrist, onWristDate would be updated to the current date, and offWristDate would remain the same. - When the state changes from on-wrist to off-wrist, offWristDate would be updated to the current date, and onWristDate would remain the same.
+--
+-- ObjC selector: @- onWristDate@
+onWristDate :: IsSRWristDetection srWristDetection => srWristDetection -> IO (Id NSDate)
+onWristDate srWristDetection  =
+    sendMsg srWristDetection (mkSelector "onWristDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | offWristDate
+--
+-- Start date of the recent off-wrist state.
+--
+-- - When the state changes from off-wrist to on-wrist, onWristDate would be updated to the current date, and offWristDate would remain the same. - When the state changes from on-wrist to off-wrist, offWristDate would be updated to the current date, and onWristDate would remain the same.
+--
+-- ObjC selector: @- offWristDate@
+offWristDate :: IsSRWristDetection srWristDetection => srWristDetection -> IO (Id NSDate)
+offWristDate srWristDetection  =
+    sendMsg srWristDetection (mkSelector "offWristDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -70,4 +96,12 @@ wristLocationSelector = mkSelector "wristLocation"
 -- | @Selector@ for @crownOrientation@
 crownOrientationSelector :: Selector
 crownOrientationSelector = mkSelector "crownOrientation"
+
+-- | @Selector@ for @onWristDate@
+onWristDateSelector :: Selector
+onWristDateSelector = mkSelector "onWristDate"
+
+-- | @Selector@ for @offWristDate@
+offWristDateSelector :: Selector
+offWristDateSelector = mkSelector "offWristDate"
 

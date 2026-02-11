@@ -13,6 +13,8 @@ module ObjC.CloudKit.CKSyncEngineConfiguration
   , setDatabase
   , stateSerialization
   , setStateSerialization
+  , delegate
+  , setDelegate
   , automaticallySync
   , setAutomaticallySync
   , subscriptionID
@@ -24,6 +26,8 @@ module ObjC.CloudKit.CKSyncEngineConfiguration
   , setDatabaseSelector
   , stateSerializationSelector
   , setStateSerializationSelector
+  , delegateSelector
+  , setDelegateSelector
   , automaticallySyncSelector
   , setAutomaticallySyncSelector
   , subscriptionIDSelector
@@ -107,6 +111,20 @@ setStateSerialization :: (IsCKSyncEngineConfiguration ckSyncEngineConfiguration,
 setStateSerialization ckSyncEngineConfiguration  value =
   withObjCPtr value $ \raw_value ->
       sendMsg ckSyncEngineConfiguration (mkSelector "setStateSerialization:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | Your implementation of @CKSyncEngineDelegate@.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsCKSyncEngineConfiguration ckSyncEngineConfiguration => ckSyncEngineConfiguration -> IO RawId
+delegate ckSyncEngineConfiguration  =
+    fmap (RawId . castPtr) $ sendMsg ckSyncEngineConfiguration (mkSelector "delegate") (retPtr retVoid) []
+
+-- | Your implementation of @CKSyncEngineDelegate@.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsCKSyncEngineConfiguration ckSyncEngineConfiguration => ckSyncEngineConfiguration -> RawId -> IO ()
+setDelegate ckSyncEngineConfiguration  value =
+    sendMsg ckSyncEngineConfiguration (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | Whether or not the sync engine should automatically sync on your behalf.
 --
@@ -192,6 +210,14 @@ stateSerializationSelector = mkSelector "stateSerialization"
 -- | @Selector@ for @setStateSerialization:@
 setStateSerializationSelector :: Selector
 setStateSerializationSelector = mkSelector "setStateSerialization:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @automaticallySync@
 automaticallySyncSelector :: Selector

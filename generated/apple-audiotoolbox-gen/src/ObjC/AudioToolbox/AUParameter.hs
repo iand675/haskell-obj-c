@@ -14,6 +14,7 @@ module ObjC.AudioToolbox.AUParameter
   , setValue_originator
   , setValue_originator_atHostTime
   , setValue_originator_atHostTime_eventType
+  , stringFromValue
   , valueFromString
   , minValue
   , maxValue
@@ -28,6 +29,7 @@ module ObjC.AudioToolbox.AUParameter
   , setValue_originatorSelector
   , setValue_originator_atHostTimeSelector
   , setValue_originator_atHostTime_eventTypeSelector
+  , stringFromValueSelector
   , valueFromStringSelector
   , minValueSelector
   , maxValueSelector
@@ -147,6 +149,15 @@ setValue_originator_atHostTime_eventType :: IsAUParameter auParameter => auParam
 setValue_originator_atHostTime_eventType auParameter  value originator hostTime eventType =
     sendMsg auParameter (mkSelector "setValue:originator:atHostTime:eventType:") retVoid [argCFloat value, argPtr (castPtr (unRawId originator) :: Ptr ()), argCULong hostTime, argCUInt (coerce eventType)]
 
+-- | Get a textual representation of a value for the parameter. Use value==nil to use the		   current value. Bridged to the v2 property kAudioUnitProperty_ParameterStringFromValue.
+--
+-- This is currently only supported for parameters whose flags include		kAudioUnitParameterFlag_ValuesHaveStrings.
+--
+-- ObjC selector: @- stringFromValue:@
+stringFromValue :: IsAUParameter auParameter => auParameter -> Const RawId -> IO (Id NSString)
+stringFromValue auParameter  value =
+    sendMsg auParameter (mkSelector "stringFromValue:") (retPtr retVoid) [argPtr (castPtr (unRawId (unConst value)) :: Ptr ())] >>= retainedObject . castPtr
+
 -- | Convert a textual representation of a value to a numeric one.
 --
 -- This is currently only supported for parameters whose flags include		kAudioUnitParameterFlag_ValuesHaveStrings.
@@ -244,6 +255,10 @@ setValue_originator_atHostTimeSelector = mkSelector "setValue:originator:atHostT
 -- | @Selector@ for @setValue:originator:atHostTime:eventType:@
 setValue_originator_atHostTime_eventTypeSelector :: Selector
 setValue_originator_atHostTime_eventTypeSelector = mkSelector "setValue:originator:atHostTime:eventType:"
+
+-- | @Selector@ for @stringFromValue:@
+stringFromValueSelector :: Selector
+stringFromValueSelector = mkSelector "stringFromValue:"
 
 -- | @Selector@ for @valueFromString:@
 valueFromStringSelector :: Selector

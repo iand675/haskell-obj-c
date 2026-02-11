@@ -1,13 +1,10 @@
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PatternSynonyms #-}
 
 -- | Counter example: A window with a numeric label and +/- buttons.
--- Demonstrates the full 'defineClass' Template Haskell workflow for
--- creating Objective-C classes backed by Haskell closures.
+-- Demonstrates the 'ActionTarget' API for creating Objective-C target
+-- objects backed by Haskell closures — no Template Haskell required.
 module Main (main) where
 
 import Data.IORef (newIORef, readIORef, modifyIORef')
@@ -15,7 +12,7 @@ import Data.String (fromString)
 import Foreign.Ptr (nullPtr)
 
 import ObjC.Runtime
-import ObjC.Runtime.TH
+import ObjC.Runtime.ActionTarget (newActionTarget)
 
 -- Generated AppKit bindings
 import ObjC.AppKit.NSApplication
@@ -31,7 +28,7 @@ import ObjC.AppKit.NSWindow
   , pattern NSBackingStoreBuffered
   )
 import ObjC.AppKit.NSTextField (NSTextField)
-import ObjC.AppKit.NSButton (NSButton)
+import ObjC.AppKit.NSButton ()
 import ObjC.AppKit.NSMenu (NSMenu)
 import ObjC.AppKit.NSMenuItem (NSMenuItem)
 import ObjC.AppKit.NSView (IsNSView(toNSView))
@@ -47,16 +44,6 @@ import qualified ObjC.AppKit.NSMenuItem as MI
 import qualified ObjC.AppKit.NSControl as Ctrl
 import qualified ObjC.AppKit.NSFont as Font
 import qualified ObjC.AppKit.NSButton as Btn
-
--- ---------------------------------------------------------------------------
--- Define the Objective-C class for our button target
--- ---------------------------------------------------------------------------
-
--- CounterTarget has two instance methods, each receiving the sender (RawId).
-$(defineClass "CounterTarget" "NSObject" $ do
-  instanceMethod "increment:" [t| RawId -> IO () |]
-  instanceMethod "decrement:" [t| RawId -> IO () |]
- )
 
 -- ---------------------------------------------------------------------------
 -- Helpers
@@ -100,16 +87,15 @@ main = withAutoreleasePool $ do
   View.addSubview cv (toNSView label)
 
   -- Create the target with per-instance state
-  target <- newCounterTarget $ do
-    ref <- newIORef (0 :: Int)
-    pure CounterTargetImpl
-      { _increment = \_sender -> do
+  ref <- newIORef (0 :: Int)
+  target <- newActionTarget
+    [ ("increment:", \_ -> do
           modifyIORef' ref (+ 1)
-          readIORef ref >>= updateLabel label
-      , _decrement = \_sender -> do
+          readIORef ref >>= updateLabel label)
+    , ("decrement:", \_ -> do
           modifyIORef' ref (subtract 1)
-          readIORef ref >>= updateLabel label
-      }
+          readIORef ref >>= updateLabel label)
+    ]
 
   -- Buttons
   plusBtn <- Btn.buttonWithTitle_target_action

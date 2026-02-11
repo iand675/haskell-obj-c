@@ -38,16 +38,23 @@ module ObjC.AVFoundation.AVAssetWriterInput
   , performsMultiPassEncodingIfSupported
   , setPerformsMultiPassEncodingIfSupported
   , canPerformMultiplePasses
+  , currentPassDescription
   , marksOutputTrackAsEnabled
   , setMarksOutputTrackAsEnabled
   , mediaTimeScale
   , setMediaTimeScale
   , preferredMediaChunkAlignment
   , setPreferredMediaChunkAlignment
+  , sampleReferenceBaseURL
+  , setSampleReferenceBaseURL
   , mediaDataLocation
   , setMediaDataLocation
   , preferredVolume
   , setPreferredVolume
+  , languageCode
+  , setLanguageCode
+  , extendedLanguageTag
+  , setExtendedLanguageTag
   , initSelector
   , newSelector
   , assetWriterInputWithMediaType_outputSettingsSelector
@@ -72,16 +79,23 @@ module ObjC.AVFoundation.AVAssetWriterInput
   , performsMultiPassEncodingIfSupportedSelector
   , setPerformsMultiPassEncodingIfSupportedSelector
   , canPerformMultiplePassesSelector
+  , currentPassDescriptionSelector
   , marksOutputTrackAsEnabledSelector
   , setMarksOutputTrackAsEnabledSelector
   , mediaTimeScaleSelector
   , setMediaTimeScaleSelector
   , preferredMediaChunkAlignmentSelector
   , setPreferredMediaChunkAlignmentSelector
+  , sampleReferenceBaseURLSelector
+  , setSampleReferenceBaseURLSelector
   , mediaDataLocationSelector
   , setMediaDataLocationSelector
   , preferredVolumeSelector
   , setPreferredVolumeSelector
+  , languageCodeSelector
+  , setLanguageCodeSelector
+  , extendedLanguageTagSelector
+  , setExtendedLanguageTagSelector
 
 
   ) where
@@ -482,6 +496,21 @@ canPerformMultiplePasses :: IsAVAssetWriterInput avAssetWriterInput => avAssetWr
 canPerformMultiplePasses avAssetWriterInput  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetWriterInput (mkSelector "canPerformMultiplePasses") retCULong []
 
+-- | Provides an object that describes the requirements, such as source time ranges to append or re-append, for the current pass.
+--
+-- If the value of this property is nil, it means there is no request to be fulfilled and -markAsFinished should be called on the asset writer input.
+--
+-- During the first pass, the request will contain a single time range from zero to positive infinity, indicating that all media from the source should be appended. This will also be true when canPerformMultiplePasses is NO, in which case only one pass will be performed.
+--
+-- The value of this property will be nil before -startWriting is called on the attached asset writer. It will transition to an initial non-nil value during the call to -startWriting. After that, the value of this property will change only after a call to -markCurrentPassAsFinished. For an easy way to be notified at the beginning of each pass, see -respondToEachPassDescriptionOnQueue:usingBlock:.
+--
+-- This property is key-value observable. Observers should not assume that they will be notified of changes on a specific thread.
+--
+-- ObjC selector: @- currentPassDescription@
+currentPassDescription :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO (Id AVAssetWriterInputPassDescription)
+currentPassDescription avAssetWriterInput  =
+    sendMsg avAssetWriterInput (mkSelector "currentPassDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | For file types that support enabled and disabled tracks, such as QuickTime Movie files, specifies whether the track corresponding to the receiver should be enabled by default for playback and processing. The default value is YES.
 --
 -- When an input group is added to an AVAssetWriter (see -[AVAssetWriter addInputGroup:]), the value of marksOutputTrackAsEnabled will automatically be set to YES for the default input and set to NO for all of the other inputs in the group. In this case, if a new value is set on this property then an exception will be raised.
@@ -556,6 +585,45 @@ setPreferredMediaChunkAlignment :: IsAVAssetWriterInput avAssetWriterInput => av
 setPreferredMediaChunkAlignment avAssetWriterInput  value =
     sendMsg avAssetWriterInput (mkSelector "setPreferredMediaChunkAlignment:") retVoid [argCLong value]
 
+-- | For file types that support writing sample references, such as QuickTime Movie files, specifies the base URL sample references are relative to.
+--
+-- If the value of this property can be resolved as an absolute URL, the sample locations written to the file when appending sample references will be relative to this URL. The URL must point to a location that is in a directory that is a parent of the sample reference location.
+--
+-- Usage example:
+--
+-- Setting the sampleReferenceBaseURL property to "file:///User/johnappleseed/Movies/" and appending sample buffers with the kCMSampleBufferAttachmentKey_SampleReferenceURL attachment set to "file:///User/johnappleseed/Movies/data/movie1.mov" will cause the sample reference "data/movie1.mov" to be written to the movie.
+--
+-- If the value of the property cannot be resolved as an absolute URL or if it points to a location that is not in a parent directory of the sample reference location, the location referenced in the sample buffer will be written unmodified.
+--
+-- The default value is nil, which means that the location referenced in the sample buffer will be written unmodified.
+--
+-- This property cannot be set after -startWriting has been called on the receiver.
+--
+-- ObjC selector: @- sampleReferenceBaseURL@
+sampleReferenceBaseURL :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO (Id NSURL)
+sampleReferenceBaseURL avAssetWriterInput  =
+    sendMsg avAssetWriterInput (mkSelector "sampleReferenceBaseURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | For file types that support writing sample references, such as QuickTime Movie files, specifies the base URL sample references are relative to.
+--
+-- If the value of this property can be resolved as an absolute URL, the sample locations written to the file when appending sample references will be relative to this URL. The URL must point to a location that is in a directory that is a parent of the sample reference location.
+--
+-- Usage example:
+--
+-- Setting the sampleReferenceBaseURL property to "file:///User/johnappleseed/Movies/" and appending sample buffers with the kCMSampleBufferAttachmentKey_SampleReferenceURL attachment set to "file:///User/johnappleseed/Movies/data/movie1.mov" will cause the sample reference "data/movie1.mov" to be written to the movie.
+--
+-- If the value of the property cannot be resolved as an absolute URL or if it points to a location that is not in a parent directory of the sample reference location, the location referenced in the sample buffer will be written unmodified.
+--
+-- The default value is nil, which means that the location referenced in the sample buffer will be written unmodified.
+--
+-- This property cannot be set after -startWriting has been called on the receiver.
+--
+-- ObjC selector: @- setSampleReferenceBaseURL:@
+setSampleReferenceBaseURL :: (IsAVAssetWriterInput avAssetWriterInput, IsNSURL value) => avAssetWriterInput -> value -> IO ()
+setSampleReferenceBaseURL avAssetWriterInput  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avAssetWriterInput (mkSelector "setSampleReferenceBaseURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | Specifies where the media data will be laid out and whether the media data will be interleaved as the main media data.
 --
 -- If this value is set to AVAssetWriterInputMediaDataLocationBeforeMainMediaDataNotInterleaved, AVAssetWriter tries to write the media data for this track before all the media data for AVAssetWriterInputs with this property set to AVAssetWriterInputMediaDataLocationInterleavedWithMainMediaData.
@@ -612,6 +680,60 @@ preferredVolume avAssetWriterInput  =
 setPreferredVolume :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> CFloat -> IO ()
 setPreferredVolume avAssetWriterInput  value =
     sendMsg avAssetWriterInput (mkSelector "setPreferredVolume:") retVoid [argCFloat value]
+
+-- | Indicates the language to associate with the track corresponding to the receiver, as an ISO 639-2/T language code; can be nil.
+--
+-- Also see extendedLanguageTag below.
+--
+-- This property cannot be set after writing on the receiver's AVAssetWriter has started.
+--
+-- This property throws an exception if a language code is set which does not conform to the ISO 639-2/T language codes.
+--
+-- ObjC selector: @- languageCode@
+languageCode :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO (Id NSString)
+languageCode avAssetWriterInput  =
+    sendMsg avAssetWriterInput (mkSelector "languageCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Indicates the language to associate with the track corresponding to the receiver, as an ISO 639-2/T language code; can be nil.
+--
+-- Also see extendedLanguageTag below.
+--
+-- This property cannot be set after writing on the receiver's AVAssetWriter has started.
+--
+-- This property throws an exception if a language code is set which does not conform to the ISO 639-2/T language codes.
+--
+-- ObjC selector: @- setLanguageCode:@
+setLanguageCode :: (IsAVAssetWriterInput avAssetWriterInput, IsNSString value) => avAssetWriterInput -> value -> IO ()
+setLanguageCode avAssetWriterInput  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avAssetWriterInput (mkSelector "setLanguageCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | Indicates the language tag to associate with the track corresponding to the receiver, as an IETF BCP 47 (RFC 4646) language identifier; can be nil.
+--
+-- Extended language tags are normally set only when an ISO 639-2/T language code by itself is ambiguous, as in cases in which media data should be distinguished not only by language but also by the regional dialect in use or the writing system employed.
+--
+-- This property cannot be set after writing on the receiver's AVAssetWriter has started.
+--
+-- This property throws an exception if an extended language tag is set which does not conform to the IETF BCP 47 (RFC 4646) language identifiers.
+--
+-- ObjC selector: @- extendedLanguageTag@
+extendedLanguageTag :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO (Id NSString)
+extendedLanguageTag avAssetWriterInput  =
+    sendMsg avAssetWriterInput (mkSelector "extendedLanguageTag") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Indicates the language tag to associate with the track corresponding to the receiver, as an IETF BCP 47 (RFC 4646) language identifier; can be nil.
+--
+-- Extended language tags are normally set only when an ISO 639-2/T language code by itself is ambiguous, as in cases in which media data should be distinguished not only by language but also by the regional dialect in use or the writing system employed.
+--
+-- This property cannot be set after writing on the receiver's AVAssetWriter has started.
+--
+-- This property throws an exception if an extended language tag is set which does not conform to the IETF BCP 47 (RFC 4646) language identifiers.
+--
+-- ObjC selector: @- setExtendedLanguageTag:@
+setExtendedLanguageTag :: (IsAVAssetWriterInput avAssetWriterInput, IsNSString value) => avAssetWriterInput -> value -> IO ()
+setExtendedLanguageTag avAssetWriterInput  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avAssetWriterInput (mkSelector "setExtendedLanguageTag:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -713,6 +835,10 @@ setPerformsMultiPassEncodingIfSupportedSelector = mkSelector "setPerformsMultiPa
 canPerformMultiplePassesSelector :: Selector
 canPerformMultiplePassesSelector = mkSelector "canPerformMultiplePasses"
 
+-- | @Selector@ for @currentPassDescription@
+currentPassDescriptionSelector :: Selector
+currentPassDescriptionSelector = mkSelector "currentPassDescription"
+
 -- | @Selector@ for @marksOutputTrackAsEnabled@
 marksOutputTrackAsEnabledSelector :: Selector
 marksOutputTrackAsEnabledSelector = mkSelector "marksOutputTrackAsEnabled"
@@ -737,6 +863,14 @@ preferredMediaChunkAlignmentSelector = mkSelector "preferredMediaChunkAlignment"
 setPreferredMediaChunkAlignmentSelector :: Selector
 setPreferredMediaChunkAlignmentSelector = mkSelector "setPreferredMediaChunkAlignment:"
 
+-- | @Selector@ for @sampleReferenceBaseURL@
+sampleReferenceBaseURLSelector :: Selector
+sampleReferenceBaseURLSelector = mkSelector "sampleReferenceBaseURL"
+
+-- | @Selector@ for @setSampleReferenceBaseURL:@
+setSampleReferenceBaseURLSelector :: Selector
+setSampleReferenceBaseURLSelector = mkSelector "setSampleReferenceBaseURL:"
+
 -- | @Selector@ for @mediaDataLocation@
 mediaDataLocationSelector :: Selector
 mediaDataLocationSelector = mkSelector "mediaDataLocation"
@@ -752,4 +886,20 @@ preferredVolumeSelector = mkSelector "preferredVolume"
 -- | @Selector@ for @setPreferredVolume:@
 setPreferredVolumeSelector :: Selector
 setPreferredVolumeSelector = mkSelector "setPreferredVolume:"
+
+-- | @Selector@ for @languageCode@
+languageCodeSelector :: Selector
+languageCodeSelector = mkSelector "languageCode"
+
+-- | @Selector@ for @setLanguageCode:@
+setLanguageCodeSelector :: Selector
+setLanguageCodeSelector = mkSelector "setLanguageCode:"
+
+-- | @Selector@ for @extendedLanguageTag@
+extendedLanguageTagSelector :: Selector
+extendedLanguageTagSelector = mkSelector "extendedLanguageTag"
+
+-- | @Selector@ for @setExtendedLanguageTag:@
+setExtendedLanguageTagSelector :: Selector
+setExtendedLanguageTagSelector = mkSelector "setExtendedLanguageTag:"
 

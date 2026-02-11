@@ -13,13 +13,23 @@ module ObjC.NetworkExtension.NEProxyServer
   ( NEProxyServer
   , IsNEProxyServer(..)
   , initWithAddress_port
+  , address
   , port
   , authenticationRequired
   , setAuthenticationRequired
+  , username
+  , setUsername
+  , password
+  , setPassword
   , initWithAddress_portSelector
+  , addressSelector
   , portSelector
   , authenticationRequiredSelector
   , setAuthenticationRequiredSelector
+  , usernameSelector
+  , setUsernameSelector
+  , passwordSelector
+  , setPasswordSelector
 
 
   ) where
@@ -53,6 +63,15 @@ initWithAddress_port neProxyServer  address port =
   withObjCPtr address $ \raw_address ->
       sendMsg neProxyServer (mkSelector "initWithAddress:port:") (retPtr retVoid) [argPtr (castPtr raw_address :: Ptr ()), argCLong port] >>= ownedObject . castPtr
 
+-- | address
+--
+-- The string representation of the proxy server IP address.
+--
+-- ObjC selector: @- address@
+address :: IsNEProxyServer neProxyServer => neProxyServer -> IO (Id NSString)
+address neProxyServer  =
+    sendMsg neProxyServer (mkSelector "address") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | port
 --
 -- The TCP port of the proxy server.
@@ -80,6 +99,44 @@ setAuthenticationRequired :: IsNEProxyServer neProxyServer => neProxyServer -> B
 setAuthenticationRequired neProxyServer  value =
     sendMsg neProxyServer (mkSelector "setAuthenticationRequired:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | username
+--
+-- The username portion of the authentication credential to use when communicating with the proxy server.
+--
+-- ObjC selector: @- username@
+username :: IsNEProxyServer neProxyServer => neProxyServer -> IO (Id NSString)
+username neProxyServer  =
+    sendMsg neProxyServer (mkSelector "username") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | username
+--
+-- The username portion of the authentication credential to use when communicating with the proxy server.
+--
+-- ObjC selector: @- setUsername:@
+setUsername :: (IsNEProxyServer neProxyServer, IsNSString value) => neProxyServer -> value -> IO ()
+setUsername neProxyServer  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neProxyServer (mkSelector "setUsername:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | password
+--
+-- The password portion of the authentication credential to use when communicating with the proxy server. This property is only saved persistently if the username property is non-nil and non-empty and if the authenticationRequired flag is set.
+--
+-- ObjC selector: @- password@
+password :: IsNEProxyServer neProxyServer => neProxyServer -> IO (Id NSString)
+password neProxyServer  =
+    sendMsg neProxyServer (mkSelector "password") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | password
+--
+-- The password portion of the authentication credential to use when communicating with the proxy server. This property is only saved persistently if the username property is non-nil and non-empty and if the authenticationRequired flag is set.
+--
+-- ObjC selector: @- setPassword:@
+setPassword :: (IsNEProxyServer neProxyServer, IsNSString value) => neProxyServer -> value -> IO ()
+setPassword neProxyServer  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neProxyServer (mkSelector "setPassword:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -87,6 +144,10 @@ setAuthenticationRequired neProxyServer  value =
 -- | @Selector@ for @initWithAddress:port:@
 initWithAddress_portSelector :: Selector
 initWithAddress_portSelector = mkSelector "initWithAddress:port:"
+
+-- | @Selector@ for @address@
+addressSelector :: Selector
+addressSelector = mkSelector "address"
 
 -- | @Selector@ for @port@
 portSelector :: Selector
@@ -99,4 +160,20 @@ authenticationRequiredSelector = mkSelector "authenticationRequired"
 -- | @Selector@ for @setAuthenticationRequired:@
 setAuthenticationRequiredSelector :: Selector
 setAuthenticationRequiredSelector = mkSelector "setAuthenticationRequired:"
+
+-- | @Selector@ for @username@
+usernameSelector :: Selector
+usernameSelector = mkSelector "username"
+
+-- | @Selector@ for @setUsername:@
+setUsernameSelector :: Selector
+setUsernameSelector = mkSelector "setUsername:"
+
+-- | @Selector@ for @password@
+passwordSelector :: Selector
+passwordSelector = mkSelector "password"
+
+-- | @Selector@ for @setPassword:@
+setPasswordSelector :: Selector
+setPasswordSelector = mkSelector "setPassword:"
 

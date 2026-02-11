@@ -36,6 +36,14 @@ module ObjC.Virtualization.VZVirtualMachineConfiguration
   , setMemorySize
   , cpuCount
   , setCPUCount
+  , platform
+  , setPlatform
+  , audioDevices
+  , setAudioDevices
+  , consoleDevices
+  , setConsoleDevices
+  , directorySharingDevices
+  , setDirectorySharingDevices
   , entropyDevices
   , setEntropyDevices
   , memoryBalloonDevices
@@ -48,6 +56,14 @@ module ObjC.Virtualization.VZVirtualMachineConfiguration
   , setSocketDevices
   , storageDevices
   , setStorageDevices
+  , keyboards
+  , setKeyboards
+  , pointingDevices
+  , setPointingDevices
+  , graphicsDevices
+  , setGraphicsDevices
+  , usbControllers
+  , setUsbControllers
   , minimumAllowedMemorySize
   , maximumAllowedMemorySize
   , minimumAllowedCPUCount
@@ -60,6 +76,14 @@ module ObjC.Virtualization.VZVirtualMachineConfiguration
   , setMemorySizeSelector
   , cpuCountSelector
   , setCPUCountSelector
+  , platformSelector
+  , setPlatformSelector
+  , audioDevicesSelector
+  , setAudioDevicesSelector
+  , consoleDevicesSelector
+  , setConsoleDevicesSelector
+  , directorySharingDevicesSelector
+  , setDirectorySharingDevicesSelector
   , entropyDevicesSelector
   , setEntropyDevicesSelector
   , memoryBalloonDevicesSelector
@@ -72,6 +96,14 @@ module ObjC.Virtualization.VZVirtualMachineConfiguration
   , setSocketDevicesSelector
   , storageDevicesSelector
   , setStorageDevicesSelector
+  , keyboardsSelector
+  , setKeyboardsSelector
+  , pointingDevicesSelector
+  , setPointingDevicesSelector
+  , graphicsDevicesSelector
+  , setGraphicsDevicesSelector
+  , usbControllersSelector
+  , setUsbControllersSelector
   , minimumAllowedMemorySizeSelector
   , maximumAllowedMemorySizeSelector
   , minimumAllowedCPUCountSelector
@@ -200,6 +232,90 @@ setCPUCount :: IsVZVirtualMachineConfiguration vzVirtualMachineConfiguration => 
 setCPUCount vzVirtualMachineConfiguration  value =
     sendMsg vzVirtualMachineConfiguration (mkSelector "setCPUCount:") retVoid [argCULong value]
 
+-- | The hardware platform to use.
+--
+-- Can be an instance of a VZGenericPlatformConfiguration or VZMacPlatformConfiguration. Defaults to VZGenericPlatformConfiguration.    When restoring from saved state you must ensure your configuration matches that of the saved virtual machine.
+--
+-- See: VZGenericPlatformConfiguration
+--
+-- See: VZMacPlatformConfiguration
+--
+-- ObjC selector: @- platform@
+platform :: IsVZVirtualMachineConfiguration vzVirtualMachineConfiguration => vzVirtualMachineConfiguration -> IO (Id VZPlatformConfiguration)
+platform vzVirtualMachineConfiguration  =
+    sendMsg vzVirtualMachineConfiguration (mkSelector "platform") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The hardware platform to use.
+--
+-- Can be an instance of a VZGenericPlatformConfiguration or VZMacPlatformConfiguration. Defaults to VZGenericPlatformConfiguration.    When restoring from saved state you must ensure your configuration matches that of the saved virtual machine.
+--
+-- See: VZGenericPlatformConfiguration
+--
+-- See: VZMacPlatformConfiguration
+--
+-- ObjC selector: @- setPlatform:@
+setPlatform :: (IsVZVirtualMachineConfiguration vzVirtualMachineConfiguration, IsVZPlatformConfiguration value) => vzVirtualMachineConfiguration -> value -> IO ()
+setPlatform vzVirtualMachineConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg vzVirtualMachineConfiguration (mkSelector "setPlatform:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | List of audio devices. Empty by default.
+--
+-- See: VZVirtioSoundDeviceConfiguration
+--
+-- ObjC selector: @- audioDevices@
+audioDevices :: IsVZVirtualMachineConfiguration vzVirtualMachineConfiguration => vzVirtualMachineConfiguration -> IO (Id NSArray)
+audioDevices vzVirtualMachineConfiguration  =
+    sendMsg vzVirtualMachineConfiguration (mkSelector "audioDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | List of audio devices. Empty by default.
+--
+-- See: VZVirtioSoundDeviceConfiguration
+--
+-- ObjC selector: @- setAudioDevices:@
+setAudioDevices :: (IsVZVirtualMachineConfiguration vzVirtualMachineConfiguration, IsNSArray value) => vzVirtualMachineConfiguration -> value -> IO ()
+setAudioDevices vzVirtualMachineConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg vzVirtualMachineConfiguration (mkSelector "setAudioDevices:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | List of console devices. Empty by default.
+--
+-- See: VZVirtioConsoleDeviceConfiguration
+--
+-- ObjC selector: @- consoleDevices@
+consoleDevices :: IsVZVirtualMachineConfiguration vzVirtualMachineConfiguration => vzVirtualMachineConfiguration -> IO (Id NSArray)
+consoleDevices vzVirtualMachineConfiguration  =
+    sendMsg vzVirtualMachineConfiguration (mkSelector "consoleDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | List of console devices. Empty by default.
+--
+-- See: VZVirtioConsoleDeviceConfiguration
+--
+-- ObjC selector: @- setConsoleDevices:@
+setConsoleDevices :: (IsVZVirtualMachineConfiguration vzVirtualMachineConfiguration, IsNSArray value) => vzVirtualMachineConfiguration -> value -> IO ()
+setConsoleDevices vzVirtualMachineConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg vzVirtualMachineConfiguration (mkSelector "setConsoleDevices:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | List of directory sharing devices. Empty by default.
+--
+-- See: VZVirtioFileSystemDeviceConfiguration
+--
+-- ObjC selector: @- directorySharingDevices@
+directorySharingDevices :: IsVZVirtualMachineConfiguration vzVirtualMachineConfiguration => vzVirtualMachineConfiguration -> IO (Id NSArray)
+directorySharingDevices vzVirtualMachineConfiguration  =
+    sendMsg vzVirtualMachineConfiguration (mkSelector "directorySharingDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | List of directory sharing devices. Empty by default.
+--
+-- See: VZVirtioFileSystemDeviceConfiguration
+--
+-- ObjC selector: @- setDirectorySharingDevices:@
+setDirectorySharingDevices :: (IsVZVirtualMachineConfiguration vzVirtualMachineConfiguration, IsNSArray value) => vzVirtualMachineConfiguration -> value -> IO ()
+setDirectorySharingDevices vzVirtualMachineConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg vzVirtualMachineConfiguration (mkSelector "setDirectorySharingDevices:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | List of entropy devices. Empty by default.
 --
 -- See: VZVirtioEntropyDeviceConfiguration
@@ -322,6 +438,94 @@ setStorageDevices vzVirtualMachineConfiguration  value =
   withObjCPtr value $ \raw_value ->
       sendMsg vzVirtualMachineConfiguration (mkSelector "setStorageDevices:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | List of keyboards. Empty by default.
+--
+-- See: VZUSBKeyboardConfiguration
+--
+-- See: VZMacKeyboardConfiguration
+--
+-- ObjC selector: @- keyboards@
+keyboards :: IsVZVirtualMachineConfiguration vzVirtualMachineConfiguration => vzVirtualMachineConfiguration -> IO (Id NSArray)
+keyboards vzVirtualMachineConfiguration  =
+    sendMsg vzVirtualMachineConfiguration (mkSelector "keyboards") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | List of keyboards. Empty by default.
+--
+-- See: VZUSBKeyboardConfiguration
+--
+-- See: VZMacKeyboardConfiguration
+--
+-- ObjC selector: @- setKeyboards:@
+setKeyboards :: (IsVZVirtualMachineConfiguration vzVirtualMachineConfiguration, IsNSArray value) => vzVirtualMachineConfiguration -> value -> IO ()
+setKeyboards vzVirtualMachineConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg vzVirtualMachineConfiguration (mkSelector "setKeyboards:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | List of pointing devices. Empty by default.
+--
+-- See: VZUSBScreenCoordinatePointingDeviceConfiguration
+--
+-- See: VZMacTrackpadConfiguration
+--
+-- ObjC selector: @- pointingDevices@
+pointingDevices :: IsVZVirtualMachineConfiguration vzVirtualMachineConfiguration => vzVirtualMachineConfiguration -> IO (Id NSArray)
+pointingDevices vzVirtualMachineConfiguration  =
+    sendMsg vzVirtualMachineConfiguration (mkSelector "pointingDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | List of pointing devices. Empty by default.
+--
+-- See: VZUSBScreenCoordinatePointingDeviceConfiguration
+--
+-- See: VZMacTrackpadConfiguration
+--
+-- ObjC selector: @- setPointingDevices:@
+setPointingDevices :: (IsVZVirtualMachineConfiguration vzVirtualMachineConfiguration, IsNSArray value) => vzVirtualMachineConfiguration -> value -> IO ()
+setPointingDevices vzVirtualMachineConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg vzVirtualMachineConfiguration (mkSelector "setPointingDevices:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | List of graphics devices. Empty by default.
+--
+-- See: VZMacGraphicsDeviceConfiguration
+--
+-- ObjC selector: @- graphicsDevices@
+graphicsDevices :: IsVZVirtualMachineConfiguration vzVirtualMachineConfiguration => vzVirtualMachineConfiguration -> IO (Id NSArray)
+graphicsDevices vzVirtualMachineConfiguration  =
+    sendMsg vzVirtualMachineConfiguration (mkSelector "graphicsDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | List of graphics devices. Empty by default.
+--
+-- See: VZMacGraphicsDeviceConfiguration
+--
+-- ObjC selector: @- setGraphicsDevices:@
+setGraphicsDevices :: (IsVZVirtualMachineConfiguration vzVirtualMachineConfiguration, IsNSArray value) => vzVirtualMachineConfiguration -> value -> IO ()
+setGraphicsDevices vzVirtualMachineConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg vzVirtualMachineConfiguration (mkSelector "setGraphicsDevices:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | List of USB Controllers. Empty by default.
+--
+-- This list represents a set of USB controllers that the virtual machine will start with.    For each entry in this list, there will be a corresponding runtime object created in VZVirtualMachine.usbControllers property.
+--
+-- See: VZUSBControllerConfiguration
+--
+-- ObjC selector: @- usbControllers@
+usbControllers :: IsVZVirtualMachineConfiguration vzVirtualMachineConfiguration => vzVirtualMachineConfiguration -> IO (Id NSArray)
+usbControllers vzVirtualMachineConfiguration  =
+    sendMsg vzVirtualMachineConfiguration (mkSelector "usbControllers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | List of USB Controllers. Empty by default.
+--
+-- This list represents a set of USB controllers that the virtual machine will start with.    For each entry in this list, there will be a corresponding runtime object created in VZVirtualMachine.usbControllers property.
+--
+-- See: VZUSBControllerConfiguration
+--
+-- ObjC selector: @- setUsbControllers:@
+setUsbControllers :: (IsVZVirtualMachineConfiguration vzVirtualMachineConfiguration, IsNSArray value) => vzVirtualMachineConfiguration -> value -> IO ()
+setUsbControllers vzVirtualMachineConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg vzVirtualMachineConfiguration (mkSelector "setUsbControllers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | Minimum amount of memory required by virtual machines.
 --
 -- See: VZVirtualMachineConfiguration.memorySize
@@ -402,6 +606,38 @@ cpuCountSelector = mkSelector "CPUCount"
 setCPUCountSelector :: Selector
 setCPUCountSelector = mkSelector "setCPUCount:"
 
+-- | @Selector@ for @platform@
+platformSelector :: Selector
+platformSelector = mkSelector "platform"
+
+-- | @Selector@ for @setPlatform:@
+setPlatformSelector :: Selector
+setPlatformSelector = mkSelector "setPlatform:"
+
+-- | @Selector@ for @audioDevices@
+audioDevicesSelector :: Selector
+audioDevicesSelector = mkSelector "audioDevices"
+
+-- | @Selector@ for @setAudioDevices:@
+setAudioDevicesSelector :: Selector
+setAudioDevicesSelector = mkSelector "setAudioDevices:"
+
+-- | @Selector@ for @consoleDevices@
+consoleDevicesSelector :: Selector
+consoleDevicesSelector = mkSelector "consoleDevices"
+
+-- | @Selector@ for @setConsoleDevices:@
+setConsoleDevicesSelector :: Selector
+setConsoleDevicesSelector = mkSelector "setConsoleDevices:"
+
+-- | @Selector@ for @directorySharingDevices@
+directorySharingDevicesSelector :: Selector
+directorySharingDevicesSelector = mkSelector "directorySharingDevices"
+
+-- | @Selector@ for @setDirectorySharingDevices:@
+setDirectorySharingDevicesSelector :: Selector
+setDirectorySharingDevicesSelector = mkSelector "setDirectorySharingDevices:"
+
 -- | @Selector@ for @entropyDevices@
 entropyDevicesSelector :: Selector
 entropyDevicesSelector = mkSelector "entropyDevices"
@@ -449,6 +685,38 @@ storageDevicesSelector = mkSelector "storageDevices"
 -- | @Selector@ for @setStorageDevices:@
 setStorageDevicesSelector :: Selector
 setStorageDevicesSelector = mkSelector "setStorageDevices:"
+
+-- | @Selector@ for @keyboards@
+keyboardsSelector :: Selector
+keyboardsSelector = mkSelector "keyboards"
+
+-- | @Selector@ for @setKeyboards:@
+setKeyboardsSelector :: Selector
+setKeyboardsSelector = mkSelector "setKeyboards:"
+
+-- | @Selector@ for @pointingDevices@
+pointingDevicesSelector :: Selector
+pointingDevicesSelector = mkSelector "pointingDevices"
+
+-- | @Selector@ for @setPointingDevices:@
+setPointingDevicesSelector :: Selector
+setPointingDevicesSelector = mkSelector "setPointingDevices:"
+
+-- | @Selector@ for @graphicsDevices@
+graphicsDevicesSelector :: Selector
+graphicsDevicesSelector = mkSelector "graphicsDevices"
+
+-- | @Selector@ for @setGraphicsDevices:@
+setGraphicsDevicesSelector :: Selector
+setGraphicsDevicesSelector = mkSelector "setGraphicsDevices:"
+
+-- | @Selector@ for @usbControllers@
+usbControllersSelector :: Selector
+usbControllersSelector = mkSelector "usbControllers"
+
+-- | @Selector@ for @setUsbControllers:@
+setUsbControllersSelector :: Selector
+setUsbControllersSelector = mkSelector "setUsbControllers:"
 
 -- | @Selector@ for @minimumAllowedMemorySize@
 minimumAllowedMemorySizeSelector :: Selector

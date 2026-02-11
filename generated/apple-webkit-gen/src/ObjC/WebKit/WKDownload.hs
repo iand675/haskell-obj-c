@@ -9,11 +9,15 @@ module ObjC.WebKit.WKDownload
   , cancel
   , originalRequest
   , webView
+  , delegate
+  , setDelegate
   , userInitiated
   , originatingFrame
   , cancelSelector
   , originalRequestSelector
   , webViewSelector
+  , delegateSelector
+  , setDelegateSelector
   , userInitiatedSelector
   , originatingFrameSelector
 
@@ -50,6 +54,16 @@ webView :: IsWKDownload wkDownload => wkDownload -> IO (Id WKWebView)
 webView wkDownload  =
     sendMsg wkDownload (mkSelector "webView") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- delegate@
+delegate :: IsWKDownload wkDownload => wkDownload -> IO RawId
+delegate wkDownload  =
+    fmap (RawId . castPtr) $ sendMsg wkDownload (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsWKDownload wkDownload => wkDownload -> RawId -> IO ()
+setDelegate wkDownload  value =
+    sendMsg wkDownload (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- userInitiated@
 userInitiated :: IsWKDownload wkDownload => wkDownload -> IO Bool
 userInitiated wkDownload  =
@@ -75,6 +89,14 @@ originalRequestSelector = mkSelector "originalRequest"
 -- | @Selector@ for @webView@
 webViewSelector :: Selector
 webViewSelector = mkSelector "webView"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @userInitiated@
 userInitiatedSelector :: Selector

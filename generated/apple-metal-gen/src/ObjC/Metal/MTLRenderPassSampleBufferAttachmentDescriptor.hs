@@ -6,6 +6,8 @@
 module ObjC.Metal.MTLRenderPassSampleBufferAttachmentDescriptor
   ( MTLRenderPassSampleBufferAttachmentDescriptor
   , IsMTLRenderPassSampleBufferAttachmentDescriptor(..)
+  , sampleBuffer
+  , setSampleBuffer
   , startOfVertexSampleIndex
   , setStartOfVertexSampleIndex
   , endOfVertexSampleIndex
@@ -14,6 +16,8 @@ module ObjC.Metal.MTLRenderPassSampleBufferAttachmentDescriptor
   , setStartOfFragmentSampleIndex
   , endOfFragmentSampleIndex
   , setEndOfFragmentSampleIndex
+  , sampleBufferSelector
+  , setSampleBufferSelector
   , startOfVertexSampleIndexSelector
   , setStartOfVertexSampleIndexSelector
   , endOfVertexSampleIndexSelector
@@ -40,6 +44,24 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.Metal.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | sampleBuffer
+--
+-- The sample buffer to store samples for the render-pass defined samples.If sampleBuffer is non-nil, the sample indices will be used to store samples intothe sample buffer.  If no sample buffer is provided, no samples will be taken.If any of the sample indices are specified as MTLCounterDontSample, no samplewill be taken for that action.
+--
+-- ObjC selector: @- sampleBuffer@
+sampleBuffer :: IsMTLRenderPassSampleBufferAttachmentDescriptor mtlRenderPassSampleBufferAttachmentDescriptor => mtlRenderPassSampleBufferAttachmentDescriptor -> IO RawId
+sampleBuffer mtlRenderPassSampleBufferAttachmentDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlRenderPassSampleBufferAttachmentDescriptor (mkSelector "sampleBuffer") (retPtr retVoid) []
+
+-- | sampleBuffer
+--
+-- The sample buffer to store samples for the render-pass defined samples.If sampleBuffer is non-nil, the sample indices will be used to store samples intothe sample buffer.  If no sample buffer is provided, no samples will be taken.If any of the sample indices are specified as MTLCounterDontSample, no samplewill be taken for that action.
+--
+-- ObjC selector: @- setSampleBuffer:@
+setSampleBuffer :: IsMTLRenderPassSampleBufferAttachmentDescriptor mtlRenderPassSampleBufferAttachmentDescriptor => mtlRenderPassSampleBufferAttachmentDescriptor -> RawId -> IO ()
+setSampleBuffer mtlRenderPassSampleBufferAttachmentDescriptor  value =
+    sendMsg mtlRenderPassSampleBufferAttachmentDescriptor (mkSelector "setSampleBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | startOfVertexSampleIndex
 --
@@ -132,6 +154,14 @@ setEndOfFragmentSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor  value
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @sampleBuffer@
+sampleBufferSelector :: Selector
+sampleBufferSelector = mkSelector "sampleBuffer"
+
+-- | @Selector@ for @setSampleBuffer:@
+setSampleBufferSelector :: Selector
+setSampleBufferSelector = mkSelector "setSampleBuffer:"
 
 -- | @Selector@ for @startOfVertexSampleIndex@
 startOfVertexSampleIndexSelector :: Selector

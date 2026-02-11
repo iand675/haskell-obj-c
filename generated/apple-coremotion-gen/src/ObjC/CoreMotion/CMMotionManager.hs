@@ -26,19 +26,23 @@ module ObjC.CoreMotion.CMMotionManager
   , setAccelerometerUpdateInterval
   , accelerometerAvailable
   , accelerometerActive
+  , accelerometerData
   , gyroUpdateInterval
   , setGyroUpdateInterval
   , gyroAvailable
   , gyroActive
+  , gyroData
   , magnetometerUpdateInterval
   , setMagnetometerUpdateInterval
   , magnetometerAvailable
   , magnetometerActive
+  , magnetometerData
   , deviceMotionUpdateInterval
   , setDeviceMotionUpdateInterval
   , attitudeReferenceFrame
   , deviceMotionAvailable
   , deviceMotionActive
+  , deviceMotion
   , showsDeviceMovementDisplay
   , setShowsDeviceMovementDisplay
   , startAccelerometerUpdatesSelector
@@ -60,19 +64,23 @@ module ObjC.CoreMotion.CMMotionManager
   , setAccelerometerUpdateIntervalSelector
   , accelerometerAvailableSelector
   , accelerometerActiveSelector
+  , accelerometerDataSelector
   , gyroUpdateIntervalSelector
   , setGyroUpdateIntervalSelector
   , gyroAvailableSelector
   , gyroActiveSelector
+  , gyroDataSelector
   , magnetometerUpdateIntervalSelector
   , setMagnetometerUpdateIntervalSelector
   , magnetometerAvailableSelector
   , magnetometerActiveSelector
+  , magnetometerDataSelector
   , deviceMotionUpdateIntervalSelector
   , setDeviceMotionUpdateIntervalSelector
   , attitudeReferenceFrameSelector
   , deviceMotionAvailableSelector
   , deviceMotionActiveSelector
+  , deviceMotionSelector
   , showsDeviceMovementDisplaySelector
   , setShowsDeviceMovementDisplaySelector
 
@@ -203,6 +211,11 @@ accelerometerActive :: IsCMMotionManager cmMotionManager => cmMotionManager -> I
 accelerometerActive cmMotionManager  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmMotionManager (mkSelector "accelerometerActive") retCULong []
 
+-- | @- accelerometerData@
+accelerometerData :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO (Id CMAccelerometerData)
+accelerometerData cmMotionManager  =
+    sendMsg cmMotionManager (mkSelector "accelerometerData") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- gyroUpdateInterval@
 gyroUpdateInterval :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO CDouble
 gyroUpdateInterval cmMotionManager  =
@@ -223,6 +236,11 @@ gyroActive :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO Bool
 gyroActive cmMotionManager  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmMotionManager (mkSelector "gyroActive") retCULong []
 
+-- | @- gyroData@
+gyroData :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO (Id CMGyroData)
+gyroData cmMotionManager  =
+    sendMsg cmMotionManager (mkSelector "gyroData") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- magnetometerUpdateInterval@
 magnetometerUpdateInterval :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO CDouble
 magnetometerUpdateInterval cmMotionManager  =
@@ -242,6 +260,11 @@ magnetometerAvailable cmMotionManager  =
 magnetometerActive :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO Bool
 magnetometerActive cmMotionManager  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmMotionManager (mkSelector "magnetometerActive") retCULong []
+
+-- | @- magnetometerData@
+magnetometerData :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO RawId
+magnetometerData cmMotionManager  =
+    fmap (RawId . castPtr) $ sendMsg cmMotionManager (mkSelector "magnetometerData") (retPtr retVoid) []
 
 -- | @- deviceMotionUpdateInterval@
 deviceMotionUpdateInterval :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO CDouble
@@ -267,6 +290,11 @@ deviceMotionAvailable cmMotionManager  =
 deviceMotionActive :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO Bool
 deviceMotionActive cmMotionManager  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmMotionManager (mkSelector "deviceMotionActive") retCULong []
+
+-- | @- deviceMotion@
+deviceMotion :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO (Id CMDeviceMotion)
+deviceMotion cmMotionManager  =
+    sendMsg cmMotionManager (mkSelector "deviceMotion") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- showsDeviceMovementDisplay@
 showsDeviceMovementDisplay :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO Bool
@@ -358,6 +386,10 @@ accelerometerAvailableSelector = mkSelector "accelerometerAvailable"
 accelerometerActiveSelector :: Selector
 accelerometerActiveSelector = mkSelector "accelerometerActive"
 
+-- | @Selector@ for @accelerometerData@
+accelerometerDataSelector :: Selector
+accelerometerDataSelector = mkSelector "accelerometerData"
+
 -- | @Selector@ for @gyroUpdateInterval@
 gyroUpdateIntervalSelector :: Selector
 gyroUpdateIntervalSelector = mkSelector "gyroUpdateInterval"
@@ -374,6 +406,10 @@ gyroAvailableSelector = mkSelector "gyroAvailable"
 gyroActiveSelector :: Selector
 gyroActiveSelector = mkSelector "gyroActive"
 
+-- | @Selector@ for @gyroData@
+gyroDataSelector :: Selector
+gyroDataSelector = mkSelector "gyroData"
+
 -- | @Selector@ for @magnetometerUpdateInterval@
 magnetometerUpdateIntervalSelector :: Selector
 magnetometerUpdateIntervalSelector = mkSelector "magnetometerUpdateInterval"
@@ -389,6 +425,10 @@ magnetometerAvailableSelector = mkSelector "magnetometerAvailable"
 -- | @Selector@ for @magnetometerActive@
 magnetometerActiveSelector :: Selector
 magnetometerActiveSelector = mkSelector "magnetometerActive"
+
+-- | @Selector@ for @magnetometerData@
+magnetometerDataSelector :: Selector
+magnetometerDataSelector = mkSelector "magnetometerData"
 
 -- | @Selector@ for @deviceMotionUpdateInterval@
 deviceMotionUpdateIntervalSelector :: Selector
@@ -409,6 +449,10 @@ deviceMotionAvailableSelector = mkSelector "deviceMotionAvailable"
 -- | @Selector@ for @deviceMotionActive@
 deviceMotionActiveSelector :: Selector
 deviceMotionActiveSelector = mkSelector "deviceMotionActive"
+
+-- | @Selector@ for @deviceMotion@
+deviceMotionSelector :: Selector
+deviceMotionSelector = mkSelector "deviceMotion"
 
 -- | @Selector@ for @showsDeviceMovementDisplay@
 showsDeviceMovementDisplaySelector :: Selector

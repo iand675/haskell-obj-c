@@ -10,10 +10,16 @@ module ObjC.BrowserEngineKit.BELayerHierarchy
   , new
   , layerHierarchyWithError
   , invalidate
+  , handle
+  , layer
+  , setLayer
   , initSelector
   , newSelector
   , layerHierarchyWithErrorSelector
   , invalidateSelector
+  , handleSelector
+  , layerSelector
+  , setLayerSelector
 
 
   ) where
@@ -62,6 +68,27 @@ invalidate :: IsBELayerHierarchy beLayerHierarchy => beLayerHierarchy -> IO ()
 invalidate beLayerHierarchy  =
     sendMsg beLayerHierarchy (mkSelector "invalidate") retVoid []
 
+-- | a reference to this @BELayerHierarchy@ for use with @BELayerHierarchyHostingView@
+--
+-- ObjC selector: @- handle@
+handle :: IsBELayerHierarchy beLayerHierarchy => beLayerHierarchy -> IO (Id BELayerHierarchyHandle)
+handle beLayerHierarchy  =
+    sendMsg beLayerHierarchy (mkSelector "handle") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | the root layer of this hierarchy
+--
+-- ObjC selector: @- layer@
+layer :: IsBELayerHierarchy beLayerHierarchy => beLayerHierarchy -> IO RawId
+layer beLayerHierarchy  =
+    fmap (RawId . castPtr) $ sendMsg beLayerHierarchy (mkSelector "layer") (retPtr retVoid) []
+
+-- | the root layer of this hierarchy
+--
+-- ObjC selector: @- setLayer:@
+setLayer :: IsBELayerHierarchy beLayerHierarchy => beLayerHierarchy -> RawId -> IO ()
+setLayer beLayerHierarchy  value =
+    sendMsg beLayerHierarchy (mkSelector "setLayer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -81,4 +108,16 @@ layerHierarchyWithErrorSelector = mkSelector "layerHierarchyWithError:"
 -- | @Selector@ for @invalidate@
 invalidateSelector :: Selector
 invalidateSelector = mkSelector "invalidate"
+
+-- | @Selector@ for @handle@
+handleSelector :: Selector
+handleSelector = mkSelector "handle"
+
+-- | @Selector@ for @layer@
+layerSelector :: Selector
+layerSelector = mkSelector "layer"
+
+-- | @Selector@ for @setLayer:@
+setLayerSelector :: Selector
+setLayerSelector = mkSelector "setLayer:"
 

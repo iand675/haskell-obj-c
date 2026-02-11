@@ -33,6 +33,8 @@ module ObjC.Foundation.NSKeyedUnarchiver
   , decodeFloatForKey
   , decodeDoubleForKey
   , decodeBytesForKey_returnedLength
+  , delegate
+  , setDelegate
   , requiresSecureCoding
   , setRequiresSecureCoding
   , decodingFailurePolicy
@@ -61,6 +63,8 @@ module ObjC.Foundation.NSKeyedUnarchiver
   , decodeFloatForKeySelector
   , decodeDoubleForKeySelector
   , decodeBytesForKey_returnedLengthSelector
+  , delegateSelector
+  , setDelegateSelector
   , requiresSecureCodingSelector
   , setRequiresSecureCodingSelector
   , decodingFailurePolicySelector
@@ -318,6 +322,16 @@ decodeBytesForKey_returnedLength nsKeyedUnarchiver  key lengthp =
   withObjCPtr key $ \raw_key ->
       fmap Const $ fmap castPtr $ sendMsg nsKeyedUnarchiver (mkSelector "decodeBytesForKey:returnedLength:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ()), argPtr lengthp]
 
+-- | @- delegate@
+delegate :: IsNSKeyedUnarchiver nsKeyedUnarchiver => nsKeyedUnarchiver -> IO RawId
+delegate nsKeyedUnarchiver  =
+    fmap (RawId . castPtr) $ sendMsg nsKeyedUnarchiver (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSKeyedUnarchiver nsKeyedUnarchiver => nsKeyedUnarchiver -> RawId -> IO ()
+setDelegate nsKeyedUnarchiver  value =
+    sendMsg nsKeyedUnarchiver (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- requiresSecureCoding@
 requiresSecureCoding :: IsNSKeyedUnarchiver nsKeyedUnarchiver => nsKeyedUnarchiver -> IO Bool
 requiresSecureCoding nsKeyedUnarchiver  =
@@ -437,6 +451,14 @@ decodeDoubleForKeySelector = mkSelector "decodeDoubleForKey:"
 -- | @Selector@ for @decodeBytesForKey:returnedLength:@
 decodeBytesForKey_returnedLengthSelector :: Selector
 decodeBytesForKey_returnedLengthSelector = mkSelector "decodeBytesForKey:returnedLength:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @requiresSecureCoding@
 requiresSecureCodingSelector :: Selector

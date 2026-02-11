@@ -12,6 +12,10 @@
 module ObjC.GameplayKit.SCNNode
   ( SCNNode
   , IsSCNNode(..)
+  , entity
+  , setEntity
+  , entitySelector
+  , setEntitySelector
 
 
   ) where
@@ -31,7 +35,33 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.GameplayKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | The GKEntity associated with the node via a GKSCNNodeComponent.
+--
+-- See: GKEntity
+--
+-- ObjC selector: @- entity@
+entity :: IsSCNNode scnNode => scnNode -> IO RawId
+entity scnNode  =
+    fmap (RawId . castPtr) $ sendMsg scnNode (mkSelector "entity") (retPtr retVoid) []
+
+-- | The GKEntity associated with the node via a GKSCNNodeComponent.
+--
+-- See: GKEntity
+--
+-- ObjC selector: @- setEntity:@
+setEntity :: IsSCNNode scnNode => scnNode -> RawId -> IO ()
+setEntity scnNode  value =
+    sendMsg scnNode (mkSelector "setEntity:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @entity@
+entitySelector :: Selector
+entitySelector = mkSelector "entity"
+
+-- | @Selector@ for @setEntity:@
+setEntitySelector :: Selector
+setEntitySelector = mkSelector "setEntity:"
 

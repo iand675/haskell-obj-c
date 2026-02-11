@@ -8,12 +8,16 @@
 module ObjC.PassKit.PKIdentityRequest
   ( PKIdentityRequest
   , IsPKIdentityRequest(..)
+  , descriptor
+  , setDescriptor
   , nonce
   , setNonce
   , merchantIdentifier
   , setMerchantIdentifier
   , usageDescriptionKey
   , setUsageDescriptionKey
+  , descriptorSelector
+  , setDescriptorSelector
   , nonceSelector
   , setNonceSelector
   , merchantIdentifierSelector
@@ -38,6 +42,20 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.PassKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | A descriptor describing the identity document to request.
+--
+-- ObjC selector: @- descriptor@
+descriptor :: IsPKIdentityRequest pkIdentityRequest => pkIdentityRequest -> IO RawId
+descriptor pkIdentityRequest  =
+    fmap (RawId . castPtr) $ sendMsg pkIdentityRequest (mkSelector "descriptor") (retPtr retVoid) []
+
+-- | A descriptor describing the identity document to request.
+--
+-- ObjC selector: @- setDescriptor:@
+setDescriptor :: IsPKIdentityRequest pkIdentityRequest => pkIdentityRequest -> RawId -> IO ()
+setDescriptor pkIdentityRequest  value =
+    sendMsg pkIdentityRequest (mkSelector "setDescriptor:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | A caller-specified nonce that will be included in the signed response payload. This is treated as opaque by the PKIdentityAuthorizationController, and has a maximum allowed size of 64 bytes.
 --
@@ -91,6 +109,14 @@ setUsageDescriptionKey pkIdentityRequest  value =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @descriptor@
+descriptorSelector :: Selector
+descriptorSelector = mkSelector "descriptor"
+
+-- | @Selector@ for @setDescriptor:@
+setDescriptorSelector :: Selector
+setDescriptorSelector = mkSelector "setDescriptor:"
 
 -- | @Selector@ for @nonce@
 nonceSelector :: Selector

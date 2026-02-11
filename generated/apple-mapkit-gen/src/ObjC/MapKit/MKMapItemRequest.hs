@@ -9,17 +9,23 @@ module ObjC.MapKit.MKMapItemRequest
   , init_
   , new
   , initWithMapItemIdentifier
+  , initWithMapFeatureAnnotation
   , getMapItemWithCompletionHandler
   , cancel
   , mapItemIdentifier
+  , mapFeatureAnnotation
+  , featureAnnotation
   , cancelled
   , loading
   , initSelector
   , newSelector
   , initWithMapItemIdentifierSelector
+  , initWithMapFeatureAnnotationSelector
   , getMapItemWithCompletionHandlerSelector
   , cancelSelector
   , mapItemIdentifierSelector
+  , mapFeatureAnnotationSelector
+  , featureAnnotationSelector
   , cancelledSelector
   , loadingSelector
 
@@ -59,6 +65,11 @@ initWithMapItemIdentifier mkMapItemRequest  identifier =
   withObjCPtr identifier $ \raw_identifier ->
       sendMsg mkMapItemRequest (mkSelector "initWithMapItemIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
 
+-- | @- initWithMapFeatureAnnotation:@
+initWithMapFeatureAnnotation :: IsMKMapItemRequest mkMapItemRequest => mkMapItemRequest -> RawId -> IO (Id MKMapItemRequest)
+initWithMapFeatureAnnotation mkMapItemRequest  mapFeatureAnnotation =
+    sendMsg mkMapItemRequest (mkSelector "initWithMapFeatureAnnotation:") (retPtr retVoid) [argPtr (castPtr (unRawId mapFeatureAnnotation) :: Ptr ())] >>= ownedObject . castPtr
+
 -- | @- getMapItemWithCompletionHandler:@
 getMapItemWithCompletionHandler :: IsMKMapItemRequest mkMapItemRequest => mkMapItemRequest -> Ptr () -> IO ()
 getMapItemWithCompletionHandler mkMapItemRequest  completionHandler =
@@ -73,6 +84,16 @@ cancel mkMapItemRequest  =
 mapItemIdentifier :: IsMKMapItemRequest mkMapItemRequest => mkMapItemRequest -> IO (Id MKMapItemIdentifier)
 mapItemIdentifier mkMapItemRequest  =
     sendMsg mkMapItemRequest (mkSelector "mapItemIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- mapFeatureAnnotation@
+mapFeatureAnnotation :: IsMKMapItemRequest mkMapItemRequest => mkMapItemRequest -> IO RawId
+mapFeatureAnnotation mkMapItemRequest  =
+    fmap (RawId . castPtr) $ sendMsg mkMapItemRequest (mkSelector "mapFeatureAnnotation") (retPtr retVoid) []
+
+-- | @- featureAnnotation@
+featureAnnotation :: IsMKMapItemRequest mkMapItemRequest => mkMapItemRequest -> IO RawId
+featureAnnotation mkMapItemRequest  =
+    fmap (RawId . castPtr) $ sendMsg mkMapItemRequest (mkSelector "featureAnnotation") (retPtr retVoid) []
 
 -- | @- cancelled@
 cancelled :: IsMKMapItemRequest mkMapItemRequest => mkMapItemRequest -> IO Bool
@@ -100,6 +121,10 @@ newSelector = mkSelector "new"
 initWithMapItemIdentifierSelector :: Selector
 initWithMapItemIdentifierSelector = mkSelector "initWithMapItemIdentifier:"
 
+-- | @Selector@ for @initWithMapFeatureAnnotation:@
+initWithMapFeatureAnnotationSelector :: Selector
+initWithMapFeatureAnnotationSelector = mkSelector "initWithMapFeatureAnnotation:"
+
 -- | @Selector@ for @getMapItemWithCompletionHandler:@
 getMapItemWithCompletionHandlerSelector :: Selector
 getMapItemWithCompletionHandlerSelector = mkSelector "getMapItemWithCompletionHandler:"
@@ -111,6 +136,14 @@ cancelSelector = mkSelector "cancel"
 -- | @Selector@ for @mapItemIdentifier@
 mapItemIdentifierSelector :: Selector
 mapItemIdentifierSelector = mkSelector "mapItemIdentifier"
+
+-- | @Selector@ for @mapFeatureAnnotation@
+mapFeatureAnnotationSelector :: Selector
+mapFeatureAnnotationSelector = mkSelector "mapFeatureAnnotation"
+
+-- | @Selector@ for @featureAnnotation@
+featureAnnotationSelector :: Selector
+featureAnnotationSelector = mkSelector "featureAnnotation"
 
 -- | @Selector@ for @cancelled@
 cancelledSelector :: Selector

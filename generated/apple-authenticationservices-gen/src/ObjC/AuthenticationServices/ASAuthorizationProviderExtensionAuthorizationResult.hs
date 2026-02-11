@@ -14,6 +14,8 @@ module ObjC.AuthenticationServices.ASAuthorizationProviderExtensionAuthorization
   , setHttpResponse
   , httpBody
   , setHttpBody
+  , privateKeys
+  , setPrivateKeys
   , initWithHTTPAuthorizationHeadersSelector
   , initWithHTTPResponse_httpBodySelector
   , httpAuthorizationHeadersSelector
@@ -22,6 +24,8 @@ module ObjC.AuthenticationServices.ASAuthorizationProviderExtensionAuthorization
   , setHttpResponseSelector
   , httpBodySelector
   , setHttpBodySelector
+  , privateKeysSelector
+  , setPrivateKeysSelector
 
 
   ) where
@@ -103,6 +107,21 @@ setHttpBody asAuthorizationProviderExtensionAuthorizationResult  value =
   withObjCPtr value $ \raw_value ->
       sendMsg asAuthorizationProviderExtensionAuthorizationResult (mkSelector "setHttpBody:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | Private SecKeys.
+--
+-- ObjC selector: @- privateKeys@
+privateKeys :: IsASAuthorizationProviderExtensionAuthorizationResult asAuthorizationProviderExtensionAuthorizationResult => asAuthorizationProviderExtensionAuthorizationResult -> IO (Id NSArray)
+privateKeys asAuthorizationProviderExtensionAuthorizationResult  =
+    sendMsg asAuthorizationProviderExtensionAuthorizationResult (mkSelector "privateKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Private SecKeys.
+--
+-- ObjC selector: @- setPrivateKeys:@
+setPrivateKeys :: (IsASAuthorizationProviderExtensionAuthorizationResult asAuthorizationProviderExtensionAuthorizationResult, IsNSArray value) => asAuthorizationProviderExtensionAuthorizationResult -> value -> IO ()
+setPrivateKeys asAuthorizationProviderExtensionAuthorizationResult  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionAuthorizationResult (mkSelector "setPrivateKeys:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -138,4 +157,12 @@ httpBodySelector = mkSelector "httpBody"
 -- | @Selector@ for @setHttpBody:@
 setHttpBodySelector :: Selector
 setHttpBodySelector = mkSelector "setHttpBody:"
+
+-- | @Selector@ for @privateKeys@
+privateKeysSelector :: Selector
+privateKeysSelector = mkSelector "privateKeys"
+
+-- | @Selector@ for @setPrivateKeys:@
+setPrivateKeysSelector :: Selector
+setPrivateKeysSelector = mkSelector "setPrivateKeys:"
 

@@ -127,14 +127,19 @@ module ObjC.AppKit.NSTextView
   , textContainerOrigin
   , layoutManager
   , textStorage
+  , textLayoutManager
+  , textContentStorage
   , shouldDrawInsertionPoint
   , stronglyReferencesTextStorage
   , usesAdaptiveColorMappingForDarkAppearance
   , setUsesAdaptiveColorMappingForDarkAppearance
+  , textHighlightAttributes
+  , setTextHighlightAttributes
   , automaticTextCompletionEnabled
   , setAutomaticTextCompletionEnabled
   , allowsCharacterPickerTouchBarItem
   , setAllowsCharacterPickerTouchBarItem
+  , candidateListTouchBarItem
   , smartInsertDeleteEnabled
   , setSmartInsertDeleteEnabled
   , automaticQuoteSubstitutionEnabled
@@ -206,6 +211,8 @@ module ObjC.AppKit.NSTextView
   , setAllowsImageEditing
   , usesRolloverButtonForSelection
   , setUsesRolloverButtonForSelection
+  , delegate
+  , setDelegate
   , editable
   , setEditable
   , selectable
@@ -224,6 +231,8 @@ module ObjC.AppKit.NSTextView
   , setUsesFontPanel
   , rulerVisible
   , setRulerVisible
+  , allowedInputSourceLocales
+  , setAllowedInputSourceLocales
   , writingToolsActive
   , writingToolsBehavior
   , setWritingToolsBehavior
@@ -353,14 +362,19 @@ module ObjC.AppKit.NSTextView
   , textContainerOriginSelector
   , layoutManagerSelector
   , textStorageSelector
+  , textLayoutManagerSelector
+  , textContentStorageSelector
   , shouldDrawInsertionPointSelector
   , stronglyReferencesTextStorageSelector
   , usesAdaptiveColorMappingForDarkAppearanceSelector
   , setUsesAdaptiveColorMappingForDarkAppearanceSelector
+  , textHighlightAttributesSelector
+  , setTextHighlightAttributesSelector
   , automaticTextCompletionEnabledSelector
   , setAutomaticTextCompletionEnabledSelector
   , allowsCharacterPickerTouchBarItemSelector
   , setAllowsCharacterPickerTouchBarItemSelector
+  , candidateListTouchBarItemSelector
   , smartInsertDeleteEnabledSelector
   , setSmartInsertDeleteEnabledSelector
   , automaticQuoteSubstitutionEnabledSelector
@@ -432,6 +446,8 @@ module ObjC.AppKit.NSTextView
   , setAllowsImageEditingSelector
   , usesRolloverButtonForSelectionSelector
   , setUsesRolloverButtonForSelectionSelector
+  , delegateSelector
+  , setDelegateSelector
   , editableSelector
   , setEditableSelector
   , selectableSelector
@@ -449,6 +465,8 @@ module ObjC.AppKit.NSTextView
   , setUsesFontPanelSelector
   , rulerVisibleSelector
   , setRulerVisibleSelector
+  , allowedInputSourceLocalesSelector
+  , setAllowedInputSourceLocalesSelector
   , writingToolsActiveSelector
   , writingToolsBehaviorSelector
   , setWritingToolsBehaviorSelector
@@ -1229,6 +1247,16 @@ textStorage :: IsNSTextView nsTextView => nsTextView -> IO (Id NSTextStorage)
 textStorage nsTextView  =
     sendMsg nsTextView (mkSelector "textStorage") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- textLayoutManager@
+textLayoutManager :: IsNSTextView nsTextView => nsTextView -> IO (Id NSTextLayoutManager)
+textLayoutManager nsTextView  =
+    sendMsg nsTextView (mkSelector "textLayoutManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- textContentStorage@
+textContentStorage :: IsNSTextView nsTextView => nsTextView -> IO (Id NSTextContentStorage)
+textContentStorage nsTextView  =
+    sendMsg nsTextView (mkSelector "textContentStorage") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- shouldDrawInsertionPoint@
 shouldDrawInsertionPoint :: IsNSTextView nsTextView => nsTextView -> IO Bool
 shouldDrawInsertionPoint nsTextView  =
@@ -1253,6 +1281,21 @@ setUsesAdaptiveColorMappingForDarkAppearance :: IsNSTextView nsTextView => nsTex
 setUsesAdaptiveColorMappingForDarkAppearance nsTextView  value =
     sendMsg nsTextView (mkSelector "setUsesAdaptiveColorMappingForDarkAppearance:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | ************************* Text Highlight  support **************************
+--
+-- ObjC selector: @- textHighlightAttributes@
+textHighlightAttributes :: IsNSTextView nsTextView => nsTextView -> IO (Id NSDictionary)
+textHighlightAttributes nsTextView  =
+    sendMsg nsTextView (mkSelector "textHighlightAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | ************************* Text Highlight  support **************************
+--
+-- ObjC selector: @- setTextHighlightAttributes:@
+setTextHighlightAttributes :: (IsNSTextView nsTextView, IsNSDictionary value) => nsTextView -> value -> IO ()
+setTextHighlightAttributes nsTextView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsTextView (mkSelector "setTextHighlightAttributes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- automaticTextCompletionEnabled@
 automaticTextCompletionEnabled :: IsNSTextView nsTextView => nsTextView -> IO Bool
 automaticTextCompletionEnabled nsTextView  =
@@ -1272,6 +1315,11 @@ allowsCharacterPickerTouchBarItem nsTextView  =
 setAllowsCharacterPickerTouchBarItem :: IsNSTextView nsTextView => nsTextView -> Bool -> IO ()
 setAllowsCharacterPickerTouchBarItem nsTextView  value =
     sendMsg nsTextView (mkSelector "setAllowsCharacterPickerTouchBarItem:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | @- candidateListTouchBarItem@
+candidateListTouchBarItem :: IsNSTextView nsTextView => nsTextView -> IO (Id NSCandidateListTouchBarItem)
+candidateListTouchBarItem nsTextView  =
+    sendMsg nsTextView (mkSelector "candidateListTouchBarItem") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | ************************* Smart copy/paste/delete/substitution support **************************
 --
@@ -1651,6 +1699,20 @@ setUsesRolloverButtonForSelection :: IsNSTextView nsTextView => nsTextView -> Bo
 setUsesRolloverButtonForSelection nsTextView  value =
     sendMsg nsTextView (mkSelector "setUsesRolloverButtonForSelection:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | ************************* NSText methods **************************
+--
+-- ObjC selector: @- delegate@
+delegate :: IsNSTextView nsTextView => nsTextView -> IO RawId
+delegate nsTextView  =
+    fmap (RawId . castPtr) $ sendMsg nsTextView (mkSelector "delegate") (retPtr retVoid) []
+
+-- | ************************* NSText methods **************************
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsNSTextView nsTextView => nsTextView -> RawId -> IO ()
+setDelegate nsTextView  value =
+    sendMsg nsTextView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- editable@
 editable :: IsNSTextView nsTextView => nsTextView -> IO Bool
 editable nsTextView  =
@@ -1741,6 +1803,21 @@ rulerVisible nsTextView  =
 setRulerVisible :: IsNSTextView nsTextView => nsTextView -> Bool -> IO ()
 setRulerVisible nsTextView  value =
     sendMsg nsTextView (mkSelector "setRulerVisible:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | ************************* Input Source support **************************
+--
+-- ObjC selector: @- allowedInputSourceLocales@
+allowedInputSourceLocales :: IsNSTextView nsTextView => nsTextView -> IO (Id NSArray)
+allowedInputSourceLocales nsTextView  =
+    sendMsg nsTextView (mkSelector "allowedInputSourceLocales") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | ************************* Input Source support **************************
+--
+-- ObjC selector: @- setAllowedInputSourceLocales:@
+setAllowedInputSourceLocales :: (IsNSTextView nsTextView, IsNSArray value) => nsTextView -> value -> IO ()
+setAllowedInputSourceLocales nsTextView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsTextView (mkSelector "setAllowedInputSourceLocales:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- writingToolsActive@
 writingToolsActive :: IsNSTextView nsTextView => nsTextView -> IO Bool
@@ -2273,6 +2350,14 @@ layoutManagerSelector = mkSelector "layoutManager"
 textStorageSelector :: Selector
 textStorageSelector = mkSelector "textStorage"
 
+-- | @Selector@ for @textLayoutManager@
+textLayoutManagerSelector :: Selector
+textLayoutManagerSelector = mkSelector "textLayoutManager"
+
+-- | @Selector@ for @textContentStorage@
+textContentStorageSelector :: Selector
+textContentStorageSelector = mkSelector "textContentStorage"
+
 -- | @Selector@ for @shouldDrawInsertionPoint@
 shouldDrawInsertionPointSelector :: Selector
 shouldDrawInsertionPointSelector = mkSelector "shouldDrawInsertionPoint"
@@ -2289,6 +2374,14 @@ usesAdaptiveColorMappingForDarkAppearanceSelector = mkSelector "usesAdaptiveColo
 setUsesAdaptiveColorMappingForDarkAppearanceSelector :: Selector
 setUsesAdaptiveColorMappingForDarkAppearanceSelector = mkSelector "setUsesAdaptiveColorMappingForDarkAppearance:"
 
+-- | @Selector@ for @textHighlightAttributes@
+textHighlightAttributesSelector :: Selector
+textHighlightAttributesSelector = mkSelector "textHighlightAttributes"
+
+-- | @Selector@ for @setTextHighlightAttributes:@
+setTextHighlightAttributesSelector :: Selector
+setTextHighlightAttributesSelector = mkSelector "setTextHighlightAttributes:"
+
 -- | @Selector@ for @automaticTextCompletionEnabled@
 automaticTextCompletionEnabledSelector :: Selector
 automaticTextCompletionEnabledSelector = mkSelector "automaticTextCompletionEnabled"
@@ -2304,6 +2397,10 @@ allowsCharacterPickerTouchBarItemSelector = mkSelector "allowsCharacterPickerTou
 -- | @Selector@ for @setAllowsCharacterPickerTouchBarItem:@
 setAllowsCharacterPickerTouchBarItemSelector :: Selector
 setAllowsCharacterPickerTouchBarItemSelector = mkSelector "setAllowsCharacterPickerTouchBarItem:"
+
+-- | @Selector@ for @candidateListTouchBarItem@
+candidateListTouchBarItemSelector :: Selector
+candidateListTouchBarItemSelector = mkSelector "candidateListTouchBarItem"
 
 -- | @Selector@ for @smartInsertDeleteEnabled@
 smartInsertDeleteEnabledSelector :: Selector
@@ -2589,6 +2686,14 @@ usesRolloverButtonForSelectionSelector = mkSelector "usesRolloverButtonForSelect
 setUsesRolloverButtonForSelectionSelector :: Selector
 setUsesRolloverButtonForSelectionSelector = mkSelector "setUsesRolloverButtonForSelection:"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @editable@
 editableSelector :: Selector
 editableSelector = mkSelector "editable"
@@ -2656,6 +2761,14 @@ rulerVisibleSelector = mkSelector "rulerVisible"
 -- | @Selector@ for @setRulerVisible:@
 setRulerVisibleSelector :: Selector
 setRulerVisibleSelector = mkSelector "setRulerVisible:"
+
+-- | @Selector@ for @allowedInputSourceLocales@
+allowedInputSourceLocalesSelector :: Selector
+allowedInputSourceLocalesSelector = mkSelector "allowedInputSourceLocales"
+
+-- | @Selector@ for @setAllowedInputSourceLocales:@
+setAllowedInputSourceLocalesSelector :: Selector
+setAllowedInputSourceLocalesSelector = mkSelector "setAllowedInputSourceLocales:"
 
 -- | @Selector@ for @writingToolsActive@
 writingToolsActiveSelector :: Selector

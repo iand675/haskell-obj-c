@@ -29,6 +29,8 @@ module ObjC.ScriptingBridge.SBApplication
   , classForScriptingClass
   , activate
   , running
+  , delegate
+  , setDelegate
   , launchFlags
   , setLaunchFlags
   , sendMode
@@ -44,6 +46,8 @@ module ObjC.ScriptingBridge.SBApplication
   , classForScriptingClassSelector
   , activateSelector
   , runningSelector
+  , delegateSelector
+  , setDelegateSelector
   , launchFlagsSelector
   , setLaunchFlagsSelector
   , sendModeSelector
@@ -197,6 +201,24 @@ running :: IsSBApplication sbApplication => sbApplication -> IO Bool
 running sbApplication  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg sbApplication (mkSelector "running") retCULong []
 
+-- | The error-handling delegate of the receiver.
+--
+-- The delegate should implement the ``SBApplicationDelegate/eventDidFail:withError:`` method of the ``SBApplicationDelegate`` informal protocol.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsSBApplication sbApplication => sbApplication -> IO RawId
+delegate sbApplication  =
+    fmap (RawId . castPtr) $ sendMsg sbApplication (mkSelector "delegate") (retPtr retVoid) []
+
+-- | The error-handling delegate of the receiver.
+--
+-- The delegate should implement the ``SBApplicationDelegate/eventDidFail:withError:`` method of the ``SBApplicationDelegate`` informal protocol.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsSBApplication sbApplication => sbApplication -> RawId -> IO ()
+setDelegate sbApplication  value =
+    sendMsg sbApplication (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | The launch flags for the application represented by the receiver.
 --
 -- For more information, see <doc://com.apple.documentation/documentation/coreservices/launch_services>.
@@ -298,6 +320,14 @@ activateSelector = mkSelector "activate"
 -- | @Selector@ for @running@
 runningSelector :: Selector
 runningSelector = mkSelector "running"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @launchFlags@
 launchFlagsSelector :: Selector

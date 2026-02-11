@@ -44,13 +44,23 @@ module ObjC.AppKit.NSViewController
   , setTitle
   , view
   , setView
+  , viewIfLoaded
   , viewLoaded
   , preferredContentSize
   , setPreferredContentSize
+  , extensionContext
+  , sourceItemView
+  , setSourceItemView
   , preferredScreenOrigin
   , setPreferredScreenOrigin
   , preferredMinimumSize
   , preferredMaximumSize
+  , storyboard
+  , parentViewController
+  , childViewControllers
+  , setChildViewControllers
+  , presentedViewControllers
+  , presentingViewController
   , initWithNibName_bundleSelector
   , initWithCoderSelector
   , loadViewSelector
@@ -88,13 +98,23 @@ module ObjC.AppKit.NSViewController
   , setTitleSelector
   , viewSelector
   , setViewSelector
+  , viewIfLoadedSelector
   , viewLoadedSelector
   , preferredContentSizeSelector
   , setPreferredContentSizeSelector
+  , extensionContextSelector
+  , sourceItemViewSelector
+  , setSourceItemViewSelector
   , preferredScreenOriginSelector
   , setPreferredScreenOriginSelector
   , preferredMinimumSizeSelector
   , preferredMaximumSizeSelector
+  , storyboardSelector
+  , parentViewControllerSelector
+  , childViewControllersSelector
+  , setChildViewControllersSelector
+  , presentedViewControllersSelector
+  , presentingViewControllerSelector
 
   -- * Enum types
   , NSPopoverBehavior(NSPopoverBehavior)
@@ -344,6 +364,11 @@ setView nsViewController  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsViewController (mkSelector "setView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- viewIfLoaded@
+viewIfLoaded :: IsNSViewController nsViewController => nsViewController -> IO (Id NSView)
+viewIfLoaded nsViewController  =
+    sendMsg nsViewController (mkSelector "viewIfLoaded") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- viewLoaded@
 viewLoaded :: IsNSViewController nsViewController => nsViewController -> IO Bool
 viewLoaded nsViewController  =
@@ -358,6 +383,22 @@ preferredContentSize nsViewController  =
 setPreferredContentSize :: IsNSViewController nsViewController => nsViewController -> NSSize -> IO ()
 setPreferredContentSize nsViewController  value =
     sendMsg nsViewController (mkSelector "setPreferredContentSize:") retVoid [argNSSize value]
+
+-- | @- extensionContext@
+extensionContext :: IsNSViewController nsViewController => nsViewController -> IO (Id NSExtensionContext)
+extensionContext nsViewController  =
+    sendMsg nsViewController (mkSelector "extensionContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- sourceItemView@
+sourceItemView :: IsNSViewController nsViewController => nsViewController -> IO (Id NSView)
+sourceItemView nsViewController  =
+    sendMsg nsViewController (mkSelector "sourceItemView") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setSourceItemView:@
+setSourceItemView :: (IsNSViewController nsViewController, IsNSView value) => nsViewController -> value -> IO ()
+setSourceItemView nsViewController  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsViewController (mkSelector "setSourceItemView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- preferredScreenOrigin@
 preferredScreenOrigin :: IsNSViewController nsViewController => nsViewController -> IO NSPoint
@@ -378,6 +419,37 @@ preferredMinimumSize nsViewController  =
 preferredMaximumSize :: IsNSViewController nsViewController => nsViewController -> IO NSSize
 preferredMaximumSize nsViewController  =
     sendMsgStret nsViewController (mkSelector "preferredMaximumSize") retNSSize []
+
+-- | @- storyboard@
+storyboard :: IsNSViewController nsViewController => nsViewController -> IO (Id NSStoryboard)
+storyboard nsViewController  =
+    sendMsg nsViewController (mkSelector "storyboard") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- parentViewController@
+parentViewController :: IsNSViewController nsViewController => nsViewController -> IO (Id NSViewController)
+parentViewController nsViewController  =
+    sendMsg nsViewController (mkSelector "parentViewController") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- childViewControllers@
+childViewControllers :: IsNSViewController nsViewController => nsViewController -> IO (Id NSArray)
+childViewControllers nsViewController  =
+    sendMsg nsViewController (mkSelector "childViewControllers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setChildViewControllers:@
+setChildViewControllers :: (IsNSViewController nsViewController, IsNSArray value) => nsViewController -> value -> IO ()
+setChildViewControllers nsViewController  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsViewController (mkSelector "setChildViewControllers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- presentedViewControllers@
+presentedViewControllers :: IsNSViewController nsViewController => nsViewController -> IO (Id NSArray)
+presentedViewControllers nsViewController  =
+    sendMsg nsViewController (mkSelector "presentedViewControllers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- presentingViewController@
+presentingViewController :: IsNSViewController nsViewController => nsViewController -> IO (Id NSViewController)
+presentingViewController nsViewController  =
+    sendMsg nsViewController (mkSelector "presentingViewController") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -531,6 +603,10 @@ viewSelector = mkSelector "view"
 setViewSelector :: Selector
 setViewSelector = mkSelector "setView:"
 
+-- | @Selector@ for @viewIfLoaded@
+viewIfLoadedSelector :: Selector
+viewIfLoadedSelector = mkSelector "viewIfLoaded"
+
 -- | @Selector@ for @viewLoaded@
 viewLoadedSelector :: Selector
 viewLoadedSelector = mkSelector "viewLoaded"
@@ -542,6 +618,18 @@ preferredContentSizeSelector = mkSelector "preferredContentSize"
 -- | @Selector@ for @setPreferredContentSize:@
 setPreferredContentSizeSelector :: Selector
 setPreferredContentSizeSelector = mkSelector "setPreferredContentSize:"
+
+-- | @Selector@ for @extensionContext@
+extensionContextSelector :: Selector
+extensionContextSelector = mkSelector "extensionContext"
+
+-- | @Selector@ for @sourceItemView@
+sourceItemViewSelector :: Selector
+sourceItemViewSelector = mkSelector "sourceItemView"
+
+-- | @Selector@ for @setSourceItemView:@
+setSourceItemViewSelector :: Selector
+setSourceItemViewSelector = mkSelector "setSourceItemView:"
 
 -- | @Selector@ for @preferredScreenOrigin@
 preferredScreenOriginSelector :: Selector
@@ -558,4 +646,28 @@ preferredMinimumSizeSelector = mkSelector "preferredMinimumSize"
 -- | @Selector@ for @preferredMaximumSize@
 preferredMaximumSizeSelector :: Selector
 preferredMaximumSizeSelector = mkSelector "preferredMaximumSize"
+
+-- | @Selector@ for @storyboard@
+storyboardSelector :: Selector
+storyboardSelector = mkSelector "storyboard"
+
+-- | @Selector@ for @parentViewController@
+parentViewControllerSelector :: Selector
+parentViewControllerSelector = mkSelector "parentViewController"
+
+-- | @Selector@ for @childViewControllers@
+childViewControllersSelector :: Selector
+childViewControllersSelector = mkSelector "childViewControllers"
+
+-- | @Selector@ for @setChildViewControllers:@
+setChildViewControllersSelector :: Selector
+setChildViewControllersSelector = mkSelector "setChildViewControllers:"
+
+-- | @Selector@ for @presentedViewControllers@
+presentedViewControllersSelector :: Selector
+presentedViewControllersSelector = mkSelector "presentedViewControllers"
+
+-- | @Selector@ for @presentingViewController@
+presentingViewControllerSelector :: Selector
+presentingViewControllerSelector = mkSelector "presentingViewController"
 

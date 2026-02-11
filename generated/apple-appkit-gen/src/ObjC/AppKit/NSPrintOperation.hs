@@ -31,12 +31,16 @@ module ObjC.AppKit.NSPrintOperation
   , setCurrentOperation
   , copyingOperation
   , preferredRenderingQuality
+  , jobTitle
+  , setJobTitle
   , showsPrintPanel
   , setShowsPrintPanel
   , showsProgressPanel
   , setShowsProgressPanel
   , printPanel
   , setPrintPanel
+  , pdfPanel
+  , setPDFPanel
   , canSpawnSeparateThread
   , setCanSpawnSeparateThread
   , pageOrder
@@ -71,12 +75,16 @@ module ObjC.AppKit.NSPrintOperation
   , setCurrentOperationSelector
   , copyingOperationSelector
   , preferredRenderingQualitySelector
+  , jobTitleSelector
+  , setJobTitleSelector
   , showsPrintPanelSelector
   , setShowsPrintPanelSelector
   , showsProgressPanelSelector
   , setShowsProgressPanelSelector
   , printPanelSelector
   , setPrintPanelSelector
+  , pdfPanelSelector
+  , setPDFPanelSelector
   , canSpawnSeparateThreadSelector
   , setCanSpawnSeparateThreadSelector
   , pageOrderSelector
@@ -280,6 +288,17 @@ preferredRenderingQuality :: IsNSPrintOperation nsPrintOperation => nsPrintOpera
 preferredRenderingQuality nsPrintOperation  =
     fmap (coerce :: CLong -> NSPrintRenderingQuality) $ sendMsg nsPrintOperation (mkSelector "preferredRenderingQuality") retCLong []
 
+-- | @- jobTitle@
+jobTitle :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO (Id NSString)
+jobTitle nsPrintOperation  =
+    sendMsg nsPrintOperation (mkSelector "jobTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setJobTitle:@
+setJobTitle :: (IsNSPrintOperation nsPrintOperation, IsNSString value) => nsPrintOperation -> value -> IO ()
+setJobTitle nsPrintOperation  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsPrintOperation (mkSelector "setJobTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- showsPrintPanel@
 showsPrintPanel :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO Bool
 showsPrintPanel nsPrintOperation  =
@@ -310,6 +329,17 @@ setPrintPanel :: (IsNSPrintOperation nsPrintOperation, IsNSPrintPanel value) => 
 setPrintPanel nsPrintOperation  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsPrintOperation (mkSelector "setPrintPanel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- PDFPanel@
+pdfPanel :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO (Id NSPDFPanel)
+pdfPanel nsPrintOperation  =
+    sendMsg nsPrintOperation (mkSelector "PDFPanel") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setPDFPanel:@
+setPDFPanel :: (IsNSPrintOperation nsPrintOperation, IsNSPDFPanel value) => nsPrintOperation -> value -> IO ()
+setPDFPanel nsPrintOperation  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsPrintOperation (mkSelector "setPDFPanel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- canSpawnSeparateThread@
 canSpawnSeparateThread :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO Bool
@@ -462,6 +492,14 @@ copyingOperationSelector = mkSelector "copyingOperation"
 preferredRenderingQualitySelector :: Selector
 preferredRenderingQualitySelector = mkSelector "preferredRenderingQuality"
 
+-- | @Selector@ for @jobTitle@
+jobTitleSelector :: Selector
+jobTitleSelector = mkSelector "jobTitle"
+
+-- | @Selector@ for @setJobTitle:@
+setJobTitleSelector :: Selector
+setJobTitleSelector = mkSelector "setJobTitle:"
+
 -- | @Selector@ for @showsPrintPanel@
 showsPrintPanelSelector :: Selector
 showsPrintPanelSelector = mkSelector "showsPrintPanel"
@@ -485,6 +523,14 @@ printPanelSelector = mkSelector "printPanel"
 -- | @Selector@ for @setPrintPanel:@
 setPrintPanelSelector :: Selector
 setPrintPanelSelector = mkSelector "setPrintPanel:"
+
+-- | @Selector@ for @PDFPanel@
+pdfPanelSelector :: Selector
+pdfPanelSelector = mkSelector "PDFPanel"
+
+-- | @Selector@ for @setPDFPanel:@
+setPDFPanelSelector :: Selector
+setPDFPanelSelector = mkSelector "setPDFPanel:"
 
 -- | @Selector@ for @canSpawnSeparateThread@
 canSpawnSeparateThreadSelector :: Selector

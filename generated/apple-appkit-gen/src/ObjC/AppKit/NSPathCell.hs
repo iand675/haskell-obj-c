@@ -18,6 +18,8 @@ module ObjC.AppKit.NSPathCell
   , setURL
   , allowedTypes
   , setAllowedTypes
+  , delegate
+  , setDelegate
   , pathComponentCellClass
   , pathComponentCells
   , setPathComponentCells
@@ -41,6 +43,8 @@ module ObjC.AppKit.NSPathCell
   , setURLSelector
   , allowedTypesSelector
   , setAllowedTypesSelector
+  , delegateSelector
+  , setDelegateSelector
   , pathComponentCellClassSelector
   , pathComponentCellsSelector
   , setPathComponentCellsSelector
@@ -142,6 +146,16 @@ setAllowedTypes :: (IsNSPathCell nsPathCell, IsNSArray value) => nsPathCell -> v
 setAllowedTypes nsPathCell  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsPathCell (mkSelector "setAllowedTypes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- delegate@
+delegate :: IsNSPathCell nsPathCell => nsPathCell -> IO RawId
+delegate nsPathCell  =
+    fmap (RawId . castPtr) $ sendMsg nsPathCell (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSPathCell nsPathCell => nsPathCell -> RawId -> IO ()
+setDelegate nsPathCell  value =
+    sendMsg nsPathCell (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @+ pathComponentCellClass@
 pathComponentCellClass :: IO Class
@@ -256,6 +270,14 @@ allowedTypesSelector = mkSelector "allowedTypes"
 -- | @Selector@ for @setAllowedTypes:@
 setAllowedTypesSelector :: Selector
 setAllowedTypesSelector = mkSelector "setAllowedTypes:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @pathComponentCellClass@
 pathComponentCellClassSelector :: Selector

@@ -18,11 +18,15 @@ module ObjC.NetworkExtension.NEVPNConnection
   , stopVPNTunnel
   , fetchLastDisconnectErrorWithCompletionHandler
   , status
+  , connectedDate
+  , manager
   , startVPNTunnelAndReturnErrorSelector
   , startVPNTunnelWithOptions_andReturnErrorSelector
   , stopVPNTunnelSelector
   , fetchLastDisconnectErrorWithCompletionHandlerSelector
   , statusSelector
+  , connectedDateSelector
+  , managerSelector
 
   -- * Enum types
   , NEVPNStatus(NEVPNStatus)
@@ -111,6 +115,24 @@ status :: IsNEVPNConnection nevpnConnection => nevpnConnection -> IO NEVPNStatus
 status nevpnConnection  =
     fmap (coerce :: CLong -> NEVPNStatus) $ sendMsg nevpnConnection (mkSelector "status") retCLong []
 
+-- | connectedDate
+--
+-- The date and time when the connection status changed to NEVPNStatusConnected. This property is nil if the connection is not fully established.
+--
+-- ObjC selector: @- connectedDate@
+connectedDate :: IsNEVPNConnection nevpnConnection => nevpnConnection -> IO (Id NSDate)
+connectedDate nevpnConnection  =
+    sendMsg nevpnConnection (mkSelector "connectedDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | manager
+--
+-- The NEVPNManager associated with this NEVPNConnection.
+--
+-- ObjC selector: @- manager@
+manager :: IsNEVPNConnection nevpnConnection => nevpnConnection -> IO (Id NEVPNManager)
+manager nevpnConnection  =
+    sendMsg nevpnConnection (mkSelector "manager") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -134,4 +156,12 @@ fetchLastDisconnectErrorWithCompletionHandlerSelector = mkSelector "fetchLastDis
 -- | @Selector@ for @status@
 statusSelector :: Selector
 statusSelector = mkSelector "status"
+
+-- | @Selector@ for @connectedDate@
+connectedDateSelector :: Selector
+connectedDateSelector = mkSelector "connectedDate"
+
+-- | @Selector@ for @manager@
+managerSelector :: Selector
+managerSelector = mkSelector "manager"
 

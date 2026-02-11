@@ -22,8 +22,14 @@ module ObjC.AVKit.AVPlayerView
   , setVideoGravity
   , readyForDisplay
   , videoBounds
+  , contentOverlayView
   , updatesNowPlayingInfoCenter
   , setUpdatesNowPlayingInfoCenter
+  , delegate
+  , setDelegate
+  , speeds
+  , setSpeeds
+  , selectedSpeed
   , allowsVideoFrameAnalysis
   , setAllowsVideoFrameAnalysis
   , videoFrameAnalysisTypes
@@ -36,6 +42,8 @@ module ObjC.AVKit.AVPlayerView
   , setPreferredDisplayDynamicRange
   , allowsPictureInPicturePlayback
   , setAllowsPictureInPicturePlayback
+  , pictureInPictureDelegate
+  , setPictureInPictureDelegate
   , canBeginTrimming
   , showsFrameSteppingButtons
   , setShowsFrameSteppingButtons
@@ -58,8 +66,14 @@ module ObjC.AVKit.AVPlayerView
   , setVideoGravitySelector
   , readyForDisplaySelector
   , videoBoundsSelector
+  , contentOverlayViewSelector
   , updatesNowPlayingInfoCenterSelector
   , setUpdatesNowPlayingInfoCenterSelector
+  , delegateSelector
+  , setDelegateSelector
+  , speedsSelector
+  , setSpeedsSelector
+  , selectedSpeedSelector
   , allowsVideoFrameAnalysisSelector
   , setAllowsVideoFrameAnalysisSelector
   , videoFrameAnalysisTypesSelector
@@ -72,6 +86,8 @@ module ObjC.AVKit.AVPlayerView
   , setPreferredDisplayDynamicRangeSelector
   , allowsPictureInPicturePlaybackSelector
   , setAllowsPictureInPicturePlaybackSelector
+  , pictureInPictureDelegateSelector
+  , setPictureInPictureDelegateSelector
   , canBeginTrimmingSelector
   , showsFrameSteppingButtonsSelector
   , setShowsFrameSteppingButtonsSelector
@@ -246,6 +262,15 @@ videoBounds :: IsAVPlayerView avPlayerView => avPlayerView -> IO NSRect
 videoBounds avPlayerView  =
     sendMsgStret avPlayerView (mkSelector "videoBounds") retNSRect []
 
+-- | contentOverlayView
+--
+-- Use the content overlay view to add additional custom views between the video content and the controls.
+--
+-- ObjC selector: @- contentOverlayView@
+contentOverlayView :: IsAVPlayerView avPlayerView => avPlayerView -> IO (Id NSView)
+contentOverlayView avPlayerView  =
+    sendMsg avPlayerView (mkSelector "contentOverlayView") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | updatesNowPlayingInfoCenter
 --
 -- Whether or not the now playing info center should be updated. Default is YES.
@@ -263,6 +288,62 @@ updatesNowPlayingInfoCenter avPlayerView  =
 setUpdatesNowPlayingInfoCenter :: IsAVPlayerView avPlayerView => avPlayerView -> Bool -> IO ()
 setUpdatesNowPlayingInfoCenter avPlayerView  value =
     sendMsg avPlayerView (mkSelector "setUpdatesNowPlayingInfoCenter:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | delegate
+--
+-- The receiver's delegate.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsAVPlayerView avPlayerView => avPlayerView -> IO RawId
+delegate avPlayerView  =
+    fmap (RawId . castPtr) $ sendMsg avPlayerView (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- The receiver's delegate.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsAVPlayerView avPlayerView => avPlayerView -> RawId -> IO ()
+setDelegate avPlayerView  value =
+    sendMsg avPlayerView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | speeds
+--
+-- A list of user selectable playback speeds to be shown in the playback speed control.
+--
+-- By default this property will be set to the systemDefaultSpeeds class property. Setting this property to nil will hide the playback speed selection UI.
+--
+-- To set the currently selected playback speed programmatically, either set the defaultRate on the AVPlayer associated with this view controller or use the selectSpeed method on AVPlayerView.
+--
+-- ObjC selector: @- speeds@
+speeds :: IsAVPlayerView avPlayerView => avPlayerView -> IO (Id NSArray)
+speeds avPlayerView  =
+    sendMsg avPlayerView (mkSelector "speeds") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | speeds
+--
+-- A list of user selectable playback speeds to be shown in the playback speed control.
+--
+-- By default this property will be set to the systemDefaultSpeeds class property. Setting this property to nil will hide the playback speed selection UI.
+--
+-- To set the currently selected playback speed programmatically, either set the defaultRate on the AVPlayer associated with this view controller or use the selectSpeed method on AVPlayerView.
+--
+-- ObjC selector: @- setSpeeds:@
+setSpeeds :: (IsAVPlayerView avPlayerView, IsNSArray value) => avPlayerView -> value -> IO ()
+setSpeeds avPlayerView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avPlayerView (mkSelector "setSpeeds:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | selectedSpeed
+--
+-- The currently selected playback speed.
+--
+-- Changes to the associated AVPlayer's defaultRate will be reflected in this property and vice versa. If the associated AVPlayer's defaultRate is set to a value that does not match a speed in the speeds list property, the selected speed will be nil.
+--
+-- ObjC selector: @- selectedSpeed@
+selectedSpeed :: IsAVPlayerView avPlayerView => avPlayerView -> IO (Id AVPlaybackSpeed)
+selectedSpeed avPlayerView  =
+    sendMsg avPlayerView (mkSelector "selectedSpeed") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | allowsVideoFrameAnalysis
 --
@@ -383,6 +464,24 @@ allowsPictureInPicturePlayback avPlayerView  =
 setAllowsPictureInPicturePlayback :: IsAVPlayerView avPlayerView => avPlayerView -> Bool -> IO ()
 setAllowsPictureInPicturePlayback avPlayerView  value =
     sendMsg avPlayerView (mkSelector "setAllowsPictureInPicturePlayback:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | pictureInPictureDelegate
+--
+-- A delegate for customizing Picture in Picture playback experience.
+--
+-- ObjC selector: @- pictureInPictureDelegate@
+pictureInPictureDelegate :: IsAVPlayerView avPlayerView => avPlayerView -> IO RawId
+pictureInPictureDelegate avPlayerView  =
+    fmap (RawId . castPtr) $ sendMsg avPlayerView (mkSelector "pictureInPictureDelegate") (retPtr retVoid) []
+
+-- | pictureInPictureDelegate
+--
+-- A delegate for customizing Picture in Picture playback experience.
+--
+-- ObjC selector: @- setPictureInPictureDelegate:@
+setPictureInPictureDelegate :: IsAVPlayerView avPlayerView => avPlayerView -> RawId -> IO ()
+setPictureInPictureDelegate avPlayerView  value =
+    sendMsg avPlayerView (mkSelector "setPictureInPictureDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | canBeginTrimming
 --
@@ -532,6 +631,10 @@ readyForDisplaySelector = mkSelector "readyForDisplay"
 videoBoundsSelector :: Selector
 videoBoundsSelector = mkSelector "videoBounds"
 
+-- | @Selector@ for @contentOverlayView@
+contentOverlayViewSelector :: Selector
+contentOverlayViewSelector = mkSelector "contentOverlayView"
+
 -- | @Selector@ for @updatesNowPlayingInfoCenter@
 updatesNowPlayingInfoCenterSelector :: Selector
 updatesNowPlayingInfoCenterSelector = mkSelector "updatesNowPlayingInfoCenter"
@@ -539,6 +642,26 @@ updatesNowPlayingInfoCenterSelector = mkSelector "updatesNowPlayingInfoCenter"
 -- | @Selector@ for @setUpdatesNowPlayingInfoCenter:@
 setUpdatesNowPlayingInfoCenterSelector :: Selector
 setUpdatesNowPlayingInfoCenterSelector = mkSelector "setUpdatesNowPlayingInfoCenter:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @speeds@
+speedsSelector :: Selector
+speedsSelector = mkSelector "speeds"
+
+-- | @Selector@ for @setSpeeds:@
+setSpeedsSelector :: Selector
+setSpeedsSelector = mkSelector "setSpeeds:"
+
+-- | @Selector@ for @selectedSpeed@
+selectedSpeedSelector :: Selector
+selectedSpeedSelector = mkSelector "selectedSpeed"
 
 -- | @Selector@ for @allowsVideoFrameAnalysis@
 allowsVideoFrameAnalysisSelector :: Selector
@@ -587,6 +710,14 @@ allowsPictureInPicturePlaybackSelector = mkSelector "allowsPictureInPicturePlayb
 -- | @Selector@ for @setAllowsPictureInPicturePlayback:@
 setAllowsPictureInPicturePlaybackSelector :: Selector
 setAllowsPictureInPicturePlaybackSelector = mkSelector "setAllowsPictureInPicturePlayback:"
+
+-- | @Selector@ for @pictureInPictureDelegate@
+pictureInPictureDelegateSelector :: Selector
+pictureInPictureDelegateSelector = mkSelector "pictureInPictureDelegate"
+
+-- | @Selector@ for @setPictureInPictureDelegate:@
+setPictureInPictureDelegateSelector :: Selector
+setPictureInPictureDelegateSelector = mkSelector "setPictureInPictureDelegate:"
 
 -- | @Selector@ for @canBeginTrimming@
 canBeginTrimmingSelector :: Selector

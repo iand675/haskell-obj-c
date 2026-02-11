@@ -16,6 +16,7 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.SensorKit.Delegate.SRSensorReaderDelegate
   - ObjC.SensorKit.Enums
   - ObjC.SensorKit.Internal.Classes
   - ObjC.SensorKit.Internal.Enums

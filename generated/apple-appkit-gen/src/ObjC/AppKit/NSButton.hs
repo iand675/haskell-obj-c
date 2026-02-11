@@ -45,6 +45,10 @@ module ObjC.AppKit.NSButton
   , setTransparent
   , showsBorderOnlyWhileMouseInside
   , setShowsBorderOnlyWhileMouseInside
+  , bezelColor
+  , setBezelColor
+  , contentTintColor
+  , setContentTintColor
   , tintProminence
   , setTintProminence
   , image
@@ -57,6 +61,8 @@ module ObjC.AppKit.NSButton
   , setImageScaling
   , imageHugsTitle
   , setImageHugsTitle
+  , symbolConfiguration
+  , setSymbolConfiguration
   , state
   , setState
   , allowsMixedState
@@ -65,6 +71,7 @@ module ObjC.AppKit.NSButton
   , setKeyEquivalent
   , keyEquivalentModifierMask
   , setKeyEquivalentModifierMask
+  , activeCompressionOptions
   , borderShape
   , setBorderShape
   , buttonWithTitle_image_target_actionSelector
@@ -105,6 +112,10 @@ module ObjC.AppKit.NSButton
   , setTransparentSelector
   , showsBorderOnlyWhileMouseInsideSelector
   , setShowsBorderOnlyWhileMouseInsideSelector
+  , bezelColorSelector
+  , setBezelColorSelector
+  , contentTintColorSelector
+  , setContentTintColorSelector
   , tintProminenceSelector
   , setTintProminenceSelector
   , imageSelector
@@ -117,6 +128,8 @@ module ObjC.AppKit.NSButton
   , setImageScalingSelector
   , imageHugsTitleSelector
   , setImageHugsTitleSelector
+  , symbolConfigurationSelector
+  , setSymbolConfigurationSelector
   , stateSelector
   , setStateSelector
   , allowsMixedStateSelector
@@ -125,6 +138,7 @@ module ObjC.AppKit.NSButton
   , setKeyEquivalentSelector
   , keyEquivalentModifierMaskSelector
   , setKeyEquivalentModifierMaskSelector
+  , activeCompressionOptionsSelector
   , borderShapeSelector
   , setBorderShapeSelector
 
@@ -544,6 +558,36 @@ setShowsBorderOnlyWhileMouseInside :: IsNSButton nsButton => nsButton -> Bool ->
 setShowsBorderOnlyWhileMouseInside nsButton  value =
     sendMsg nsButton (mkSelector "setShowsBorderOnlyWhileMouseInside:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | Applies a custom color to the button's bezel, in appearances that support it. A nil value indicates an unmodified button appearance. The default value is nil.
+--
+-- ObjC selector: @- bezelColor@
+bezelColor :: IsNSButton nsButton => nsButton -> IO (Id NSColor)
+bezelColor nsButton  =
+    sendMsg nsButton (mkSelector "bezelColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Applies a custom color to the button's bezel, in appearances that support it. A nil value indicates an unmodified button appearance. The default value is nil.
+--
+-- ObjC selector: @- setBezelColor:@
+setBezelColor :: (IsNSButton nsButton, IsNSColor value) => nsButton -> value -> IO ()
+setBezelColor nsButton  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsButton (mkSelector "setBezelColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | Applies a tint color to template image and text content, in combination with other theme-appropriate effects. Only applicable to borderless buttons. A nil value indicates the standard set of effects without color modification. The default value is nil. Non-template images and attributed string values are not affected by the contentTintColor.
+--
+-- ObjC selector: @- contentTintColor@
+contentTintColor :: IsNSButton nsButton => nsButton -> IO (Id NSColor)
+contentTintColor nsButton  =
+    sendMsg nsButton (mkSelector "contentTintColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Applies a tint color to template image and text content, in combination with other theme-appropriate effects. Only applicable to borderless buttons. A nil value indicates the standard set of effects without color modification. The default value is nil. Non-template images and attributed string values are not affected by the contentTintColor.
+--
+-- ObjC selector: @- setContentTintColor:@
+setContentTintColor :: (IsNSButton nsButton, IsNSColor value) => nsButton -> value -> IO ()
+setContentTintColor nsButton  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsButton (mkSelector "setContentTintColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | The tint prominence of the button. Use tint prominence to gently suggest a hierarchy when multiple buttons perform similar actions. A button with primary tint prominence suggests the most preferred option, while secondary prominence indicates a reasonable alternative. See ``NSTintProminence`` for a list of possible values.
 --
 -- ObjC selector: @- tintProminence@
@@ -630,6 +674,21 @@ setImageHugsTitle :: IsNSButton nsButton => nsButton -> Bool -> IO ()
 setImageHugsTitle nsButton  value =
     sendMsg nsButton (mkSelector "setImageHugsTitle:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | Specifies a combination of point size, weight, and scale to use when sizing and displaying symbol images. If a symbol configuration isn't provided, the symbol is matched to the button's @font@ property. The default value is nil.
+--
+-- ObjC selector: @- symbolConfiguration@
+symbolConfiguration :: IsNSButton nsButton => nsButton -> IO (Id NSImageSymbolConfiguration)
+symbolConfiguration nsButton  =
+    sendMsg nsButton (mkSelector "symbolConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Specifies a combination of point size, weight, and scale to use when sizing and displaying symbol images. If a symbol configuration isn't provided, the symbol is matched to the button's @font@ property. The default value is nil.
+--
+-- ObjC selector: @- setSymbolConfiguration:@
+setSymbolConfiguration :: (IsNSButton nsButton, IsNSImageSymbolConfiguration value) => nsButton -> value -> IO ()
+setSymbolConfiguration nsButton  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsButton (mkSelector "setSymbolConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | The button's state. Buttons support the off and on states, and an additional mixed state depending on the value of the @allowsMixedState@ property.
 --
 -- ObjC selector: @- state@
@@ -686,6 +745,11 @@ keyEquivalentModifierMask nsButton  =
 setKeyEquivalentModifierMask :: IsNSButton nsButton => nsButton -> NSEventModifierFlags -> IO ()
 setKeyEquivalentModifierMask nsButton  value =
     sendMsg nsButton (mkSelector "setKeyEquivalentModifierMask:") retVoid [argCULong (coerce value)]
+
+-- | @- activeCompressionOptions@
+activeCompressionOptions :: IsNSButton nsButton => nsButton -> IO (Id NSUserInterfaceCompressionOptions)
+activeCompressionOptions nsButton  =
+    sendMsg nsButton (mkSelector "activeCompressionOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- borderShape@
 borderShape :: IsNSButton nsButton => nsButton -> IO NSControlBorderShape
@@ -853,6 +917,22 @@ showsBorderOnlyWhileMouseInsideSelector = mkSelector "showsBorderOnlyWhileMouseI
 setShowsBorderOnlyWhileMouseInsideSelector :: Selector
 setShowsBorderOnlyWhileMouseInsideSelector = mkSelector "setShowsBorderOnlyWhileMouseInside:"
 
+-- | @Selector@ for @bezelColor@
+bezelColorSelector :: Selector
+bezelColorSelector = mkSelector "bezelColor"
+
+-- | @Selector@ for @setBezelColor:@
+setBezelColorSelector :: Selector
+setBezelColorSelector = mkSelector "setBezelColor:"
+
+-- | @Selector@ for @contentTintColor@
+contentTintColorSelector :: Selector
+contentTintColorSelector = mkSelector "contentTintColor"
+
+-- | @Selector@ for @setContentTintColor:@
+setContentTintColorSelector :: Selector
+setContentTintColorSelector = mkSelector "setContentTintColor:"
+
 -- | @Selector@ for @tintProminence@
 tintProminenceSelector :: Selector
 tintProminenceSelector = mkSelector "tintProminence"
@@ -901,6 +981,14 @@ imageHugsTitleSelector = mkSelector "imageHugsTitle"
 setImageHugsTitleSelector :: Selector
 setImageHugsTitleSelector = mkSelector "setImageHugsTitle:"
 
+-- | @Selector@ for @symbolConfiguration@
+symbolConfigurationSelector :: Selector
+symbolConfigurationSelector = mkSelector "symbolConfiguration"
+
+-- | @Selector@ for @setSymbolConfiguration:@
+setSymbolConfigurationSelector :: Selector
+setSymbolConfigurationSelector = mkSelector "setSymbolConfiguration:"
+
 -- | @Selector@ for @state@
 stateSelector :: Selector
 stateSelector = mkSelector "state"
@@ -932,6 +1020,10 @@ keyEquivalentModifierMaskSelector = mkSelector "keyEquivalentModifierMask"
 -- | @Selector@ for @setKeyEquivalentModifierMask:@
 setKeyEquivalentModifierMaskSelector :: Selector
 setKeyEquivalentModifierMaskSelector = mkSelector "setKeyEquivalentModifierMask:"
+
+-- | @Selector@ for @activeCompressionOptions@
+activeCompressionOptionsSelector :: Selector
+activeCompressionOptionsSelector = mkSelector "activeCompressionOptions"
 
 -- | @Selector@ for @borderShape@
 borderShapeSelector :: Selector

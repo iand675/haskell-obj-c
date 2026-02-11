@@ -17,10 +17,22 @@ module ObjC.NetworkExtension.NEVPNProtocolIPSec
   , setAuthenticationMethod
   , useExtendedAuthentication
   , setUseExtendedAuthentication
+  , sharedSecretReference
+  , setSharedSecretReference
+  , localIdentifier
+  , setLocalIdentifier
+  , remoteIdentifier
+  , setRemoteIdentifier
   , authenticationMethodSelector
   , setAuthenticationMethodSelector
   , useExtendedAuthenticationSelector
   , setUseExtendedAuthenticationSelector
+  , sharedSecretReferenceSelector
+  , setSharedSecretReferenceSelector
+  , localIdentifierSelector
+  , setLocalIdentifierSelector
+  , remoteIdentifierSelector
+  , setRemoteIdentifierSelector
 
   -- * Enum types
   , NEVPNIKEAuthenticationMethod(NEVPNIKEAuthenticationMethod)
@@ -82,6 +94,63 @@ setUseExtendedAuthentication :: IsNEVPNProtocolIPSec nevpnProtocolIPSec => nevpn
 setUseExtendedAuthentication nevpnProtocolIPSec  value =
     sendMsg nevpnProtocolIPSec (mkSelector "setUseExtendedAuthentication:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | sharedSecretReference
+--
+-- A persistent reference to a keychain item of class kSecClassGenericPassword containing the IKE shared secret.
+--
+-- ObjC selector: @- sharedSecretReference@
+sharedSecretReference :: IsNEVPNProtocolIPSec nevpnProtocolIPSec => nevpnProtocolIPSec -> IO (Id NSData)
+sharedSecretReference nevpnProtocolIPSec  =
+    sendMsg nevpnProtocolIPSec (mkSelector "sharedSecretReference") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | sharedSecretReference
+--
+-- A persistent reference to a keychain item of class kSecClassGenericPassword containing the IKE shared secret.
+--
+-- ObjC selector: @- setSharedSecretReference:@
+setSharedSecretReference :: (IsNEVPNProtocolIPSec nevpnProtocolIPSec, IsNSData value) => nevpnProtocolIPSec -> value -> IO ()
+setSharedSecretReference nevpnProtocolIPSec  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nevpnProtocolIPSec (mkSelector "setSharedSecretReference:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | localIdentifier
+--
+-- A string identifying the local IPSec endpoint for authentication purposes.
+--
+-- ObjC selector: @- localIdentifier@
+localIdentifier :: IsNEVPNProtocolIPSec nevpnProtocolIPSec => nevpnProtocolIPSec -> IO (Id NSString)
+localIdentifier nevpnProtocolIPSec  =
+    sendMsg nevpnProtocolIPSec (mkSelector "localIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | localIdentifier
+--
+-- A string identifying the local IPSec endpoint for authentication purposes.
+--
+-- ObjC selector: @- setLocalIdentifier:@
+setLocalIdentifier :: (IsNEVPNProtocolIPSec nevpnProtocolIPSec, IsNSString value) => nevpnProtocolIPSec -> value -> IO ()
+setLocalIdentifier nevpnProtocolIPSec  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nevpnProtocolIPSec (mkSelector "setLocalIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | remoteIdentifier
+--
+-- A string identifying the remote IPSec endpoint for authentication purposes.
+--
+-- ObjC selector: @- remoteIdentifier@
+remoteIdentifier :: IsNEVPNProtocolIPSec nevpnProtocolIPSec => nevpnProtocolIPSec -> IO (Id NSString)
+remoteIdentifier nevpnProtocolIPSec  =
+    sendMsg nevpnProtocolIPSec (mkSelector "remoteIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | remoteIdentifier
+--
+-- A string identifying the remote IPSec endpoint for authentication purposes.
+--
+-- ObjC selector: @- setRemoteIdentifier:@
+setRemoteIdentifier :: (IsNEVPNProtocolIPSec nevpnProtocolIPSec, IsNSString value) => nevpnProtocolIPSec -> value -> IO ()
+setRemoteIdentifier nevpnProtocolIPSec  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nevpnProtocolIPSec (mkSelector "setRemoteIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -101,4 +170,28 @@ useExtendedAuthenticationSelector = mkSelector "useExtendedAuthentication"
 -- | @Selector@ for @setUseExtendedAuthentication:@
 setUseExtendedAuthenticationSelector :: Selector
 setUseExtendedAuthenticationSelector = mkSelector "setUseExtendedAuthentication:"
+
+-- | @Selector@ for @sharedSecretReference@
+sharedSecretReferenceSelector :: Selector
+sharedSecretReferenceSelector = mkSelector "sharedSecretReference"
+
+-- | @Selector@ for @setSharedSecretReference:@
+setSharedSecretReferenceSelector :: Selector
+setSharedSecretReferenceSelector = mkSelector "setSharedSecretReference:"
+
+-- | @Selector@ for @localIdentifier@
+localIdentifierSelector :: Selector
+localIdentifierSelector = mkSelector "localIdentifier"
+
+-- | @Selector@ for @setLocalIdentifier:@
+setLocalIdentifierSelector :: Selector
+setLocalIdentifierSelector = mkSelector "setLocalIdentifier:"
+
+-- | @Selector@ for @remoteIdentifier@
+remoteIdentifierSelector :: Selector
+remoteIdentifierSelector = mkSelector "remoteIdentifier"
+
+-- | @Selector@ for @setRemoteIdentifier:@
+setRemoteIdentifierSelector :: Selector
+setRemoteIdentifierSelector = mkSelector "setRemoteIdentifier:"
 

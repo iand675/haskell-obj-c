@@ -11,10 +11,16 @@ module ObjC.AppKit.NSSharingServicePicker
   , init_
   , showRelativeToRect_ofView_preferredEdge
   , close
+  , delegate
+  , setDelegate
+  , standardShareMenuItem
   , initWithItemsSelector
   , initSelector
   , showRelativeToRect_ofView_preferredEdgeSelector
   , closeSelector
+  , delegateSelector
+  , setDelegateSelector
+  , standardShareMenuItemSelector
 
   -- * Enum types
   , NSRectEdge(NSRectEdge)
@@ -76,6 +82,23 @@ close :: IsNSSharingServicePicker nsSharingServicePicker => nsSharingServicePick
 close nsSharingServicePicker  =
     sendMsg nsSharingServicePicker (mkSelector "close") retVoid []
 
+-- | @- delegate@
+delegate :: IsNSSharingServicePicker nsSharingServicePicker => nsSharingServicePicker -> IO RawId
+delegate nsSharingServicePicker  =
+    fmap (RawId . castPtr) $ sendMsg nsSharingServicePicker (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSSharingServicePicker nsSharingServicePicker => nsSharingServicePicker -> RawId -> IO ()
+setDelegate nsSharingServicePicker  value =
+    sendMsg nsSharingServicePicker (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | Returns a menu item suitable to display the picker for the given items.
+--
+-- ObjC selector: @- standardShareMenuItem@
+standardShareMenuItem :: IsNSSharingServicePicker nsSharingServicePicker => nsSharingServicePicker -> IO (Id NSMenuItem)
+standardShareMenuItem nsSharingServicePicker  =
+    sendMsg nsSharingServicePicker (mkSelector "standardShareMenuItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -95,4 +118,16 @@ showRelativeToRect_ofView_preferredEdgeSelector = mkSelector "showRelativeToRect
 -- | @Selector@ for @close@
 closeSelector :: Selector
 closeSelector = mkSelector "close"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @standardShareMenuItem@
+standardShareMenuItemSelector :: Selector
+standardShareMenuItemSelector = mkSelector "standardShareMenuItem"
 

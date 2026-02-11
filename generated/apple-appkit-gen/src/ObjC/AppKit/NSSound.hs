@@ -23,7 +23,10 @@ module ObjC.AppKit.NSSound
   , soundUnfilteredFileTypes
   , soundUnfilteredPasteboardTypes
   , name
+  , soundUnfilteredTypes
   , playing
+  , delegate
+  , setDelegate
   , duration
   , volume
   , setVolume
@@ -50,7 +53,10 @@ module ObjC.AppKit.NSSound
   , soundUnfilteredFileTypesSelector
   , soundUnfilteredPasteboardTypesSelector
   , nameSelector
+  , soundUnfilteredTypesSelector
   , playingSelector
+  , delegateSelector
+  , setDelegateSelector
   , durationSelector
   , volumeSelector
   , setVolumeSelector
@@ -181,10 +187,27 @@ name :: IsNSSound nsSound => nsSound -> IO (Id NSString)
 name nsSound  =
     sendMsg nsSound (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @+ soundUnfilteredTypes@
+soundUnfilteredTypes :: IO (Id NSArray)
+soundUnfilteredTypes  =
+  do
+    cls' <- getRequiredClass "NSSound"
+    sendClassMsg cls' (mkSelector "soundUnfilteredTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- playing@
 playing :: IsNSSound nsSound => nsSound -> IO Bool
 playing nsSound  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsSound (mkSelector "playing") retCULong []
+
+-- | @- delegate@
+delegate :: IsNSSound nsSound => nsSound -> IO RawId
+delegate nsSound  =
+    fmap (RawId . castPtr) $ sendMsg nsSound (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSSound nsSound => nsSound -> RawId -> IO ()
+setDelegate nsSound  value =
+    sendMsg nsSound (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- duration@
 duration :: IsNSSound nsSound => nsSound -> IO CDouble
@@ -304,9 +327,21 @@ soundUnfilteredPasteboardTypesSelector = mkSelector "soundUnfilteredPasteboardTy
 nameSelector :: Selector
 nameSelector = mkSelector "name"
 
+-- | @Selector@ for @soundUnfilteredTypes@
+soundUnfilteredTypesSelector :: Selector
+soundUnfilteredTypesSelector = mkSelector "soundUnfilteredTypes"
+
 -- | @Selector@ for @playing@
 playingSelector :: Selector
 playingSelector = mkSelector "playing"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @duration@
 durationSelector :: Selector

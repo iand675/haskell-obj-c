@@ -8,6 +8,10 @@
 module ObjC.CryptoTokenKit.TKTokenDriver
   ( TKTokenDriver
   , IsTKTokenDriver(..)
+  , delegate
+  , setDelegate
+  , delegateSelector
+  , setDelegateSelector
 
 
   ) where
@@ -27,7 +31,25 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.CryptoTokenKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | @- delegate@
+delegate :: IsTKTokenDriver tkTokenDriver => tkTokenDriver -> IO RawId
+delegate tkTokenDriver  =
+    fmap (RawId . castPtr) $ sendMsg tkTokenDriver (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsTKTokenDriver tkTokenDriver => tkTokenDriver -> RawId -> IO ()
+setDelegate tkTokenDriver  value =
+    sendMsg tkTokenDriver (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

@@ -14,6 +14,7 @@ module ObjC.WebKit.WKWebExtensionAction
   , new
   , closePopup
   , webExtensionContext
+  , associatedTab
   , label
   , badgeText
   , hasUnreadBadgeText
@@ -29,6 +30,7 @@ module ObjC.WebKit.WKWebExtensionAction
   , newSelector
   , closePopupSelector
   , webExtensionContextSelector
+  , associatedTabSelector
   , labelSelector
   , badgeTextSelector
   , hasUnreadBadgeTextSelector
@@ -85,6 +87,15 @@ closePopup wkWebExtensionAction  =
 webExtensionContext :: IsWKWebExtensionAction wkWebExtensionAction => wkWebExtensionAction -> IO (Id WKWebExtensionContext)
 webExtensionContext wkWebExtensionAction  =
     sendMsg wkWebExtensionAction (mkSelector "webExtensionContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The tab that this action is associated with, or @nil@ if it is the default action.
+--
+-- When this property is @nil@, it indicates that the action is the default action and not associated with a specific tab.
+--
+-- ObjC selector: @- associatedTab@
+associatedTab :: IsWKWebExtensionAction wkWebExtensionAction => wkWebExtensionAction -> IO RawId
+associatedTab wkWebExtensionAction  =
+    fmap (RawId . castPtr) $ sendMsg wkWebExtensionAction (mkSelector "associatedTab") (retPtr retVoid) []
 
 -- | The localized display label for the action.
 --
@@ -201,6 +212,10 @@ closePopupSelector = mkSelector "closePopup"
 -- | @Selector@ for @webExtensionContext@
 webExtensionContextSelector :: Selector
 webExtensionContextSelector = mkSelector "webExtensionContext"
+
+-- | @Selector@ for @associatedTab@
+associatedTabSelector :: Selector
+associatedTabSelector = mkSelector "associatedTab"
 
 -- | @Selector@ for @label@
 labelSelector :: Selector

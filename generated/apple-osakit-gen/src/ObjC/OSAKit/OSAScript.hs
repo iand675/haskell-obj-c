@@ -30,6 +30,8 @@ module ObjC.OSAKit.OSAScript
   , url
   , language
   , setLanguage
+  , languageInstance
+  , setLanguageInstance
   , compiled
   , richTextSource
   , scriptDataDescriptorWithContentsOfURLSelector
@@ -55,6 +57,8 @@ module ObjC.OSAKit.OSAScript
   , urlSelector
   , languageSelector
   , setLanguageSelector
+  , languageInstanceSelector
+  , setLanguageInstanceSelector
   , compiledSelector
   , richTextSourceSelector
 
@@ -245,6 +249,16 @@ setLanguage osaScript  value =
   withObjCPtr value $ \raw_value ->
       sendMsg osaScript (mkSelector "setLanguage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- languageInstance@
+languageInstance :: IsOSAScript osaScript => osaScript -> IO RawId
+languageInstance osaScript  =
+    fmap (RawId . castPtr) $ sendMsg osaScript (mkSelector "languageInstance") (retPtr retVoid) []
+
+-- | @- setLanguageInstance:@
+setLanguageInstance :: IsOSAScript osaScript => osaScript -> RawId -> IO ()
+setLanguageInstance osaScript  value =
+    sendMsg osaScript (mkSelector "setLanguageInstance:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- compiled@
 compiled :: IsOSAScript osaScript => osaScript -> IO Bool
 compiled osaScript  =
@@ -350,6 +364,14 @@ languageSelector = mkSelector "language"
 -- | @Selector@ for @setLanguage:@
 setLanguageSelector :: Selector
 setLanguageSelector = mkSelector "setLanguage:"
+
+-- | @Selector@ for @languageInstance@
+languageInstanceSelector :: Selector
+languageInstanceSelector = mkSelector "languageInstance"
+
+-- | @Selector@ for @setLanguageInstance:@
+setLanguageInstanceSelector :: Selector
+setLanguageInstanceSelector = mkSelector "setLanguageInstance:"
 
 -- | @Selector@ for @compiled@
 compiledSelector :: Selector

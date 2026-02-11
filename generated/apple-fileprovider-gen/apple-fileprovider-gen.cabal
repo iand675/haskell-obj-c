@@ -12,6 +12,30 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.FileProvider.Delegate.NSFileProviderChangeObserver
+      ObjC.FileProvider.Delegate.NSFileProviderDomainState
+      ObjC.FileProvider.Delegate.NSFileProviderEnumerating
+      ObjC.FileProvider.Delegate.NSFileProviderEnumerationObserver
+      ObjC.FileProvider.Delegate.NSFileProviderEnumerator
+      ObjC.FileProvider.Delegate.NSFileProviderItem
+      ObjC.FileProvider.Delegate.NSFileProviderItemDecorating
+      ObjC.FileProvider.Delegate.NSFileProviderPendingSetEnumerator
+      ObjC.FileProvider.Delegate.NSFileProviderReplicatedExtension
+      ObjC.FileProvider.Delegate.NSFileProviderSearchEnumerationObserver
+      ObjC.FileProvider.Delegate.NSFileProviderSearchEnumerator
+      ObjC.FileProvider.Delegate.NSFileProviderSearchResult
+      ObjC.FileProvider.Delegate.NSFileProviderSearching
+      ObjC.FileProvider.Delegate.NSFileProviderServiceSource
+      ObjC.FileProvider.Delegate.NSFileProviderServicing
+      ObjC.FileProvider.Delegate.NSFileProviderTestingChildrenEnumeration
+      ObjC.FileProvider.Delegate.NSFileProviderTestingContentFetch
+      ObjC.FileProvider.Delegate.NSFileProviderTestingCreation
+      ObjC.FileProvider.Delegate.NSFileProviderTestingDeletion
+      ObjC.FileProvider.Delegate.NSFileProviderTestingIngestion
+      ObjC.FileProvider.Delegate.NSFileProviderTestingLookup
+      ObjC.FileProvider.Delegate.NSFileProviderTestingModification
+      ObjC.FileProvider.Delegate.NSFileProviderTestingOperation
+      ObjC.FileProvider.Delegate.NSFileProviderUserInteractionSuppressing
       ObjC.FileProvider.Enums
       ObjC.FileProvider.Internal.Classes
       ObjC.FileProvider.Internal.Enums

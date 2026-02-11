@@ -12,6 +12,8 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.VideoToolbox.Delegate.VTFrameProcessorConfiguration
+      ObjC.VideoToolbox.Delegate.VTFrameProcessorParameters
       ObjC.VideoToolbox.Enums
       ObjC.VideoToolbox.Internal.Classes
       ObjC.VideoToolbox.Internal.Enums

@@ -9,12 +9,16 @@ module ObjC.Intents.INSetRadioStationIntent
   , IsINSetRadioStationIntent(..)
   , initWithRadioType_frequency_stationName_channel_presetNumber
   , radioType
+  , frequency
   , stationName
   , channel
+  , presetNumber
   , initWithRadioType_frequency_stationName_channel_presetNumberSelector
   , radioTypeSelector
+  , frequencySelector
   , stationNameSelector
   , channelSelector
+  , presetNumberSelector
 
   -- * Enum types
   , INRadioType(INRadioType)
@@ -57,6 +61,11 @@ radioType :: IsINSetRadioStationIntent inSetRadioStationIntent => inSetRadioStat
 radioType inSetRadioStationIntent  =
     fmap (coerce :: CLong -> INRadioType) $ sendMsg inSetRadioStationIntent (mkSelector "radioType") retCLong []
 
+-- | @- frequency@
+frequency :: IsINSetRadioStationIntent inSetRadioStationIntent => inSetRadioStationIntent -> IO (Id NSNumber)
+frequency inSetRadioStationIntent  =
+    sendMsg inSetRadioStationIntent (mkSelector "frequency") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- stationName@
 stationName :: IsINSetRadioStationIntent inSetRadioStationIntent => inSetRadioStationIntent -> IO (Id NSString)
 stationName inSetRadioStationIntent  =
@@ -66,6 +75,11 @@ stationName inSetRadioStationIntent  =
 channel :: IsINSetRadioStationIntent inSetRadioStationIntent => inSetRadioStationIntent -> IO (Id NSString)
 channel inSetRadioStationIntent  =
     sendMsg inSetRadioStationIntent (mkSelector "channel") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- presetNumber@
+presetNumber :: IsINSetRadioStationIntent inSetRadioStationIntent => inSetRadioStationIntent -> IO (Id NSNumber)
+presetNumber inSetRadioStationIntent  =
+    sendMsg inSetRadioStationIntent (mkSelector "presetNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -79,6 +93,10 @@ initWithRadioType_frequency_stationName_channel_presetNumberSelector = mkSelecto
 radioTypeSelector :: Selector
 radioTypeSelector = mkSelector "radioType"
 
+-- | @Selector@ for @frequency@
+frequencySelector :: Selector
+frequencySelector = mkSelector "frequency"
+
 -- | @Selector@ for @stationName@
 stationNameSelector :: Selector
 stationNameSelector = mkSelector "stationName"
@@ -86,4 +104,8 @@ stationNameSelector = mkSelector "stationName"
 -- | @Selector@ for @channel@
 channelSelector :: Selector
 channelSelector = mkSelector "channel"
+
+-- | @Selector@ for @presetNumber@
+presetNumberSelector :: Selector
+presetNumberSelector = mkSelector "presetNumber"
 

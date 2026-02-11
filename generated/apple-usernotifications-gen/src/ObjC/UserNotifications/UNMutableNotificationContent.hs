@@ -7,28 +7,64 @@
 module ObjC.UserNotifications.UNMutableNotificationContent
   ( UNMutableNotificationContent
   , IsUNMutableNotificationContent(..)
+  , attachments
+  , setAttachments
   , badge
   , setBadge
+  , body
+  , setBody
+  , categoryIdentifier
+  , setCategoryIdentifier
   , launchImageName
   , setLaunchImageName
+  , sound
+  , setSound
+  , subtitle
+  , setSubtitle
+  , threadIdentifier
+  , setThreadIdentifier
+  , title
+  , setTitle
+  , userInfo
+  , setUserInfo
   , summaryArgument
   , setSummaryArgument
   , summaryArgumentCount
   , setSummaryArgumentCount
+  , targetContentIdentifier
+  , setTargetContentIdentifier
   , interruptionLevel
   , setInterruptionLevel
   , relevanceScore
   , setRelevanceScore
   , filterCriteria
   , setFilterCriteria
+  , attachmentsSelector
+  , setAttachmentsSelector
   , badgeSelector
   , setBadgeSelector
+  , bodySelector
+  , setBodySelector
+  , categoryIdentifierSelector
+  , setCategoryIdentifierSelector
   , launchImageNameSelector
   , setLaunchImageNameSelector
+  , soundSelector
+  , setSoundSelector
+  , subtitleSelector
+  , setSubtitleSelector
+  , threadIdentifierSelector
+  , setThreadIdentifierSelector
+  , titleSelector
+  , setTitleSelector
+  , userInfoSelector
+  , setUserInfoSelector
   , summaryArgumentSelector
   , setSummaryArgumentSelector
   , summaryArgumentCountSelector
   , setSummaryArgumentCountSelector
+  , targetContentIdentifierSelector
+  , setTargetContentIdentifierSelector
   , interruptionLevelSelector
   , setInterruptionLevelSelector
   , relevanceScoreSelector
@@ -61,6 +97,17 @@ import ObjC.UserNotifications.Internal.Classes
 import ObjC.UserNotifications.Internal.Enums
 import ObjC.Foundation.Internal.Classes
 
+-- | @- attachments@
+attachments :: IsUNMutableNotificationContent unMutableNotificationContent => unMutableNotificationContent -> IO (Id NSArray)
+attachments unMutableNotificationContent  =
+    sendMsg unMutableNotificationContent (mkSelector "attachments") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setAttachments:@
+setAttachments :: (IsUNMutableNotificationContent unMutableNotificationContent, IsNSArray value) => unMutableNotificationContent -> value -> IO ()
+setAttachments unMutableNotificationContent  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg unMutableNotificationContent (mkSelector "setAttachments:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- badge@
 badge :: IsUNMutableNotificationContent unMutableNotificationContent => unMutableNotificationContent -> IO (Id NSNumber)
 badge unMutableNotificationContent  =
@@ -72,6 +119,28 @@ setBadge unMutableNotificationContent  value =
   withObjCPtr value $ \raw_value ->
       sendMsg unMutableNotificationContent (mkSelector "setBadge:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- body@
+body :: IsUNMutableNotificationContent unMutableNotificationContent => unMutableNotificationContent -> IO (Id NSString)
+body unMutableNotificationContent  =
+    sendMsg unMutableNotificationContent (mkSelector "body") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setBody:@
+setBody :: (IsUNMutableNotificationContent unMutableNotificationContent, IsNSString value) => unMutableNotificationContent -> value -> IO ()
+setBody unMutableNotificationContent  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg unMutableNotificationContent (mkSelector "setBody:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- categoryIdentifier@
+categoryIdentifier :: IsUNMutableNotificationContent unMutableNotificationContent => unMutableNotificationContent -> IO (Id NSString)
+categoryIdentifier unMutableNotificationContent  =
+    sendMsg unMutableNotificationContent (mkSelector "categoryIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setCategoryIdentifier:@
+setCategoryIdentifier :: (IsUNMutableNotificationContent unMutableNotificationContent, IsNSString value) => unMutableNotificationContent -> value -> IO ()
+setCategoryIdentifier unMutableNotificationContent  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg unMutableNotificationContent (mkSelector "setCategoryIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- launchImageName@
 launchImageName :: IsUNMutableNotificationContent unMutableNotificationContent => unMutableNotificationContent -> IO (Id NSString)
 launchImageName unMutableNotificationContent  =
@@ -82,6 +151,61 @@ setLaunchImageName :: (IsUNMutableNotificationContent unMutableNotificationConte
 setLaunchImageName unMutableNotificationContent  value =
   withObjCPtr value $ \raw_value ->
       sendMsg unMutableNotificationContent (mkSelector "setLaunchImageName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- sound@
+sound :: IsUNMutableNotificationContent unMutableNotificationContent => unMutableNotificationContent -> IO (Id UNNotificationSound)
+sound unMutableNotificationContent  =
+    sendMsg unMutableNotificationContent (mkSelector "sound") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setSound:@
+setSound :: (IsUNMutableNotificationContent unMutableNotificationContent, IsUNNotificationSound value) => unMutableNotificationContent -> value -> IO ()
+setSound unMutableNotificationContent  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg unMutableNotificationContent (mkSelector "setSound:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- subtitle@
+subtitle :: IsUNMutableNotificationContent unMutableNotificationContent => unMutableNotificationContent -> IO (Id NSString)
+subtitle unMutableNotificationContent  =
+    sendMsg unMutableNotificationContent (mkSelector "subtitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setSubtitle:@
+setSubtitle :: (IsUNMutableNotificationContent unMutableNotificationContent, IsNSString value) => unMutableNotificationContent -> value -> IO ()
+setSubtitle unMutableNotificationContent  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg unMutableNotificationContent (mkSelector "setSubtitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- threadIdentifier@
+threadIdentifier :: IsUNMutableNotificationContent unMutableNotificationContent => unMutableNotificationContent -> IO (Id NSString)
+threadIdentifier unMutableNotificationContent  =
+    sendMsg unMutableNotificationContent (mkSelector "threadIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setThreadIdentifier:@
+setThreadIdentifier :: (IsUNMutableNotificationContent unMutableNotificationContent, IsNSString value) => unMutableNotificationContent -> value -> IO ()
+setThreadIdentifier unMutableNotificationContent  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg unMutableNotificationContent (mkSelector "setThreadIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- title@
+title :: IsUNMutableNotificationContent unMutableNotificationContent => unMutableNotificationContent -> IO (Id NSString)
+title unMutableNotificationContent  =
+    sendMsg unMutableNotificationContent (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setTitle:@
+setTitle :: (IsUNMutableNotificationContent unMutableNotificationContent, IsNSString value) => unMutableNotificationContent -> value -> IO ()
+setTitle unMutableNotificationContent  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg unMutableNotificationContent (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- userInfo@
+userInfo :: IsUNMutableNotificationContent unMutableNotificationContent => unMutableNotificationContent -> IO (Id NSDictionary)
+userInfo unMutableNotificationContent  =
+    sendMsg unMutableNotificationContent (mkSelector "userInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setUserInfo:@
+setUserInfo :: (IsUNMutableNotificationContent unMutableNotificationContent, IsNSDictionary value) => unMutableNotificationContent -> value -> IO ()
+setUserInfo unMutableNotificationContent  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg unMutableNotificationContent (mkSelector "setUserInfo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | The argument to be inserted in the summary for this notification.
 --
@@ -111,6 +235,17 @@ summaryArgumentCount unMutableNotificationContent  =
 setSummaryArgumentCount :: IsUNMutableNotificationContent unMutableNotificationContent => unMutableNotificationContent -> CULong -> IO ()
 setSummaryArgumentCount unMutableNotificationContent  value =
     sendMsg unMutableNotificationContent (mkSelector "setSummaryArgumentCount:") retVoid [argCULong value]
+
+-- | @- targetContentIdentifier@
+targetContentIdentifier :: IsUNMutableNotificationContent unMutableNotificationContent => unMutableNotificationContent -> IO (Id NSString)
+targetContentIdentifier unMutableNotificationContent  =
+    sendMsg unMutableNotificationContent (mkSelector "targetContentIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setTargetContentIdentifier:@
+setTargetContentIdentifier :: (IsUNMutableNotificationContent unMutableNotificationContent, IsNSString value) => unMutableNotificationContent -> value -> IO ()
+setTargetContentIdentifier unMutableNotificationContent  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg unMutableNotificationContent (mkSelector "setTargetContentIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- interruptionLevel@
 interruptionLevel :: IsUNMutableNotificationContent unMutableNotificationContent => unMutableNotificationContent -> IO UNNotificationInterruptionLevel
@@ -147,6 +282,14 @@ setFilterCriteria unMutableNotificationContent  value =
 -- Selectors
 -- ---------------------------------------------------------------------------
 
+-- | @Selector@ for @attachments@
+attachmentsSelector :: Selector
+attachmentsSelector = mkSelector "attachments"
+
+-- | @Selector@ for @setAttachments:@
+setAttachmentsSelector :: Selector
+setAttachmentsSelector = mkSelector "setAttachments:"
+
 -- | @Selector@ for @badge@
 badgeSelector :: Selector
 badgeSelector = mkSelector "badge"
@@ -155,6 +298,22 @@ badgeSelector = mkSelector "badge"
 setBadgeSelector :: Selector
 setBadgeSelector = mkSelector "setBadge:"
 
+-- | @Selector@ for @body@
+bodySelector :: Selector
+bodySelector = mkSelector "body"
+
+-- | @Selector@ for @setBody:@
+setBodySelector :: Selector
+setBodySelector = mkSelector "setBody:"
+
+-- | @Selector@ for @categoryIdentifier@
+categoryIdentifierSelector :: Selector
+categoryIdentifierSelector = mkSelector "categoryIdentifier"
+
+-- | @Selector@ for @setCategoryIdentifier:@
+setCategoryIdentifierSelector :: Selector
+setCategoryIdentifierSelector = mkSelector "setCategoryIdentifier:"
+
 -- | @Selector@ for @launchImageName@
 launchImageNameSelector :: Selector
 launchImageNameSelector = mkSelector "launchImageName"
@@ -162,6 +321,46 @@ launchImageNameSelector = mkSelector "launchImageName"
 -- | @Selector@ for @setLaunchImageName:@
 setLaunchImageNameSelector :: Selector
 setLaunchImageNameSelector = mkSelector "setLaunchImageName:"
+
+-- | @Selector@ for @sound@
+soundSelector :: Selector
+soundSelector = mkSelector "sound"
+
+-- | @Selector@ for @setSound:@
+setSoundSelector :: Selector
+setSoundSelector = mkSelector "setSound:"
+
+-- | @Selector@ for @subtitle@
+subtitleSelector :: Selector
+subtitleSelector = mkSelector "subtitle"
+
+-- | @Selector@ for @setSubtitle:@
+setSubtitleSelector :: Selector
+setSubtitleSelector = mkSelector "setSubtitle:"
+
+-- | @Selector@ for @threadIdentifier@
+threadIdentifierSelector :: Selector
+threadIdentifierSelector = mkSelector "threadIdentifier"
+
+-- | @Selector@ for @setThreadIdentifier:@
+setThreadIdentifierSelector :: Selector
+setThreadIdentifierSelector = mkSelector "setThreadIdentifier:"
+
+-- | @Selector@ for @title@
+titleSelector :: Selector
+titleSelector = mkSelector "title"
+
+-- | @Selector@ for @setTitle:@
+setTitleSelector :: Selector
+setTitleSelector = mkSelector "setTitle:"
+
+-- | @Selector@ for @userInfo@
+userInfoSelector :: Selector
+userInfoSelector = mkSelector "userInfo"
+
+-- | @Selector@ for @setUserInfo:@
+setUserInfoSelector :: Selector
+setUserInfoSelector = mkSelector "setUserInfo:"
 
 -- | @Selector@ for @summaryArgument@
 summaryArgumentSelector :: Selector
@@ -178,6 +377,14 @@ summaryArgumentCountSelector = mkSelector "summaryArgumentCount"
 -- | @Selector@ for @setSummaryArgumentCount:@
 setSummaryArgumentCountSelector :: Selector
 setSummaryArgumentCountSelector = mkSelector "setSummaryArgumentCount:"
+
+-- | @Selector@ for @targetContentIdentifier@
+targetContentIdentifierSelector :: Selector
+targetContentIdentifierSelector = mkSelector "targetContentIdentifier"
+
+-- | @Selector@ for @setTargetContentIdentifier:@
+setTargetContentIdentifierSelector :: Selector
+setTargetContentIdentifierSelector = mkSelector "setTargetContentIdentifier:"
 
 -- | @Selector@ for @interruptionLevel@
 interruptionLevelSelector :: Selector

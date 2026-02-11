@@ -16,9 +16,13 @@ module ObjC.CoreMotion.CMFallDetectionManager
   , requestAuthorizationWithHandler
   , available
   , authorizationStatus
+  , delegate
+  , setDelegate
   , requestAuthorizationWithHandlerSelector
   , availableSelector
   , authorizationStatusSelector
+  , delegateSelector
+  , setDelegateSelector
 
   -- * Enum types
   , CMAuthorizationStatus(CMAuthorizationStatus)
@@ -72,6 +76,24 @@ authorizationStatus :: IsCMFallDetectionManager cmFallDetectionManager => cmFall
 authorizationStatus cmFallDetectionManager  =
     fmap (coerce :: CLong -> CMAuthorizationStatus) $ sendMsg cmFallDetectionManager (mkSelector "authorizationStatus") retCLong []
 
+-- | delegate
+--
+-- The delegate object to receive Fall Detection events.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsCMFallDetectionManager cmFallDetectionManager => cmFallDetectionManager -> IO RawId
+delegate cmFallDetectionManager  =
+    fmap (RawId . castPtr) $ sendMsg cmFallDetectionManager (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- The delegate object to receive Fall Detection events.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsCMFallDetectionManager cmFallDetectionManager => cmFallDetectionManager -> RawId -> IO ()
+setDelegate cmFallDetectionManager  value =
+    sendMsg cmFallDetectionManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -87,4 +109,12 @@ availableSelector = mkSelector "available"
 -- | @Selector@ for @authorizationStatus@
 authorizationStatusSelector :: Selector
 authorizationStatusSelector = mkSelector "authorizationStatus"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

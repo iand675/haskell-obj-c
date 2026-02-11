@@ -25,8 +25,12 @@ module ObjC.Accessibility.AXChartDescriptor
   , setContentDirection
   , series
   , setSeries
+  , xAxis
+  , setXAxis
   , yAxis
   , setYAxis
+  , additionalAxes
+  , setAdditionalAxes
   , initWithTitle_summary_xAxisDescriptor_yAxisDescriptor_seriesSelector
   , initWithAttributedTitle_summary_xAxisDescriptor_yAxisDescriptor_seriesSelector
   , initWithTitle_summary_xAxisDescriptor_yAxisDescriptor_additionalAxes_seriesSelector
@@ -43,8 +47,12 @@ module ObjC.Accessibility.AXChartDescriptor
   , setContentDirectionSelector
   , seriesSelector
   , setSeriesSelector
+  , xAxisSelector
+  , setXAxisSelector
   , yAxisSelector
   , setYAxisSelector
+  , additionalAxesSelector
+  , setAdditionalAxesSelector
 
   -- * Enum types
   , AXChartDescriptorContentDirection(AXChartDescriptorContentDirection)
@@ -197,6 +205,20 @@ setSeries axChartDescriptor  value =
   withObjCPtr value $ \raw_value ->
       sendMsg axChartDescriptor (mkSelector "setSeries:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | The axis descriptor for the chart's X axis.
+--
+-- ObjC selector: @- xAxis@
+xAxis :: IsAXChartDescriptor axChartDescriptor => axChartDescriptor -> IO RawId
+xAxis axChartDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg axChartDescriptor (mkSelector "xAxis") (retPtr retVoid) []
+
+-- | The axis descriptor for the chart's X axis.
+--
+-- ObjC selector: @- setXAxis:@
+setXAxis :: IsAXChartDescriptor axChartDescriptor => axChartDescriptor -> RawId -> IO ()
+setXAxis axChartDescriptor  value =
+    sendMsg axChartDescriptor (mkSelector "setXAxis:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | The axis descriptor for the chart's Y axis.
 --
 -- ObjC selector: @- yAxis@
@@ -211,6 +233,21 @@ setYAxis :: (IsAXChartDescriptor axChartDescriptor, IsAXNumericDataAxisDescripto
 setYAxis axChartDescriptor  value =
   withObjCPtr value $ \raw_value ->
       sendMsg axChartDescriptor (mkSelector "setYAxis:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | Descriptors for additional categorical or numerical axes beyond x and y. For example, in a visual chart, these values might be represented by the size or color of data points.
+--
+-- ObjC selector: @- additionalAxes@
+additionalAxes :: IsAXChartDescriptor axChartDescriptor => axChartDescriptor -> IO (Id NSArray)
+additionalAxes axChartDescriptor  =
+    sendMsg axChartDescriptor (mkSelector "additionalAxes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Descriptors for additional categorical or numerical axes beyond x and y. For example, in a visual chart, these values might be represented by the size or color of data points.
+--
+-- ObjC selector: @- setAdditionalAxes:@
+setAdditionalAxes :: (IsAXChartDescriptor axChartDescriptor, IsNSArray value) => axChartDescriptor -> value -> IO ()
+setAdditionalAxes axChartDescriptor  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg axChartDescriptor (mkSelector "setAdditionalAxes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -280,6 +317,14 @@ seriesSelector = mkSelector "series"
 setSeriesSelector :: Selector
 setSeriesSelector = mkSelector "setSeries:"
 
+-- | @Selector@ for @xAxis@
+xAxisSelector :: Selector
+xAxisSelector = mkSelector "xAxis"
+
+-- | @Selector@ for @setXAxis:@
+setXAxisSelector :: Selector
+setXAxisSelector = mkSelector "setXAxis:"
+
 -- | @Selector@ for @yAxis@
 yAxisSelector :: Selector
 yAxisSelector = mkSelector "yAxis"
@@ -287,4 +332,12 @@ yAxisSelector = mkSelector "yAxis"
 -- | @Selector@ for @setYAxis:@
 setYAxisSelector :: Selector
 setYAxisSelector = mkSelector "setYAxis:"
+
+-- | @Selector@ for @additionalAxes@
+additionalAxesSelector :: Selector
+additionalAxesSelector = mkSelector "additionalAxes"
+
+-- | @Selector@ for @setAdditionalAxes:@
+setAdditionalAxesSelector :: Selector
+setAdditionalAxesSelector = mkSelector "setAdditionalAxes:"
 

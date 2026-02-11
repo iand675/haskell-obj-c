@@ -13,6 +13,8 @@ module ObjC.GameKit.GKMatchmakerViewController
   , setHostedPlayer_didConnect
   , setHostedPlayer_connected
   , setHostedPlayerReady
+  , matchmakerDelegate
+  , setMatchmakerDelegate
   , matchRequest
   , hosted
   , setHosted
@@ -28,6 +30,8 @@ module ObjC.GameKit.GKMatchmakerViewController
   , setHostedPlayer_didConnectSelector
   , setHostedPlayer_connectedSelector
   , setHostedPlayerReadySelector
+  , matchmakerDelegateSelector
+  , setMatchmakerDelegateSelector
   , matchRequestSelector
   , hostedSelector
   , setHostedSelector
@@ -109,6 +113,16 @@ setHostedPlayerReady :: (IsGKMatchmakerViewController gkMatchmakerViewController
 setHostedPlayerReady gkMatchmakerViewController  playerID =
   withObjCPtr playerID $ \raw_playerID ->
       sendMsg gkMatchmakerViewController (mkSelector "setHostedPlayerReady:") retVoid [argPtr (castPtr raw_playerID :: Ptr ())]
+
+-- | @- matchmakerDelegate@
+matchmakerDelegate :: IsGKMatchmakerViewController gkMatchmakerViewController => gkMatchmakerViewController -> IO RawId
+matchmakerDelegate gkMatchmakerViewController  =
+    fmap (RawId . castPtr) $ sendMsg gkMatchmakerViewController (mkSelector "matchmakerDelegate") (retPtr retVoid) []
+
+-- | @- setMatchmakerDelegate:@
+setMatchmakerDelegate :: IsGKMatchmakerViewController gkMatchmakerViewController => gkMatchmakerViewController -> RawId -> IO ()
+setMatchmakerDelegate gkMatchmakerViewController  value =
+    sendMsg gkMatchmakerViewController (mkSelector "setMatchmakerDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- matchRequest@
 matchRequest :: IsGKMatchmakerViewController gkMatchmakerViewController => gkMatchmakerViewController -> IO (Id GKMatchRequest)
@@ -199,6 +213,14 @@ setHostedPlayer_connectedSelector = mkSelector "setHostedPlayer:connected:"
 -- | @Selector@ for @setHostedPlayerReady:@
 setHostedPlayerReadySelector :: Selector
 setHostedPlayerReadySelector = mkSelector "setHostedPlayerReady:"
+
+-- | @Selector@ for @matchmakerDelegate@
+matchmakerDelegateSelector :: Selector
+matchmakerDelegateSelector = mkSelector "matchmakerDelegate"
+
+-- | @Selector@ for @setMatchmakerDelegate:@
+setMatchmakerDelegateSelector :: Selector
+setMatchmakerDelegateSelector = mkSelector "setMatchmakerDelegate:"
 
 -- | @Selector@ for @matchRequest@
 matchRequestSelector :: Selector

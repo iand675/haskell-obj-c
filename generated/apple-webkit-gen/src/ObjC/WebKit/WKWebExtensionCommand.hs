@@ -14,6 +14,7 @@ module ObjC.WebKit.WKWebExtensionCommand
   , new
   , init_
   , webExtensionContext
+  , identifier
   , title
   , activationKey
   , setActivationKey
@@ -23,6 +24,7 @@ module ObjC.WebKit.WKWebExtensionCommand
   , newSelector
   , initSelector
   , webExtensionContextSelector
+  , identifierSelector
   , titleSelector
   , activationKeySelector
   , setActivationKeySelector
@@ -79,6 +81,13 @@ init_ wkWebExtensionCommand  =
 webExtensionContext :: IsWKWebExtensionCommand wkWebExtensionCommand => wkWebExtensionCommand -> IO (Id WKWebExtensionContext)
 webExtensionContext wkWebExtensionCommand  =
     sendMsg wkWebExtensionCommand (mkSelector "webExtensionContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | A unique identifier for the command.
+--
+-- ObjC selector: @- identifier@
+identifier :: IsWKWebExtensionCommand wkWebExtensionCommand => wkWebExtensionCommand -> IO (Id NSString)
+identifier wkWebExtensionCommand  =
+    sendMsg wkWebExtensionCommand (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | Descriptive title for the command aiding discoverability.
 --
@@ -138,6 +147,10 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @webExtensionContext@
 webExtensionContextSelector :: Selector
 webExtensionContextSelector = mkSelector "webExtensionContext"
+
+-- | @Selector@ for @identifier@
+identifierSelector :: Selector
+identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @title@
 titleSelector :: Selector

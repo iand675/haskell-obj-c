@@ -13,6 +13,8 @@ module ObjC.AVFoundation.AVPlayerLayer
   , videoGravity
   , setVideoGravity
   , readyForDisplay
+  , pixelBufferAttributes
+  , setPixelBufferAttributes
   , playerLayerWithPlayerSelector
   , copyDisplayedPixelBufferSelector
   , playerSelector
@@ -20,6 +22,8 @@ module ObjC.AVFoundation.AVPlayerLayer
   , videoGravitySelector
   , setVideoGravitySelector
   , readyForDisplaySelector
+  , pixelBufferAttributesSelector
+  , setPixelBufferAttributesSelector
 
 
   ) where
@@ -120,6 +124,29 @@ readyForDisplay :: IsAVPlayerLayer avPlayerLayer => avPlayerLayer -> IO Bool
 readyForDisplay avPlayerLayer  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayerLayer (mkSelector "readyForDisplay") retCULong []
 
+-- | pixelBufferAttributes
+--
+-- The client requirements for the visual output displayed in AVPlayerLayer during playback.
+--
+-- Pixel buffer attribute keys are defined in <CoreVideo/CVPixelBuffer.h>					This property is key-value observable.
+--
+-- ObjC selector: @- pixelBufferAttributes@
+pixelBufferAttributes :: IsAVPlayerLayer avPlayerLayer => avPlayerLayer -> IO (Id NSDictionary)
+pixelBufferAttributes avPlayerLayer  =
+    sendMsg avPlayerLayer (mkSelector "pixelBufferAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | pixelBufferAttributes
+--
+-- The client requirements for the visual output displayed in AVPlayerLayer during playback.
+--
+-- Pixel buffer attribute keys are defined in <CoreVideo/CVPixelBuffer.h>					This property is key-value observable.
+--
+-- ObjC selector: @- setPixelBufferAttributes:@
+setPixelBufferAttributes :: (IsAVPlayerLayer avPlayerLayer, IsNSDictionary value) => avPlayerLayer -> value -> IO ()
+setPixelBufferAttributes avPlayerLayer  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avPlayerLayer (mkSelector "setPixelBufferAttributes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -151,4 +178,12 @@ setVideoGravitySelector = mkSelector "setVideoGravity:"
 -- | @Selector@ for @readyForDisplay@
 readyForDisplaySelector :: Selector
 readyForDisplaySelector = mkSelector "readyForDisplay"
+
+-- | @Selector@ for @pixelBufferAttributes@
+pixelBufferAttributesSelector :: Selector
+pixelBufferAttributesSelector = mkSelector "pixelBufferAttributes"
+
+-- | @Selector@ for @setPixelBufferAttributes:@
+setPixelBufferAttributesSelector :: Selector
+setPixelBufferAttributesSelector = mkSelector "setPixelBufferAttributes:"
 

@@ -21,12 +21,17 @@ module ObjC.EventKit.EKEvent
   , setStartDate
   , endDate
   , setEndDate
+  , structuredLocation
+  , setStructuredLocation
   , organizer
   , availability
   , setAvailability
   , status
   , isDetached
+  , occurrenceDate
+  , birthdayContactIdentifier
   , birthdayPersonID
+  , birthdayPersonUniqueID
   , eventWithEventStoreSelector
   , compareStartDateWithEventSelector
   , refreshSelector
@@ -37,12 +42,17 @@ module ObjC.EventKit.EKEvent
   , setStartDateSelector
   , endDateSelector
   , setEndDateSelector
+  , structuredLocationSelector
+  , setStructuredLocationSelector
   , organizerSelector
   , availabilitySelector
   , setAvailabilitySelector
   , statusSelector
   , isDetachedSelector
+  , occurrenceDateSelector
+  , birthdayContactIdentifierSelector
   , birthdayPersonIDSelector
+  , birthdayPersonUniqueIDSelector
 
   -- * Enum types
   , EKEventAvailability(EKEventAvailability)
@@ -196,6 +206,24 @@ setEndDate ekEvent  value =
   withObjCPtr value $ \raw_value ->
       sendMsg ekEvent (mkSelector "setEndDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | structuredLocation
+--
+-- Allows you to set a structured location (a location with a potential geo-coordinate) on an                event. The getter for EKEvent’s location property just returns the structured location’s title.                The setter for EKEvent’s location property is equivalent to                [event setStructuredLocation:[EKStructuredLocation locationWithTitle:…]].
+--
+-- ObjC selector: @- structuredLocation@
+structuredLocation :: IsEKEvent ekEvent => ekEvent -> IO RawId
+structuredLocation ekEvent  =
+    fmap (RawId . castPtr) $ sendMsg ekEvent (mkSelector "structuredLocation") (retPtr retVoid) []
+
+-- | structuredLocation
+--
+-- Allows you to set a structured location (a location with a potential geo-coordinate) on an                event. The getter for EKEvent’s location property just returns the structured location’s title.                The setter for EKEvent’s location property is equivalent to                [event setStructuredLocation:[EKStructuredLocation locationWithTitle:…]].
+--
+-- ObjC selector: @- setStructuredLocation:@
+setStructuredLocation :: IsEKEvent ekEvent => ekEvent -> RawId -> IO ()
+setStructuredLocation ekEvent  value =
+    sendMsg ekEvent (mkSelector "setStructuredLocation:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | organizer
 --
 -- The organizer of this event, or nil.
@@ -249,6 +277,30 @@ isDetached :: IsEKEvent ekEvent => ekEvent -> IO Bool
 isDetached ekEvent  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekEvent (mkSelector "isDetached") retCULong []
 
+-- | occurrenceDate:
+--
+-- The occurrence date of an event if it is part of a recurring series.
+--
+-- This is only set if the event is part of a recurring series. It returns                the date on which this event was originally scheduled to occur. For occurrences                that are unmodified from the recurring series, this is the same as the start date.                This value will remain the same even if the event has been detached and its start                 date has changed. Floating events (such as all-day events) are currently returned                in the default time zone. ([NSTimeZone defaultTimeZone])
+--
+-- This will be nil for new events until you set startDate.
+--
+-- ObjC selector: @- occurrenceDate@
+occurrenceDate :: IsEKEvent ekEvent => ekEvent -> IO RawId
+occurrenceDate ekEvent  =
+    fmap (RawId . castPtr) $ sendMsg ekEvent (mkSelector "occurrenceDate") (retPtr retVoid) []
+
+-- | birthdayContactIdentifier
+--
+-- Specifies the contact identifier of the person this event was created for.
+--
+-- This property is only valid for events in the built-in Birthdays calendar. It specifies                the contact identifier (for use with the Contacts framework) of the person this event was                created for. For any other type of event, this property returns nil.
+--
+-- ObjC selector: @- birthdayContactIdentifier@
+birthdayContactIdentifier :: IsEKEvent ekEvent => ekEvent -> IO RawId
+birthdayContactIdentifier ekEvent  =
+    fmap (RawId . castPtr) $ sendMsg ekEvent (mkSelector "birthdayContactIdentifier") (retPtr retVoid) []
+
 -- | birthdayPersonID
 --
 -- Specifies the address book ID of the person this event was created for.
@@ -259,6 +311,17 @@ isDetached ekEvent  =
 birthdayPersonID :: IsEKEvent ekEvent => ekEvent -> IO CLong
 birthdayPersonID ekEvent  =
     sendMsg ekEvent (mkSelector "birthdayPersonID") retCLong []
+
+-- | birthdayPersonUniqueID
+--
+-- Specifies the address book unique ID of the person this event was created for.
+--
+-- This property is only valid for events in the built-in Birthdays calendar. It specifies                the Address Book unique ID of the person this event was created for. For any other type of event,                this property returns nil.
+--
+-- ObjC selector: @- birthdayPersonUniqueID@
+birthdayPersonUniqueID :: IsEKEvent ekEvent => ekEvent -> IO RawId
+birthdayPersonUniqueID ekEvent  =
+    fmap (RawId . castPtr) $ sendMsg ekEvent (mkSelector "birthdayPersonUniqueID") (retPtr retVoid) []
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -304,6 +367,14 @@ endDateSelector = mkSelector "endDate"
 setEndDateSelector :: Selector
 setEndDateSelector = mkSelector "setEndDate:"
 
+-- | @Selector@ for @structuredLocation@
+structuredLocationSelector :: Selector
+structuredLocationSelector = mkSelector "structuredLocation"
+
+-- | @Selector@ for @setStructuredLocation:@
+setStructuredLocationSelector :: Selector
+setStructuredLocationSelector = mkSelector "setStructuredLocation:"
+
 -- | @Selector@ for @organizer@
 organizerSelector :: Selector
 organizerSelector = mkSelector "organizer"
@@ -324,7 +395,19 @@ statusSelector = mkSelector "status"
 isDetachedSelector :: Selector
 isDetachedSelector = mkSelector "isDetached"
 
+-- | @Selector@ for @occurrenceDate@
+occurrenceDateSelector :: Selector
+occurrenceDateSelector = mkSelector "occurrenceDate"
+
+-- | @Selector@ for @birthdayContactIdentifier@
+birthdayContactIdentifierSelector :: Selector
+birthdayContactIdentifierSelector = mkSelector "birthdayContactIdentifier"
+
 -- | @Selector@ for @birthdayPersonID@
 birthdayPersonIDSelector :: Selector
 birthdayPersonIDSelector = mkSelector "birthdayPersonID"
+
+-- | @Selector@ for @birthdayPersonUniqueID@
+birthdayPersonUniqueIDSelector :: Selector
+birthdayPersonUniqueIDSelector = mkSelector "birthdayPersonUniqueID"
 

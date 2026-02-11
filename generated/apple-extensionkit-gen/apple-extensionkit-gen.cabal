@@ -12,6 +12,7 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.ExtensionKit.Delegate.EXHostViewControllerDelegate
       ObjC.ExtensionKit.EXAppExtensionBrowserViewController
       ObjC.ExtensionKit.EXHostViewController
       ObjC.ExtensionKit.Internal.Classes

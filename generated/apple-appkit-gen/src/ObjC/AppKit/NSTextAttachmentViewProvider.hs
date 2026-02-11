@@ -12,6 +12,7 @@ module ObjC.AppKit.NSTextAttachmentViewProvider
   , loadView
   , textAttachment
   , textLayoutManager
+  , location
   , view
   , setView
   , tracksTextAttachmentViewBounds
@@ -22,6 +23,7 @@ module ObjC.AppKit.NSTextAttachmentViewProvider
   , loadViewSelector
   , textAttachmentSelector
   , textLayoutManagerSelector
+  , locationSelector
   , viewSelector
   , setViewSelector
   , tracksTextAttachmentViewBoundsSelector
@@ -80,6 +82,11 @@ textLayoutManager :: IsNSTextAttachmentViewProvider nsTextAttachmentViewProvider
 textLayoutManager nsTextAttachmentViewProvider  =
     sendMsg nsTextAttachmentViewProvider (mkSelector "textLayoutManager") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- location@
+location :: IsNSTextAttachmentViewProvider nsTextAttachmentViewProvider => nsTextAttachmentViewProvider -> IO RawId
+location nsTextAttachmentViewProvider  =
+    fmap (RawId . castPtr) $ sendMsg nsTextAttachmentViewProvider (mkSelector "location") (retPtr retVoid) []
+
 -- | @- view@
 view :: IsNSTextAttachmentViewProvider nsTextAttachmentViewProvider => nsTextAttachmentViewProvider -> IO (Id NSView)
 view nsTextAttachmentViewProvider  =
@@ -128,6 +135,10 @@ textAttachmentSelector = mkSelector "textAttachment"
 -- | @Selector@ for @textLayoutManager@
 textLayoutManagerSelector :: Selector
 textLayoutManagerSelector = mkSelector "textLayoutManager"
+
+-- | @Selector@ for @location@
+locationSelector :: Selector
+locationSelector = mkSelector "location"
 
 -- | @Selector@ for @view@
 viewSelector :: Selector

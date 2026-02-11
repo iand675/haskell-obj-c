@@ -41,9 +41,13 @@ module ObjC.AppKit.NSGestureRecognizer
   , action
   , setAction
   , state
+  , delegate
+  , setDelegate
   , enabled
   , setEnabled
   , view
+  , pressureConfiguration
+  , setPressureConfiguration
   , delaysPrimaryMouseButtonEvents
   , setDelaysPrimaryMouseButtonEvents
   , delaysSecondaryMouseButtonEvents
@@ -56,6 +60,8 @@ module ObjC.AppKit.NSGestureRecognizer
   , setDelaysMagnificationEvents
   , delaysRotationEvents
   , setDelaysRotationEvents
+  , name
+  , setName
   , modifierFlags
   , setState
   , allowedTouchTypes
@@ -94,9 +100,13 @@ module ObjC.AppKit.NSGestureRecognizer
   , actionSelector
   , setActionSelector
   , stateSelector
+  , delegateSelector
+  , setDelegateSelector
   , enabledSelector
   , setEnabledSelector
   , viewSelector
+  , pressureConfigurationSelector
+  , setPressureConfigurationSelector
   , delaysPrimaryMouseButtonEventsSelector
   , setDelaysPrimaryMouseButtonEventsSelector
   , delaysSecondaryMouseButtonEventsSelector
@@ -109,6 +119,8 @@ module ObjC.AppKit.NSGestureRecognizer
   , setDelaysMagnificationEventsSelector
   , delaysRotationEventsSelector
   , setDelaysRotationEventsSelector
+  , nameSelector
+  , setNameSelector
   , modifierFlagsSelector
   , setStateSelector
   , allowedTouchTypesSelector
@@ -353,6 +365,16 @@ state :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO 
 state nsGestureRecognizer  =
     fmap (coerce :: CLong -> NSGestureRecognizerState) $ sendMsg nsGestureRecognizer (mkSelector "state") retCLong []
 
+-- | @- delegate@
+delegate :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO RawId
+delegate nsGestureRecognizer  =
+    fmap (RawId . castPtr) $ sendMsg nsGestureRecognizer (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> RawId -> IO ()
+setDelegate nsGestureRecognizer  value =
+    sendMsg nsGestureRecognizer (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- enabled@
 enabled :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO Bool
 enabled nsGestureRecognizer  =
@@ -367,6 +389,17 @@ setEnabled nsGestureRecognizer  value =
 view :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO (Id NSView)
 view nsGestureRecognizer  =
     sendMsg nsGestureRecognizer (mkSelector "view") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- pressureConfiguration@
+pressureConfiguration :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO (Id NSPressureConfiguration)
+pressureConfiguration nsGestureRecognizer  =
+    sendMsg nsGestureRecognizer (mkSelector "pressureConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setPressureConfiguration:@
+setPressureConfiguration :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSPressureConfiguration value) => nsGestureRecognizer -> value -> IO ()
+setPressureConfiguration nsGestureRecognizer  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsGestureRecognizer (mkSelector "setPressureConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- delaysPrimaryMouseButtonEvents@
 delaysPrimaryMouseButtonEvents :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO Bool
@@ -427,6 +460,17 @@ delaysRotationEvents nsGestureRecognizer  =
 setDelaysRotationEvents :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> Bool -> IO ()
 setDelaysRotationEvents nsGestureRecognizer  value =
     sendMsg nsGestureRecognizer (mkSelector "setDelaysRotationEvents:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | @- name@
+name :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO (Id NSString)
+name nsGestureRecognizer  =
+    sendMsg nsGestureRecognizer (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setName:@
+setName :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSString value) => nsGestureRecognizer -> value -> IO ()
+setName nsGestureRecognizer  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsGestureRecognizer (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- modifierFlags@
 modifierFlags :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO NSEventModifierFlags
@@ -588,6 +632,14 @@ setActionSelector = mkSelector "setAction:"
 stateSelector :: Selector
 stateSelector = mkSelector "state"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @enabled@
 enabledSelector :: Selector
 enabledSelector = mkSelector "enabled"
@@ -599,6 +651,14 @@ setEnabledSelector = mkSelector "setEnabled:"
 -- | @Selector@ for @view@
 viewSelector :: Selector
 viewSelector = mkSelector "view"
+
+-- | @Selector@ for @pressureConfiguration@
+pressureConfigurationSelector :: Selector
+pressureConfigurationSelector = mkSelector "pressureConfiguration"
+
+-- | @Selector@ for @setPressureConfiguration:@
+setPressureConfigurationSelector :: Selector
+setPressureConfigurationSelector = mkSelector "setPressureConfiguration:"
 
 -- | @Selector@ for @delaysPrimaryMouseButtonEvents@
 delaysPrimaryMouseButtonEventsSelector :: Selector
@@ -647,6 +707,14 @@ delaysRotationEventsSelector = mkSelector "delaysRotationEvents"
 -- | @Selector@ for @setDelaysRotationEvents:@
 setDelaysRotationEventsSelector :: Selector
 setDelaysRotationEventsSelector = mkSelector "setDelaysRotationEvents:"
+
+-- | @Selector@ for @name@
+nameSelector :: Selector
+nameSelector = mkSelector "name"
+
+-- | @Selector@ for @setName:@
+setNameSelector :: Selector
+setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @modifierFlags@
 modifierFlagsSelector :: Selector

@@ -8,6 +8,7 @@ module ObjC.MapKit.MKReverseGeocodingRequest
   , IsMKReverseGeocodingRequest(..)
   , init_
   , new
+  , initWithLocation
   , cancel
   , cancelled
   , loading
@@ -15,6 +16,7 @@ module ObjC.MapKit.MKReverseGeocodingRequest
   , setPreferredLocale
   , initSelector
   , newSelector
+  , initWithLocationSelector
   , cancelSelector
   , cancelledSelector
   , loadingSelector
@@ -50,6 +52,11 @@ new  =
   do
     cls' <- getRequiredClass "MKReverseGeocodingRequest"
     sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+
+-- | @- initWithLocation:@
+initWithLocation :: IsMKReverseGeocodingRequest mkReverseGeocodingRequest => mkReverseGeocodingRequest -> RawId -> IO (Id MKReverseGeocodingRequest)
+initWithLocation mkReverseGeocodingRequest  location =
+    sendMsg mkReverseGeocodingRequest (mkSelector "initWithLocation:") (retPtr retVoid) [argPtr (castPtr (unRawId location) :: Ptr ())] >>= ownedObject . castPtr
 
 -- | @- cancel@
 cancel :: IsMKReverseGeocodingRequest mkReverseGeocodingRequest => mkReverseGeocodingRequest -> IO ()
@@ -88,6 +95,10 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @new@
 newSelector :: Selector
 newSelector = mkSelector "new"
+
+-- | @Selector@ for @initWithLocation:@
+initWithLocationSelector :: Selector
+initWithLocationSelector = mkSelector "initWithLocation:"
 
 -- | @Selector@ for @cancel@
 cancelSelector :: Selector

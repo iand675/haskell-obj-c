@@ -12,6 +12,16 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.Quartz.Delegate.IKCameraDeviceViewDelegate
+      ObjC.Quartz.Delegate.IKDeviceBrowserViewDelegate
+      ObjC.Quartz.Delegate.IKFilterCustomUIProvider
+      ObjC.Quartz.Delegate.IKImageEditPanelDataSource
+      ObjC.Quartz.Delegate.IKScannerDeviceViewDelegate
+      ObjC.Quartz.Delegate.IKSlideshowDataSource
+      ObjC.Quartz.Delegate.QCCompositionRenderer
+      ObjC.Quartz.Delegate.QCPlugInContext
+      ObjC.Quartz.Delegate.QCPlugInInputImageSource
+      ObjC.Quartz.Delegate.QCPlugInOutputImageProvider
       ObjC.Quartz.Enums
       ObjC.Quartz.IKCameraDeviceView
       ObjC.Quartz.IKDeviceBrowserView

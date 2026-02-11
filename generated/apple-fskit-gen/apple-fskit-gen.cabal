@@ -12,6 +12,16 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.FSKit.Delegate.FSFileSystemBase
+      ObjC.FSKit.Delegate.FSManageableResourceMaintenanceOperations
+      ObjC.FSKit.Delegate.FSUnaryFileSystemOperations
+      ObjC.FSKit.Delegate.FSVolumeAccessCheckOperations
+      ObjC.FSKit.Delegate.FSVolumeOpenCloseOperations
+      ObjC.FSKit.Delegate.FSVolumeOperations
+      ObjC.FSKit.Delegate.FSVolumePathConfOperations
+      ObjC.FSKit.Delegate.FSVolumePreallocateOperations
+      ObjC.FSKit.Delegate.FSVolumeRenameOperations
+      ObjC.FSKit.Delegate.FSVolumeXattrOperations
       ObjC.FSKit.Enums
       ObjC.FSKit.FSBlockDeviceResource
       ObjC.FSKit.FSClient

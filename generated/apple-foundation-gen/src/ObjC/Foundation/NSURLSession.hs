@@ -38,6 +38,7 @@ module ObjC.Foundation.NSURLSession
   , downloadTaskWithResumeData_completionHandler
   , sharedSession
   , delegateQueue
+  , delegate
   , configuration
   , sessionDescription
   , setSessionDescription
@@ -73,6 +74,7 @@ module ObjC.Foundation.NSURLSession
   , downloadTaskWithResumeData_completionHandlerSelector
   , sharedSessionSelector
   , delegateQueueSelector
+  , delegateSelector
   , configurationSelector
   , sessionDescriptionSelector
   , setSessionDescriptionSelector
@@ -300,6 +302,11 @@ delegateQueue :: IsNSURLSession nsurlSession => nsurlSession -> IO (Id NSOperati
 delegateQueue nsurlSession  =
     sendMsg nsurlSession (mkSelector "delegateQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- delegate@
+delegate :: IsNSURLSession nsurlSession => nsurlSession -> IO RawId
+delegate nsurlSession  =
+    fmap (RawId . castPtr) $ sendMsg nsurlSession (mkSelector "delegate") (retPtr retVoid) []
+
 -- | @- configuration@
 configuration :: IsNSURLSession nsurlSession => nsurlSession -> IO (Id NSURLSessionConfiguration)
 configuration nsurlSession  =
@@ -447,6 +454,10 @@ sharedSessionSelector = mkSelector "sharedSession"
 -- | @Selector@ for @delegateQueue@
 delegateQueueSelector :: Selector
 delegateQueueSelector = mkSelector "delegateQueue"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @configuration@
 configurationSelector :: Selector

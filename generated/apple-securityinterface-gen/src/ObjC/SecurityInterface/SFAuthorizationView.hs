@@ -7,6 +7,8 @@ module ObjC.SecurityInterface.SFAuthorizationView
   ( SFAuthorizationView
   , IsSFAuthorizationView(..)
   , setString
+  , setAuthorizationRights
+  , authorizationRights
   , authorization
   , updateStatus
   , setAutoupdate
@@ -19,6 +21,8 @@ module ObjC.SecurityInterface.SFAuthorizationView
   , authorize
   , deauthorize
   , setStringSelector
+  , setAuthorizationRightsSelector
+  , authorizationRightsSelector
   , authorizationSelector
   , updateStatusSelector
   , setAutoupdateSelector
@@ -61,6 +65,26 @@ import ObjC.SecurityFoundation.Internal.Classes
 setString :: IsSFAuthorizationView sfAuthorizationView => sfAuthorizationView -> RawId -> IO ()
 setString sfAuthorizationView  authorizationString =
     sendMsg sfAuthorizationView (mkSelector "setString:") retVoid [argPtr (castPtr (unRawId authorizationString) :: Ptr ())]
+
+-- | setAuthorizationRights:
+--
+-- Sets the authorization rights for this view.
+--
+-- @authorizationRights@ — Authorization rights.
+--
+-- ObjC selector: @- setAuthorizationRights:@
+setAuthorizationRights :: IsSFAuthorizationView sfAuthorizationView => sfAuthorizationView -> Const RawId -> IO ()
+setAuthorizationRights sfAuthorizationView  authorizationRights =
+    sendMsg sfAuthorizationView (mkSelector "setAuthorizationRights:") retVoid [argPtr (castPtr (unRawId (unConst authorizationRights)) :: Ptr ())]
+
+-- | authorizationRights
+--
+-- Returns the authorization rights for this view.
+--
+-- ObjC selector: @- authorizationRights@
+authorizationRights :: IsSFAuthorizationView sfAuthorizationView => sfAuthorizationView -> IO RawId
+authorizationRights sfAuthorizationView  =
+    fmap (RawId . castPtr) $ sendMsg sfAuthorizationView (mkSelector "authorizationRights") (retPtr retVoid) []
 
 -- | authorization
 --
@@ -166,6 +190,14 @@ deauthorize sfAuthorizationView  inSender =
 -- | @Selector@ for @setString:@
 setStringSelector :: Selector
 setStringSelector = mkSelector "setString:"
+
+-- | @Selector@ for @setAuthorizationRights:@
+setAuthorizationRightsSelector :: Selector
+setAuthorizationRightsSelector = mkSelector "setAuthorizationRights:"
+
+-- | @Selector@ for @authorizationRights@
+authorizationRightsSelector :: Selector
+authorizationRightsSelector = mkSelector "authorizationRights"
 
 -- | @Selector@ for @authorization@
 authorizationSelector :: Selector

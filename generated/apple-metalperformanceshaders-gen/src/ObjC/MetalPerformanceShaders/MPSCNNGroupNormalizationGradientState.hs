@@ -19,6 +19,10 @@ module ObjC.MetalPerformanceShaders.MPSCNNGroupNormalizationGradientState
   , initWithResource
   , initWithDevice_bufferSize
   , groupNormalization
+  , gamma
+  , beta
+  , gradientForGamma
+  , gradientForBeta
   , temporaryStateWithCommandBuffer_textureDescriptorSelector
   , temporaryStateWithCommandBufferSelector
   , temporaryStateWithCommandBuffer_bufferSizeSelector
@@ -26,6 +30,10 @@ module ObjC.MetalPerformanceShaders.MPSCNNGroupNormalizationGradientState
   , initWithResourceSelector
   , initWithDevice_bufferSizeSelector
   , groupNormalizationSelector
+  , gammaSelector
+  , betaSelector
+  , gradientForGammaSelector
+  , gradientForBetaSelector
 
 
   ) where
@@ -97,6 +105,34 @@ groupNormalization :: IsMPSCNNGroupNormalizationGradientState mpscnnGroupNormali
 groupNormalization mpscnnGroupNormalizationGradientState  =
     sendMsg mpscnnGroupNormalizationGradientState (mkSelector "groupNormalization") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | Return an MTLBuffer object with the state's current gamma values.
+--
+-- ObjC selector: @- gamma@
+gamma :: IsMPSCNNGroupNormalizationGradientState mpscnnGroupNormalizationGradientState => mpscnnGroupNormalizationGradientState -> IO RawId
+gamma mpscnnGroupNormalizationGradientState  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnGroupNormalizationGradientState (mkSelector "gamma") (retPtr retVoid) []
+
+-- | Return an MTLBuffer object with the state's current beta values..
+--
+-- ObjC selector: @- beta@
+beta :: IsMPSCNNGroupNormalizationGradientState mpscnnGroupNormalizationGradientState => mpscnnGroupNormalizationGradientState -> IO RawId
+beta mpscnnGroupNormalizationGradientState  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnGroupNormalizationGradientState (mkSelector "beta") (retPtr retVoid) []
+
+-- | The MTLBuffer containing the gradient values for gamma.
+--
+-- ObjC selector: @- gradientForGamma@
+gradientForGamma :: IsMPSCNNGroupNormalizationGradientState mpscnnGroupNormalizationGradientState => mpscnnGroupNormalizationGradientState -> IO RawId
+gradientForGamma mpscnnGroupNormalizationGradientState  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnGroupNormalizationGradientState (mkSelector "gradientForGamma") (retPtr retVoid) []
+
+-- | The MTLBuffer containing the gradient values for beta.
+--
+-- ObjC selector: @- gradientForBeta@
+gradientForBeta :: IsMPSCNNGroupNormalizationGradientState mpscnnGroupNormalizationGradientState => mpscnnGroupNormalizationGradientState -> IO RawId
+gradientForBeta mpscnnGroupNormalizationGradientState  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnGroupNormalizationGradientState (mkSelector "gradientForBeta") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -128,4 +164,20 @@ initWithDevice_bufferSizeSelector = mkSelector "initWithDevice:bufferSize:"
 -- | @Selector@ for @groupNormalization@
 groupNormalizationSelector :: Selector
 groupNormalizationSelector = mkSelector "groupNormalization"
+
+-- | @Selector@ for @gamma@
+gammaSelector :: Selector
+gammaSelector = mkSelector "gamma"
+
+-- | @Selector@ for @beta@
+betaSelector :: Selector
+betaSelector = mkSelector "beta"
+
+-- | @Selector@ for @gradientForGamma@
+gradientForGammaSelector :: Selector
+gradientForGammaSelector = mkSelector "gradientForGamma"
+
+-- | @Selector@ for @gradientForBeta@
+gradientForBetaSelector :: Selector
+gradientForBetaSelector = mkSelector "gradientForBeta"
 

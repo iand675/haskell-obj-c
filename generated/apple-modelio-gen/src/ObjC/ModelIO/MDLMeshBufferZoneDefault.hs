@@ -9,7 +9,9 @@ module ObjC.ModelIO.MDLMeshBufferZoneDefault
   ( MDLMeshBufferZoneDefault
   , IsMDLMeshBufferZoneDefault(..)
   , capacity
+  , allocator
   , capacitySelector
+  , allocatorSelector
 
 
   ) where
@@ -34,6 +36,11 @@ capacity :: IsMDLMeshBufferZoneDefault mdlMeshBufferZoneDefault => mdlMeshBuffer
 capacity mdlMeshBufferZoneDefault  =
     sendMsg mdlMeshBufferZoneDefault (mkSelector "capacity") retCULong []
 
+-- | @- allocator@
+allocator :: IsMDLMeshBufferZoneDefault mdlMeshBufferZoneDefault => mdlMeshBufferZoneDefault -> IO RawId
+allocator mdlMeshBufferZoneDefault  =
+    fmap (RawId . castPtr) $ sendMsg mdlMeshBufferZoneDefault (mkSelector "allocator") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -41,4 +48,8 @@ capacity mdlMeshBufferZoneDefault  =
 -- | @Selector@ for @capacity@
 capacitySelector :: Selector
 capacitySelector = mkSelector "capacity"
+
+-- | @Selector@ for @allocator@
+allocatorSelector :: Selector
+allocatorSelector = mkSelector "allocator"
 

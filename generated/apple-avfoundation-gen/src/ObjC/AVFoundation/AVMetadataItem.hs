@@ -22,7 +22,9 @@ module ObjC.AVFoundation.AVMetadataItem
   , extendedLanguageTag
   , locale
   , dataType
+  , value
   , extraAttributes
+  , key
   , commonKey
   , keySpace
   , stringValue
@@ -45,7 +47,9 @@ module ObjC.AVFoundation.AVMetadataItem
   , extendedLanguageTagSelector
   , localeSelector
   , dataTypeSelector
+  , valueSelector
   , extraAttributesSelector
+  , keySelector
   , commonKeySelector
   , keySpaceSelector
   , stringValueSelector
@@ -254,10 +258,20 @@ dataType :: IsAVMetadataItem avMetadataItem => avMetadataItem -> IO (Id NSString
 dataType avMetadataItem  =
     sendMsg avMetadataItem (mkSelector "dataType") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- value@
+value :: IsAVMetadataItem avMetadataItem => avMetadataItem -> IO RawId
+value avMetadataItem  =
+    fmap (RawId . castPtr) $ sendMsg avMetadataItem (mkSelector "value") (retPtr retVoid) []
+
 -- | @- extraAttributes@
 extraAttributes :: IsAVMetadataItem avMetadataItem => avMetadataItem -> IO (Id NSDictionary)
 extraAttributes avMetadataItem  =
     sendMsg avMetadataItem (mkSelector "extraAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- key@
+key :: IsAVMetadataItem avMetadataItem => avMetadataItem -> IO RawId
+key avMetadataItem  =
+    fmap (RawId . castPtr) $ sendMsg avMetadataItem (mkSelector "key") (retPtr retVoid) []
 
 -- | @- commonKey@
 commonKey :: IsAVMetadataItem avMetadataItem => avMetadataItem -> IO (Id NSString)
@@ -358,9 +372,17 @@ localeSelector = mkSelector "locale"
 dataTypeSelector :: Selector
 dataTypeSelector = mkSelector "dataType"
 
+-- | @Selector@ for @value@
+valueSelector :: Selector
+valueSelector = mkSelector "value"
+
 -- | @Selector@ for @extraAttributes@
 extraAttributesSelector :: Selector
 extraAttributesSelector = mkSelector "extraAttributes"
+
+-- | @Selector@ for @key@
+keySelector :: Selector
+keySelector = mkSelector "key"
 
 -- | @Selector@ for @commonKey@
 commonKeySelector :: Selector

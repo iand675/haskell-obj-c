@@ -40,6 +40,8 @@ module ObjC.Speech.SFSpeechRecognizer
   , locale
   , supportsOnDeviceRecognition
   , setSupportsOnDeviceRecognition
+  , delegate
+  , setDelegate
   , defaultTaskHint
   , setDefaultTaskHint
   , queue
@@ -55,6 +57,8 @@ module ObjC.Speech.SFSpeechRecognizer
   , localeSelector
   , supportsOnDeviceRecognitionSelector
   , setSupportsOnDeviceRecognitionSelector
+  , delegateSelector
+  , setDelegateSelector
   , defaultTaskHintSelector
   , setDefaultTaskHintSelector
   , queueSelector
@@ -234,6 +238,24 @@ setSupportsOnDeviceRecognition :: IsSFSpeechRecognizer sfSpeechRecognizer => sfS
 setSupportsOnDeviceRecognition sfSpeechRecognizer  value =
     sendMsg sfSpeechRecognizer (mkSelector "setSupportsOnDeviceRecognition:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | The delegate object that handles changes to the availability of speech recognition services.
+--
+-- Provide a delegate object when you want to monitor changes to the availability of speech recognition services. Your delegate object must conform to the ``SFSpeechRecognizerDelegate`` protocol.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsSFSpeechRecognizer sfSpeechRecognizer => sfSpeechRecognizer -> IO RawId
+delegate sfSpeechRecognizer  =
+    fmap (RawId . castPtr) $ sendMsg sfSpeechRecognizer (mkSelector "delegate") (retPtr retVoid) []
+
+-- | The delegate object that handles changes to the availability of speech recognition services.
+--
+-- Provide a delegate object when you want to monitor changes to the availability of speech recognition services. Your delegate object must conform to the ``SFSpeechRecognizerDelegate`` protocol.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsSFSpeechRecognizer sfSpeechRecognizer => sfSpeechRecognizer -> RawId -> IO ()
+setDelegate sfSpeechRecognizer  value =
+    sendMsg sfSpeechRecognizer (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | A hint that indicates the type of speech recognition being requested.
 --
 -- By default, the value of this property overrides the ``SFSpeechRecognitionTaskHint/unspecified`` value for requests. For possible values, see ``SFSpeechRecognitionTaskHint``.
@@ -322,6 +344,14 @@ supportsOnDeviceRecognitionSelector = mkSelector "supportsOnDeviceRecognition"
 -- | @Selector@ for @setSupportsOnDeviceRecognition:@
 setSupportsOnDeviceRecognitionSelector :: Selector
 setSupportsOnDeviceRecognitionSelector = mkSelector "setSupportsOnDeviceRecognition:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @defaultTaskHint@
 defaultTaskHintSelector :: Selector

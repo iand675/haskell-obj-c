@@ -11,7 +11,11 @@ module ObjC.NearbyInteraction.NISession
   , runWithConfiguration
   , pause
   , invalidate
+  , setARSession
   , supported
+  , deviceCapabilities
+  , delegate
+  , setDelegate
   , delegateQueue
   , setDelegateQueue
   , discoveryToken
@@ -19,7 +23,11 @@ module ObjC.NearbyInteraction.NISession
   , runWithConfigurationSelector
   , pauseSelector
   , invalidateSelector
+  , setARSessionSelector
   , supportedSelector
+  , deviceCapabilitiesSelector
+  , delegateSelector
+  , setDelegateSelector
   , delegateQueueSelector
   , setDelegateQueueSelector
   , discoveryTokenSelector
@@ -71,6 +79,23 @@ invalidate :: IsNISession niSession => niSession -> IO ()
 invalidate niSession  =
     sendMsg niSession (mkSelector "invalidate") retVoid []
 
+-- | Provide an ARSession object for use with the NISession
+--
+-- @session@ — The ARSession to use for camera assistance
+--
+-- If not provided, an ARSession will be created automatically if the cameraAssistanceEnabled property on the configuration is YES
+--
+-- The developer is responsible for running the ARSession if provided.
+--
+-- If the ARConfiguration used to run the session is not compatible with the NISession, the NISession will invalidate with error
+--
+-- If the platform does not support camera assistance or an ARSession is provided without enabling cameraAssistanceEnabled property in the NIConfiguration, the NISession will invalidate with error (see NIError.h)
+--
+-- ObjC selector: @- setARSession:@
+setARSession :: IsNISession niSession => niSession -> RawId -> IO ()
+setARSession niSession  session =
+    sendMsg niSession (mkSelector "setARSession:") retVoid [argPtr (castPtr (unRawId session) :: Ptr ())]
+
 -- | Whether or not this device is capable of participating in a nearby interaction session.
 --
 -- ObjC selector: @+ supported@
@@ -79,6 +104,31 @@ supported  =
   do
     cls' <- getRequiredClass "NISession"
     fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supported") retCULong []
+
+-- | Get the protocol that describes nearby interaction capabilities on this device.
+--
+-- Detailed description on the capability protocol is in NIDeviceCapability.h.
+--
+-- ObjC selector: @+ deviceCapabilities@
+deviceCapabilities :: IO RawId
+deviceCapabilities  =
+  do
+    cls' <- getRequiredClass "NISession"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "deviceCapabilities") (retPtr retVoid) []
+
+-- | A delegate for receiving NISession updates.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsNISession niSession => niSession -> IO RawId
+delegate niSession  =
+    fmap (RawId . castPtr) $ sendMsg niSession (mkSelector "delegate") (retPtr retVoid) []
+
+-- | A delegate for receiving NISession updates.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsNISession niSession => niSession -> RawId -> IO ()
+setDelegate niSession  value =
+    sendMsg niSession (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | The dispatch queue on which the delegate calls are performed.
 --
@@ -131,9 +181,25 @@ pauseSelector = mkSelector "pause"
 invalidateSelector :: Selector
 invalidateSelector = mkSelector "invalidate"
 
+-- | @Selector@ for @setARSession:@
+setARSessionSelector :: Selector
+setARSessionSelector = mkSelector "setARSession:"
+
 -- | @Selector@ for @supported@
 supportedSelector :: Selector
 supportedSelector = mkSelector "supported"
+
+-- | @Selector@ for @deviceCapabilities@
+deviceCapabilitiesSelector :: Selector
+deviceCapabilitiesSelector = mkSelector "deviceCapabilities"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @delegateQueue@
 delegateQueueSelector :: Selector

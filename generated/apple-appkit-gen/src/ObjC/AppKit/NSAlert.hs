@@ -29,8 +29,13 @@ module ObjC.AppKit.NSAlert
   , setShowsHelp
   , helpAnchor
   , setHelpAnchor
+  , delegate
+  , setDelegate
+  , accessoryView
+  , setAccessoryView
   , showsSuppressionButton
   , setShowsSuppressionButton
+  , suppressionButton
   , window
   , alertWithErrorSelector
   , addButtonWithTitleSelector
@@ -52,8 +57,13 @@ module ObjC.AppKit.NSAlert
   , setShowsHelpSelector
   , helpAnchorSelector
   , setHelpAnchorSelector
+  , delegateSelector
+  , setDelegateSelector
+  , accessoryViewSelector
+  , setAccessoryViewSelector
   , showsSuppressionButtonSelector
   , setShowsSuppressionButtonSelector
+  , suppressionButtonSelector
   , windowSelector
 
   -- * Enum types
@@ -267,6 +277,35 @@ setHelpAnchor nsAlert  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsAlert (mkSelector "setHelpAnchor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | The delegate of the receiver, currently only allows for custom help behavior of the alert. For apps linked against 10.12, this property has zeroing weak memory semantics. When linked against an older SDK this back to having @retain@ semantics, matching legacy behavior.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsNSAlert nsAlert => nsAlert -> IO RawId
+delegate nsAlert  =
+    fmap (RawId . castPtr) $ sendMsg nsAlert (mkSelector "delegate") (retPtr retVoid) []
+
+-- | The delegate of the receiver, currently only allows for custom help behavior of the alert. For apps linked against 10.12, this property has zeroing weak memory semantics. When linked against an older SDK this back to having @retain@ semantics, matching legacy behavior.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsNSAlert nsAlert => nsAlert -> RawId -> IO ()
+setDelegate nsAlert  value =
+    sendMsg nsAlert (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | The accessory view displayed in the alert, placed between the informative text or suppression checkbox (if present) and the response buttons. Before changing the location of the accessory view, first call the @-layout@ method.
+--
+-- ObjC selector: @- accessoryView@
+accessoryView :: IsNSAlert nsAlert => nsAlert -> IO (Id NSView)
+accessoryView nsAlert  =
+    sendMsg nsAlert (mkSelector "accessoryView") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The accessory view displayed in the alert, placed between the informative text or suppression checkbox (if present) and the response buttons. Before changing the location of the accessory view, first call the @-layout@ method.
+--
+-- ObjC selector: @- setAccessoryView:@
+setAccessoryView :: (IsNSAlert nsAlert, IsNSView value) => nsAlert -> value -> IO ()
+setAccessoryView nsAlert  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsAlert (mkSelector "setAccessoryView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | Specifies whether the alert includes a suppression checkbox, which can be employed to allow a user to opt out of seeing the alert again. The default value of this property is @NO@, which specifies the absence of a suppression checkbox in the alert. Set the value to @YES@ to show a suppression checkbox in the alert. By default, a suppression checkbox has the title, “Do not show this message again.” In macOS 11.0 and later, if the alert displays multiple buttons that prompt the user to make a choice, the title is “Do not ask again.” To customize it, use the checkbox’s title property, as follows:
 --
 -- myAlert.suppressionButton.title = "Do not show this warning again";
@@ -288,6 +327,13 @@ showsSuppressionButton nsAlert  =
 setShowsSuppressionButton :: IsNSAlert nsAlert => nsAlert -> Bool -> IO ()
 setShowsSuppressionButton nsAlert  value =
     sendMsg nsAlert (mkSelector "setShowsSuppressionButton:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | The alert’s suppression checkbox. The checkbox may be customized, including the title and the initial state. Additionally, use this method to get the state of the button after the alert is dismissed, which may be stored in user defaults and checked before showing the alert again. In order to show the suppression button in the alert panel, you must set @showsSuppressionButton@ to @YES@.
+--
+-- ObjC selector: @- suppressionButton@
+suppressionButton :: IsNSAlert nsAlert => nsAlert -> IO (Id NSButton)
+suppressionButton nsAlert  =
+    sendMsg nsAlert (mkSelector "suppressionButton") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | The app-modal panel or document-modal sheet that corresponds to the alert
 --
@@ -380,6 +426,22 @@ helpAnchorSelector = mkSelector "helpAnchor"
 setHelpAnchorSelector :: Selector
 setHelpAnchorSelector = mkSelector "setHelpAnchor:"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @accessoryView@
+accessoryViewSelector :: Selector
+accessoryViewSelector = mkSelector "accessoryView"
+
+-- | @Selector@ for @setAccessoryView:@
+setAccessoryViewSelector :: Selector
+setAccessoryViewSelector = mkSelector "setAccessoryView:"
+
 -- | @Selector@ for @showsSuppressionButton@
 showsSuppressionButtonSelector :: Selector
 showsSuppressionButtonSelector = mkSelector "showsSuppressionButton"
@@ -387,6 +449,10 @@ showsSuppressionButtonSelector = mkSelector "showsSuppressionButton"
 -- | @Selector@ for @setShowsSuppressionButton:@
 setShowsSuppressionButtonSelector :: Selector
 setShowsSuppressionButtonSelector = mkSelector "setShowsSuppressionButton:"
+
+-- | @Selector@ for @suppressionButton@
+suppressionButtonSelector :: Selector
+suppressionButtonSelector = mkSelector "suppressionButton"
 
 -- | @Selector@ for @window@
 windowSelector :: Selector

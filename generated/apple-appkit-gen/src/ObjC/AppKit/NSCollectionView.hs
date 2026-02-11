@@ -47,10 +47,20 @@ module ObjC.AppKit.NSCollectionView
   , draggingImageForItemsAtIndexPaths_withEvent_offset
   , draggingImageForItemsAtIndexes_withEvent_offset
   , newItemForRepresentedObject
+  , dataSource
+  , setDataSource
+  , prefetchDataSource
+  , setPrefetchDataSource
   , content
   , setContent
+  , delegate
+  , setDelegate
+  , backgroundView
+  , setBackgroundView
   , backgroundViewScrollsWithContent
   , setBackgroundViewScrollsWithContent
+  , collectionViewLayout
+  , setCollectionViewLayout
   , backgroundColors
   , setBackgroundColors
   , numberOfSections
@@ -63,6 +73,10 @@ module ObjC.AppKit.NSCollectionView
   , setAllowsMultipleSelection
   , selectionIndexes
   , setSelectionIndexes
+  , selectionIndexPaths
+  , setSelectionIndexPaths
+  , itemPrototype
+  , setItemPrototype
   , maxNumberOfRows
   , setMaxNumberOfRows
   , maxNumberOfColumns
@@ -111,10 +125,20 @@ module ObjC.AppKit.NSCollectionView
   , draggingImageForItemsAtIndexPaths_withEvent_offsetSelector
   , draggingImageForItemsAtIndexes_withEvent_offsetSelector
   , newItemForRepresentedObjectSelector
+  , dataSourceSelector
+  , setDataSourceSelector
+  , prefetchDataSourceSelector
+  , setPrefetchDataSourceSelector
   , contentSelector
   , setContentSelector
+  , delegateSelector
+  , setDelegateSelector
+  , backgroundViewSelector
+  , setBackgroundViewSelector
   , backgroundViewScrollsWithContentSelector
   , setBackgroundViewScrollsWithContentSelector
+  , collectionViewLayoutSelector
+  , setCollectionViewLayoutSelector
   , backgroundColorsSelector
   , setBackgroundColorsSelector
   , numberOfSectionsSelector
@@ -127,6 +151,10 @@ module ObjC.AppKit.NSCollectionView
   , setAllowsMultipleSelectionSelector
   , selectionIndexesSelector
   , setSelectionIndexesSelector
+  , selectionIndexPathsSelector
+  , setSelectionIndexPathsSelector
+  , itemPrototypeSelector
+  , setItemPrototypeSelector
   , maxNumberOfRowsSelector
   , setMaxNumberOfRowsSelector
   , maxNumberOfColumnsSelector
@@ -417,6 +445,26 @@ newItemForRepresentedObject :: IsNSCollectionView nsCollectionView => nsCollecti
 newItemForRepresentedObject nsCollectionView  object =
     sendMsg nsCollectionView (mkSelector "newItemForRepresentedObject:") (retPtr retVoid) [argPtr (castPtr (unRawId object) :: Ptr ())] >>= ownedObject . castPtr
 
+-- | @- dataSource@
+dataSource :: IsNSCollectionView nsCollectionView => nsCollectionView -> IO RawId
+dataSource nsCollectionView  =
+    fmap (RawId . castPtr) $ sendMsg nsCollectionView (mkSelector "dataSource") (retPtr retVoid) []
+
+-- | @- setDataSource:@
+setDataSource :: IsNSCollectionView nsCollectionView => nsCollectionView -> RawId -> IO ()
+setDataSource nsCollectionView  value =
+    sendMsg nsCollectionView (mkSelector "setDataSource:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- prefetchDataSource@
+prefetchDataSource :: IsNSCollectionView nsCollectionView => nsCollectionView -> IO RawId
+prefetchDataSource nsCollectionView  =
+    fmap (RawId . castPtr) $ sendMsg nsCollectionView (mkSelector "prefetchDataSource") (retPtr retVoid) []
+
+-- | @- setPrefetchDataSource:@
+setPrefetchDataSource :: IsNSCollectionView nsCollectionView => nsCollectionView -> RawId -> IO ()
+setPrefetchDataSource nsCollectionView  value =
+    sendMsg nsCollectionView (mkSelector "setPrefetchDataSource:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- content@
 content :: IsNSCollectionView nsCollectionView => nsCollectionView -> IO (Id NSArray)
 content nsCollectionView  =
@@ -428,6 +476,27 @@ setContent nsCollectionView  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsCollectionView (mkSelector "setContent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsNSCollectionView nsCollectionView => nsCollectionView -> IO RawId
+delegate nsCollectionView  =
+    fmap (RawId . castPtr) $ sendMsg nsCollectionView (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSCollectionView nsCollectionView => nsCollectionView -> RawId -> IO ()
+setDelegate nsCollectionView  value =
+    sendMsg nsCollectionView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- backgroundView@
+backgroundView :: IsNSCollectionView nsCollectionView => nsCollectionView -> IO (Id NSView)
+backgroundView nsCollectionView  =
+    sendMsg nsCollectionView (mkSelector "backgroundView") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setBackgroundView:@
+setBackgroundView :: (IsNSCollectionView nsCollectionView, IsNSView value) => nsCollectionView -> value -> IO ()
+setBackgroundView nsCollectionView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsCollectionView (mkSelector "setBackgroundView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- backgroundViewScrollsWithContent@
 backgroundViewScrollsWithContent :: IsNSCollectionView nsCollectionView => nsCollectionView -> IO Bool
 backgroundViewScrollsWithContent nsCollectionView  =
@@ -437,6 +506,17 @@ backgroundViewScrollsWithContent nsCollectionView  =
 setBackgroundViewScrollsWithContent :: IsNSCollectionView nsCollectionView => nsCollectionView -> Bool -> IO ()
 setBackgroundViewScrollsWithContent nsCollectionView  value =
     sendMsg nsCollectionView (mkSelector "setBackgroundViewScrollsWithContent:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | @- collectionViewLayout@
+collectionViewLayout :: IsNSCollectionView nsCollectionView => nsCollectionView -> IO (Id NSCollectionViewLayout)
+collectionViewLayout nsCollectionView  =
+    sendMsg nsCollectionView (mkSelector "collectionViewLayout") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setCollectionViewLayout:@
+setCollectionViewLayout :: (IsNSCollectionView nsCollectionView, IsNSCollectionViewLayout value) => nsCollectionView -> value -> IO ()
+setCollectionViewLayout nsCollectionView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsCollectionView (mkSelector "setCollectionViewLayout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- backgroundColors@
 backgroundColors :: IsNSCollectionView nsCollectionView => nsCollectionView -> IO (Id NSArray)
@@ -499,6 +579,28 @@ setSelectionIndexes :: (IsNSCollectionView nsCollectionView, IsNSIndexSet value)
 setSelectionIndexes nsCollectionView  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsCollectionView (mkSelector "setSelectionIndexes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- selectionIndexPaths@
+selectionIndexPaths :: IsNSCollectionView nsCollectionView => nsCollectionView -> IO (Id NSSet)
+selectionIndexPaths nsCollectionView  =
+    sendMsg nsCollectionView (mkSelector "selectionIndexPaths") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setSelectionIndexPaths:@
+setSelectionIndexPaths :: (IsNSCollectionView nsCollectionView, IsNSSet value) => nsCollectionView -> value -> IO ()
+setSelectionIndexPaths nsCollectionView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsCollectionView (mkSelector "setSelectionIndexPaths:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- itemPrototype@
+itemPrototype :: IsNSCollectionView nsCollectionView => nsCollectionView -> IO (Id NSCollectionViewItem)
+itemPrototype nsCollectionView  =
+    sendMsg nsCollectionView (mkSelector "itemPrototype") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setItemPrototype:@
+setItemPrototype :: (IsNSCollectionView nsCollectionView, IsNSCollectionViewItem value) => nsCollectionView -> value -> IO ()
+setItemPrototype nsCollectionView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsCollectionView (mkSelector "setItemPrototype:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- maxNumberOfRows@
 maxNumberOfRows :: IsNSCollectionView nsCollectionView => nsCollectionView -> IO CULong
@@ -704,6 +806,22 @@ draggingImageForItemsAtIndexes_withEvent_offsetSelector = mkSelector "draggingIm
 newItemForRepresentedObjectSelector :: Selector
 newItemForRepresentedObjectSelector = mkSelector "newItemForRepresentedObject:"
 
+-- | @Selector@ for @dataSource@
+dataSourceSelector :: Selector
+dataSourceSelector = mkSelector "dataSource"
+
+-- | @Selector@ for @setDataSource:@
+setDataSourceSelector :: Selector
+setDataSourceSelector = mkSelector "setDataSource:"
+
+-- | @Selector@ for @prefetchDataSource@
+prefetchDataSourceSelector :: Selector
+prefetchDataSourceSelector = mkSelector "prefetchDataSource"
+
+-- | @Selector@ for @setPrefetchDataSource:@
+setPrefetchDataSourceSelector :: Selector
+setPrefetchDataSourceSelector = mkSelector "setPrefetchDataSource:"
+
 -- | @Selector@ for @content@
 contentSelector :: Selector
 contentSelector = mkSelector "content"
@@ -712,6 +830,22 @@ contentSelector = mkSelector "content"
 setContentSelector :: Selector
 setContentSelector = mkSelector "setContent:"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @backgroundView@
+backgroundViewSelector :: Selector
+backgroundViewSelector = mkSelector "backgroundView"
+
+-- | @Selector@ for @setBackgroundView:@
+setBackgroundViewSelector :: Selector
+setBackgroundViewSelector = mkSelector "setBackgroundView:"
+
 -- | @Selector@ for @backgroundViewScrollsWithContent@
 backgroundViewScrollsWithContentSelector :: Selector
 backgroundViewScrollsWithContentSelector = mkSelector "backgroundViewScrollsWithContent"
@@ -719,6 +853,14 @@ backgroundViewScrollsWithContentSelector = mkSelector "backgroundViewScrollsWith
 -- | @Selector@ for @setBackgroundViewScrollsWithContent:@
 setBackgroundViewScrollsWithContentSelector :: Selector
 setBackgroundViewScrollsWithContentSelector = mkSelector "setBackgroundViewScrollsWithContent:"
+
+-- | @Selector@ for @collectionViewLayout@
+collectionViewLayoutSelector :: Selector
+collectionViewLayoutSelector = mkSelector "collectionViewLayout"
+
+-- | @Selector@ for @setCollectionViewLayout:@
+setCollectionViewLayoutSelector :: Selector
+setCollectionViewLayoutSelector = mkSelector "setCollectionViewLayout:"
 
 -- | @Selector@ for @backgroundColors@
 backgroundColorsSelector :: Selector
@@ -767,6 +909,22 @@ selectionIndexesSelector = mkSelector "selectionIndexes"
 -- | @Selector@ for @setSelectionIndexes:@
 setSelectionIndexesSelector :: Selector
 setSelectionIndexesSelector = mkSelector "setSelectionIndexes:"
+
+-- | @Selector@ for @selectionIndexPaths@
+selectionIndexPathsSelector :: Selector
+selectionIndexPathsSelector = mkSelector "selectionIndexPaths"
+
+-- | @Selector@ for @setSelectionIndexPaths:@
+setSelectionIndexPathsSelector :: Selector
+setSelectionIndexPathsSelector = mkSelector "setSelectionIndexPaths:"
+
+-- | @Selector@ for @itemPrototype@
+itemPrototypeSelector :: Selector
+itemPrototypeSelector = mkSelector "itemPrototype"
+
+-- | @Selector@ for @setItemPrototype:@
+setItemPrototypeSelector :: Selector
+setItemPrototypeSelector = mkSelector "setItemPrototype:"
 
 -- | @Selector@ for @maxNumberOfRows@
 maxNumberOfRowsSelector :: Selector

@@ -13,9 +13,13 @@ module ObjC.ExtensionKit.EXHostViewController
   ( EXHostViewController
   , IsEXHostViewController(..)
   , makeXPCConnectionWithError
+  , delegate
+  , setDelegate
   , placeholderView
   , setPlaceholderView
   , makeXPCConnectionWithErrorSelector
+  , delegateSelector
+  , setDelegateSelector
   , placeholderViewSelector
   , setPlaceholderViewSelector
 
@@ -50,6 +54,20 @@ makeXPCConnectionWithError exHostViewController  error_ =
   withObjCPtr error_ $ \raw_error_ ->
       sendMsg exHostViewController (mkSelector "makeXPCConnectionWithError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
 
+-- | A custom delegate object you use to receive notifications about the activation and deactivation of the app extension.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsEXHostViewController exHostViewController => exHostViewController -> IO RawId
+delegate exHostViewController  =
+    fmap (RawId . castPtr) $ sendMsg exHostViewController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | A custom delegate object you use to receive notifications about the activation and deactivation of the app extension.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsEXHostViewController exHostViewController => exHostViewController -> RawId -> IO ()
+setDelegate exHostViewController  value =
+    sendMsg exHostViewController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | The view to display when the view controller has no app extension content to display.
 --
 -- ObjC selector: @- placeholderView@
@@ -72,6 +90,14 @@ setPlaceholderView exHostViewController  value =
 -- | @Selector@ for @makeXPCConnectionWithError:@
 makeXPCConnectionWithErrorSelector :: Selector
 makeXPCConnectionWithErrorSelector = mkSelector "makeXPCConnectionWithError:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @placeholderView@
 placeholderViewSelector :: Selector

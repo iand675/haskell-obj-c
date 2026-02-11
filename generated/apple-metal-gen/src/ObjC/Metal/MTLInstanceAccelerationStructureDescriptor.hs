@@ -10,14 +10,20 @@ module ObjC.Metal.MTLInstanceAccelerationStructureDescriptor
   ( MTLInstanceAccelerationStructureDescriptor
   , IsMTLInstanceAccelerationStructureDescriptor(..)
   , descriptor
+  , instanceDescriptorBuffer
+  , setInstanceDescriptorBuffer
   , instanceDescriptorBufferOffset
   , setInstanceDescriptorBufferOffset
   , instanceDescriptorStride
   , setInstanceDescriptorStride
   , instanceCount
   , setInstanceCount
+  , instancedAccelerationStructures
+  , setInstancedAccelerationStructures
   , instanceDescriptorType
   , setInstanceDescriptorType
+  , motionTransformBuffer
+  , setMotionTransformBuffer
   , motionTransformBufferOffset
   , setMotionTransformBufferOffset
   , motionTransformCount
@@ -29,14 +35,20 @@ module ObjC.Metal.MTLInstanceAccelerationStructureDescriptor
   , motionTransformStride
   , setMotionTransformStride
   , descriptorSelector
+  , instanceDescriptorBufferSelector
+  , setInstanceDescriptorBufferSelector
   , instanceDescriptorBufferOffsetSelector
   , setInstanceDescriptorBufferOffsetSelector
   , instanceDescriptorStrideSelector
   , setInstanceDescriptorStrideSelector
   , instanceCountSelector
   , setInstanceCountSelector
+  , instancedAccelerationStructuresSelector
+  , setInstancedAccelerationStructuresSelector
   , instanceDescriptorTypeSelector
   , setInstanceDescriptorTypeSelector
+  , motionTransformBufferSelector
+  , setMotionTransformBufferSelector
   , motionTransformBufferOffsetSelector
   , setMotionTransformBufferOffsetSelector
   , motionTransformCountSelector
@@ -87,6 +99,20 @@ descriptor  =
     cls' <- getRequiredClass "MTLInstanceAccelerationStructureDescriptor"
     sendClassMsg cls' (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | Buffer containing instance descriptors of the type specified by the instanceDescriptorType property
+--
+-- ObjC selector: @- instanceDescriptorBuffer@
+instanceDescriptorBuffer :: IsMTLInstanceAccelerationStructureDescriptor mtlInstanceAccelerationStructureDescriptor => mtlInstanceAccelerationStructureDescriptor -> IO RawId
+instanceDescriptorBuffer mtlInstanceAccelerationStructureDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlInstanceAccelerationStructureDescriptor (mkSelector "instanceDescriptorBuffer") (retPtr retVoid) []
+
+-- | Buffer containing instance descriptors of the type specified by the instanceDescriptorType property
+--
+-- ObjC selector: @- setInstanceDescriptorBuffer:@
+setInstanceDescriptorBuffer :: IsMTLInstanceAccelerationStructureDescriptor mtlInstanceAccelerationStructureDescriptor => mtlInstanceAccelerationStructureDescriptor -> RawId -> IO ()
+setInstanceDescriptorBuffer mtlInstanceAccelerationStructureDescriptor  value =
+    sendMsg mtlInstanceAccelerationStructureDescriptor (mkSelector "setInstanceDescriptorBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Offset into the instance descriptor buffer. Must be a multiple of 64 bytes and must be aligned to the platform's buffer offset alignment.
 --
 -- ObjC selector: @- instanceDescriptorBufferOffset@
@@ -129,6 +155,21 @@ setInstanceCount :: IsMTLInstanceAccelerationStructureDescriptor mtlInstanceAcce
 setInstanceCount mtlInstanceAccelerationStructureDescriptor  value =
     sendMsg mtlInstanceAccelerationStructureDescriptor (mkSelector "setInstanceCount:") retVoid [argCULong value]
 
+-- | Acceleration structures to be instanced
+--
+-- ObjC selector: @- instancedAccelerationStructures@
+instancedAccelerationStructures :: IsMTLInstanceAccelerationStructureDescriptor mtlInstanceAccelerationStructureDescriptor => mtlInstanceAccelerationStructureDescriptor -> IO (Id NSArray)
+instancedAccelerationStructures mtlInstanceAccelerationStructureDescriptor  =
+    sendMsg mtlInstanceAccelerationStructureDescriptor (mkSelector "instancedAccelerationStructures") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Acceleration structures to be instanced
+--
+-- ObjC selector: @- setInstancedAccelerationStructures:@
+setInstancedAccelerationStructures :: (IsMTLInstanceAccelerationStructureDescriptor mtlInstanceAccelerationStructureDescriptor, IsNSArray value) => mtlInstanceAccelerationStructureDescriptor -> value -> IO ()
+setInstancedAccelerationStructures mtlInstanceAccelerationStructureDescriptor  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mtlInstanceAccelerationStructureDescriptor (mkSelector "setInstancedAccelerationStructures:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | Type of instance descriptor in the instance descriptor buffer. Defaults to MTLAccelerationStructureInstanceDescriptorTypeDefault.
 --
 -- ObjC selector: @- instanceDescriptorType@
@@ -142,6 +183,20 @@ instanceDescriptorType mtlInstanceAccelerationStructureDescriptor  =
 setInstanceDescriptorType :: IsMTLInstanceAccelerationStructureDescriptor mtlInstanceAccelerationStructureDescriptor => mtlInstanceAccelerationStructureDescriptor -> MTLAccelerationStructureInstanceDescriptorType -> IO ()
 setInstanceDescriptorType mtlInstanceAccelerationStructureDescriptor  value =
     sendMsg mtlInstanceAccelerationStructureDescriptor (mkSelector "setInstanceDescriptorType:") retVoid [argCULong (coerce value)]
+
+-- | Buffer containing transformation information for motion
+--
+-- ObjC selector: @- motionTransformBuffer@
+motionTransformBuffer :: IsMTLInstanceAccelerationStructureDescriptor mtlInstanceAccelerationStructureDescriptor => mtlInstanceAccelerationStructureDescriptor -> IO RawId
+motionTransformBuffer mtlInstanceAccelerationStructureDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlInstanceAccelerationStructureDescriptor (mkSelector "motionTransformBuffer") (retPtr retVoid) []
+
+-- | Buffer containing transformation information for motion
+--
+-- ObjC selector: @- setMotionTransformBuffer:@
+setMotionTransformBuffer :: IsMTLInstanceAccelerationStructureDescriptor mtlInstanceAccelerationStructureDescriptor => mtlInstanceAccelerationStructureDescriptor -> RawId -> IO ()
+setMotionTransformBuffer mtlInstanceAccelerationStructureDescriptor  value =
+    sendMsg mtlInstanceAccelerationStructureDescriptor (mkSelector "setMotionTransformBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | Offset into the instance motion descriptor buffer. Must be a multiple of 64 bytes and must be aligned to the platform's buffer offset alignment.
 --
@@ -221,6 +276,14 @@ setMotionTransformStride mtlInstanceAccelerationStructureDescriptor  value =
 descriptorSelector :: Selector
 descriptorSelector = mkSelector "descriptor"
 
+-- | @Selector@ for @instanceDescriptorBuffer@
+instanceDescriptorBufferSelector :: Selector
+instanceDescriptorBufferSelector = mkSelector "instanceDescriptorBuffer"
+
+-- | @Selector@ for @setInstanceDescriptorBuffer:@
+setInstanceDescriptorBufferSelector :: Selector
+setInstanceDescriptorBufferSelector = mkSelector "setInstanceDescriptorBuffer:"
+
 -- | @Selector@ for @instanceDescriptorBufferOffset@
 instanceDescriptorBufferOffsetSelector :: Selector
 instanceDescriptorBufferOffsetSelector = mkSelector "instanceDescriptorBufferOffset"
@@ -245,6 +308,14 @@ instanceCountSelector = mkSelector "instanceCount"
 setInstanceCountSelector :: Selector
 setInstanceCountSelector = mkSelector "setInstanceCount:"
 
+-- | @Selector@ for @instancedAccelerationStructures@
+instancedAccelerationStructuresSelector :: Selector
+instancedAccelerationStructuresSelector = mkSelector "instancedAccelerationStructures"
+
+-- | @Selector@ for @setInstancedAccelerationStructures:@
+setInstancedAccelerationStructuresSelector :: Selector
+setInstancedAccelerationStructuresSelector = mkSelector "setInstancedAccelerationStructures:"
+
 -- | @Selector@ for @instanceDescriptorType@
 instanceDescriptorTypeSelector :: Selector
 instanceDescriptorTypeSelector = mkSelector "instanceDescriptorType"
@@ -252,6 +323,14 @@ instanceDescriptorTypeSelector = mkSelector "instanceDescriptorType"
 -- | @Selector@ for @setInstanceDescriptorType:@
 setInstanceDescriptorTypeSelector :: Selector
 setInstanceDescriptorTypeSelector = mkSelector "setInstanceDescriptorType:"
+
+-- | @Selector@ for @motionTransformBuffer@
+motionTransformBufferSelector :: Selector
+motionTransformBufferSelector = mkSelector "motionTransformBuffer"
+
+-- | @Selector@ for @setMotionTransformBuffer:@
+setMotionTransformBufferSelector :: Selector
+setMotionTransformBufferSelector = mkSelector "setMotionTransformBuffer:"
 
 -- | @Selector@ for @motionTransformBufferOffset@
 motionTransformBufferOffsetSelector :: Selector

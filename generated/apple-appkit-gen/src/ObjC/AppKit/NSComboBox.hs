@@ -37,6 +37,10 @@ module ObjC.AppKit.NSComboBox
   , numberOfItems
   , completes
   , setCompletes
+  , delegate
+  , setDelegate
+  , dataSource
+  , setDataSource
   , objectValueOfSelectedItem
   , objectValues
   , reloadDataSelector
@@ -70,6 +74,10 @@ module ObjC.AppKit.NSComboBox
   , numberOfItemsSelector
   , completesSelector
   , setCompletesSelector
+  , delegateSelector
+  , setDelegateSelector
+  , dataSourceSelector
+  , setDataSourceSelector
   , objectValueOfSelectedItemSelector
   , objectValuesSelector
 
@@ -248,6 +256,26 @@ setCompletes :: IsNSComboBox nsComboBox => nsComboBox -> Bool -> IO ()
 setCompletes nsComboBox  value =
     sendMsg nsComboBox (mkSelector "setCompletes:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @- delegate@
+delegate :: IsNSComboBox nsComboBox => nsComboBox -> IO RawId
+delegate nsComboBox  =
+    fmap (RawId . castPtr) $ sendMsg nsComboBox (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSComboBox nsComboBox => nsComboBox -> RawId -> IO ()
+setDelegate nsComboBox  value =
+    sendMsg nsComboBox (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- dataSource@
+dataSource :: IsNSComboBox nsComboBox => nsComboBox -> IO RawId
+dataSource nsComboBox  =
+    fmap (RawId . castPtr) $ sendMsg nsComboBox (mkSelector "dataSource") (retPtr retVoid) []
+
+-- | @- setDataSource:@
+setDataSource :: IsNSComboBox nsComboBox => nsComboBox -> RawId -> IO ()
+setDataSource nsComboBox  value =
+    sendMsg nsComboBox (mkSelector "setDataSource:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- objectValueOfSelectedItem@
 objectValueOfSelectedItem :: IsNSComboBox nsComboBox => nsComboBox -> IO RawId
 objectValueOfSelectedItem nsComboBox  =
@@ -385,6 +413,22 @@ completesSelector = mkSelector "completes"
 -- | @Selector@ for @setCompletes:@
 setCompletesSelector :: Selector
 setCompletesSelector = mkSelector "setCompletes:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @dataSource@
+dataSourceSelector :: Selector
+dataSourceSelector = mkSelector "dataSource"
+
+-- | @Selector@ for @setDataSource:@
+setDataSourceSelector :: Selector
+setDataSourceSelector = mkSelector "setDataSource:"
 
 -- | @Selector@ for @objectValueOfSelectedItem@
 objectValueOfSelectedItemSelector :: Selector

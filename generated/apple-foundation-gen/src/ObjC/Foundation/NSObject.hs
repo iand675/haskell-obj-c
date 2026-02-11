@@ -117,6 +117,8 @@ module ObjC.Foundation.NSObject
   , classForPortCoder
   , classForArchiver
   , classForKeyedArchiver
+  , observationInfo
+  , setObservationInfo
   , accessInstanceVariablesDirectly
   , autoContentAccessingProxy
   , classForCoder
@@ -230,6 +232,8 @@ module ObjC.Foundation.NSObject
   , classForPortCoderSelector
   , classForArchiverSelector
   , classForKeyedArchiverSelector
+  , observationInfoSelector
+  , setObservationInfoSelector
   , accessInstanceVariablesDirectlySelector
   , autoContentAccessingProxySelector
   , classForCoderSelector
@@ -940,6 +944,16 @@ classForKeyedArchiver :: IsNSObject nsObject => nsObject -> IO Class
 classForKeyedArchiver nsObject  =
     fmap (Class . castPtr) $ sendMsg nsObject (mkSelector "classForKeyedArchiver") (retPtr retVoid) []
 
+-- | @- observationInfo@
+observationInfo :: IsNSObject nsObject => nsObject -> IO (Ptr ())
+observationInfo nsObject  =
+    fmap castPtr $ sendMsg nsObject (mkSelector "observationInfo") (retPtr retVoid) []
+
+-- | @- setObservationInfo:@
+setObservationInfo :: IsNSObject nsObject => nsObject -> Ptr () -> IO ()
+setObservationInfo nsObject  value =
+    sendMsg nsObject (mkSelector "setObservationInfo:") retVoid [argPtr value]
+
 -- | @+ accessInstanceVariablesDirectly@
 accessInstanceVariablesDirectly :: IO Bool
 accessInstanceVariablesDirectly  =
@@ -1400,6 +1414,14 @@ classForArchiverSelector = mkSelector "classForArchiver"
 -- | @Selector@ for @classForKeyedArchiver@
 classForKeyedArchiverSelector :: Selector
 classForKeyedArchiverSelector = mkSelector "classForKeyedArchiver"
+
+-- | @Selector@ for @observationInfo@
+observationInfoSelector :: Selector
+observationInfoSelector = mkSelector "observationInfo"
+
+-- | @Selector@ for @setObservationInfo:@
+setObservationInfoSelector :: Selector
+setObservationInfoSelector = mkSelector "setObservationInfo:"
 
 -- | @Selector@ for @accessInstanceVariablesDirectly@
 accessInstanceVariablesDirectlySelector :: Selector

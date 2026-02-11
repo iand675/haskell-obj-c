@@ -29,6 +29,10 @@ module ObjC.AppKit.NSImageView
   , setImageScaling
   , imageFrameStyle
   , setImageFrameStyle
+  , symbolConfiguration
+  , setSymbolConfiguration
+  , contentTintColor
+  , setContentTintColor
   , animates
   , setAnimates
   , allowsCutCopyPaste
@@ -60,6 +64,10 @@ module ObjC.AppKit.NSImageView
   , setImageScalingSelector
   , imageFrameStyleSelector
   , setImageFrameStyleSelector
+  , symbolConfigurationSelector
+  , setSymbolConfigurationSelector
+  , contentTintColorSelector
+  , setContentTintColorSelector
   , animatesSelector
   , setAnimatesSelector
   , allowsCutCopyPasteSelector
@@ -279,6 +287,36 @@ setImageFrameStyle :: IsNSImageView nsImageView => nsImageView -> NSImageFrameSt
 setImageFrameStyle nsImageView  value =
     sendMsg nsImageView (mkSelector "setImageFrameStyle:") retVoid [argCULong (coerce value)]
 
+-- | Specifies a combination of point size, weight, and scale to use when sizing and displaying symbol images. If a symbol configuration isn't provided, the image view uses a default size, weight, and scale provided by the system. The default value is @nil@.
+--
+-- ObjC selector: @- symbolConfiguration@
+symbolConfiguration :: IsNSImageView nsImageView => nsImageView -> IO (Id NSImageSymbolConfiguration)
+symbolConfiguration nsImageView  =
+    sendMsg nsImageView (mkSelector "symbolConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Specifies a combination of point size, weight, and scale to use when sizing and displaying symbol images. If a symbol configuration isn't provided, the image view uses a default size, weight, and scale provided by the system. The default value is @nil@.
+--
+-- ObjC selector: @- setSymbolConfiguration:@
+setSymbolConfiguration :: (IsNSImageView nsImageView, IsNSImageSymbolConfiguration value) => nsImageView -> value -> IO ()
+setSymbolConfiguration nsImageView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsImageView (mkSelector "setSymbolConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | A tint color to be used when rendering template image content. This color may be combined with other effects to produce a theme-appropriate rendition of the template image. A nil value indicates the standard set of effects without color modification. The default value is nil.
+--
+-- ObjC selector: @- contentTintColor@
+contentTintColor :: IsNSImageView nsImageView => nsImageView -> IO (Id NSColor)
+contentTintColor nsImageView  =
+    sendMsg nsImageView (mkSelector "contentTintColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | A tint color to be used when rendering template image content. This color may be combined with other effects to produce a theme-appropriate rendition of the template image. A nil value indicates the standard set of effects without color modification. The default value is nil.
+--
+-- ObjC selector: @- setContentTintColor:@
+setContentTintColor :: (IsNSImageView nsImageView, IsNSColor value) => nsImageView -> value -> IO ()
+setContentTintColor nsImageView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsImageView (mkSelector "setContentTintColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- animates@
 animates :: IsNSImageView nsImageView => nsImageView -> IO Bool
 animates nsImageView  =
@@ -429,6 +467,22 @@ imageFrameStyleSelector = mkSelector "imageFrameStyle"
 -- | @Selector@ for @setImageFrameStyle:@
 setImageFrameStyleSelector :: Selector
 setImageFrameStyleSelector = mkSelector "setImageFrameStyle:"
+
+-- | @Selector@ for @symbolConfiguration@
+symbolConfigurationSelector :: Selector
+symbolConfigurationSelector = mkSelector "symbolConfiguration"
+
+-- | @Selector@ for @setSymbolConfiguration:@
+setSymbolConfigurationSelector :: Selector
+setSymbolConfigurationSelector = mkSelector "setSymbolConfiguration:"
+
+-- | @Selector@ for @contentTintColor@
+contentTintColorSelector :: Selector
+contentTintColorSelector = mkSelector "contentTintColor"
+
+-- | @Selector@ for @setContentTintColor:@
+setContentTintColorSelector :: Selector
+setContentTintColorSelector = mkSelector "setContentTintColor:"
 
 -- | @Selector@ for @animates@
 animatesSelector :: Selector

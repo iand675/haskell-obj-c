@@ -17,12 +17,14 @@ module ObjC.VideoToolbox.VTLowLatencyFrameInterpolationParameters
   , new
   , sourceFrame
   , previousFrame
+  , interpolationPhase
   , destinationFrames
   , initWithSourceFrame_previousFrame_interpolationPhase_destinationFramesSelector
   , initSelector
   , newSelector
   , sourceFrameSelector
   , previousFrameSelector
+  , interpolationPhaseSelector
   , destinationFramesSelector
 
 
@@ -82,6 +84,13 @@ previousFrame :: IsVTLowLatencyFrameInterpolationParameters vtLowLatencyFrameInt
 previousFrame vtLowLatencyFrameInterpolationParameters  =
     sendMsg vtLowLatencyFrameInterpolationParameters (mkSelector "previousFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | Array of interpolation phases that you provided when creating the low-latency frame interpolation parameters object.
+--
+-- ObjC selector: @- interpolationPhase@
+interpolationPhase :: IsVTLowLatencyFrameInterpolationParameters vtLowLatencyFrameInterpolationParameters => vtLowLatencyFrameInterpolationParameters -> IO (Id NSArray)
+interpolationPhase vtLowLatencyFrameInterpolationParameters  =
+    sendMsg vtLowLatencyFrameInterpolationParameters (mkSelector "interpolationPhase") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Array of destination frames that you provided when creating the low-latency frame interpolation parameters object.
 --
 -- ObjC selector: @- destinationFrames@
@@ -112,6 +121,10 @@ sourceFrameSelector = mkSelector "sourceFrame"
 -- | @Selector@ for @previousFrame@
 previousFrameSelector :: Selector
 previousFrameSelector = mkSelector "previousFrame"
+
+-- | @Selector@ for @interpolationPhase@
+interpolationPhaseSelector :: Selector
+interpolationPhaseSelector = mkSelector "interpolationPhase"
 
 -- | @Selector@ for @destinationFrames@
 destinationFramesSelector :: Selector

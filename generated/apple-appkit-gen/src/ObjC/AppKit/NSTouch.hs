@@ -9,6 +9,7 @@ module ObjC.AppKit.NSTouch
   , IsNSTouch(..)
   , locationInView
   , previousLocationInView
+  , identity
   , phase
   , normalizedPosition
   , resting
@@ -17,6 +18,7 @@ module ObjC.AppKit.NSTouch
   , type_
   , locationInViewSelector
   , previousLocationInViewSelector
+  , identitySelector
   , phaseSelector
   , normalizedPositionSelector
   , restingSelector
@@ -68,6 +70,11 @@ previousLocationInView nsTouch  view =
   withObjCPtr view $ \raw_view ->
       sendMsgStret nsTouch (mkSelector "previousLocationInView:") retNSPoint [argPtr (castPtr raw_view :: Ptr ())]
 
+-- | @- identity@
+identity :: IsNSTouch nsTouch => nsTouch -> IO RawId
+identity nsTouch  =
+    fmap (RawId . castPtr) $ sendMsg nsTouch (mkSelector "identity") (retPtr retVoid) []
+
 -- | @- phase@
 phase :: IsNSTouch nsTouch => nsTouch -> IO NSTouchPhase
 phase nsTouch  =
@@ -109,6 +116,10 @@ locationInViewSelector = mkSelector "locationInView:"
 -- | @Selector@ for @previousLocationInView:@
 previousLocationInViewSelector :: Selector
 previousLocationInViewSelector = mkSelector "previousLocationInView:"
+
+-- | @Selector@ for @identity@
+identitySelector :: Selector
+identitySelector = mkSelector "identity"
 
 -- | @Selector@ for @phase@
 phaseSelector :: Selector

@@ -36,6 +36,9 @@ library:
   - ObjC.CallKit.CXSetMutedCallAction
   - ObjC.CallKit.CXStartCallAction
   - ObjC.CallKit.CXTransaction
+  - ObjC.CallKit.Delegate.CXCallDirectoryExtensionContextDelegate
+  - ObjC.CallKit.Delegate.CXCallObserverDelegate
+  - ObjC.CallKit.Delegate.CXProviderDelegate
   - ObjC.CallKit.Enums
   - ObjC.CallKit.Internal.Classes
   - ObjC.CallKit.Internal.Enums

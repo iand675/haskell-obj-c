@@ -13,9 +13,11 @@ module ObjC.CoreMediaIO.CMIOExtensionStreamFormat
   , init_
   , new
   , formatDescription
+  , validFrameDurations
   , initSelector
   , newSelector
   , formatDescriptionSelector
+  , validFrameDurationsSelector
 
 
   ) where
@@ -56,6 +58,15 @@ formatDescription :: IsCMIOExtensionStreamFormat cmioExtensionStreamFormat => cm
 formatDescription cmioExtensionStreamFormat  =
     fmap (RawId . castPtr) $ sendMsg cmioExtensionStreamFormat (mkSelector "formatDescription") (retPtr retVoid) []
 
+-- | validFrameDurations
+--
+-- The valid frame durations as an array of CMTime as dictionaries. The CMTime in dictionary format are made with CMTimeCopyAsDictionary.
+--
+-- ObjC selector: @- validFrameDurations@
+validFrameDurations :: IsCMIOExtensionStreamFormat cmioExtensionStreamFormat => cmioExtensionStreamFormat -> IO (Id NSArray)
+validFrameDurations cmioExtensionStreamFormat  =
+    sendMsg cmioExtensionStreamFormat (mkSelector "validFrameDurations") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -71,4 +82,8 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @formatDescription@
 formatDescriptionSelector :: Selector
 formatDescriptionSelector = mkSelector "formatDescription"
+
+-- | @Selector@ for @validFrameDurations@
+validFrameDurationsSelector :: Selector
+validFrameDurationsSelector = mkSelector "validFrameDurations"
 

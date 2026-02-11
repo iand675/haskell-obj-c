@@ -13,11 +13,15 @@ module ObjC.GameKit.GKFriendRequestComposeViewController
   , addRecipientPlayers
   , addRecipientsWithPlayerIDs
   , addRecipientsWithEmailAddresses
+  , composeViewDelegate
+  , setComposeViewDelegate
   , maxNumberOfRecipientsSelector
   , setMessageSelector
   , addRecipientPlayersSelector
   , addRecipientsWithPlayerIDsSelector
   , addRecipientsWithEmailAddressesSelector
+  , composeViewDelegateSelector
+  , setComposeViewDelegateSelector
 
 
   ) where
@@ -75,6 +79,16 @@ addRecipientsWithEmailAddresses gkFriendRequestComposeViewController  emailAddre
   withObjCPtr emailAddresses $ \raw_emailAddresses ->
       sendMsg gkFriendRequestComposeViewController (mkSelector "addRecipientsWithEmailAddresses:") retVoid [argPtr (castPtr raw_emailAddresses :: Ptr ())]
 
+-- | @- composeViewDelegate@
+composeViewDelegate :: IsGKFriendRequestComposeViewController gkFriendRequestComposeViewController => gkFriendRequestComposeViewController -> IO RawId
+composeViewDelegate gkFriendRequestComposeViewController  =
+    fmap (RawId . castPtr) $ sendMsg gkFriendRequestComposeViewController (mkSelector "composeViewDelegate") (retPtr retVoid) []
+
+-- | @- setComposeViewDelegate:@
+setComposeViewDelegate :: IsGKFriendRequestComposeViewController gkFriendRequestComposeViewController => gkFriendRequestComposeViewController -> RawId -> IO ()
+setComposeViewDelegate gkFriendRequestComposeViewController  value =
+    sendMsg gkFriendRequestComposeViewController (mkSelector "setComposeViewDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -98,4 +112,12 @@ addRecipientsWithPlayerIDsSelector = mkSelector "addRecipientsWithPlayerIDs:"
 -- | @Selector@ for @addRecipientsWithEmailAddresses:@
 addRecipientsWithEmailAddressesSelector :: Selector
 addRecipientsWithEmailAddressesSelector = mkSelector "addRecipientsWithEmailAddresses:"
+
+-- | @Selector@ for @composeViewDelegate@
+composeViewDelegateSelector :: Selector
+composeViewDelegateSelector = mkSelector "composeViewDelegate"
+
+-- | @Selector@ for @setComposeViewDelegate:@
+setComposeViewDelegateSelector :: Selector
+setComposeViewDelegateSelector = mkSelector "setComposeViewDelegate:"
 

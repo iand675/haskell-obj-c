@@ -20,8 +20,12 @@ module ObjC.AVFAudio.AVSpeechSynthesizer
   , pauseSpeakingAtBoundary
   , continueSpeaking
   , requestPersonalVoiceAuthorizationWithCompletionHandler
+  , delegate
+  , setDelegate
   , speaking
   , paused
+  , outputChannels
+  , setOutputChannels
   , usesApplicationAudioSession
   , setUsesApplicationAudioSession
   , mixToTelephonyUplink
@@ -34,8 +38,12 @@ module ObjC.AVFAudio.AVSpeechSynthesizer
   , pauseSpeakingAtBoundarySelector
   , continueSpeakingSelector
   , requestPersonalVoiceAuthorizationWithCompletionHandlerSelector
+  , delegateSelector
+  , setDelegateSelector
   , speakingSelector
   , pausedSelector
+  , outputChannelsSelector
+  , setOutputChannelsSelector
   , usesApplicationAudioSessionSelector
   , setUsesApplicationAudioSessionSelector
   , mixToTelephonyUplinkSelector
@@ -118,6 +126,16 @@ requestPersonalVoiceAuthorizationWithCompletionHandler handler =
     cls' <- getRequiredClass "AVSpeechSynthesizer"
     sendClassMsg cls' (mkSelector "requestPersonalVoiceAuthorizationWithCompletionHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsAVSpeechSynthesizer avSpeechSynthesizer => avSpeechSynthesizer -> IO RawId
+delegate avSpeechSynthesizer  =
+    fmap (RawId . castPtr) $ sendMsg avSpeechSynthesizer (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsAVSpeechSynthesizer avSpeechSynthesizer => avSpeechSynthesizer -> RawId -> IO ()
+setDelegate avSpeechSynthesizer  value =
+    sendMsg avSpeechSynthesizer (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- speaking@
 speaking :: IsAVSpeechSynthesizer avSpeechSynthesizer => avSpeechSynthesizer -> IO Bool
 speaking avSpeechSynthesizer  =
@@ -127,6 +145,17 @@ speaking avSpeechSynthesizer  =
 paused :: IsAVSpeechSynthesizer avSpeechSynthesizer => avSpeechSynthesizer -> IO Bool
 paused avSpeechSynthesizer  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSpeechSynthesizer (mkSelector "paused") retCULong []
+
+-- | @- outputChannels@
+outputChannels :: IsAVSpeechSynthesizer avSpeechSynthesizer => avSpeechSynthesizer -> IO (Id NSArray)
+outputChannels avSpeechSynthesizer  =
+    sendMsg avSpeechSynthesizer (mkSelector "outputChannels") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setOutputChannels:@
+setOutputChannels :: (IsAVSpeechSynthesizer avSpeechSynthesizer, IsNSArray value) => avSpeechSynthesizer -> value -> IO ()
+setOutputChannels avSpeechSynthesizer  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avSpeechSynthesizer (mkSelector "setOutputChannels:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- usesApplicationAudioSession@
 usesApplicationAudioSession :: IsAVSpeechSynthesizer avSpeechSynthesizer => avSpeechSynthesizer -> IO Bool
@@ -193,6 +222,14 @@ continueSpeakingSelector = mkSelector "continueSpeaking"
 requestPersonalVoiceAuthorizationWithCompletionHandlerSelector :: Selector
 requestPersonalVoiceAuthorizationWithCompletionHandlerSelector = mkSelector "requestPersonalVoiceAuthorizationWithCompletionHandler:"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @speaking@
 speakingSelector :: Selector
 speakingSelector = mkSelector "speaking"
@@ -200,6 +237,14 @@ speakingSelector = mkSelector "speaking"
 -- | @Selector@ for @paused@
 pausedSelector :: Selector
 pausedSelector = mkSelector "paused"
+
+-- | @Selector@ for @outputChannels@
+outputChannelsSelector :: Selector
+outputChannelsSelector = mkSelector "outputChannels"
+
+-- | @Selector@ for @setOutputChannels:@
+setOutputChannelsSelector :: Selector
+setOutputChannelsSelector = mkSelector "setOutputChannels:"
 
 -- | @Selector@ for @usesApplicationAudioSession@
 usesApplicationAudioSessionSelector :: Selector

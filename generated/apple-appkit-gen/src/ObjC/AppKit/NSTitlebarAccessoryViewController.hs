@@ -18,6 +18,8 @@ module ObjC.AppKit.NSTitlebarAccessoryViewController
   , setHidden
   , automaticallyAdjustsSize
   , setAutomaticallyAdjustsSize
+  , preferredScrollEdgeEffectStyle
+  , setPreferredScrollEdgeEffectStyle
   , viewWillAppearSelector
   , viewDidAppearSelector
   , viewDidDisappearSelector
@@ -29,6 +31,8 @@ module ObjC.AppKit.NSTitlebarAccessoryViewController
   , setHiddenSelector
   , automaticallyAdjustsSizeSelector
   , setAutomaticallyAdjustsSizeSelector
+  , preferredScrollEdgeEffectStyleSelector
+  , setPreferredScrollEdgeEffectStyleSelector
 
   -- * Enum types
   , NSLayoutAttribute(NSLayoutAttribute)
@@ -120,6 +124,29 @@ setAutomaticallyAdjustsSize :: IsNSTitlebarAccessoryViewController nsTitlebarAcc
 setAutomaticallyAdjustsSize nsTitlebarAccessoryViewController  value =
     sendMsg nsTitlebarAccessoryViewController (mkSelector "setAutomaticallyAdjustsSize:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | The titlebar accessory’s preferred effect for content scrolling behind it.
+--
+-- To allow for a soft edge on the bottom edge of a titlebar accessory:
+--
+-- titlebarAccessoryViewController.preferredScrollEdgeEffectStyle = NSScrollEdgeEffectStyle.softStyle;
+--
+-- ObjC selector: @- preferredScrollEdgeEffectStyle@
+preferredScrollEdgeEffectStyle :: IsNSTitlebarAccessoryViewController nsTitlebarAccessoryViewController => nsTitlebarAccessoryViewController -> IO (Id NSScrollEdgeEffectStyle)
+preferredScrollEdgeEffectStyle nsTitlebarAccessoryViewController  =
+    sendMsg nsTitlebarAccessoryViewController (mkSelector "preferredScrollEdgeEffectStyle") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The titlebar accessory’s preferred effect for content scrolling behind it.
+--
+-- To allow for a soft edge on the bottom edge of a titlebar accessory:
+--
+-- titlebarAccessoryViewController.preferredScrollEdgeEffectStyle = NSScrollEdgeEffectStyle.softStyle;
+--
+-- ObjC selector: @- setPreferredScrollEdgeEffectStyle:@
+setPreferredScrollEdgeEffectStyle :: (IsNSTitlebarAccessoryViewController nsTitlebarAccessoryViewController, IsNSScrollEdgeEffectStyle value) => nsTitlebarAccessoryViewController -> value -> IO ()
+setPreferredScrollEdgeEffectStyle nsTitlebarAccessoryViewController  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsTitlebarAccessoryViewController (mkSelector "setPreferredScrollEdgeEffectStyle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -167,4 +194,12 @@ automaticallyAdjustsSizeSelector = mkSelector "automaticallyAdjustsSize"
 -- | @Selector@ for @setAutomaticallyAdjustsSize:@
 setAutomaticallyAdjustsSizeSelector :: Selector
 setAutomaticallyAdjustsSizeSelector = mkSelector "setAutomaticallyAdjustsSize:"
+
+-- | @Selector@ for @preferredScrollEdgeEffectStyle@
+preferredScrollEdgeEffectStyleSelector :: Selector
+preferredScrollEdgeEffectStyleSelector = mkSelector "preferredScrollEdgeEffectStyle"
+
+-- | @Selector@ for @setPreferredScrollEdgeEffectStyle:@
+setPreferredScrollEdgeEffectStyleSelector :: Selector
+setPreferredScrollEdgeEffectStyleSelector = mkSelector "setPreferredScrollEdgeEffectStyle:"
 

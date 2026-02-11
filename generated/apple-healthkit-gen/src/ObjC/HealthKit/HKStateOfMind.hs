@@ -16,6 +16,8 @@ module ObjC.HealthKit.HKStateOfMind
   , kind
   , valence
   , valenceClassification
+  , labels
+  , associations
   , stateOfMindWithDate_kind_valence_labels_associationsSelector
   , stateOfMindWithDate_kind_valence_labels_associations_metadataSelector
   , initSelector
@@ -23,6 +25,8 @@ module ObjC.HealthKit.HKStateOfMind
   , kindSelector
   , valenceSelector
   , valenceClassificationSelector
+  , labelsSelector
+  , associationsSelector
 
   -- * Enum types
   , HKStateOfMindKind(HKStateOfMindKind)
@@ -115,6 +119,20 @@ valenceClassification :: IsHKStateOfMind hkStateOfMind => hkStateOfMind -> IO HK
 valenceClassification hkStateOfMind  =
     fmap (coerce :: CLong -> HKStateOfMindValenceClassification) $ sendMsg hkStateOfMind (mkSelector "valenceClassification") retCLong []
 
+-- | Zero or more specific sentiments selected to represent a felt experience.
+--
+-- ObjC selector: @- labels@
+labels :: IsHKStateOfMind hkStateOfMind => hkStateOfMind -> IO (Id NSArray)
+labels hkStateOfMind  =
+    sendMsg hkStateOfMind (mkSelector "labels") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Zero or more facets of life with which this felt experience is associated.
+--
+-- ObjC selector: @- associations@
+associations :: IsHKStateOfMind hkStateOfMind => hkStateOfMind -> IO (Id NSArray)
+associations hkStateOfMind  =
+    sendMsg hkStateOfMind (mkSelector "associations") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -146,4 +164,12 @@ valenceSelector = mkSelector "valence"
 -- | @Selector@ for @valenceClassification@
 valenceClassificationSelector :: Selector
 valenceClassificationSelector = mkSelector "valenceClassification"
+
+-- | @Selector@ for @labels@
+labelsSelector :: Selector
+labelsSelector = mkSelector "labels"
+
+-- | @Selector@ for @associations@
+associationsSelector :: Selector
+associationsSelector = mkSelector "associations"
 

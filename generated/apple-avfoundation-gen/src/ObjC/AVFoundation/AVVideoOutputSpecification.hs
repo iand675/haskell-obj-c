@@ -17,6 +17,7 @@ module ObjC.AVFoundation.AVVideoOutputSpecification
   , initWithTagCollections
   , setOutputPixelBufferAttributes_forTagCollection
   , setOutputSettings_forTagCollection
+  , preferredTagCollections
   , defaultPixelBufferAttributes
   , setDefaultPixelBufferAttributes
   , defaultOutputSettings
@@ -26,6 +27,7 @@ module ObjC.AVFoundation.AVVideoOutputSpecification
   , initWithTagCollectionsSelector
   , setOutputPixelBufferAttributes_forTagCollectionSelector
   , setOutputSettings_forTagCollectionSelector
+  , preferredTagCollectionsSelector
   , defaultPixelBufferAttributesSelector
   , setDefaultPixelBufferAttributesSelector
   , defaultOutputSettingsSelector
@@ -111,6 +113,17 @@ setOutputSettings_forTagCollection avVideoOutputSpecification  outputSettings ta
   withObjCPtr outputSettings $ \raw_outputSettings ->
       sendMsg avVideoOutputSpecification (mkSelector "setOutputSettings:forTagCollection:") retVoid [argPtr (castPtr raw_outputSettings :: Ptr ()), argPtr (castPtr (unRawId tagCollection) :: Ptr ())]
 
+-- | preferredTagCollections
+--
+-- Tag collections held by AVVideoOutputSpecification.
+--
+-- Returns an array of CMTagCollections.
+--
+-- ObjC selector: @- preferredTagCollections@
+preferredTagCollections :: IsAVVideoOutputSpecification avVideoOutputSpecification => avVideoOutputSpecification -> IO (Id NSArray)
+preferredTagCollections avVideoOutputSpecification  =
+    sendMsg avVideoOutputSpecification (mkSelector "preferredTagCollections") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | defaultPixelBufferAttributes
 --
 -- The default client requirements for CVPixelBuffers related to all tag collections not explicitly set with setOutputPixelBufferAttributes:forTagCollection:, expressed using the constants in <CoreVideo/CVPixelBuffer.h>.
@@ -188,6 +201,10 @@ setOutputPixelBufferAttributes_forTagCollectionSelector = mkSelector "setOutputP
 -- | @Selector@ for @setOutputSettings:forTagCollection:@
 setOutputSettings_forTagCollectionSelector :: Selector
 setOutputSettings_forTagCollectionSelector = mkSelector "setOutputSettings:forTagCollection:"
+
+-- | @Selector@ for @preferredTagCollections@
+preferredTagCollectionsSelector :: Selector
+preferredTagCollectionsSelector = mkSelector "preferredTagCollections"
 
 -- | @Selector@ for @defaultPixelBufferAttributes@
 defaultPixelBufferAttributesSelector :: Selector

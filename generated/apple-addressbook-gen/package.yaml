@@ -23,4 +23,5 @@ library:
   - ObjC.AddressBook.ABPerson
   - ObjC.AddressBook.ABRecord
   - ObjC.AddressBook.ABSearchElement
+  - ObjC.AddressBook.Delegate.ABImageClient
   - ObjC.AddressBook.Internal.Classes

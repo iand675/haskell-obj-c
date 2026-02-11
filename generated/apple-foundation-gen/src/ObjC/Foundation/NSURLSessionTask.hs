@@ -16,6 +16,8 @@ module ObjC.Foundation.NSURLSessionTask
   , originalRequest
   , currentRequest
   , response
+  , delegate
+  , setDelegate
   , progress
   , earliestBeginDate
   , setEarliestBeginDate
@@ -44,6 +46,8 @@ module ObjC.Foundation.NSURLSessionTask
   , originalRequestSelector
   , currentRequestSelector
   , responseSelector
+  , delegateSelector
+  , setDelegateSelector
   , progressSelector
   , earliestBeginDateSelector
   , setEarliestBeginDateSelector
@@ -134,6 +138,16 @@ currentRequest nsurlSessionTask  =
 response :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO (Id NSURLResponse)
 response nsurlSessionTask  =
     sendMsg nsurlSessionTask (mkSelector "response") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- delegate@
+delegate :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO RawId
+delegate nsurlSessionTask  =
+    fmap (RawId . castPtr) $ sendMsg nsurlSessionTask (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> RawId -> IO ()
+setDelegate nsurlSessionTask  value =
+    sendMsg nsurlSessionTask (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- progress@
 progress :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO (Id NSProgress)
@@ -271,6 +285,14 @@ currentRequestSelector = mkSelector "currentRequest"
 -- | @Selector@ for @response@
 responseSelector :: Selector
 responseSelector = mkSelector "response"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @progress@
 progressSelector :: Selector

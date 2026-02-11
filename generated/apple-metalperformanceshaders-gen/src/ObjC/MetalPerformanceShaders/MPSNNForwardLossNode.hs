@@ -27,6 +27,8 @@ module ObjC.MetalPerformanceShaders.MPSNNForwardLossNode
   , labelSmoothing
   , epsilon
   , delta
+  , propertyCallBack
+  , setPropertyCallBack
   , nodeWithSource_labels_weights_lossDescriptorSelector
   , nodeWithSource_labels_lossDescriptorSelector
   , nodeWithSources_lossDescriptorSelector
@@ -45,6 +47,8 @@ module ObjC.MetalPerformanceShaders.MPSNNForwardLossNode
   , labelSmoothingSelector
   , epsilonSelector
   , deltaSelector
+  , propertyCallBackSelector
+  , setPropertyCallBackSelector
 
   -- * Enum types
   , MPSCNNLossType(MPSCNNLossType)
@@ -216,6 +220,24 @@ delta :: IsMPSNNForwardLossNode mpsnnForwardLossNode => mpsnnForwardLossNode -> 
 delta mpsnnForwardLossNode  =
     sendMsg mpsnnForwardLossNode (mkSelector "delta") retCFloat []
 
+-- | propertyCallBack
+--
+-- Optional callback option - setting this allows the scalar weight value to be changed dynamically at encode time.              Default value: nil.
+--
+-- ObjC selector: @- propertyCallBack@
+propertyCallBack :: IsMPSNNForwardLossNode mpsnnForwardLossNode => mpsnnForwardLossNode -> IO RawId
+propertyCallBack mpsnnForwardLossNode  =
+    fmap (RawId . castPtr) $ sendMsg mpsnnForwardLossNode (mkSelector "propertyCallBack") (retPtr retVoid) []
+
+-- | propertyCallBack
+--
+-- Optional callback option - setting this allows the scalar weight value to be changed dynamically at encode time.              Default value: nil.
+--
+-- ObjC selector: @- setPropertyCallBack:@
+setPropertyCallBack :: IsMPSNNForwardLossNode mpsnnForwardLossNode => mpsnnForwardLossNode -> RawId -> IO ()
+setPropertyCallBack mpsnnForwardLossNode  value =
+    sendMsg mpsnnForwardLossNode (mkSelector "setPropertyCallBack:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -291,4 +313,12 @@ epsilonSelector = mkSelector "epsilon"
 -- | @Selector@ for @delta@
 deltaSelector :: Selector
 deltaSelector = mkSelector "delta"
+
+-- | @Selector@ for @propertyCallBack@
+propertyCallBackSelector :: Selector
+propertyCallBackSelector = mkSelector "propertyCallBack"
+
+-- | @Selector@ for @setPropertyCallBack:@
+setPropertyCallBackSelector :: Selector
+setPropertyCallBackSelector = mkSelector "setPropertyCallBack:"
 

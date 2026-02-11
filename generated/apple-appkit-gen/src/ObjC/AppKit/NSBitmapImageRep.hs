@@ -37,6 +37,7 @@ module ObjC.AppKit.NSBitmapImageRep
   , representationUsingType_properties
   , setProperty_withValue
   , valueForProperty
+  , bitmapData
   , planar
   , samplesPerPixel
   , bitsPerPixel
@@ -46,6 +47,7 @@ module ObjC.AppKit.NSBitmapImageRep
   , bitmapFormat
   , tiffRepresentation
   , cgImage
+  , colorSpace
   , initWithFocusedViewRectSelector
   , initWithBitmapDataPlanes_pixelsWide_pixelsHigh_bitsPerSample_samplesPerPixel_hasAlpha_isPlanar_colorSpaceName_bytesPerRow_bitsPerPixelSelector
   , initWithBitmapDataPlanes_pixelsWide_pixelsHigh_bitsPerSample_samplesPerPixel_hasAlpha_isPlanar_colorSpaceName_bitmapFormat_bytesPerRow_bitsPerPixelSelector
@@ -76,6 +78,7 @@ module ObjC.AppKit.NSBitmapImageRep
   , representationUsingType_propertiesSelector
   , setProperty_withValueSelector
   , valueForPropertySelector
+  , bitmapDataSelector
   , planarSelector
   , samplesPerPixelSelector
   , bitsPerPixelSelector
@@ -85,6 +88,7 @@ module ObjC.AppKit.NSBitmapImageRep
   , bitmapFormatSelector
   , tiffRepresentationSelector
   , cgImageSelector
+  , colorSpaceSelector
 
   -- * Enum types
   , NSBitmapFormat(NSBitmapFormat)
@@ -322,6 +326,11 @@ valueForProperty nsBitmapImageRep  property =
   withObjCPtr property $ \raw_property ->
       fmap (RawId . castPtr) $ sendMsg nsBitmapImageRep (mkSelector "valueForProperty:") (retPtr retVoid) [argPtr (castPtr raw_property :: Ptr ())]
 
+-- | @- bitmapData@
+bitmapData :: IsNSBitmapImageRep nsBitmapImageRep => nsBitmapImageRep -> IO RawId
+bitmapData nsBitmapImageRep  =
+    fmap (RawId . castPtr) $ sendMsg nsBitmapImageRep (mkSelector "bitmapData") (retPtr retVoid) []
+
 -- | @- planar@
 planar :: IsNSBitmapImageRep nsBitmapImageRep => nsBitmapImageRep -> IO Bool
 planar nsBitmapImageRep  =
@@ -366,6 +375,11 @@ tiffRepresentation nsBitmapImageRep  =
 cgImage :: IsNSBitmapImageRep nsBitmapImageRep => nsBitmapImageRep -> IO (Ptr ())
 cgImage nsBitmapImageRep  =
     fmap castPtr $ sendMsg nsBitmapImageRep (mkSelector "CGImage") (retPtr retVoid) []
+
+-- | @- colorSpace@
+colorSpace :: IsNSBitmapImageRep nsBitmapImageRep => nsBitmapImageRep -> IO (Id NSColorSpace)
+colorSpace nsBitmapImageRep  =
+    sendMsg nsBitmapImageRep (mkSelector "colorSpace") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -491,6 +505,10 @@ setProperty_withValueSelector = mkSelector "setProperty:withValue:"
 valueForPropertySelector :: Selector
 valueForPropertySelector = mkSelector "valueForProperty:"
 
+-- | @Selector@ for @bitmapData@
+bitmapDataSelector :: Selector
+bitmapDataSelector = mkSelector "bitmapData"
+
 -- | @Selector@ for @planar@
 planarSelector :: Selector
 planarSelector = mkSelector "planar"
@@ -526,4 +544,8 @@ tiffRepresentationSelector = mkSelector "TIFFRepresentation"
 -- | @Selector@ for @CGImage@
 cgImageSelector :: Selector
 cgImageSelector = mkSelector "CGImage"
+
+-- | @Selector@ for @colorSpace@
+colorSpaceSelector :: Selector
+colorSpaceSelector = mkSelector "colorSpace"
 

@@ -28,6 +28,10 @@ module ObjC.AppKit.NSScrubber
   , registerClass_forItemIdentifier
   , registerNib_forItemIdentifier
   , makeItemWithIdentifier_owner
+  , dataSource
+  , setDataSource
+  , delegate
+  , setDelegate
   , scrubberLayout
   , setScrubberLayout
   , numberOfItems
@@ -67,6 +71,10 @@ module ObjC.AppKit.NSScrubber
   , registerClass_forItemIdentifierSelector
   , registerNib_forItemIdentifierSelector
   , makeItemWithIdentifier_ownerSelector
+  , dataSourceSelector
+  , setDataSourceSelector
+  , delegateSelector
+  , setDelegateSelector
   , scrubberLayoutSelector
   , setScrubberLayoutSelector
   , numberOfItemsSelector
@@ -217,6 +225,26 @@ makeItemWithIdentifier_owner :: (IsNSScrubber nsScrubber, IsNSString itemIdentif
 makeItemWithIdentifier_owner nsScrubber  itemIdentifier owner =
   withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
       sendMsg nsScrubber (mkSelector "makeItemWithIdentifier:owner:") (retPtr retVoid) [argPtr (castPtr raw_itemIdentifier :: Ptr ()), argPtr (castPtr (unRawId owner) :: Ptr ())] >>= retainedObject . castPtr
+
+-- | @- dataSource@
+dataSource :: IsNSScrubber nsScrubber => nsScrubber -> IO RawId
+dataSource nsScrubber  =
+    fmap (RawId . castPtr) $ sendMsg nsScrubber (mkSelector "dataSource") (retPtr retVoid) []
+
+-- | @- setDataSource:@
+setDataSource :: IsNSScrubber nsScrubber => nsScrubber -> RawId -> IO ()
+setDataSource nsScrubber  value =
+    sendMsg nsScrubber (mkSelector "setDataSource:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- delegate@
+delegate :: IsNSScrubber nsScrubber => nsScrubber -> IO RawId
+delegate nsScrubber  =
+    fmap (RawId . castPtr) $ sendMsg nsScrubber (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSScrubber nsScrubber => nsScrubber -> RawId -> IO ()
+setDelegate nsScrubber  value =
+    sendMsg nsScrubber (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- scrubberLayout@
 scrubberLayout :: IsNSScrubber nsScrubber => nsScrubber -> IO (Id NSScrubberLayout)
@@ -456,6 +484,22 @@ registerNib_forItemIdentifierSelector = mkSelector "registerNib:forItemIdentifie
 -- | @Selector@ for @makeItemWithIdentifier:owner:@
 makeItemWithIdentifier_ownerSelector :: Selector
 makeItemWithIdentifier_ownerSelector = mkSelector "makeItemWithIdentifier:owner:"
+
+-- | @Selector@ for @dataSource@
+dataSourceSelector :: Selector
+dataSourceSelector = mkSelector "dataSource"
+
+-- | @Selector@ for @setDataSource:@
+setDataSourceSelector :: Selector
+setDataSourceSelector = mkSelector "setDataSource:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @scrubberLayout@
 scrubberLayoutSelector :: Selector

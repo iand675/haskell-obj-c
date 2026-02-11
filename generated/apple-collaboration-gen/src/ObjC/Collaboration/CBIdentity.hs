@@ -21,6 +21,8 @@ module ObjC.Collaboration.CBIdentity
   , identityWithCSIdentity
   , isMemberOfGroup
   , authority
+  , uniqueIdentifier
+  , uuidString
   , fullName
   , posixName
   , aliases
@@ -36,6 +38,8 @@ module ObjC.Collaboration.CBIdentity
   , identityWithCSIdentitySelector
   , isMemberOfGroupSelector
   , authoritySelector
+  , uniqueIdentifierSelector
+  , uuidStringSelector
   , fullNameSelector
   , posixNameSelector
   , aliasesSelector
@@ -161,6 +165,22 @@ authority :: IsCBIdentity cbIdentity => cbIdentity -> IO (Id CBIdentityAuthority
 authority cbIdentity  =
     sendMsg cbIdentity (mkSelector "authority") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- uniqueIdentifier@
+uniqueIdentifier :: IsCBIdentity cbIdentity => cbIdentity -> IO RawId
+uniqueIdentifier cbIdentity  =
+    fmap (RawId . castPtr) $ sendMsg cbIdentity (mkSelector "uniqueIdentifier") (retPtr retVoid) []
+
+-- | Returns the UUID of the identity as a string.
+--
+-- The UUID string is generated so it is unique across all identity authorities. When storing ACLs, one method is to store the UUID of each identity. However, it is recommended that you use a persistent data object instead (see ``CBIdentity/persistentReference``).
+--
+-- - Returns: The UUID string of the identity.
+--
+-- ObjC selector: @- UUIDString@
+uuidString :: IsCBIdentity cbIdentity => cbIdentity -> IO RawId
+uuidString cbIdentity  =
+    fmap (RawId . castPtr) $ sendMsg cbIdentity (mkSelector "UUIDString") (retPtr retVoid) []
+
 -- | Returns the full name of the identity.
 --
 -- - Returns: The full name for the identity.
@@ -274,6 +294,14 @@ isMemberOfGroupSelector = mkSelector "isMemberOfGroup:"
 -- | @Selector@ for @authority@
 authoritySelector :: Selector
 authoritySelector = mkSelector "authority"
+
+-- | @Selector@ for @uniqueIdentifier@
+uniqueIdentifierSelector :: Selector
+uniqueIdentifierSelector = mkSelector "uniqueIdentifier"
+
+-- | @Selector@ for @UUIDString@
+uuidStringSelector :: Selector
+uuidStringSelector = mkSelector "UUIDString"
 
 -- | @Selector@ for @fullName@
 fullNameSelector :: Selector

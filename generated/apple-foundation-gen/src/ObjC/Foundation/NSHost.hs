@@ -23,6 +23,7 @@ module ObjC.Foundation.NSHost
   , names
   , address
   , addresses
+  , localizedName
   , currentHostSelector
   , hostWithNameSelector
   , hostWithAddressSelector
@@ -34,6 +35,7 @@ module ObjC.Foundation.NSHost
   , namesSelector
   , addressSelector
   , addressesSelector
+  , localizedNameSelector
 
 
   ) where
@@ -122,6 +124,11 @@ addresses :: IsNSHost nsHost => nsHost -> IO (Id NSArray)
 addresses nsHost  =
     sendMsg nsHost (mkSelector "addresses") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- localizedName@
+localizedName :: IsNSHost nsHost => nsHost -> IO (Id NSString)
+localizedName nsHost  =
+    sendMsg nsHost (mkSelector "localizedName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -169,4 +176,8 @@ addressSelector = mkSelector "address"
 -- | @Selector@ for @addresses@
 addressesSelector :: Selector
 addressesSelector = mkSelector "addresses"
+
+-- | @Selector@ for @localizedName@
+localizedNameSelector :: Selector
+localizedNameSelector = mkSelector "localizedName"
 

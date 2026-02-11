@@ -17,6 +17,7 @@ module ObjC.Foundation.NSURLAuthenticationChallenge
   , previousFailureCount
   , failureResponse
   , error_
+  , sender
   , initWithProtectionSpace_proposedCredential_previousFailureCount_failureResponse_error_senderSelector
   , initWithAuthenticationChallenge_senderSelector
   , protectionSpaceSelector
@@ -24,6 +25,7 @@ module ObjC.Foundation.NSURLAuthenticationChallenge
   , previousFailureCountSelector
   , failureResponseSelector
   , errorSelector
+  , senderSelector
 
 
   ) where
@@ -130,6 +132,17 @@ error_ :: IsNSURLAuthenticationChallenge nsurlAuthenticationChallenge => nsurlAu
 error_ nsurlAuthenticationChallenge  =
     sendMsg nsurlAuthenticationChallenge (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | Get the sender of this challenge
+--
+-- Returns: The sender of the challenge
+--
+-- The sender is the object you should reply to when done processing the challenge.
+--
+-- ObjC selector: @- sender@
+sender :: IsNSURLAuthenticationChallenge nsurlAuthenticationChallenge => nsurlAuthenticationChallenge -> IO RawId
+sender nsurlAuthenticationChallenge  =
+    fmap (RawId . castPtr) $ sendMsg nsurlAuthenticationChallenge (mkSelector "sender") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -161,4 +174,8 @@ failureResponseSelector = mkSelector "failureResponse"
 -- | @Selector@ for @error@
 errorSelector :: Selector
 errorSelector = mkSelector "error"
+
+-- | @Selector@ for @sender@
+senderSelector :: Selector
+senderSelector = mkSelector "sender"
 

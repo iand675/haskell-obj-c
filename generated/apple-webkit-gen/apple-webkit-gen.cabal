@@ -123,6 +123,19 @@ library
       ObjC.WebKit.DOMWheelEvent
       ObjC.WebKit.DOMXPathExpression
       ObjC.WebKit.DOMXPathResult
+      ObjC.WebKit.Delegate.DOMEventListener
+      ObjC.WebKit.Delegate.DOMXPathNSResolver
+      ObjC.WebKit.Delegate.WKDownloadDelegate
+      ObjC.WebKit.Delegate.WKHTTPCookieStoreObserver
+      ObjC.WebKit.Delegate.WKNavigationDelegate
+      ObjC.WebKit.Delegate.WKUIDelegate
+      ObjC.WebKit.Delegate.WKURLSchemeTask
+      ObjC.WebKit.Delegate.WKWebExtensionControllerDelegate
+      ObjC.WebKit.Delegate.WebDocumentRepresentation
+      ObjC.WebKit.Delegate.WebDocumentSearching
+      ObjC.WebKit.Delegate.WebDocumentText
+      ObjC.WebKit.Delegate.WebOpenPanelResultListener
+      ObjC.WebKit.Delegate.WebPolicyDecisionListener
       ObjC.WebKit.Enums
       ObjC.WebKit.Internal.Classes
       ObjC.WebKit.Internal.Enums

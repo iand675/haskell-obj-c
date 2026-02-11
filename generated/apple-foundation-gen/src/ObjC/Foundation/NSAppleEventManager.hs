@@ -9,6 +9,7 @@ module ObjC.Foundation.NSAppleEventManager
   , sharedAppleEventManager
   , setEventHandler_andSelector_forEventClass_andEventID
   , removeEventHandlerForEventClass_andEventID
+  , dispatchRawAppleEvent_withRawReply_handlerRefCon
   , suspendCurrentAppleEvent
   , appleEventForSuspensionID
   , replyAppleEventForSuspensionID
@@ -19,6 +20,7 @@ module ObjC.Foundation.NSAppleEventManager
   , sharedAppleEventManagerSelector
   , setEventHandler_andSelector_forEventClass_andEventIDSelector
   , removeEventHandlerForEventClass_andEventIDSelector
+  , dispatchRawAppleEvent_withRawReply_handlerRefConSelector
   , suspendCurrentAppleEventSelector
   , appleEventForSuspensionIDSelector
   , replyAppleEventForSuspensionIDSelector
@@ -60,6 +62,11 @@ setEventHandler_andSelector_forEventClass_andEventID nsAppleEventManager  handle
 removeEventHandlerForEventClass_andEventID :: IsNSAppleEventManager nsAppleEventManager => nsAppleEventManager -> CUInt -> CUInt -> IO ()
 removeEventHandlerForEventClass_andEventID nsAppleEventManager  eventClass eventID =
     sendMsg nsAppleEventManager (mkSelector "removeEventHandlerForEventClass:andEventID:") retVoid [argCUInt eventClass, argCUInt eventID]
+
+-- | @- dispatchRawAppleEvent:withRawReply:handlerRefCon:@
+dispatchRawAppleEvent_withRawReply_handlerRefCon :: IsNSAppleEventManager nsAppleEventManager => nsAppleEventManager -> Const RawId -> RawId -> RawId -> IO CShort
+dispatchRawAppleEvent_withRawReply_handlerRefCon nsAppleEventManager  theAppleEvent theReply handlerRefCon =
+    fmap fromIntegral $ sendMsg nsAppleEventManager (mkSelector "dispatchRawAppleEvent:withRawReply:handlerRefCon:") retCInt [argPtr (castPtr (unRawId (unConst theAppleEvent)) :: Ptr ()), argPtr (castPtr (unRawId theReply) :: Ptr ()), argPtr (castPtr (unRawId handlerRefCon) :: Ptr ())]
 
 -- | @- suspendCurrentAppleEvent@
 suspendCurrentAppleEvent :: IsNSAppleEventManager nsAppleEventManager => nsAppleEventManager -> IO RawId
@@ -111,6 +118,10 @@ setEventHandler_andSelector_forEventClass_andEventIDSelector = mkSelector "setEv
 -- | @Selector@ for @removeEventHandlerForEventClass:andEventID:@
 removeEventHandlerForEventClass_andEventIDSelector :: Selector
 removeEventHandlerForEventClass_andEventIDSelector = mkSelector "removeEventHandlerForEventClass:andEventID:"
+
+-- | @Selector@ for @dispatchRawAppleEvent:withRawReply:handlerRefCon:@
+dispatchRawAppleEvent_withRawReply_handlerRefConSelector :: Selector
+dispatchRawAppleEvent_withRawReply_handlerRefConSelector = mkSelector "dispatchRawAppleEvent:withRawReply:handlerRefCon:"
 
 -- | @Selector@ for @suspendCurrentAppleEvent@
 suspendCurrentAppleEventSelector :: Selector

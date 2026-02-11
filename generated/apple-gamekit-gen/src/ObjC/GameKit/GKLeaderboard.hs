@@ -29,6 +29,8 @@ module ObjC.GameKit.GKLeaderboard
   , activityIdentifier
   , activityProperties
   , isHidden
+  , category
+  , setCategory
   , timeScope
   , setTimeScope
   , playerScope
@@ -61,6 +63,8 @@ module ObjC.GameKit.GKLeaderboard
   , activityIdentifierSelector
   , activityPropertiesSelector
   , isHiddenSelector
+  , categorySelector
+  , setCategorySelector
   , timeScopeSelector
   , setTimeScopeSelector
   , playerScopeSelector
@@ -257,6 +261,17 @@ isHidden :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO Bool
 isHidden gkLeaderboard  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkLeaderboard (mkSelector "isHidden") retCULong []
 
+-- | @- category@
+category :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO (Id NSString)
+category gkLeaderboard  =
+    sendMsg gkLeaderboard (mkSelector "category") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setCategory:@
+setCategory :: (IsGKLeaderboard gkLeaderboard, IsNSString value) => gkLeaderboard -> value -> IO ()
+setCategory gkLeaderboard  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg gkLeaderboard (mkSelector "setCategory:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- timeScope@
 timeScope :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO GKLeaderboardTimeScope
 timeScope gkLeaderboard  =
@@ -421,6 +436,14 @@ activityPropertiesSelector = mkSelector "activityProperties"
 -- | @Selector@ for @isHidden@
 isHiddenSelector :: Selector
 isHiddenSelector = mkSelector "isHidden"
+
+-- | @Selector@ for @category@
+categorySelector :: Selector
+categorySelector = mkSelector "category"
+
+-- | @Selector@ for @setCategory:@
+setCategorySelector :: Selector
+setCategorySelector = mkSelector "setCategory:"
 
 -- | @Selector@ for @timeScope@
 timeScopeSelector :: Selector

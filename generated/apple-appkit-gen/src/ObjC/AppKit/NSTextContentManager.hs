@@ -14,6 +14,8 @@ module ObjC.AppKit.NSTextContentManager
   , textElementsForRange
   , performEditingTransactionUsingBlock
   , recordEditActionInRange_newTextRange
+  , delegate
+  , setDelegate
   , textLayoutManagers
   , primaryTextLayoutManager
   , setPrimaryTextLayoutManager
@@ -30,6 +32,8 @@ module ObjC.AppKit.NSTextContentManager
   , textElementsForRangeSelector
   , performEditingTransactionUsingBlockSelector
   , recordEditActionInRange_newTextRangeSelector
+  , delegateSelector
+  , setDelegateSelector
   , textLayoutManagersSelector
   , primaryTextLayoutManagerSelector
   , setPrimaryTextLayoutManagerSelector
@@ -102,6 +106,16 @@ recordEditActionInRange_newTextRange nsTextContentManager  originalTextRange new
   withObjCPtr originalTextRange $ \raw_originalTextRange ->
     withObjCPtr newTextRange $ \raw_newTextRange ->
         sendMsg nsTextContentManager (mkSelector "recordEditActionInRange:newTextRange:") retVoid [argPtr (castPtr raw_originalTextRange :: Ptr ()), argPtr (castPtr raw_newTextRange :: Ptr ())]
+
+-- | @- delegate@
+delegate :: IsNSTextContentManager nsTextContentManager => nsTextContentManager -> IO RawId
+delegate nsTextContentManager  =
+    fmap (RawId . castPtr) $ sendMsg nsTextContentManager (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSTextContentManager nsTextContentManager => nsTextContentManager -> RawId -> IO ()
+setDelegate nsTextContentManager  value =
+    sendMsg nsTextContentManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- textLayoutManagers@
 textLayoutManagers :: IsNSTextContentManager nsTextContentManager => nsTextContentManager -> IO (Id NSArray)
@@ -179,6 +193,14 @@ performEditingTransactionUsingBlockSelector = mkSelector "performEditingTransact
 -- | @Selector@ for @recordEditActionInRange:newTextRange:@
 recordEditActionInRange_newTextRangeSelector :: Selector
 recordEditActionInRange_newTextRangeSelector = mkSelector "recordEditActionInRange:newTextRange:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @textLayoutManagers@
 textLayoutManagersSelector :: Selector

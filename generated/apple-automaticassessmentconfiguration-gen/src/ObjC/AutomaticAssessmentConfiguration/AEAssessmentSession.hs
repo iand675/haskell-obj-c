@@ -14,6 +14,8 @@ module ObjC.AutomaticAssessmentConfiguration.AEAssessmentSession
   , updateToConfiguration
   , supportsMultipleParticipants
   , supportsConfigurationUpdates
+  , delegate
+  , setDelegate
   , configuration
   , active
   , initWithConfigurationSelector
@@ -24,6 +26,8 @@ module ObjC.AutomaticAssessmentConfiguration.AEAssessmentSession
   , updateToConfigurationSelector
   , supportsMultipleParticipantsSelector
   , supportsConfigurationUpdatesSelector
+  , delegateSelector
+  , setDelegateSelector
   , configurationSelector
   , activeSelector
 
@@ -93,6 +97,16 @@ supportsConfigurationUpdates  =
     cls' <- getRequiredClass "AEAssessmentSession"
     fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supportsConfigurationUpdates") retCULong []
 
+-- | @- delegate@
+delegate :: IsAEAssessmentSession aeAssessmentSession => aeAssessmentSession -> IO RawId
+delegate aeAssessmentSession  =
+    fmap (RawId . castPtr) $ sendMsg aeAssessmentSession (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsAEAssessmentSession aeAssessmentSession => aeAssessmentSession -> RawId -> IO ()
+setDelegate aeAssessmentSession  value =
+    sendMsg aeAssessmentSession (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- configuration@
 configuration :: IsAEAssessmentSession aeAssessmentSession => aeAssessmentSession -> IO (Id AEAssessmentConfiguration)
 configuration aeAssessmentSession  =
@@ -138,6 +152,14 @@ supportsMultipleParticipantsSelector = mkSelector "supportsMultipleParticipants"
 -- | @Selector@ for @supportsConfigurationUpdates@
 supportsConfigurationUpdatesSelector :: Selector
 supportsConfigurationUpdatesSelector = mkSelector "supportsConfigurationUpdates"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @configuration@
 configurationSelector :: Selector

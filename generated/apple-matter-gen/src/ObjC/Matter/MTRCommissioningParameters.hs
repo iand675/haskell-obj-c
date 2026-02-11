@@ -18,6 +18,8 @@ module ObjC.Matter.MTRCommissioningParameters
   , setWifiCredentials
   , threadOperationalDataset
   , setThreadOperationalDataset
+  , deviceAttestationDelegate
+  , setDeviceAttestationDelegate
   , failSafeTimeout
   , setFailSafeTimeout
   , skipCommissioningComplete
@@ -49,6 +51,8 @@ module ObjC.Matter.MTRCommissioningParameters
   , setWifiCredentialsSelector
   , threadOperationalDatasetSelector
   , setThreadOperationalDatasetSelector
+  , deviceAttestationDelegateSelector
+  , setDeviceAttestationDelegateSelector
   , failSafeTimeoutSelector
   , setFailSafeTimeoutSelector
   , skipCommissioningCompleteSelector
@@ -179,6 +183,24 @@ setThreadOperationalDataset :: (IsMTRCommissioningParameters mtrCommissioningPar
 setThreadOperationalDataset mtrCommissioningParameters  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mtrCommissioningParameters (mkSelector "setThreadOperationalDataset:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | An optional delegate that can be notified upon completion of device attestation.  See documentation for MTRDeviceAttestationDelegate for details.
+--
+-- The delegate methods will be invoked on an arbitrary thread.
+--
+-- ObjC selector: @- deviceAttestationDelegate@
+deviceAttestationDelegate :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> IO RawId
+deviceAttestationDelegate mtrCommissioningParameters  =
+    fmap (RawId . castPtr) $ sendMsg mtrCommissioningParameters (mkSelector "deviceAttestationDelegate") (retPtr retVoid) []
+
+-- | An optional delegate that can be notified upon completion of device attestation.  See documentation for MTRDeviceAttestationDelegate for details.
+--
+-- The delegate methods will be invoked on an arbitrary thread.
+--
+-- ObjC selector: @- setDeviceAttestationDelegate:@
+setDeviceAttestationDelegate :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> RawId -> IO ()
+setDeviceAttestationDelegate mtrCommissioningParameters  value =
+    sendMsg mtrCommissioningParameters (mkSelector "setDeviceAttestationDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | The timeout, in seconds, to set for the fail-safe when calling into the deviceAttestationDelegate and waiting for it to respond.
 --
@@ -411,6 +433,14 @@ threadOperationalDatasetSelector = mkSelector "threadOperationalDataset"
 -- | @Selector@ for @setThreadOperationalDataset:@
 setThreadOperationalDatasetSelector :: Selector
 setThreadOperationalDatasetSelector = mkSelector "setThreadOperationalDataset:"
+
+-- | @Selector@ for @deviceAttestationDelegate@
+deviceAttestationDelegateSelector :: Selector
+deviceAttestationDelegateSelector = mkSelector "deviceAttestationDelegate"
+
+-- | @Selector@ for @setDeviceAttestationDelegate:@
+setDeviceAttestationDelegateSelector :: Selector
+setDeviceAttestationDelegateSelector = mkSelector "setDeviceAttestationDelegate:"
 
 -- | @Selector@ for @failSafeTimeout@
 failSafeTimeoutSelector :: Selector

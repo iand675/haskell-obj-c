@@ -17,6 +17,8 @@ module ObjC.CoreMotion.CMOdometerData
   , deltaAltitude
   , verticalAccuracy
   , originDevice
+  , slope
+  , maxAbsSlope
   , startDateSelector
   , endDateSelector
   , deltaDistanceSelector
@@ -27,6 +29,8 @@ module ObjC.CoreMotion.CMOdometerData
   , deltaAltitudeSelector
   , verticalAccuracySelector
   , originDeviceSelector
+  , slopeSelector
+  , maxAbsSlopeSelector
 
   -- * Enum types
   , CMOdometerOriginDevice(CMOdometerOriginDevice)
@@ -102,6 +106,16 @@ originDevice :: IsCMOdometerData cmOdometerData => cmOdometerData -> IO CMOdomet
 originDevice cmOdometerData  =
     fmap (coerce :: CLong -> CMOdometerOriginDevice) $ sendMsg cmOdometerData (mkSelector "originDevice") retCLong []
 
+-- | @- slope@
+slope :: IsCMOdometerData cmOdometerData => cmOdometerData -> IO (Id NSNumber)
+slope cmOdometerData  =
+    sendMsg cmOdometerData (mkSelector "slope") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- maxAbsSlope@
+maxAbsSlope :: IsCMOdometerData cmOdometerData => cmOdometerData -> IO (Id NSNumber)
+maxAbsSlope cmOdometerData  =
+    sendMsg cmOdometerData (mkSelector "maxAbsSlope") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -145,4 +159,12 @@ verticalAccuracySelector = mkSelector "verticalAccuracy"
 -- | @Selector@ for @originDevice@
 originDeviceSelector :: Selector
 originDeviceSelector = mkSelector "originDevice"
+
+-- | @Selector@ for @slope@
+slopeSelector :: Selector
+slopeSelector = mkSelector "slope"
+
+-- | @Selector@ for @maxAbsSlope@
+maxAbsSlopeSelector :: Selector
+maxAbsSlopeSelector = mkSelector "maxAbsSlope"
 

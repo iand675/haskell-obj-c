@@ -160,6 +160,8 @@ module ObjC.AppKit.NSWindow
   , defaultDepthLimit
   , title
   , setTitle
+  , subtitle
+  , setSubtitle
   , titleVisibility
   , setTitleVisibility
   , titlebarAppearsTransparent
@@ -168,12 +170,18 @@ module ObjC.AppKit.NSWindow
   , setToolbarStyle
   , contentLayoutRect
   , contentLayoutGuide
+  , titlebarAccessoryViewControllers
+  , setTitlebarAccessoryViewControllers
+  , representedURL
+  , setRepresentedURL
   , representedFilename
   , setRepresentedFilename
   , excludedFromWindowsMenu
   , setExcludedFromWindowsMenu
   , contentView
   , setContentView
+  , delegate
+  , setDelegate
   , windowNumber
   , styleMask
   , setStyleMask
@@ -212,6 +220,7 @@ module ObjC.AppKit.NSWindow
   , setMiniwindowImage
   , miniwindowTitle
   , setMiniwindowTitle
+  , dockTile
   , documentEdited
   , setDocumentEdited
   , visible
@@ -270,14 +279,22 @@ module ObjC.AppKit.NSWindow
   , deviceDescription
   , windowController
   , setWindowController
+  , sheets
   , attachedSheet
   , sheet
+  , sheetParent
   , childWindows
   , parentWindow
   , setParentWindow
+  , appearanceSource
+  , setAppearanceSource
+  , colorSpace
+  , setColorSpace
   , occlusionState
   , titlebarSeparatorStyle
   , setTitlebarSeparatorStyle
+  , contentViewController
+  , setContentViewController
   , initialFirstResponder
   , setInitialFirstResponder
   , keyViewSelectionDirection
@@ -296,10 +313,15 @@ module ObjC.AppKit.NSWindow
   , setTabbingMode
   , tabbingIdentifier
   , setTabbingIdentifier
+  , tabbedWindows
+  , tab
+  , tabGroup
   , hasActiveWindowSharingSession
   , windowTitlebarLayoutDirection
   , restorable
   , setRestorable
+  , restorationClass
+  , setRestorationClass
   , hasCloseBox
   , hasTitleBar
   , floatingPanel
@@ -309,9 +331,11 @@ module ObjC.AppKit.NSWindow
   , zoomable
   , orderedIndex
   , setOrderedIndex
+  , drawers
   , flushWindowDisabled
   , autodisplay
   , setAutodisplay
+  , graphicsContext
   , oneShot
   , setOneShot
   , preferredBackingLocation
@@ -319,6 +343,7 @@ module ObjC.AppKit.NSWindow
   , backingLocation
   , showsResizeIndicator
   , setShowsResizeIndicator
+  , windowRef
   , areCursorRectsEnabled
   , currentEvent
   , acceptsMouseMovedEvents
@@ -479,6 +504,8 @@ module ObjC.AppKit.NSWindow
   , defaultDepthLimitSelector
   , titleSelector
   , setTitleSelector
+  , subtitleSelector
+  , setSubtitleSelector
   , titleVisibilitySelector
   , setTitleVisibilitySelector
   , titlebarAppearsTransparentSelector
@@ -487,12 +514,18 @@ module ObjC.AppKit.NSWindow
   , setToolbarStyleSelector
   , contentLayoutRectSelector
   , contentLayoutGuideSelector
+  , titlebarAccessoryViewControllersSelector
+  , setTitlebarAccessoryViewControllersSelector
+  , representedURLSelector
+  , setRepresentedURLSelector
   , representedFilenameSelector
   , setRepresentedFilenameSelector
   , excludedFromWindowsMenuSelector
   , setExcludedFromWindowsMenuSelector
   , contentViewSelector
   , setContentViewSelector
+  , delegateSelector
+  , setDelegateSelector
   , windowNumberSelector
   , styleMaskSelector
   , setStyleMaskSelector
@@ -531,6 +564,7 @@ module ObjC.AppKit.NSWindow
   , setMiniwindowImageSelector
   , miniwindowTitleSelector
   , setMiniwindowTitleSelector
+  , dockTileSelector
   , documentEditedSelector
   , setDocumentEditedSelector
   , visibleSelector
@@ -589,14 +623,22 @@ module ObjC.AppKit.NSWindow
   , deviceDescriptionSelector
   , windowControllerSelector
   , setWindowControllerSelector
+  , sheetsSelector
   , attachedSheetSelector
   , sheetSelector
+  , sheetParentSelector
   , childWindowsSelector
   , parentWindowSelector
   , setParentWindowSelector
+  , appearanceSourceSelector
+  , setAppearanceSourceSelector
+  , colorSpaceSelector
+  , setColorSpaceSelector
   , occlusionStateSelector
   , titlebarSeparatorStyleSelector
   , setTitlebarSeparatorStyleSelector
+  , contentViewControllerSelector
+  , setContentViewControllerSelector
   , initialFirstResponderSelector
   , setInitialFirstResponderSelector
   , keyViewSelectionDirectionSelector
@@ -615,10 +657,15 @@ module ObjC.AppKit.NSWindow
   , setTabbingModeSelector
   , tabbingIdentifierSelector
   , setTabbingIdentifierSelector
+  , tabbedWindowsSelector
+  , tabSelector
+  , tabGroupSelector
   , hasActiveWindowSharingSessionSelector
   , windowTitlebarLayoutDirectionSelector
   , restorableSelector
   , setRestorableSelector
+  , restorationClassSelector
+  , setRestorationClassSelector
   , hasCloseBoxSelector
   , hasTitleBarSelector
   , floatingPanelSelector
@@ -628,9 +675,11 @@ module ObjC.AppKit.NSWindow
   , zoomableSelector
   , orderedIndexSelector
   , setOrderedIndexSelector
+  , drawersSelector
   , flushWindowDisabledSelector
   , autodisplaySelector
   , setAutodisplaySelector
+  , graphicsContextSelector
   , oneShotSelector
   , setOneShotSelector
   , preferredBackingLocationSelector
@@ -638,6 +687,7 @@ module ObjC.AppKit.NSWindow
   , backingLocationSelector
   , showsResizeIndicatorSelector
   , setShowsResizeIndicatorSelector
+  , windowRefSelector
   , areCursorRectsEnabledSelector
   , currentEventSelector
   , acceptsMouseMovedEventsSelector
@@ -1758,6 +1808,21 @@ setTitle nsWindow  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsWindow (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | Secondary text that may be displayed adjacent to or below the primary title depending on the configuration of the window. A value of empty string will remove the subtitle from the window layout.
+--
+-- ObjC selector: @- subtitle@
+subtitle :: IsNSWindow nsWindow => nsWindow -> IO (Id NSString)
+subtitle nsWindow  =
+    sendMsg nsWindow (mkSelector "subtitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Secondary text that may be displayed adjacent to or below the primary title depending on the configuration of the window. A value of empty string will remove the subtitle from the window layout.
+--
+-- ObjC selector: @- setSubtitle:@
+setSubtitle :: (IsNSWindow nsWindow, IsNSString value) => nsWindow -> value -> IO ()
+setSubtitle nsWindow  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsWindow (mkSelector "setSubtitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | See the enum values for how this property works.
 --
 -- ObjC selector: @- titleVisibility@
@@ -1814,6 +1879,32 @@ contentLayoutGuide :: IsNSWindow nsWindow => nsWindow -> IO RawId
 contentLayoutGuide nsWindow  =
     fmap (RawId . castPtr) $ sendMsg nsWindow (mkSelector "contentLayoutGuide") (retPtr retVoid) []
 
+-- | @- titlebarAccessoryViewControllers@
+titlebarAccessoryViewControllers :: IsNSWindow nsWindow => nsWindow -> IO (Id NSArray)
+titlebarAccessoryViewControllers nsWindow  =
+    sendMsg nsWindow (mkSelector "titlebarAccessoryViewControllers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setTitlebarAccessoryViewControllers:@
+setTitlebarAccessoryViewControllers :: (IsNSWindow nsWindow, IsNSArray value) => nsWindow -> value -> IO ()
+setTitlebarAccessoryViewControllers nsWindow  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsWindow (mkSelector "setTitlebarAccessoryViewControllers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | If url is not nil and its path is not empty, the window will show a document icon in the titlebar. If the url represents a filename or other resource with a known icon, that icon will be used as the document icon.  Otherwise the default document icon will be used.  The icon can be customized using @-[[NSWindow standardWindowButton:NSWindowDocumentIconButton] setImage:customImage]@.  If url is not nil and its path is not empty, the window will have a pop-up menu which can be shown via command-click on the area containing the document icon and title.  By default, this menu will display the path components of the url.  The presence and contents of this menu can be controlled by the delegate method @-[window:shouldPopUpDocumentPathMenu:]@ If the url is nil or has an empty path, the window will not show a document icon and will not have a pop-up menu available via command-click.
+--
+-- ObjC selector: @- representedURL@
+representedURL :: IsNSWindow nsWindow => nsWindow -> IO (Id NSURL)
+representedURL nsWindow  =
+    sendMsg nsWindow (mkSelector "representedURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | If url is not nil and its path is not empty, the window will show a document icon in the titlebar. If the url represents a filename or other resource with a known icon, that icon will be used as the document icon.  Otherwise the default document icon will be used.  The icon can be customized using @-[[NSWindow standardWindowButton:NSWindowDocumentIconButton] setImage:customImage]@.  If url is not nil and its path is not empty, the window will have a pop-up menu which can be shown via command-click on the area containing the document icon and title.  By default, this menu will display the path components of the url.  The presence and contents of this menu can be controlled by the delegate method @-[window:shouldPopUpDocumentPathMenu:]@ If the url is nil or has an empty path, the window will not show a document icon and will not have a pop-up menu available via command-click.
+--
+-- ObjC selector: @- setRepresentedURL:@
+setRepresentedURL :: (IsNSWindow nsWindow, IsNSURL value) => nsWindow -> value -> IO ()
+setRepresentedURL nsWindow  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsWindow (mkSelector "setRepresentedURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- representedFilename@
 representedFilename :: IsNSWindow nsWindow => nsWindow -> IO (Id NSString)
 representedFilename nsWindow  =
@@ -1845,6 +1936,16 @@ setContentView :: (IsNSWindow nsWindow, IsNSView value) => nsWindow -> value -> 
 setContentView nsWindow  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsWindow (mkSelector "setContentView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- delegate@
+delegate :: IsNSWindow nsWindow => nsWindow -> IO RawId
+delegate nsWindow  =
+    fmap (RawId . castPtr) $ sendMsg nsWindow (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
+setDelegate nsWindow  value =
+    sendMsg nsWindow (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- windowNumber@
 windowNumber :: IsNSWindow nsWindow => nsWindow -> IO CLong
@@ -2048,6 +2149,11 @@ setMiniwindowTitle :: (IsNSWindow nsWindow, IsNSString value) => nsWindow -> val
 setMiniwindowTitle nsWindow  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsWindow (mkSelector "setMiniwindowTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- dockTile@
+dockTile :: IsNSWindow nsWindow => nsWindow -> IO (Id NSDockTile)
+dockTile nsWindow  =
+    sendMsg nsWindow (mkSelector "dockTile") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- documentEdited@
 documentEdited :: IsNSWindow nsWindow => nsWindow -> IO Bool
@@ -2370,6 +2476,13 @@ setWindowController nsWindow  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsWindow (mkSelector "setWindowController:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | An ordered array of the sheets on the window. This consists of the presented sheets in top-to-bottom order, followed by queued sheets in the order they were queued. This does not include nested/sub-sheets.
+--
+-- ObjC selector: @- sheets@
+sheets :: IsNSWindow nsWindow => nsWindow -> IO (Id NSArray)
+sheets nsWindow  =
+    sendMsg nsWindow (mkSelector "sheets") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Returns the top-most sheet if there is one or more sheets, or nil if there is no sheet.
 --
 -- ObjC selector: @- attachedSheet@
@@ -2381,6 +2494,13 @@ attachedSheet nsWindow  =
 sheet :: IsNSWindow nsWindow => nsWindow -> IO Bool
 sheet nsWindow  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "sheet") retCULong []
+
+-- | Returns the window that the sheet is directly attached to. This is based on the logical attachment of the sheet, not visual attachment. This relationship exists starting when the sheet is begun (using @NSApplication's@ @-beginSheet:modalForWindow:modalDelegate:didEndSelector:contextInfo: or NSWindow's -beginSheet:completionHandler:@), and ending once it is ordered out. Returns nil if the window is not a sheet or has no sheet parent.
+--
+-- ObjC selector: @- sheetParent@
+sheetParent :: IsNSWindow nsWindow => nsWindow -> IO (Id NSWindow)
+sheetParent nsWindow  =
+    sendMsg nsWindow (mkSelector "sheetParent") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- childWindows@
 childWindows :: IsNSWindow nsWindow => nsWindow -> IO (Id NSArray)
@@ -2397,6 +2517,32 @@ setParentWindow :: (IsNSWindow nsWindow, IsNSWindow value) => nsWindow -> value 
 setParentWindow nsWindow  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsWindow (mkSelector "setParentWindow:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | If set, the receiver will inherit the appearance of that object, as well as use KVO to observe its effectiveAppearance for changes. Typically this is used for child windows that are shown from a parent window or specific view. Defaults to NSApp.
+--
+-- ObjC selector: @- appearanceSource@
+appearanceSource :: IsNSWindow nsWindow => nsWindow -> IO (Id NSObject)
+appearanceSource nsWindow  =
+    sendMsg nsWindow (mkSelector "appearanceSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | If set, the receiver will inherit the appearance of that object, as well as use KVO to observe its effectiveAppearance for changes. Typically this is used for child windows that are shown from a parent window or specific view. Defaults to NSApp.
+--
+-- ObjC selector: @- setAppearanceSource:@
+setAppearanceSource :: (IsNSWindow nsWindow, IsNSObject value) => nsWindow -> value -> IO ()
+setAppearanceSource nsWindow  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsWindow (mkSelector "setAppearanceSource:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- colorSpace@
+colorSpace :: IsNSWindow nsWindow => nsWindow -> IO (Id NSColorSpace)
+colorSpace nsWindow  =
+    sendMsg nsWindow (mkSelector "colorSpace") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setColorSpace:@
+setColorSpace :: (IsNSWindow nsWindow, IsNSColorSpace value) => nsWindow -> value -> IO ()
+setColorSpace nsWindow  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsWindow (mkSelector "setColorSpace:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- occlusionState@
 occlusionState :: IsNSWindow nsWindow => nsWindow -> IO NSWindowOcclusionState
@@ -2420,6 +2566,21 @@ titlebarSeparatorStyle nsWindow  =
 setTitlebarSeparatorStyle :: IsNSWindow nsWindow => nsWindow -> NSTitlebarSeparatorStyle -> IO ()
 setTitlebarSeparatorStyle nsWindow  value =
     sendMsg nsWindow (mkSelector "setTitlebarSeparatorStyle:") retVoid [argCLong (coerce value)]
+
+-- | The main content view controller for the window. This provides the contentView of the window. Assigning this value will remove the existing contentView and will make the contentViewController.view the main contentView for the window. The default value is nil. The contentViewController only controls the contentView, and not the title of the window. The window title can easily be bound to the contentViewController with the following: [window bind:NSTitleBinding toObject:contentViewController withKeyPath:"title" options:nil]. Setting the contentViewController will cause the window to resize based on the current size of the contentViewController. Autolayout should be used to restrict the size of the window. The value of the contentViewController is encoded in the NIB. Directly assigning a contentView will clear out the contentViewController.
+--
+-- ObjC selector: @- contentViewController@
+contentViewController :: IsNSWindow nsWindow => nsWindow -> IO (Id NSViewController)
+contentViewController nsWindow  =
+    sendMsg nsWindow (mkSelector "contentViewController") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The main content view controller for the window. This provides the contentView of the window. Assigning this value will remove the existing contentView and will make the contentViewController.view the main contentView for the window. The default value is nil. The contentViewController only controls the contentView, and not the title of the window. The window title can easily be bound to the contentViewController with the following: [window bind:NSTitleBinding toObject:contentViewController withKeyPath:"title" options:nil]. Setting the contentViewController will cause the window to resize based on the current size of the contentViewController. Autolayout should be used to restrict the size of the window. The value of the contentViewController is encoded in the NIB. Directly assigning a contentView will clear out the contentViewController.
+--
+-- ObjC selector: @- setContentViewController:@
+setContentViewController :: (IsNSWindow nsWindow, IsNSViewController value) => nsWindow -> value -> IO ()
+setContentViewController nsWindow  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsWindow (mkSelector "setContentViewController:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- initialFirstResponder@
 initialFirstResponder :: IsNSWindow nsWindow => nsWindow -> IO (Id NSView)
@@ -2535,6 +2696,27 @@ setTabbingIdentifier nsWindow  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsWindow (mkSelector "setTabbingIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | This is now a cover for @self.tabGroup.windows@, but will return nil if the window is not showing a tab bar.
+--
+-- ObjC selector: @- tabbedWindows@
+tabbedWindows :: IsNSWindow nsWindow => nsWindow -> IO (Id NSArray)
+tabbedWindows nsWindow  =
+    sendMsg nsWindow (mkSelector "tabbedWindows") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Access the properties for this window when it is a tabbed window environment. See the @NSWindowTab@ header and comments for more information.
+--
+-- ObjC selector: @- tab@
+tab :: IsNSWindow nsWindow => nsWindow -> IO (Id NSWindowTab)
+tab nsWindow  =
+    sendMsg nsWindow (mkSelector "tab") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Represents a tab group of windows. This @tabGroup@ is lazily created on demand.
+--
+-- ObjC selector: @- tabGroup@
+tabGroup :: IsNSWindow nsWindow => nsWindow -> IO (Id NSWindowTabGroup)
+tabGroup nsWindow  =
+    sendMsg nsWindow (mkSelector "tabGroup") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Indicates whether the receiver is the subject of an active SharePlay sharing session.
 --
 -- ObjC selector: @- hasActiveWindowSharingSession@
@@ -2558,6 +2740,16 @@ restorable nsWindow  =
 setRestorable :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
 setRestorable nsWindow  value =
     sendMsg nsWindow (mkSelector "setRestorable:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | @- restorationClass@
+restorationClass :: IsNSWindow nsWindow => nsWindow -> IO Class
+restorationClass nsWindow  =
+    fmap (Class . castPtr) $ sendMsg nsWindow (mkSelector "restorationClass") (retPtr retVoid) []
+
+-- | @- setRestorationClass:@
+setRestorationClass :: IsNSWindow nsWindow => nsWindow -> Class -> IO ()
+setRestorationClass nsWindow  value =
+    sendMsg nsWindow (mkSelector "setRestorationClass:") retVoid [argPtr (unClass value)]
 
 -- | @- hasCloseBox@
 hasCloseBox :: IsNSWindow nsWindow => nsWindow -> IO Bool
@@ -2604,6 +2796,11 @@ setOrderedIndex :: IsNSWindow nsWindow => nsWindow -> CLong -> IO ()
 setOrderedIndex nsWindow  value =
     sendMsg nsWindow (mkSelector "setOrderedIndex:") retVoid [argCLong value]
 
+-- | @- drawers@
+drawers :: IsNSWindow nsWindow => nsWindow -> IO (Id NSArray)
+drawers nsWindow  =
+    sendMsg nsWindow (mkSelector "drawers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- flushWindowDisabled@
 flushWindowDisabled :: IsNSWindow nsWindow => nsWindow -> IO Bool
 flushWindowDisabled nsWindow  =
@@ -2618,6 +2815,11 @@ autodisplay nsWindow  =
 setAutodisplay :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
 setAutodisplay nsWindow  value =
     sendMsg nsWindow (mkSelector "setAutodisplay:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | @- graphicsContext@
+graphicsContext :: IsNSWindow nsWindow => nsWindow -> IO (Id NSGraphicsContext)
+graphicsContext nsWindow  =
+    sendMsg nsWindow (mkSelector "graphicsContext") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- oneShot@
 oneShot :: IsNSWindow nsWindow => nsWindow -> IO Bool
@@ -2653,6 +2855,11 @@ showsResizeIndicator nsWindow  =
 setShowsResizeIndicator :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
 setShowsResizeIndicator nsWindow  value =
     sendMsg nsWindow (mkSelector "setShowsResizeIndicator:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | @- windowRef@
+windowRef :: IsNSWindow nsWindow => nsWindow -> IO (Ptr ())
+windowRef nsWindow  =
+    fmap castPtr $ sendMsg nsWindow (mkSelector "windowRef") (retPtr retVoid) []
 
 -- | @- areCursorRectsEnabled@
 areCursorRectsEnabled :: IsNSWindow nsWindow => nsWindow -> IO Bool
@@ -3305,6 +3512,14 @@ titleSelector = mkSelector "title"
 setTitleSelector :: Selector
 setTitleSelector = mkSelector "setTitle:"
 
+-- | @Selector@ for @subtitle@
+subtitleSelector :: Selector
+subtitleSelector = mkSelector "subtitle"
+
+-- | @Selector@ for @setSubtitle:@
+setSubtitleSelector :: Selector
+setSubtitleSelector = mkSelector "setSubtitle:"
+
 -- | @Selector@ for @titleVisibility@
 titleVisibilitySelector :: Selector
 titleVisibilitySelector = mkSelector "titleVisibility"
@@ -3337,6 +3552,22 @@ contentLayoutRectSelector = mkSelector "contentLayoutRect"
 contentLayoutGuideSelector :: Selector
 contentLayoutGuideSelector = mkSelector "contentLayoutGuide"
 
+-- | @Selector@ for @titlebarAccessoryViewControllers@
+titlebarAccessoryViewControllersSelector :: Selector
+titlebarAccessoryViewControllersSelector = mkSelector "titlebarAccessoryViewControllers"
+
+-- | @Selector@ for @setTitlebarAccessoryViewControllers:@
+setTitlebarAccessoryViewControllersSelector :: Selector
+setTitlebarAccessoryViewControllersSelector = mkSelector "setTitlebarAccessoryViewControllers:"
+
+-- | @Selector@ for @representedURL@
+representedURLSelector :: Selector
+representedURLSelector = mkSelector "representedURL"
+
+-- | @Selector@ for @setRepresentedURL:@
+setRepresentedURLSelector :: Selector
+setRepresentedURLSelector = mkSelector "setRepresentedURL:"
+
 -- | @Selector@ for @representedFilename@
 representedFilenameSelector :: Selector
 representedFilenameSelector = mkSelector "representedFilename"
@@ -3360,6 +3591,14 @@ contentViewSelector = mkSelector "contentView"
 -- | @Selector@ for @setContentView:@
 setContentViewSelector :: Selector
 setContentViewSelector = mkSelector "setContentView:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @windowNumber@
 windowNumberSelector :: Selector
@@ -3512,6 +3751,10 @@ miniwindowTitleSelector = mkSelector "miniwindowTitle"
 -- | @Selector@ for @setMiniwindowTitle:@
 setMiniwindowTitleSelector :: Selector
 setMiniwindowTitleSelector = mkSelector "setMiniwindowTitle:"
+
+-- | @Selector@ for @dockTile@
+dockTileSelector :: Selector
+dockTileSelector = mkSelector "dockTile"
 
 -- | @Selector@ for @documentEdited@
 documentEditedSelector :: Selector
@@ -3745,6 +3988,10 @@ windowControllerSelector = mkSelector "windowController"
 setWindowControllerSelector :: Selector
 setWindowControllerSelector = mkSelector "setWindowController:"
 
+-- | @Selector@ for @sheets@
+sheetsSelector :: Selector
+sheetsSelector = mkSelector "sheets"
+
 -- | @Selector@ for @attachedSheet@
 attachedSheetSelector :: Selector
 attachedSheetSelector = mkSelector "attachedSheet"
@@ -3752,6 +3999,10 @@ attachedSheetSelector = mkSelector "attachedSheet"
 -- | @Selector@ for @sheet@
 sheetSelector :: Selector
 sheetSelector = mkSelector "sheet"
+
+-- | @Selector@ for @sheetParent@
+sheetParentSelector :: Selector
+sheetParentSelector = mkSelector "sheetParent"
 
 -- | @Selector@ for @childWindows@
 childWindowsSelector :: Selector
@@ -3765,6 +4016,22 @@ parentWindowSelector = mkSelector "parentWindow"
 setParentWindowSelector :: Selector
 setParentWindowSelector = mkSelector "setParentWindow:"
 
+-- | @Selector@ for @appearanceSource@
+appearanceSourceSelector :: Selector
+appearanceSourceSelector = mkSelector "appearanceSource"
+
+-- | @Selector@ for @setAppearanceSource:@
+setAppearanceSourceSelector :: Selector
+setAppearanceSourceSelector = mkSelector "setAppearanceSource:"
+
+-- | @Selector@ for @colorSpace@
+colorSpaceSelector :: Selector
+colorSpaceSelector = mkSelector "colorSpace"
+
+-- | @Selector@ for @setColorSpace:@
+setColorSpaceSelector :: Selector
+setColorSpaceSelector = mkSelector "setColorSpace:"
+
 -- | @Selector@ for @occlusionState@
 occlusionStateSelector :: Selector
 occlusionStateSelector = mkSelector "occlusionState"
@@ -3776,6 +4043,14 @@ titlebarSeparatorStyleSelector = mkSelector "titlebarSeparatorStyle"
 -- | @Selector@ for @setTitlebarSeparatorStyle:@
 setTitlebarSeparatorStyleSelector :: Selector
 setTitlebarSeparatorStyleSelector = mkSelector "setTitlebarSeparatorStyle:"
+
+-- | @Selector@ for @contentViewController@
+contentViewControllerSelector :: Selector
+contentViewControllerSelector = mkSelector "contentViewController"
+
+-- | @Selector@ for @setContentViewController:@
+setContentViewControllerSelector :: Selector
+setContentViewControllerSelector = mkSelector "setContentViewController:"
 
 -- | @Selector@ for @initialFirstResponder@
 initialFirstResponderSelector :: Selector
@@ -3849,6 +4124,18 @@ tabbingIdentifierSelector = mkSelector "tabbingIdentifier"
 setTabbingIdentifierSelector :: Selector
 setTabbingIdentifierSelector = mkSelector "setTabbingIdentifier:"
 
+-- | @Selector@ for @tabbedWindows@
+tabbedWindowsSelector :: Selector
+tabbedWindowsSelector = mkSelector "tabbedWindows"
+
+-- | @Selector@ for @tab@
+tabSelector :: Selector
+tabSelector = mkSelector "tab"
+
+-- | @Selector@ for @tabGroup@
+tabGroupSelector :: Selector
+tabGroupSelector = mkSelector "tabGroup"
+
 -- | @Selector@ for @hasActiveWindowSharingSession@
 hasActiveWindowSharingSessionSelector :: Selector
 hasActiveWindowSharingSessionSelector = mkSelector "hasActiveWindowSharingSession"
@@ -3864,6 +4151,14 @@ restorableSelector = mkSelector "restorable"
 -- | @Selector@ for @setRestorable:@
 setRestorableSelector :: Selector
 setRestorableSelector = mkSelector "setRestorable:"
+
+-- | @Selector@ for @restorationClass@
+restorationClassSelector :: Selector
+restorationClassSelector = mkSelector "restorationClass"
+
+-- | @Selector@ for @setRestorationClass:@
+setRestorationClassSelector :: Selector
+setRestorationClassSelector = mkSelector "setRestorationClass:"
 
 -- | @Selector@ for @hasCloseBox@
 hasCloseBoxSelector :: Selector
@@ -3901,6 +4196,10 @@ orderedIndexSelector = mkSelector "orderedIndex"
 setOrderedIndexSelector :: Selector
 setOrderedIndexSelector = mkSelector "setOrderedIndex:"
 
+-- | @Selector@ for @drawers@
+drawersSelector :: Selector
+drawersSelector = mkSelector "drawers"
+
 -- | @Selector@ for @flushWindowDisabled@
 flushWindowDisabledSelector :: Selector
 flushWindowDisabledSelector = mkSelector "flushWindowDisabled"
@@ -3912,6 +4211,10 @@ autodisplaySelector = mkSelector "autodisplay"
 -- | @Selector@ for @setAutodisplay:@
 setAutodisplaySelector :: Selector
 setAutodisplaySelector = mkSelector "setAutodisplay:"
+
+-- | @Selector@ for @graphicsContext@
+graphicsContextSelector :: Selector
+graphicsContextSelector = mkSelector "graphicsContext"
 
 -- | @Selector@ for @oneShot@
 oneShotSelector :: Selector
@@ -3940,6 +4243,10 @@ showsResizeIndicatorSelector = mkSelector "showsResizeIndicator"
 -- | @Selector@ for @setShowsResizeIndicator:@
 setShowsResizeIndicatorSelector :: Selector
 setShowsResizeIndicatorSelector = mkSelector "setShowsResizeIndicator:"
+
+-- | @Selector@ for @windowRef@
+windowRefSelector :: Selector
+windowRefSelector = mkSelector "windowRef"
 
 -- | @Selector@ for @areCursorRectsEnabled@
 areCursorRectsEnabledSelector :: Selector

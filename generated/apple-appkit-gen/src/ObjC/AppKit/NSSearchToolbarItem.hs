@@ -10,12 +10,20 @@ module ObjC.AppKit.NSSearchToolbarItem
   , IsNSSearchToolbarItem(..)
   , beginSearchInteraction
   , endSearchInteraction
+  , searchField
+  , setSearchField
+  , view
+  , setView
   , resignsFirstResponderWithCancel
   , setResignsFirstResponderWithCancel
   , preferredWidthForSearchField
   , setPreferredWidthForSearchField
   , beginSearchInteractionSelector
   , endSearchInteractionSelector
+  , searchFieldSelector
+  , setSearchFieldSelector
+  , viewSelector
+  , setViewSelector
   , resignsFirstResponderWithCancelSelector
   , setResignsFirstResponderWithCancelSelector
   , preferredWidthForSearchFieldSelector
@@ -52,6 +60,35 @@ beginSearchInteraction nsSearchToolbarItem  =
 endSearchInteraction :: IsNSSearchToolbarItem nsSearchToolbarItem => nsSearchToolbarItem -> IO ()
 endSearchInteraction nsSearchToolbarItem  =
     sendMsg nsSearchToolbarItem (mkSelector "endSearchInteraction") retVoid []
+
+-- | An @NSSearchField@ displayed in the toolbar item. While inside the toolbar item, the field properties and layout constraints are managed by the item. The field should be configured before assigned. The width constraint for the field could be updated after assigned. When set to nil, will reset to a search field with the default configuration.
+--
+-- ObjC selector: @- searchField@
+searchField :: IsNSSearchToolbarItem nsSearchToolbarItem => nsSearchToolbarItem -> IO (Id NSSearchField)
+searchField nsSearchToolbarItem  =
+    sendMsg nsSearchToolbarItem (mkSelector "searchField") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | An @NSSearchField@ displayed in the toolbar item. While inside the toolbar item, the field properties and layout constraints are managed by the item. The field should be configured before assigned. The width constraint for the field could be updated after assigned. When set to nil, will reset to a search field with the default configuration.
+--
+-- ObjC selector: @- setSearchField:@
+setSearchField :: (IsNSSearchToolbarItem nsSearchToolbarItem, IsNSSearchField value) => nsSearchToolbarItem -> value -> IO ()
+setSearchField nsSearchToolbarItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsSearchToolbarItem (mkSelector "setSearchField:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The base view property is owned by the toolbar item and not available for customization.
+--
+-- ObjC selector: @- view@
+view :: IsNSSearchToolbarItem nsSearchToolbarItem => nsSearchToolbarItem -> IO RawId
+view nsSearchToolbarItem  =
+    fmap (RawId . castPtr) $ sendMsg nsSearchToolbarItem (mkSelector "view") (retPtr retVoid) []
+
+-- | The base view property is owned by the toolbar item and not available for customization.
+--
+-- ObjC selector: @- setView:@
+setView :: IsNSSearchToolbarItem nsSearchToolbarItem => nsSearchToolbarItem -> RawId -> IO ()
+setView nsSearchToolbarItem  value =
+    sendMsg nsSearchToolbarItem (mkSelector "setView:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | When YES, the cancel button in the field resigns the first responder status of the search field as clearing the contents. The default is YES.
 --
@@ -92,6 +129,22 @@ beginSearchInteractionSelector = mkSelector "beginSearchInteraction"
 -- | @Selector@ for @endSearchInteraction@
 endSearchInteractionSelector :: Selector
 endSearchInteractionSelector = mkSelector "endSearchInteraction"
+
+-- | @Selector@ for @searchField@
+searchFieldSelector :: Selector
+searchFieldSelector = mkSelector "searchField"
+
+-- | @Selector@ for @setSearchField:@
+setSearchFieldSelector :: Selector
+setSearchFieldSelector = mkSelector "setSearchField:"
+
+-- | @Selector@ for @view@
+viewSelector :: Selector
+viewSelector = mkSelector "view"
+
+-- | @Selector@ for @setView:@
+setViewSelector :: Selector
+setViewSelector = mkSelector "setView:"
 
 -- | @Selector@ for @resignsFirstResponderWithCancel@
 resignsFirstResponderWithCancelSelector :: Selector

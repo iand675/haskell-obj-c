@@ -12,6 +12,9 @@ module ObjC.AppKit.NSAppearance
   , initWithCoder
   , bestMatchFromAppearancesWithNames
   , name
+  , currentAppearance
+  , setCurrentAppearance
+  , currentDrawingAppearance
   , allowsVibrancy
   , performAsCurrentDrawingAppearanceSelector
   , appearanceNamedSelector
@@ -19,6 +22,9 @@ module ObjC.AppKit.NSAppearance
   , initWithCoderSelector
   , bestMatchFromAppearancesWithNamesSelector
   , nameSelector
+  , currentAppearanceSelector
+  , setCurrentAppearanceSelector
+  , currentDrawingAppearanceSelector
   , allowsVibrancySelector
 
 
@@ -76,6 +82,28 @@ name :: IsNSAppearance nsAppearance => nsAppearance -> IO (Id NSString)
 name nsAppearance  =
     sendMsg nsAppearance (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @+ currentAppearance@
+currentAppearance :: IO (Id NSAppearance)
+currentAppearance  =
+  do
+    cls' <- getRequiredClass "NSAppearance"
+    sendClassMsg cls' (mkSelector "currentAppearance") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ setCurrentAppearance:@
+setCurrentAppearance :: IsNSAppearance value => value -> IO ()
+setCurrentAppearance value =
+  do
+    cls' <- getRequiredClass "NSAppearance"
+    withObjCPtr value $ \raw_value ->
+      sendClassMsg cls' (mkSelector "setCurrentAppearance:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @+ currentDrawingAppearance@
+currentDrawingAppearance :: IO (Id NSAppearance)
+currentDrawingAppearance  =
+  do
+    cls' <- getRequiredClass "NSAppearance"
+    sendClassMsg cls' (mkSelector "currentDrawingAppearance") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- allowsVibrancy@
 allowsVibrancy :: IsNSAppearance nsAppearance => nsAppearance -> IO Bool
 allowsVibrancy nsAppearance  =
@@ -108,6 +136,18 @@ bestMatchFromAppearancesWithNamesSelector = mkSelector "bestMatchFromAppearances
 -- | @Selector@ for @name@
 nameSelector :: Selector
 nameSelector = mkSelector "name"
+
+-- | @Selector@ for @currentAppearance@
+currentAppearanceSelector :: Selector
+currentAppearanceSelector = mkSelector "currentAppearance"
+
+-- | @Selector@ for @setCurrentAppearance:@
+setCurrentAppearanceSelector :: Selector
+setCurrentAppearanceSelector = mkSelector "setCurrentAppearance:"
+
+-- | @Selector@ for @currentDrawingAppearance@
+currentDrawingAppearanceSelector :: Selector
+currentDrawingAppearanceSelector = mkSelector "currentDrawingAppearance"
 
 -- | @Selector@ for @allowsVibrancy@
 allowsVibrancySelector :: Selector

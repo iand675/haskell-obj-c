@@ -21,6 +21,10 @@ module ObjC.GameKit.GKGameCenterViewController
   , setLeaderboardTimeScope
   , leaderboardIdentifier
   , setLeaderboardIdentifier
+  , leaderboardCategory
+  , setLeaderboardCategory
+  , gameCenterDelegate
+  , setGameCenterDelegate
   , initWithStateSelector
   , initWithLeaderboardID_playerScope_timeScopeSelector
   , initWithLeaderboard_playerScopeSelector
@@ -33,6 +37,10 @@ module ObjC.GameKit.GKGameCenterViewController
   , setLeaderboardTimeScopeSelector
   , leaderboardIdentifierSelector
   , setLeaderboardIdentifierSelector
+  , leaderboardCategorySelector
+  , setLeaderboardCategorySelector
+  , gameCenterDelegateSelector
+  , setGameCenterDelegateSelector
 
   -- * Enum types
   , GKGameCenterViewControllerState(GKGameCenterViewControllerState)
@@ -148,6 +156,27 @@ setLeaderboardIdentifier gkGameCenterViewController  value =
   withObjCPtr value $ \raw_value ->
       sendMsg gkGameCenterViewController (mkSelector "setLeaderboardIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- leaderboardCategory@
+leaderboardCategory :: IsGKGameCenterViewController gkGameCenterViewController => gkGameCenterViewController -> IO (Id NSString)
+leaderboardCategory gkGameCenterViewController  =
+    sendMsg gkGameCenterViewController (mkSelector "leaderboardCategory") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setLeaderboardCategory:@
+setLeaderboardCategory :: (IsGKGameCenterViewController gkGameCenterViewController, IsNSString value) => gkGameCenterViewController -> value -> IO ()
+setLeaderboardCategory gkGameCenterViewController  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg gkGameCenterViewController (mkSelector "setLeaderboardCategory:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- gameCenterDelegate@
+gameCenterDelegate :: IsGKGameCenterViewController gkGameCenterViewController => gkGameCenterViewController -> IO RawId
+gameCenterDelegate gkGameCenterViewController  =
+    fmap (RawId . castPtr) $ sendMsg gkGameCenterViewController (mkSelector "gameCenterDelegate") (retPtr retVoid) []
+
+-- | @- setGameCenterDelegate:@
+setGameCenterDelegate :: IsGKGameCenterViewController gkGameCenterViewController => gkGameCenterViewController -> RawId -> IO ()
+setGameCenterDelegate gkGameCenterViewController  value =
+    sendMsg gkGameCenterViewController (mkSelector "setGameCenterDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -199,4 +228,20 @@ leaderboardIdentifierSelector = mkSelector "leaderboardIdentifier"
 -- | @Selector@ for @setLeaderboardIdentifier:@
 setLeaderboardIdentifierSelector :: Selector
 setLeaderboardIdentifierSelector = mkSelector "setLeaderboardIdentifier:"
+
+-- | @Selector@ for @leaderboardCategory@
+leaderboardCategorySelector :: Selector
+leaderboardCategorySelector = mkSelector "leaderboardCategory"
+
+-- | @Selector@ for @setLeaderboardCategory:@
+setLeaderboardCategorySelector :: Selector
+setLeaderboardCategorySelector = mkSelector "setLeaderboardCategory:"
+
+-- | @Selector@ for @gameCenterDelegate@
+gameCenterDelegateSelector :: Selector
+gameCenterDelegateSelector = mkSelector "gameCenterDelegate"
+
+-- | @Selector@ for @setGameCenterDelegate:@
+setGameCenterDelegateSelector :: Selector
+setGameCenterDelegateSelector = mkSelector "setGameCenterDelegate:"
 

@@ -14,8 +14,10 @@ module ObjC.NetworkExtension.NEFilterSettings
   ( NEFilterSettings
   , IsNEFilterSettings(..)
   , initWithRules_defaultAction
+  , rules
   , defaultAction
   , initWithRules_defaultActionSelector
+  , rulesSelector
   , defaultActionSelector
 
   -- * Enum types
@@ -60,6 +62,15 @@ initWithRules_defaultAction neFilterSettings  rules defaultAction =
   withObjCPtr rules $ \raw_rules ->
       sendMsg neFilterSettings (mkSelector "initWithRules:defaultAction:") (retPtr retVoid) [argPtr (castPtr raw_rules :: Ptr ()), argCLong (coerce defaultAction)] >>= ownedObject . castPtr
 
+-- | rules
+--
+-- An NSArray containing an ordered list of NEFilterRuleObjects. After the NEFilterSettings are applied to the system,     each network flow is matched against these rules in order, and the NEFilterAction of the first rule that matches is taken:         NEFilterActionAllow: Allow the flow of data to proceed on its journey through the networking stack without consulting this provider.         NEFilterActionDrop: Drop the flow without consulting this provider.         NEFilterActionFilterData: Call this provider's handleNewFlow: method with the flow.
+--
+-- ObjC selector: @- rules@
+rules :: IsNEFilterSettings neFilterSettings => neFilterSettings -> IO (Id NSArray)
+rules neFilterSettings  =
+    sendMsg neFilterSettings (mkSelector "rules") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | defaultAction
 --
 -- An NEFilterAction containing the default action to take for flows of network data that do not match any of the specified rules.
@@ -76,6 +87,10 @@ defaultAction neFilterSettings  =
 -- | @Selector@ for @initWithRules:defaultAction:@
 initWithRules_defaultActionSelector :: Selector
 initWithRules_defaultActionSelector = mkSelector "initWithRules:defaultAction:"
+
+-- | @Selector@ for @rules@
+rulesSelector :: Selector
+rulesSelector = mkSelector "rules"
 
 -- | @Selector@ for @defaultAction@
 defaultActionSelector :: Selector

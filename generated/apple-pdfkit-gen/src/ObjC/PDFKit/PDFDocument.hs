@@ -50,6 +50,10 @@ module ObjC.PDFKit.PDFDocument
   , accessPermissions
   , permissionsStatus
   , string
+  , delegate
+  , setDelegate
+  , outlineRoot
+  , setOutlineRoot
   , pageCount
   , pageClass
   , isFinding
@@ -97,6 +101,10 @@ module ObjC.PDFKit.PDFDocument
   , accessPermissionsSelector
   , permissionsStatusSelector
   , stringSelector
+  , delegateSelector
+  , setDelegateSelector
+  , outlineRootSelector
+  , setOutlineRootSelector
   , pageCountSelector
   , pageClassSelector
   , isFindingSelector
@@ -397,6 +405,26 @@ string :: IsPDFDocument pdfDocument => pdfDocument -> IO (Id NSString)
 string pdfDocument  =
     sendMsg pdfDocument (mkSelector "string") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- delegate@
+delegate :: IsPDFDocument pdfDocument => pdfDocument -> IO RawId
+delegate pdfDocument  =
+    fmap (RawId . castPtr) $ sendMsg pdfDocument (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsPDFDocument pdfDocument => pdfDocument -> RawId -> IO ()
+setDelegate pdfDocument  value =
+    sendMsg pdfDocument (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- outlineRoot@
+outlineRoot :: IsPDFDocument pdfDocument => pdfDocument -> IO RawId
+outlineRoot pdfDocument  =
+    fmap (RawId . castPtr) $ sendMsg pdfDocument (mkSelector "outlineRoot") (retPtr retVoid) []
+
+-- | @- setOutlineRoot:@
+setOutlineRoot :: IsPDFDocument pdfDocument => pdfDocument -> RawId -> IO ()
+setOutlineRoot pdfDocument  value =
+    sendMsg pdfDocument (mkSelector "setOutlineRoot:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- pageCount@
 pageCount :: IsPDFDocument pdfDocument => pdfDocument -> IO CULong
 pageCount pdfDocument  =
@@ -592,6 +620,22 @@ permissionsStatusSelector = mkSelector "permissionsStatus"
 -- | @Selector@ for @string@
 stringSelector :: Selector
 stringSelector = mkSelector "string"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @outlineRoot@
+outlineRootSelector :: Selector
+outlineRootSelector = mkSelector "outlineRoot"
+
+-- | @Selector@ for @setOutlineRoot:@
+setOutlineRootSelector :: Selector
+setOutlineRootSelector = mkSelector "setOutlineRoot:"
 
 -- | @Selector@ for @pageCount@
 pageCountSelector :: Selector

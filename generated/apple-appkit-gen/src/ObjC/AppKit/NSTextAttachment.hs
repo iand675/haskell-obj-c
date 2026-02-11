@@ -18,6 +18,8 @@ module ObjC.AppKit.NSTextAttachment
   , setImage
   , fileWrapper
   , setFileWrapper
+  , attachmentCell
+  , setAttachmentCell
   , lineLayoutPadding
   , setLineLayoutPadding
   , allowsTextAttachmentView
@@ -35,6 +37,8 @@ module ObjC.AppKit.NSTextAttachment
   , setImageSelector
   , fileWrapperSelector
   , setFileWrapperSelector
+  , attachmentCellSelector
+  , setAttachmentCellSelector
   , lineLayoutPaddingSelector
   , setLineLayoutPaddingSelector
   , allowsTextAttachmentViewSelector
@@ -146,6 +150,16 @@ setFileWrapper nsTextAttachment  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsTextAttachment (mkSelector "setFileWrapper:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- attachmentCell@
+attachmentCell :: IsNSTextAttachment nsTextAttachment => nsTextAttachment -> IO RawId
+attachmentCell nsTextAttachment  =
+    fmap (RawId . castPtr) $ sendMsg nsTextAttachment (mkSelector "attachmentCell") (retPtr retVoid) []
+
+-- | @- setAttachmentCell:@
+setAttachmentCell :: IsNSTextAttachment nsTextAttachment => nsTextAttachment -> RawId -> IO ()
+setAttachmentCell nsTextAttachment  value =
+    sendMsg nsTextAttachment (mkSelector "setAttachmentCell:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- lineLayoutPadding@
 lineLayoutPadding :: IsNSTextAttachment nsTextAttachment => nsTextAttachment -> IO CDouble
 lineLayoutPadding nsTextAttachment  =
@@ -222,6 +236,14 @@ fileWrapperSelector = mkSelector "fileWrapper"
 -- | @Selector@ for @setFileWrapper:@
 setFileWrapperSelector :: Selector
 setFileWrapperSelector = mkSelector "setFileWrapper:"
+
+-- | @Selector@ for @attachmentCell@
+attachmentCellSelector :: Selector
+attachmentCellSelector = mkSelector "attachmentCell"
+
+-- | @Selector@ for @setAttachmentCell:@
+setAttachmentCellSelector :: Selector
+setAttachmentCellSelector = mkSelector "setAttachmentCell:"
 
 -- | @Selector@ for @lineLayoutPadding@
 lineLayoutPaddingSelector :: Selector

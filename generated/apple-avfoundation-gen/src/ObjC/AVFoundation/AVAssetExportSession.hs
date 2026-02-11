@@ -31,6 +31,7 @@ module ObjC.AVFoundation.AVAssetExportSession
   , exportPresetsCompatibleWithAsset
   , determineCompatibilityOfExportPreset_withAsset_outputFileType_completionHandler
   , presetName
+  , asset
   , outputFileType
   , setOutputFileType
   , outputURL
@@ -44,16 +45,21 @@ module ObjC.AVFoundation.AVAssetExportSession
   , progress
   , canPerformMultiplePassesOverSourceMediaData
   , setCanPerformMultiplePassesOverSourceMediaData
+  , directoryForTemporaryFiles
+  , setDirectoryForTemporaryFiles
   , audioTimePitchAlgorithm
   , setAudioTimePitchAlgorithm
   , audioMix
   , setAudioMix
   , videoComposition
   , setVideoComposition
+  , customVideoCompositor
   , audioTrackGroupHandling
   , setAudioTrackGroupHandling
   , metadata
   , setMetadata
+  , metadataItemFilter
+  , setMetadataItemFilter
   , estimatedOutputFileLength
   , fileLengthLimit
   , setFileLengthLimit
@@ -70,6 +76,7 @@ module ObjC.AVFoundation.AVAssetExportSession
   , exportPresetsCompatibleWithAssetSelector
   , determineCompatibilityOfExportPreset_withAsset_outputFileType_completionHandlerSelector
   , presetNameSelector
+  , assetSelector
   , outputFileTypeSelector
   , setOutputFileTypeSelector
   , outputURLSelector
@@ -83,16 +90,21 @@ module ObjC.AVFoundation.AVAssetExportSession
   , progressSelector
   , canPerformMultiplePassesOverSourceMediaDataSelector
   , setCanPerformMultiplePassesOverSourceMediaDataSelector
+  , directoryForTemporaryFilesSelector
+  , setDirectoryForTemporaryFilesSelector
   , audioTimePitchAlgorithmSelector
   , setAudioTimePitchAlgorithmSelector
   , audioMixSelector
   , setAudioMixSelector
   , videoCompositionSelector
   , setVideoCompositionSelector
+  , customVideoCompositorSelector
   , audioTrackGroupHandlingSelector
   , setAudioTrackGroupHandlingSelector
   , metadataSelector
   , setMetadataSelector
+  , metadataItemFilterSelector
+  , setMetadataItemFilterSelector
   , estimatedOutputFileLengthSelector
   , fileLengthLimitSelector
   , setFileLengthLimitSelector
@@ -293,6 +305,11 @@ presetName :: IsAVAssetExportSession avAssetExportSession => avAssetExportSessio
 presetName avAssetExportSession  =
     sendMsg avAssetExportSession (mkSelector "presetName") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- asset@
+asset :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO (Id AVAsset)
+asset avAssetExportSession  =
+    sendMsg avAssetExportSession (mkSelector "asset") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- outputFileType@
 outputFileType :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO (Id NSString)
 outputFileType avAssetExportSession  =
@@ -392,6 +409,37 @@ setCanPerformMultiplePassesOverSourceMediaData :: IsAVAssetExportSession avAsset
 setCanPerformMultiplePassesOverSourceMediaData avAssetExportSession  value =
     sendMsg avAssetExportSession (mkSelector "setCanPerformMultiplePassesOverSourceMediaData:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | directoryForTemporaryFiles
+--
+-- Specifies a directory that is suitable for containing temporary files generated during the export process
+--
+-- AVAssetExportSession may need to write temporary files when configured in certain ways, such as when canPerformMultiplePassesOverSourceMediaData is set to YES.  This property can be used to control where in the filesystem those temporary files are created.  All temporary files will be deleted when the export is completed, is canceled, or fails.
+--
+-- When the value of this property is nil, the export session will choose a suitable location when writing temporary files.  The default value is nil.
+--
+-- This property cannot be set after the export has started.  The export will fail if the URL points to a location that is not a directory, does not exist, is not on the local file system, or if a file cannot be created in this directory (for example, due to insufficient permissions or sandboxing restrictions).
+--
+-- ObjC selector: @- directoryForTemporaryFiles@
+directoryForTemporaryFiles :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO (Id NSURL)
+directoryForTemporaryFiles avAssetExportSession  =
+    sendMsg avAssetExportSession (mkSelector "directoryForTemporaryFiles") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | directoryForTemporaryFiles
+--
+-- Specifies a directory that is suitable for containing temporary files generated during the export process
+--
+-- AVAssetExportSession may need to write temporary files when configured in certain ways, such as when canPerformMultiplePassesOverSourceMediaData is set to YES.  This property can be used to control where in the filesystem those temporary files are created.  All temporary files will be deleted when the export is completed, is canceled, or fails.
+--
+-- When the value of this property is nil, the export session will choose a suitable location when writing temporary files.  The default value is nil.
+--
+-- This property cannot be set after the export has started.  The export will fail if the URL points to a location that is not a directory, does not exist, is not on the local file system, or if a file cannot be created in this directory (for example, due to insufficient permissions or sandboxing restrictions).
+--
+-- ObjC selector: @- setDirectoryForTemporaryFiles:@
+setDirectoryForTemporaryFiles :: (IsAVAssetExportSession avAssetExportSession, IsNSURL value) => avAssetExportSession -> value -> IO ()
+setDirectoryForTemporaryFiles avAssetExportSession  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avAssetExportSession (mkSelector "setDirectoryForTemporaryFiles:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- audioTimePitchAlgorithm@
 audioTimePitchAlgorithm :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO (Id NSString)
 audioTimePitchAlgorithm avAssetExportSession  =
@@ -425,6 +473,11 @@ setVideoComposition avAssetExportSession  value =
   withObjCPtr value $ \raw_value ->
       sendMsg avAssetExportSession (mkSelector "setVideoComposition:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- customVideoCompositor@
+customVideoCompositor :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO RawId
+customVideoCompositor avAssetExportSession  =
+    fmap (RawId . castPtr) $ sendMsg avAssetExportSession (mkSelector "customVideoCompositor") (retPtr retVoid) []
+
 -- | audioTrackGroupHandling
 --
 -- Defines export policy for handling alternate audio tracks
@@ -457,6 +510,17 @@ setMetadata :: (IsAVAssetExportSession avAssetExportSession, IsNSArray value) =>
 setMetadata avAssetExportSession  value =
   withObjCPtr value $ \raw_value ->
       sendMsg avAssetExportSession (mkSelector "setMetadata:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- metadataItemFilter@
+metadataItemFilter :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO (Id AVMetadataItemFilter)
+metadataItemFilter avAssetExportSession  =
+    sendMsg avAssetExportSession (mkSelector "metadataItemFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setMetadataItemFilter:@
+setMetadataItemFilter :: (IsAVAssetExportSession avAssetExportSession, IsAVMetadataItemFilter value) => avAssetExportSession -> value -> IO ()
+setMetadataItemFilter avAssetExportSession  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avAssetExportSession (mkSelector "setMetadataItemFilter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- estimatedOutputFileLength@
 estimatedOutputFileLength :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO CLong
@@ -530,6 +594,10 @@ determineCompatibilityOfExportPreset_withAsset_outputFileType_completionHandlerS
 presetNameSelector :: Selector
 presetNameSelector = mkSelector "presetName"
 
+-- | @Selector@ for @asset@
+assetSelector :: Selector
+assetSelector = mkSelector "asset"
+
 -- | @Selector@ for @outputFileType@
 outputFileTypeSelector :: Selector
 outputFileTypeSelector = mkSelector "outputFileType"
@@ -582,6 +650,14 @@ canPerformMultiplePassesOverSourceMediaDataSelector = mkSelector "canPerformMult
 setCanPerformMultiplePassesOverSourceMediaDataSelector :: Selector
 setCanPerformMultiplePassesOverSourceMediaDataSelector = mkSelector "setCanPerformMultiplePassesOverSourceMediaData:"
 
+-- | @Selector@ for @directoryForTemporaryFiles@
+directoryForTemporaryFilesSelector :: Selector
+directoryForTemporaryFilesSelector = mkSelector "directoryForTemporaryFiles"
+
+-- | @Selector@ for @setDirectoryForTemporaryFiles:@
+setDirectoryForTemporaryFilesSelector :: Selector
+setDirectoryForTemporaryFilesSelector = mkSelector "setDirectoryForTemporaryFiles:"
+
 -- | @Selector@ for @audioTimePitchAlgorithm@
 audioTimePitchAlgorithmSelector :: Selector
 audioTimePitchAlgorithmSelector = mkSelector "audioTimePitchAlgorithm"
@@ -606,6 +682,10 @@ videoCompositionSelector = mkSelector "videoComposition"
 setVideoCompositionSelector :: Selector
 setVideoCompositionSelector = mkSelector "setVideoComposition:"
 
+-- | @Selector@ for @customVideoCompositor@
+customVideoCompositorSelector :: Selector
+customVideoCompositorSelector = mkSelector "customVideoCompositor"
+
 -- | @Selector@ for @audioTrackGroupHandling@
 audioTrackGroupHandlingSelector :: Selector
 audioTrackGroupHandlingSelector = mkSelector "audioTrackGroupHandling"
@@ -621,6 +701,14 @@ metadataSelector = mkSelector "metadata"
 -- | @Selector@ for @setMetadata:@
 setMetadataSelector :: Selector
 setMetadataSelector = mkSelector "setMetadata:"
+
+-- | @Selector@ for @metadataItemFilter@
+metadataItemFilterSelector :: Selector
+metadataItemFilterSelector = mkSelector "metadataItemFilter"
+
+-- | @Selector@ for @setMetadataItemFilter:@
+setMetadataItemFilterSelector :: Selector
+setMetadataItemFilterSelector = mkSelector "setMetadataItemFilter:"
 
 -- | @Selector@ for @estimatedOutputFileLength@
 estimatedOutputFileLengthSelector :: Selector

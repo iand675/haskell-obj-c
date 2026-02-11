@@ -6,10 +6,14 @@
 module ObjC.Metal.MTLComputePassSampleBufferAttachmentDescriptor
   ( MTLComputePassSampleBufferAttachmentDescriptor
   , IsMTLComputePassSampleBufferAttachmentDescriptor(..)
+  , sampleBuffer
+  , setSampleBuffer
   , startOfEncoderSampleIndex
   , setStartOfEncoderSampleIndex
   , endOfEncoderSampleIndex
   , setEndOfEncoderSampleIndex
+  , sampleBufferSelector
+  , setSampleBufferSelector
   , startOfEncoderSampleIndexSelector
   , setStartOfEncoderSampleIndexSelector
   , endOfEncoderSampleIndexSelector
@@ -32,6 +36,24 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.Metal.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | sampleBuffer
+--
+-- The sample buffer to store samples for the compute-pass defined samples.If sampleBuffer is non-nil, the sample indices will be used to store samples intothe sample buffer.  If no sample buffer is provided, no samples will be taken.If any of the sample indices are specified as MTLCounterDontSample, no samplewill be taken for that action.
+--
+-- ObjC selector: @- sampleBuffer@
+sampleBuffer :: IsMTLComputePassSampleBufferAttachmentDescriptor mtlComputePassSampleBufferAttachmentDescriptor => mtlComputePassSampleBufferAttachmentDescriptor -> IO RawId
+sampleBuffer mtlComputePassSampleBufferAttachmentDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlComputePassSampleBufferAttachmentDescriptor (mkSelector "sampleBuffer") (retPtr retVoid) []
+
+-- | sampleBuffer
+--
+-- The sample buffer to store samples for the compute-pass defined samples.If sampleBuffer is non-nil, the sample indices will be used to store samples intothe sample buffer.  If no sample buffer is provided, no samples will be taken.If any of the sample indices are specified as MTLCounterDontSample, no samplewill be taken for that action.
+--
+-- ObjC selector: @- setSampleBuffer:@
+setSampleBuffer :: IsMTLComputePassSampleBufferAttachmentDescriptor mtlComputePassSampleBufferAttachmentDescriptor => mtlComputePassSampleBufferAttachmentDescriptor -> RawId -> IO ()
+setSampleBuffer mtlComputePassSampleBufferAttachmentDescriptor  value =
+    sendMsg mtlComputePassSampleBufferAttachmentDescriptor (mkSelector "setSampleBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | startOfEncoderSampleIndex
 --
@@ -80,6 +102,14 @@ setEndOfEncoderSampleIndex mtlComputePassSampleBufferAttachmentDescriptor  value
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @sampleBuffer@
+sampleBufferSelector :: Selector
+sampleBufferSelector = mkSelector "sampleBuffer"
+
+-- | @Selector@ for @setSampleBuffer:@
+setSampleBufferSelector :: Selector
+setSampleBufferSelector = mkSelector "setSampleBuffer:"
 
 -- | @Selector@ for @startOfEncoderSampleIndex@
 startOfEncoderSampleIndexSelector :: Selector

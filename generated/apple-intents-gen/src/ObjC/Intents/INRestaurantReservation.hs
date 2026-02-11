@@ -10,10 +10,12 @@ module ObjC.Intents.INRestaurantReservation
   , initWithItemReference_reservationNumber_bookingTime_reservationStatus_reservationHolderName_actions_URL_reservationDuration_partySize_restaurantLocation
   , initWithItemReference_reservationNumber_bookingTime_reservationStatus_reservationHolderName_actions_reservationDuration_partySize_restaurantLocation
   , reservationDuration
+  , partySize
   , restaurantLocation
   , initWithItemReference_reservationNumber_bookingTime_reservationStatus_reservationHolderName_actions_URL_reservationDuration_partySize_restaurantLocationSelector
   , initWithItemReference_reservationNumber_bookingTime_reservationStatus_reservationHolderName_actions_reservationDuration_partySize_restaurantLocationSelector
   , reservationDurationSelector
+  , partySizeSelector
   , restaurantLocationSelector
 
   -- * Enum types
@@ -75,6 +77,11 @@ reservationDuration :: IsINRestaurantReservation inRestaurantReservation => inRe
 reservationDuration inRestaurantReservation  =
     sendMsg inRestaurantReservation (mkSelector "reservationDuration") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- partySize@
+partySize :: IsINRestaurantReservation inRestaurantReservation => inRestaurantReservation -> IO (Id NSNumber)
+partySize inRestaurantReservation  =
+    sendMsg inRestaurantReservation (mkSelector "partySize") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- restaurantLocation@
 restaurantLocation :: IsINRestaurantReservation inRestaurantReservation => inRestaurantReservation -> IO (Id CLPlacemark)
 restaurantLocation inRestaurantReservation  =
@@ -95,6 +102,10 @@ initWithItemReference_reservationNumber_bookingTime_reservationStatus_reservatio
 -- | @Selector@ for @reservationDuration@
 reservationDurationSelector :: Selector
 reservationDurationSelector = mkSelector "reservationDuration"
+
+-- | @Selector@ for @partySize@
+partySizeSelector :: Selector
+partySizeSelector = mkSelector "partySize"
 
 -- | @Selector@ for @restaurantLocation@
 restaurantLocationSelector :: Selector

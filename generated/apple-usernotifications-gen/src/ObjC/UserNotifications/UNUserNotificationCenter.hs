@@ -18,6 +18,8 @@ module ObjC.UserNotifications.UNUserNotificationCenter
   , removeDeliveredNotificationsWithIdentifiers
   , removeAllDeliveredNotifications
   , setBadgeCount_withCompletionHandler
+  , delegate
+  , setDelegate
   , supportsContentExtensions
   , currentNotificationCenterSelector
   , initSelector
@@ -30,6 +32,8 @@ module ObjC.UserNotifications.UNUserNotificationCenter
   , removeDeliveredNotificationsWithIdentifiersSelector
   , removeAllDeliveredNotificationsSelector
   , setBadgeCount_withCompletionHandlerSelector
+  , delegateSelector
+  , setDelegateSelector
   , supportsContentExtensionsSelector
 
   -- * Enum types
@@ -123,6 +127,16 @@ setBadgeCount_withCompletionHandler :: IsUNUserNotificationCenter unUserNotifica
 setBadgeCount_withCompletionHandler unUserNotificationCenter  newBadgeCount completionHandler =
     sendMsg unUserNotificationCenter (mkSelector "setBadgeCount:withCompletionHandler:") retVoid [argCLong newBadgeCount, argPtr (castPtr completionHandler :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsUNUserNotificationCenter unUserNotificationCenter => unUserNotificationCenter -> IO RawId
+delegate unUserNotificationCenter  =
+    fmap (RawId . castPtr) $ sendMsg unUserNotificationCenter (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsUNUserNotificationCenter unUserNotificationCenter => unUserNotificationCenter -> RawId -> IO ()
+setDelegate unUserNotificationCenter  value =
+    sendMsg unUserNotificationCenter (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- supportsContentExtensions@
 supportsContentExtensions :: IsUNUserNotificationCenter unUserNotificationCenter => unUserNotificationCenter -> IO Bool
 supportsContentExtensions unUserNotificationCenter  =
@@ -175,6 +189,14 @@ removeAllDeliveredNotificationsSelector = mkSelector "removeAllDeliveredNotifica
 -- | @Selector@ for @setBadgeCount:withCompletionHandler:@
 setBadgeCount_withCompletionHandlerSelector :: Selector
 setBadgeCount_withCompletionHandlerSelector = mkSelector "setBadgeCount:withCompletionHandler:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @supportsContentExtensions@
 supportsContentExtensionsSelector :: Selector

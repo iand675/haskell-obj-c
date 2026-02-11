@@ -52,6 +52,7 @@ module ObjC.ITunesLibrary.ITLibMediaItem
   , fileType
   , skipCount
   , skipDate
+  , voiceOverLanguage
   , volumeAdjustment
   , volumeNormalizationEnergy
   , userDisabled
@@ -100,6 +101,7 @@ module ObjC.ITunesLibrary.ITLibMediaItem
   , fileTypeSelector
   , skipCountSelector
   , skipDateSelector
+  , voiceOverLanguageSelector
   , volumeAdjustmentSelector
   , volumeNormalizationEnergySelector
   , userDisabledSelector
@@ -459,6 +461,13 @@ skipDate :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id NSDate)
 skipDate itLibMediaItem  =
     sendMsg itLibMediaItem (mkSelector "skipDate") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The voice-over language of this media item
+--
+-- ObjC selector: @- voiceOverLanguage@
+voiceOverLanguage :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO RawId
+voiceOverLanguage itLibMediaItem  =
+    fmap (RawId . castPtr) $ sendMsg itLibMediaItem (mkSelector "voiceOverLanguage") (retPtr retVoid) []
+
 -- | The volume adjustment used for this media item if any.
 --
 -- ObjC selector: @- volumeAdjustment@
@@ -669,6 +678,10 @@ skipCountSelector = mkSelector "skipCount"
 -- | @Selector@ for @skipDate@
 skipDateSelector :: Selector
 skipDateSelector = mkSelector "skipDate"
+
+-- | @Selector@ for @voiceOverLanguage@
+voiceOverLanguageSelector :: Selector
+voiceOverLanguageSelector = mkSelector "voiceOverLanguage"
 
 -- | @Selector@ for @volumeAdjustment@
 volumeAdjustmentSelector :: Selector

@@ -7,6 +7,7 @@
 module ObjC.AppKit.NSATSTypesetter
   ( NSATSTypesetter
   , IsNSATSTypesetter(..)
+  , getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits
   , willSetLineFragmentRect_forGlyphRange_usedRect_baselineOffset
   , shouldBreakLineByWordBeforeCharacterAtIndex
   , shouldBreakLineByHyphenatingBeforeCharacterAtIndex
@@ -40,6 +41,7 @@ module ObjC.AppKit.NSATSTypesetter
   , paragraphSeparatorGlyphRange
   , layoutManager
   , currentTextContainer
+  , getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBitsSelector
   , willSetLineFragmentRect_forGlyphRange_usedRect_baselineOffsetSelector
   , shouldBreakLineByWordBeforeCharacterAtIndexSelector
   , shouldBreakLineByHyphenatingBeforeCharacterAtIndexSelector
@@ -105,6 +107,11 @@ import ObjC.AppKit.Internal.Classes
 import ObjC.Foundation.Internal.Structs
 import ObjC.AppKit.Internal.Enums
 import ObjC.Foundation.Internal.Classes
+
+-- | @- getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:@
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> NSRange -> RawId -> Ptr CULong -> Ptr NSGlyphInscription -> Ptr Bool -> IO CULong
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits nsatsTypesetter  glyphsRange glyphBuffer charIndexBuffer inscribeBuffer elasticBuffer =
+    sendMsg nsatsTypesetter (mkSelector "getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:") retCULong [argNSRange glyphsRange, argPtr (castPtr (unRawId glyphBuffer) :: Ptr ()), argPtr charIndexBuffer, argPtr inscribeBuffer, argPtr elasticBuffer]
 
 -- | @- willSetLineFragmentRect:forGlyphRange:usedRect:baselineOffset:@
 willSetLineFragmentRect_forGlyphRange_usedRect_baselineOffset :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> Ptr NSRect -> NSRange -> Ptr NSRect -> Ptr CDouble -> IO ()
@@ -279,6 +286,10 @@ currentTextContainer nsatsTypesetter  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:@
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBitsSelector :: Selector
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBitsSelector = mkSelector "getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:"
 
 -- | @Selector@ for @willSetLineFragmentRect:forGlyphRange:usedRect:baselineOffset:@
 willSetLineFragmentRect_forGlyphRange_usedRect_baselineOffsetSelector :: Selector

@@ -20,6 +20,7 @@ library
       ObjC.CoreWLAN.CWNetwork
       ObjC.CoreWLAN.CWNetworkProfile
       ObjC.CoreWLAN.CWWiFiClient
+      ObjC.CoreWLAN.Delegate.CWEventDelegate
       ObjC.CoreWLAN.Enums
       ObjC.CoreWLAN.Internal.Classes
       ObjC.CoreWLAN.Internal.Enums

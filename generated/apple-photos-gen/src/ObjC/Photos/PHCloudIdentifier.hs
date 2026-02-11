@@ -7,8 +7,10 @@ module ObjC.Photos.PHCloudIdentifier
   ( PHCloudIdentifier
   , IsPHCloudIdentifier(..)
   , initWithStringValue
+  , notFoundIdentifier
   , stringValue
   , initWithStringValueSelector
+  , notFoundIdentifierSelector
   , stringValueSelector
 
 
@@ -37,6 +39,15 @@ initWithStringValue phCloudIdentifier  stringValue =
   withObjCPtr stringValue $ \raw_stringValue ->
       sendMsg phCloudIdentifier (mkSelector "initWithStringValue:") (retPtr retVoid) [argPtr (castPtr raw_stringValue :: Ptr ())] >>= ownedObject . castPtr
 
+-- | DEPRECATED: If there is a failure to determine the global identifier for a local identifier, the notFoundIdentifier is provided in that array slot.
+--
+-- ObjC selector: @+ notFoundIdentifier@
+notFoundIdentifier :: IO (Id PHCloudIdentifier)
+notFoundIdentifier  =
+  do
+    cls' <- getRequiredClass "PHCloudIdentifier"
+    sendClassMsg cls' (mkSelector "notFoundIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- stringValue@
 stringValue :: IsPHCloudIdentifier phCloudIdentifier => phCloudIdentifier -> IO (Id NSString)
 stringValue phCloudIdentifier  =
@@ -49,6 +60,10 @@ stringValue phCloudIdentifier  =
 -- | @Selector@ for @initWithStringValue:@
 initWithStringValueSelector :: Selector
 initWithStringValueSelector = mkSelector "initWithStringValue:"
+
+-- | @Selector@ for @notFoundIdentifier@
+notFoundIdentifierSelector :: Selector
+notFoundIdentifierSelector = mkSelector "notFoundIdentifier"
 
 -- | @Selector@ for @stringValue@
 stringValueSelector :: Selector

@@ -7,8 +7,10 @@ module ObjC.MapKit.MKGradientPolylineRenderer
   ( MKGradientPolylineRenderer
   , IsMKGradientPolylineRenderer(..)
   , setColors_atLocations
+  , locations
   , colors
   , setColors_atLocationsSelector
+  , locationsSelector
   , colorsSelector
 
 
@@ -37,6 +39,11 @@ setColors_atLocations mkGradientPolylineRenderer  colors locations =
     withObjCPtr locations $ \raw_locations ->
         sendMsg mkGradientPolylineRenderer (mkSelector "setColors:atLocations:") retVoid [argPtr (castPtr raw_colors :: Ptr ()), argPtr (castPtr raw_locations :: Ptr ())]
 
+-- | @- locations@
+locations :: IsMKGradientPolylineRenderer mkGradientPolylineRenderer => mkGradientPolylineRenderer -> IO (Id NSArray)
+locations mkGradientPolylineRenderer  =
+    sendMsg mkGradientPolylineRenderer (mkSelector "locations") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- colors@
 colors :: IsMKGradientPolylineRenderer mkGradientPolylineRenderer => mkGradientPolylineRenderer -> IO (Id NSArray)
 colors mkGradientPolylineRenderer  =
@@ -49,6 +56,10 @@ colors mkGradientPolylineRenderer  =
 -- | @Selector@ for @setColors:atLocations:@
 setColors_atLocationsSelector :: Selector
 setColors_atLocationsSelector = mkSelector "setColors:atLocations:"
+
+-- | @Selector@ for @locations@
+locationsSelector :: Selector
+locationsSelector = mkSelector "locations"
 
 -- | @Selector@ for @colors@
 colorsSelector :: Selector

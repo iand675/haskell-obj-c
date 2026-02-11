@@ -10,8 +10,10 @@ module ObjC.CoreML.MLArrayBatchProvider
   , IsMLArrayBatchProvider(..)
   , initWithFeatureProviderArray
   , initWithDictionary_error
+  , array
   , initWithFeatureProviderArraySelector
   , initWithDictionary_errorSelector
+  , arraySelector
 
 
   ) where
@@ -48,6 +50,11 @@ initWithDictionary_error mlArrayBatchProvider  dictionary error_ =
     withObjCPtr error_ $ \raw_error_ ->
         sendMsg mlArrayBatchProvider (mkSelector "initWithDictionary:error:") (retPtr retVoid) [argPtr (castPtr raw_dictionary :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
 
+-- | @- array@
+array :: IsMLArrayBatchProvider mlArrayBatchProvider => mlArrayBatchProvider -> IO (Id NSArray)
+array mlArrayBatchProvider  =
+    sendMsg mlArrayBatchProvider (mkSelector "array") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -59,4 +66,8 @@ initWithFeatureProviderArraySelector = mkSelector "initWithFeatureProviderArray:
 -- | @Selector@ for @initWithDictionary:error:@
 initWithDictionary_errorSelector :: Selector
 initWithDictionary_errorSelector = mkSelector "initWithDictionary:error:"
+
+-- | @Selector@ for @array@
+arraySelector :: Selector
+arraySelector = mkSelector "array"
 

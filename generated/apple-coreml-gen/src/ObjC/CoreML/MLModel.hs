@@ -26,6 +26,7 @@ module ObjC.CoreML.MLModel
   , compileModelAtURL_completionHandler
   , modelDescription
   , configuration
+  , availableComputeDevices
   , modelWithContentsOfURL_errorSelector
   , modelWithContentsOfURL_configuration_errorSelector
   , loadContentsOfURL_configuration_completionHandlerSelector
@@ -42,6 +43,7 @@ module ObjC.CoreML.MLModel
   , compileModelAtURL_completionHandlerSelector
   , modelDescriptionSelector
   , configurationSelector
+  , availableComputeDevicesSelector
 
 
   ) where
@@ -268,6 +270,19 @@ configuration :: IsMLModel mlModel => mlModel -> IO (Id MLModelConfiguration)
 configuration mlModel  =
     sendMsg mlModel (mkSelector "configuration") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The list of available compute devices for CoreML.
+--
+-- Use the method to get the list of compute devices that MLModel's prediction can use.
+--
+-- Some compute devices on the hardware are exclusive to the domain ML frameworks such as Vision and SoundAnalysis and not available to CoreML. See also @MLComputeDevice.allComputeDevices@.
+--
+-- ObjC selector: @+ availableComputeDevices@
+availableComputeDevices :: IO (Id NSArray)
+availableComputeDevices  =
+  do
+    cls' <- getRequiredClass "MLModel"
+    sendClassMsg cls' (mkSelector "availableComputeDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -335,4 +350,8 @@ modelDescriptionSelector = mkSelector "modelDescription"
 -- | @Selector@ for @configuration@
 configurationSelector :: Selector
 configurationSelector = mkSelector "configuration"
+
+-- | @Selector@ for @availableComputeDevices@
+availableComputeDevicesSelector :: Selector
+availableComputeDevicesSelector = mkSelector "availableComputeDevices"
 

@@ -8,6 +8,8 @@ module ObjC.GameKit.GKChallenge
   ( GKChallenge
   , IsGKChallenge(..)
   , decline
+  , issuingPlayer
+  , receivingPlayer
   , state
   , issueDate
   , completionDate
@@ -15,6 +17,8 @@ module ObjC.GameKit.GKChallenge
   , issuingPlayerID
   , receivingPlayerID
   , declineSelector
+  , issuingPlayerSelector
+  , receivingPlayerSelector
   , stateSelector
   , issueDateSelector
   , completionDateSelector
@@ -53,6 +57,20 @@ import ObjC.Foundation.Internal.Classes
 decline :: IsGKChallenge gkChallenge => gkChallenge -> IO ()
 decline gkChallenge  =
     sendMsg gkChallenge (mkSelector "decline") retVoid []
+
+-- | The GKPlayer who issued the challenge
+--
+-- ObjC selector: @- issuingPlayer@
+issuingPlayer :: IsGKChallenge gkChallenge => gkChallenge -> IO (Id GKPlayer)
+issuingPlayer gkChallenge  =
+    sendMsg gkChallenge (mkSelector "issuingPlayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The GKPlayer who has received the challenge
+--
+-- ObjC selector: @- receivingPlayer@
+receivingPlayer :: IsGKChallenge gkChallenge => gkChallenge -> IO (Id GKPlayer)
+receivingPlayer gkChallenge  =
+    sendMsg gkChallenge (mkSelector "receivingPlayer") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | Current state of the challenge
 --
@@ -103,6 +121,14 @@ receivingPlayerID gkChallenge  =
 -- | @Selector@ for @decline@
 declineSelector :: Selector
 declineSelector = mkSelector "decline"
+
+-- | @Selector@ for @issuingPlayer@
+issuingPlayerSelector :: Selector
+issuingPlayerSelector = mkSelector "issuingPlayer"
+
+-- | @Selector@ for @receivingPlayer@
+receivingPlayerSelector :: Selector
+receivingPlayerSelector = mkSelector "receivingPlayer"
 
 -- | @Selector@ for @state@
 stateSelector :: Selector

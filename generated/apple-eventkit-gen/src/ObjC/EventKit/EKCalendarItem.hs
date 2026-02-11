@@ -10,15 +10,23 @@ module ObjC.EventKit.EKCalendarItem
   , removeAlarm
   , addRecurrenceRule
   , removeRecurrenceRule
+  , uuid
   , calendar
   , setCalendar
+  , calendarItemIdentifier
+  , calendarItemExternalIdentifier
   , title
   , setTitle
   , location
   , setLocation
   , notes
   , setNotes
+  , url
+  , setURL
   , lastModifiedDate
+  , creationDate
+  , timeZone
+  , setTimeZone
   , hasAlarms
   , hasRecurrenceRules
   , hasAttendees
@@ -30,15 +38,23 @@ module ObjC.EventKit.EKCalendarItem
   , removeAlarmSelector
   , addRecurrenceRuleSelector
   , removeRecurrenceRuleSelector
+  , uuidSelector
   , calendarSelector
   , setCalendarSelector
+  , calendarItemIdentifierSelector
+  , calendarItemExternalIdentifierSelector
   , titleSelector
   , setTitleSelector
   , locationSelector
   , setLocationSelector
   , notesSelector
   , setNotesSelector
+  , urlSelector
+  , setURLSelector
   , lastModifiedDateSelector
+  , creationDateSelector
+  , timeZoneSelector
+  , setTimeZoneSelector
   , hasAlarmsSelector
   , hasRecurrenceRulesSelector
   , hasAttendeesSelector
@@ -99,6 +115,15 @@ removeRecurrenceRule ekCalendarItem  rule =
   withObjCPtr rule $ \raw_rule ->
       sendMsg ekCalendarItem (mkSelector "removeRecurrenceRule:") retVoid [argPtr (castPtr raw_rule :: Ptr ())]
 
+-- | UUID
+--
+-- This is now deprecated; use calendarItemIdentifier instead.
+--
+-- ObjC selector: @- UUID@
+uuid :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO RawId
+uuid ekCalendarItem  =
+    fmap (RawId . castPtr) $ sendMsg ekCalendarItem (mkSelector "UUID") (retPtr retVoid) []
+
 -- | calendar
 --
 -- The calendar that this calendar item belongs to.
@@ -121,6 +146,36 @@ setCalendar :: (IsEKCalendarItem ekCalendarItem, IsEKCalendar value) => ekCalend
 setCalendar ekCalendarItem  value =
   withObjCPtr value $ \raw_value ->
       sendMsg ekCalendarItem (mkSelector "setCalendar:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | calendarItemIdentifier
+--
+-- A unique identifier for a calendar item.
+--
+-- Item identifiers are not sync-proof in that a full sync will lose                this identifier, so you should always have a back up plan for dealing                with a reminder that is no longer fetchable by this property, e.g. by title, etc.                Use [EKEventStore calendarItemWithIdentifier:] to look up the item by this value.
+--
+-- ObjC selector: @- calendarItemIdentifier@
+calendarItemIdentifier :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO RawId
+calendarItemIdentifier ekCalendarItem  =
+    fmap (RawId . castPtr) $ sendMsg ekCalendarItem (mkSelector "calendarItemIdentifier") (retPtr retVoid) []
+
+-- | calendarItemExternalIdentifier
+--
+-- A server-provided identifier for this calendar item
+--
+-- This identifier, provided by the server, allows you to reference the same event or reminder across                multiple devices. For calendars stored locally on the device, including the birthday calendar,                it simply passes through to calendarItemIdentifier.
+--
+-- This identifier is unique as of creation for every calendar item.  However, there are some                cases where duplicate copies of a calendar item can exist in the same database, including:                - A calendar item was imported from an ICS file into multiple calendars                - An event was created in a calendar shared with the user and the user was also invited to the event                - The user is a delegate of a calendar that also has this event                - A subscribed calendar was added to multiple accounts                In such cases, you should choose between calendar items based on other factors, such as                the calendar or source.
+--
+-- This identifier is the same for all occurrences of a recurring event. If you wish to differentiate                between occurrences, you may want to use the start date.
+--
+-- This may be nil for new calendar items that do not yet belong to a calendar.
+--
+-- In addition, there are two caveats for Exchange-based calendars:                - This identifier will be different between EventKit on iOS versus OS X                - This identifier will be different between devices for EKReminders
+--
+-- ObjC selector: @- calendarItemExternalIdentifier@
+calendarItemExternalIdentifier :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO RawId
+calendarItemExternalIdentifier ekCalendarItem  =
+    fmap (RawId . castPtr) $ sendMsg ekCalendarItem (mkSelector "calendarItemExternalIdentifier") (retPtr retVoid) []
 
 -- | title
 --
@@ -167,10 +222,35 @@ setNotes ekCalendarItem  value =
   withObjCPtr value $ \raw_value ->
       sendMsg ekCalendarItem (mkSelector "setNotes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- URL@
+url :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO RawId
+url ekCalendarItem  =
+    fmap (RawId . castPtr) $ sendMsg ekCalendarItem (mkSelector "URL") (retPtr retVoid) []
+
+-- | @- setURL:@
+setURL :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> RawId -> IO ()
+setURL ekCalendarItem  value =
+    sendMsg ekCalendarItem (mkSelector "setURL:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- lastModifiedDate@
 lastModifiedDate :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO (Id NSDate)
 lastModifiedDate ekCalendarItem  =
     sendMsg ekCalendarItem (mkSelector "lastModifiedDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- creationDate@
+creationDate :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO RawId
+creationDate ekCalendarItem  =
+    fmap (RawId . castPtr) $ sendMsg ekCalendarItem (mkSelector "creationDate") (retPtr retVoid) []
+
+-- | @- timeZone@
+timeZone :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO RawId
+timeZone ekCalendarItem  =
+    fmap (RawId . castPtr) $ sendMsg ekCalendarItem (mkSelector "timeZone") (retPtr retVoid) []
+
+-- | @- setTimeZone:@
+setTimeZone :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> RawId -> IO ()
+setTimeZone ekCalendarItem  value =
+    sendMsg ekCalendarItem (mkSelector "setTimeZone:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- hasAlarms@
 hasAlarms :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO Bool
@@ -228,6 +308,10 @@ addRecurrenceRuleSelector = mkSelector "addRecurrenceRule:"
 removeRecurrenceRuleSelector :: Selector
 removeRecurrenceRuleSelector = mkSelector "removeRecurrenceRule:"
 
+-- | @Selector@ for @UUID@
+uuidSelector :: Selector
+uuidSelector = mkSelector "UUID"
+
 -- | @Selector@ for @calendar@
 calendarSelector :: Selector
 calendarSelector = mkSelector "calendar"
@@ -235,6 +319,14 @@ calendarSelector = mkSelector "calendar"
 -- | @Selector@ for @setCalendar:@
 setCalendarSelector :: Selector
 setCalendarSelector = mkSelector "setCalendar:"
+
+-- | @Selector@ for @calendarItemIdentifier@
+calendarItemIdentifierSelector :: Selector
+calendarItemIdentifierSelector = mkSelector "calendarItemIdentifier"
+
+-- | @Selector@ for @calendarItemExternalIdentifier@
+calendarItemExternalIdentifierSelector :: Selector
+calendarItemExternalIdentifierSelector = mkSelector "calendarItemExternalIdentifier"
 
 -- | @Selector@ for @title@
 titleSelector :: Selector
@@ -260,9 +352,29 @@ notesSelector = mkSelector "notes"
 setNotesSelector :: Selector
 setNotesSelector = mkSelector "setNotes:"
 
+-- | @Selector@ for @URL@
+urlSelector :: Selector
+urlSelector = mkSelector "URL"
+
+-- | @Selector@ for @setURL:@
+setURLSelector :: Selector
+setURLSelector = mkSelector "setURL:"
+
 -- | @Selector@ for @lastModifiedDate@
 lastModifiedDateSelector :: Selector
 lastModifiedDateSelector = mkSelector "lastModifiedDate"
+
+-- | @Selector@ for @creationDate@
+creationDateSelector :: Selector
+creationDateSelector = mkSelector "creationDate"
+
+-- | @Selector@ for @timeZone@
+timeZoneSelector :: Selector
+timeZoneSelector = mkSelector "timeZone"
+
+-- | @Selector@ for @setTimeZone:@
+setTimeZoneSelector :: Selector
+setTimeZoneSelector = mkSelector "setTimeZone:"
 
 -- | @Selector@ for @hasAlarms@
 hasAlarmsSelector :: Selector

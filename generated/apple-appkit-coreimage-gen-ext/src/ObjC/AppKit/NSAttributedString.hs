@@ -7,9 +7,25 @@
 module ObjC.AppKit.NSAttributedString
   ( NSAttributedString
   , IsNSAttributedString(..)
+  , attributedStringWithAttachment
+  , textFileTypes
+  , textPasteboardTypes
+  , textUnfilteredFileTypes
+  , textUnfilteredPasteboardTypes
+  , initWithURL_documentAttributes
+  , initWithPath_documentAttributes
+  , urlAtIndex_effectiveRange
   , nextWordFromIndex_forward
   , itemNumberInTextList_atIndex
   , containsAttachments
+  , attributedStringWithAttachmentSelector
+  , textFileTypesSelector
+  , textPasteboardTypesSelector
+  , textUnfilteredFileTypesSelector
+  , textUnfilteredPasteboardTypesSelector
+  , initWithURL_documentAttributesSelector
+  , initWithPath_documentAttributesSelector
+  , urlAtIndex_effectiveRangeSelector
   , nextWordFromIndex_forwardSelector
   , itemNumberInTextList_atIndexSelector
   , containsAttachmentsSelector
@@ -41,6 +57,57 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.AppKit.Internal.Classes
 import ObjC.AppKit.Internal.Enums
 
+-- | @+ attributedStringWithAttachment:@
+attributedStringWithAttachment :: IsNSTextAttachment attachment => attachment -> IO RawId
+attributedStringWithAttachment attachment =
+  do
+    cls' <- getRequiredClass "NSAttributedString"
+    withObjCPtr attachment $ \raw_attachment ->
+      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "attributedStringWithAttachment:") (retPtr retVoid) [argPtr (castPtr raw_attachment :: Ptr ())]
+
+-- | @+ textFileTypes@
+textFileTypes :: IO RawId
+textFileTypes  =
+  do
+    cls' <- getRequiredClass "NSAttributedString"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "textFileTypes") (retPtr retVoid) []
+
+-- | @+ textPasteboardTypes@
+textPasteboardTypes :: IO RawId
+textPasteboardTypes  =
+  do
+    cls' <- getRequiredClass "NSAttributedString"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "textPasteboardTypes") (retPtr retVoid) []
+
+-- | @+ textUnfilteredFileTypes@
+textUnfilteredFileTypes :: IO RawId
+textUnfilteredFileTypes  =
+  do
+    cls' <- getRequiredClass "NSAttributedString"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "textUnfilteredFileTypes") (retPtr retVoid) []
+
+-- | @+ textUnfilteredPasteboardTypes@
+textUnfilteredPasteboardTypes :: IO RawId
+textUnfilteredPasteboardTypes  =
+  do
+    cls' <- getRequiredClass "NSAttributedString"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "textUnfilteredPasteboardTypes") (retPtr retVoid) []
+
+-- | @- initWithURL:documentAttributes:@
+initWithURL_documentAttributes :: IsNSAttributedString nsAttributedString => nsAttributedString -> RawId -> RawId -> IO (Id NSAttributedString)
+initWithURL_documentAttributes nsAttributedString  url dict =
+    sendMsg nsAttributedString (mkSelector "initWithURL:documentAttributes:") (retPtr retVoid) [argPtr (castPtr (unRawId url) :: Ptr ()), argPtr (castPtr (unRawId dict) :: Ptr ())] >>= ownedObject . castPtr
+
+-- | @- initWithPath:documentAttributes:@
+initWithPath_documentAttributes :: IsNSAttributedString nsAttributedString => nsAttributedString -> RawId -> RawId -> IO (Id NSAttributedString)
+initWithPath_documentAttributes nsAttributedString  path dict =
+    sendMsg nsAttributedString (mkSelector "initWithPath:documentAttributes:") (retPtr retVoid) [argPtr (castPtr (unRawId path) :: Ptr ()), argPtr (castPtr (unRawId dict) :: Ptr ())] >>= ownedObject . castPtr
+
+-- | @- URLAtIndex:effectiveRange:@
+urlAtIndex_effectiveRange :: IsNSAttributedString nsAttributedString => nsAttributedString -> CULong -> RawId -> IO RawId
+urlAtIndex_effectiveRange nsAttributedString  location effectiveRange =
+    fmap (RawId . castPtr) $ sendMsg nsAttributedString (mkSelector "URLAtIndex:effectiveRange:") (retPtr retVoid) [argCULong location, argPtr (castPtr (unRawId effectiveRange) :: Ptr ())]
+
 -- | @- nextWordFromIndex:forward:@
 nextWordFromIndex_forward :: IsNSAttributedString nsAttributedString => nsAttributedString -> CULong -> Bool -> IO CULong
 nextWordFromIndex_forward nsAttributedString  location isForward =
@@ -60,6 +127,38 @@ containsAttachments nsAttributedString  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @attributedStringWithAttachment:@
+attributedStringWithAttachmentSelector :: Selector
+attributedStringWithAttachmentSelector = mkSelector "attributedStringWithAttachment:"
+
+-- | @Selector@ for @textFileTypes@
+textFileTypesSelector :: Selector
+textFileTypesSelector = mkSelector "textFileTypes"
+
+-- | @Selector@ for @textPasteboardTypes@
+textPasteboardTypesSelector :: Selector
+textPasteboardTypesSelector = mkSelector "textPasteboardTypes"
+
+-- | @Selector@ for @textUnfilteredFileTypes@
+textUnfilteredFileTypesSelector :: Selector
+textUnfilteredFileTypesSelector = mkSelector "textUnfilteredFileTypes"
+
+-- | @Selector@ for @textUnfilteredPasteboardTypes@
+textUnfilteredPasteboardTypesSelector :: Selector
+textUnfilteredPasteboardTypesSelector = mkSelector "textUnfilteredPasteboardTypes"
+
+-- | @Selector@ for @initWithURL:documentAttributes:@
+initWithURL_documentAttributesSelector :: Selector
+initWithURL_documentAttributesSelector = mkSelector "initWithURL:documentAttributes:"
+
+-- | @Selector@ for @initWithPath:documentAttributes:@
+initWithPath_documentAttributesSelector :: Selector
+initWithPath_documentAttributesSelector = mkSelector "initWithPath:documentAttributes:"
+
+-- | @Selector@ for @URLAtIndex:effectiveRange:@
+urlAtIndex_effectiveRangeSelector :: Selector
+urlAtIndex_effectiveRangeSelector = mkSelector "URLAtIndex:effectiveRange:"
 
 -- | @Selector@ for @nextWordFromIndex:forward:@
 nextWordFromIndex_forwardSelector :: Selector

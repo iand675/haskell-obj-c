@@ -11,10 +11,14 @@ module ObjC.CloudKit.CKSubscription
   , new
   , subscriptionID
   , subscriptionType
+  , notificationInfo
+  , setNotificationInfo
   , initSelector
   , newSelector
   , subscriptionIDSelector
   , subscriptionTypeSelector
+  , notificationInfoSelector
+  , setNotificationInfoSelector
 
   -- * Enum types
   , CKSubscriptionType(CKSubscriptionType)
@@ -62,6 +66,25 @@ subscriptionType :: IsCKSubscription ckSubscription => ckSubscription -> IO CKSu
 subscriptionType ckSubscription  =
     fmap (coerce :: CLong -> CKSubscriptionType) $ sendMsg ckSubscription (mkSelector "subscriptionType") retCLong []
 
+-- | Describes the notification that will be sent when the subscription fires.
+--
+-- This property must be set to a non-nil value before saving the @CKSubscription.@
+--
+-- ObjC selector: @- notificationInfo@
+notificationInfo :: IsCKSubscription ckSubscription => ckSubscription -> IO (Id CKNotificationInfo)
+notificationInfo ckSubscription  =
+    sendMsg ckSubscription (mkSelector "notificationInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Describes the notification that will be sent when the subscription fires.
+--
+-- This property must be set to a non-nil value before saving the @CKSubscription.@
+--
+-- ObjC selector: @- setNotificationInfo:@
+setNotificationInfo :: (IsCKSubscription ckSubscription, IsCKNotificationInfo value) => ckSubscription -> value -> IO ()
+setNotificationInfo ckSubscription  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg ckSubscription (mkSelector "setNotificationInfo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -81,4 +104,12 @@ subscriptionIDSelector = mkSelector "subscriptionID"
 -- | @Selector@ for @subscriptionType@
 subscriptionTypeSelector :: Selector
 subscriptionTypeSelector = mkSelector "subscriptionType"
+
+-- | @Selector@ for @notificationInfo@
+notificationInfoSelector :: Selector
+notificationInfoSelector = mkSelector "notificationInfo"
+
+-- | @Selector@ for @setNotificationInfo:@
+setNotificationInfoSelector :: Selector
+setNotificationInfoSelector = mkSelector "setNotificationInfo:"
 

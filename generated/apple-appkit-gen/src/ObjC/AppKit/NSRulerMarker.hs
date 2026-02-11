@@ -23,6 +23,8 @@ module ObjC.AppKit.NSRulerMarker
   , removable
   , setRemovable
   , dragging
+  , representedObject
+  , setRepresentedObject
   , imageRectInRuler
   , thicknessRequiredInRuler
   , initWithRulerView_markerLocation_image_imageOriginSelector
@@ -42,6 +44,8 @@ module ObjC.AppKit.NSRulerMarker
   , removableSelector
   , setRemovableSelector
   , draggingSelector
+  , representedObjectSelector
+  , setRepresentedObjectSelector
   , imageRectInRulerSelector
   , thicknessRequiredInRulerSelector
 
@@ -158,6 +162,16 @@ dragging :: IsNSRulerMarker nsRulerMarker => nsRulerMarker -> IO Bool
 dragging nsRulerMarker  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsRulerMarker (mkSelector "dragging") retCULong []
 
+-- | @- representedObject@
+representedObject :: IsNSRulerMarker nsRulerMarker => nsRulerMarker -> IO RawId
+representedObject nsRulerMarker  =
+    fmap (RawId . castPtr) $ sendMsg nsRulerMarker (mkSelector "representedObject") (retPtr retVoid) []
+
+-- | @- setRepresentedObject:@
+setRepresentedObject :: IsNSRulerMarker nsRulerMarker => nsRulerMarker -> RawId -> IO ()
+setRepresentedObject nsRulerMarker  value =
+    sendMsg nsRulerMarker (mkSelector "setRepresentedObject:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | ************************ Ruler facilities *************************
 --
 -- ObjC selector: @- imageRectInRuler@
@@ -241,6 +255,14 @@ setRemovableSelector = mkSelector "setRemovable:"
 -- | @Selector@ for @dragging@
 draggingSelector :: Selector
 draggingSelector = mkSelector "dragging"
+
+-- | @Selector@ for @representedObject@
+representedObjectSelector :: Selector
+representedObjectSelector = mkSelector "representedObject"
+
+-- | @Selector@ for @setRepresentedObject:@
+setRepresentedObjectSelector :: Selector
+setRepresentedObjectSelector = mkSelector "setRepresentedObject:"
 
 -- | @Selector@ for @imageRectInRuler@
 imageRectInRulerSelector :: Selector

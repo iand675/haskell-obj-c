@@ -16,11 +16,15 @@ module ObjC.MetalKit.MTKMeshBuffer
   , init_
   , length_
   , allocator
+  , zone
+  , buffer
   , offset
   , type_
   , initSelector
   , lengthSelector
   , allocatorSelector
+  , zoneSelector
+  , bufferSelector
   , offsetSelector
   , typeSelector
 
@@ -77,6 +81,28 @@ allocator :: IsMTKMeshBuffer mtkMeshBuffer => mtkMeshBuffer -> IO (Id MTKMeshBuf
 allocator mtkMeshBuffer  =
     sendMsg mtkMeshBuffer (mkSelector "allocator") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | zone
+--
+-- Zone from which this buffer was created (if it was created from a zone).
+--
+-- A single MetalBuffer is allocated for each zone.  Each zone could have many MTKMeshBuffers, each with it's own offset.  If a MTKMeshBufferAllocator is used, Model I/O will attempt to load all vertex and index data of a single mesh into a single zone.  This allows the GPU to achieve a higher cache hit rate when drawing the mesh.  So although there maybe many MTKMeshBuffers for a model they will be backed with the same contigous MetalBuffer.
+--
+-- ObjC selector: @- zone@
+zone :: IsMTKMeshBuffer mtkMeshBuffer => mtkMeshBuffer -> IO RawId
+zone mtkMeshBuffer  =
+    fmap (RawId . castPtr) $ sendMsg mtkMeshBuffer (mkSelector "zone") (retPtr retVoid) []
+
+-- | buffer
+--
+-- Metal Buffer backing vertex/index data.
+--
+-- Many MTKMeshBuffers may reference the same buffer, but each with it's own offset.  (i.e. Many MTKMeshBuffers may be suballocated from a single buffer)
+--
+-- ObjC selector: @- buffer@
+buffer :: IsMTKMeshBuffer mtkMeshBuffer => mtkMeshBuffer -> IO RawId
+buffer mtkMeshBuffer  =
+    fmap (RawId . castPtr) $ sendMsg mtkMeshBuffer (mkSelector "buffer") (retPtr retVoid) []
+
 -- | offset
 --
 -- Byte offset of the data within the metal buffer.
@@ -110,6 +136,14 @@ lengthSelector = mkSelector "length"
 -- | @Selector@ for @allocator@
 allocatorSelector :: Selector
 allocatorSelector = mkSelector "allocator"
+
+-- | @Selector@ for @zone@
+zoneSelector :: Selector
+zoneSelector = mkSelector "zone"
+
+-- | @Selector@ for @buffer@
+bufferSelector :: Selector
+bufferSelector = mkSelector "buffer"
 
 -- | @Selector@ for @offset@
 offsetSelector :: Selector

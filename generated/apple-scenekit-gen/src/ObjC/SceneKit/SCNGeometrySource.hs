@@ -14,6 +14,7 @@ module ObjC.SceneKit.SCNGeometrySource
   , geometrySourceWithData_semantic_vectorCount_floatComponents_componentsPerVector_bytesPerComponent_dataOffset_dataStride
   , geometrySourceWithVertices_count
   , geometrySourceWithNormals_count
+  , geometrySourceWithTextureCoordinates_count
   , geometrySourceWithBuffer_vertexFormat_semantic_vertexCount_dataOffset_dataStride
   , data_
   , semantic
@@ -26,6 +27,7 @@ module ObjC.SceneKit.SCNGeometrySource
   , geometrySourceWithData_semantic_vectorCount_floatComponents_componentsPerVector_bytesPerComponent_dataOffset_dataStrideSelector
   , geometrySourceWithVertices_countSelector
   , geometrySourceWithNormals_countSelector
+  , geometrySourceWithTextureCoordinates_countSelector
   , geometrySourceWithBuffer_vertexFormat_semantic_vertexCount_dataOffset_dataStrideSelector
   , dataSelector
   , semanticSelector
@@ -175,6 +177,23 @@ geometrySourceWithNormals_count normals count =
     cls' <- getRequiredClass "SCNGeometrySource"
     sendClassMsg cls' (mkSelector "geometrySourceWithNormals:count:") (retPtr retVoid) [argPtr (unConst normals), argCLong count] >>= retainedObject . castPtr
 
+-- | geometrySourceWithTextureCoordinates:count:
+--
+-- Creates and returns a geometry source from texture coordinates stored in a buffer of CGPoint values.
+--
+-- @texcoord@ — The buffer of texture coordinates.
+--
+-- @count@ — The number of texture coordinate points.
+--
+-- Input texture coordinates are copied to an optimized data format. The actual format is described by the properties of the resulting instance.
+--
+-- ObjC selector: @+ geometrySourceWithTextureCoordinates:count:@
+geometrySourceWithTextureCoordinates_count :: Const RawId -> CLong -> IO (Id SCNGeometrySource)
+geometrySourceWithTextureCoordinates_count texcoord count =
+  do
+    cls' <- getRequiredClass "SCNGeometrySource"
+    sendClassMsg cls' (mkSelector "geometrySourceWithTextureCoordinates:count:") (retPtr retVoid) [argPtr (castPtr (unRawId (unConst texcoord)) :: Ptr ()), argCLong count] >>= retainedObject . castPtr
+
 -- | geometrySourceWithBuffer:semantic:vectorCount:floatComponents:componentsPerVector:bytesPerComponent:dataOffset:dataStride:
 --
 -- Creates and returns a geometry source from the given data and parameters.
@@ -298,6 +317,10 @@ geometrySourceWithVertices_countSelector = mkSelector "geometrySourceWithVertice
 -- | @Selector@ for @geometrySourceWithNormals:count:@
 geometrySourceWithNormals_countSelector :: Selector
 geometrySourceWithNormals_countSelector = mkSelector "geometrySourceWithNormals:count:"
+
+-- | @Selector@ for @geometrySourceWithTextureCoordinates:count:@
+geometrySourceWithTextureCoordinates_countSelector :: Selector
+geometrySourceWithTextureCoordinates_countSelector = mkSelector "geometrySourceWithTextureCoordinates:count:"
 
 -- | @Selector@ for @geometrySourceWithBuffer:vertexFormat:semantic:vertexCount:dataOffset:dataStride:@
 geometrySourceWithBuffer_vertexFormat_semantic_vertexCount_dataOffset_dataStrideSelector :: Selector

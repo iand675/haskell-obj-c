@@ -19,6 +19,8 @@ module ObjC.AppKit.NSColorWell
   , setColor
   , colorWellStyle
   , setColorWellStyle
+  , image
+  , setImage
   , pulldownTarget
   , setPulldownTarget
   , pulldownAction
@@ -39,6 +41,8 @@ module ObjC.AppKit.NSColorWell
   , setColorSelector
   , colorWellStyleSelector
   , setColorWellStyleSelector
+  , imageSelector
+  , setImageSelector
   , pulldownTargetSelector
   , setPulldownTargetSelector
   , pulldownActionSelector
@@ -137,6 +141,17 @@ colorWellStyle nsColorWell  =
 setColorWellStyle :: IsNSColorWell nsColorWell => nsColorWell -> NSColorWellStyle -> IO ()
 setColorWellStyle nsColorWell  value =
     sendMsg nsColorWell (mkSelector "setColorWellStyle:") retVoid [argCLong (coerce value)]
+
+-- | @- image@
+image :: IsNSColorWell nsColorWell => nsColorWell -> IO (Id NSImage)
+image nsColorWell  =
+    sendMsg nsColorWell (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setImage:@
+setImage :: (IsNSColorWell nsColorWell, IsNSImage value) => nsColorWell -> value -> IO ()
+setImage nsColorWell  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsColorWell (mkSelector "setImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | The image that appears on the button portion of the expanded control. This property only applicable when @colorWellStyle@ is @NSColorWellStyleExpanded@.
 --
@@ -245,6 +260,14 @@ colorWellStyleSelector = mkSelector "colorWellStyle"
 -- | @Selector@ for @setColorWellStyle:@
 setColorWellStyleSelector :: Selector
 setColorWellStyleSelector = mkSelector "setColorWellStyle:"
+
+-- | @Selector@ for @image@
+imageSelector :: Selector
+imageSelector = mkSelector "image"
+
+-- | @Selector@ for @setImage:@
+setImageSelector :: Selector
+setImageSelector = mkSelector "setImage:"
 
 -- | @Selector@ for @pulldownTarget@
 pulldownTargetSelector :: Selector

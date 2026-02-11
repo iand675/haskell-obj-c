@@ -6,7 +6,9 @@
 module ObjC.Metal.MTLComputePipelineReflection
   ( MTLComputePipelineReflection
   , IsMTLComputePipelineReflection(..)
+  , bindings
   , arguments
+  , bindingsSelector
   , argumentsSelector
 
 
@@ -27,6 +29,11 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.Metal.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | @- bindings@
+bindings :: IsMTLComputePipelineReflection mtlComputePipelineReflection => mtlComputePipelineReflection -> IO (Id NSArray)
+bindings mtlComputePipelineReflection  =
+    sendMsg mtlComputePipelineReflection (mkSelector "bindings") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- arguments@
 arguments :: IsMTLComputePipelineReflection mtlComputePipelineReflection => mtlComputePipelineReflection -> IO (Id NSArray)
 arguments mtlComputePipelineReflection  =
@@ -35,6 +42,10 @@ arguments mtlComputePipelineReflection  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @bindings@
+bindingsSelector :: Selector
+bindingsSelector = mkSelector "bindings"
 
 -- | @Selector@ for @arguments@
 argumentsSelector :: Selector

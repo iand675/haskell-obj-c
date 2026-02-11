@@ -24,6 +24,8 @@ module ObjC.Metal.MTLAccelerationStructureMotionCurveGeometryDescriptor
   , setRadiusFormat
   , radiusStride
   , setRadiusStride
+  , indexBuffer
+  , setIndexBuffer
   , indexBufferOffset
   , setIndexBufferOffset
   , indexType
@@ -53,6 +55,8 @@ module ObjC.Metal.MTLAccelerationStructureMotionCurveGeometryDescriptor
   , setRadiusFormatSelector
   , radiusStrideSelector
   , setRadiusStrideSelector
+  , indexBufferSelector
+  , setIndexBufferSelector
   , indexBufferOffsetSelector
   , setIndexBufferOffsetSelector
   , indexTypeSelector
@@ -265,6 +269,20 @@ setRadiusStride :: IsMTLAccelerationStructureMotionCurveGeometryDescriptor mtlAc
 setRadiusStride mtlAccelerationStructureMotionCurveGeometryDescriptor  value =
     sendMsg mtlAccelerationStructureMotionCurveGeometryDescriptor (mkSelector "setRadiusStride:") retVoid [argCULong value]
 
+-- | Index buffer containing references to control points in the control point buffer. Must not be nil.
+--
+-- ObjC selector: @- indexBuffer@
+indexBuffer :: IsMTLAccelerationStructureMotionCurveGeometryDescriptor mtlAccelerationStructureMotionCurveGeometryDescriptor => mtlAccelerationStructureMotionCurveGeometryDescriptor -> IO RawId
+indexBuffer mtlAccelerationStructureMotionCurveGeometryDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlAccelerationStructureMotionCurveGeometryDescriptor (mkSelector "indexBuffer") (retPtr retVoid) []
+
+-- | Index buffer containing references to control points in the control point buffer. Must not be nil.
+--
+-- ObjC selector: @- setIndexBuffer:@
+setIndexBuffer :: IsMTLAccelerationStructureMotionCurveGeometryDescriptor mtlAccelerationStructureMotionCurveGeometryDescriptor => mtlAccelerationStructureMotionCurveGeometryDescriptor -> RawId -> IO ()
+setIndexBuffer mtlAccelerationStructureMotionCurveGeometryDescriptor  value =
+    sendMsg mtlAccelerationStructureMotionCurveGeometryDescriptor (mkSelector "setIndexBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Index buffer offset. Must be a multiple of the index data type size and must be aligned to both the index data type's alignment and the platform's buffer offset alignment.
 --
 -- ObjC selector: @- indexBufferOffset@
@@ -426,6 +444,14 @@ radiusStrideSelector = mkSelector "radiusStride"
 -- | @Selector@ for @setRadiusStride:@
 setRadiusStrideSelector :: Selector
 setRadiusStrideSelector = mkSelector "setRadiusStride:"
+
+-- | @Selector@ for @indexBuffer@
+indexBufferSelector :: Selector
+indexBufferSelector = mkSelector "indexBuffer"
+
+-- | @Selector@ for @setIndexBuffer:@
+setIndexBufferSelector :: Selector
+setIndexBufferSelector = mkSelector "setIndexBuffer:"
 
 -- | @Selector@ for @indexBufferOffset@
 indexBufferOffsetSelector :: Selector

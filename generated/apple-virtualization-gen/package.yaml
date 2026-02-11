@@ -17,6 +17,13 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.Virtualization.Delegate.VZGraphicsDisplayObserver
+  - ObjC.Virtualization.Delegate.VZNetworkBlockDeviceStorageDeviceAttachmentDelegate
+  - ObjC.Virtualization.Delegate.VZUSBDevice
+  - ObjC.Virtualization.Delegate.VZUSBDeviceConfiguration
+  - ObjC.Virtualization.Delegate.VZVirtioConsoleDeviceDelegate
+  - ObjC.Virtualization.Delegate.VZVirtioSocketListenerDelegate
+  - ObjC.Virtualization.Delegate.VZVirtualMachineDelegate
   - ObjC.Virtualization.Enums
   - ObjC.Virtualization.Internal.Classes
   - ObjC.Virtualization.Internal.Enums

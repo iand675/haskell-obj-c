@@ -12,6 +12,7 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.SafetyKit.Delegate.SACrashDetectionDelegate
       ObjC.SafetyKit.Enums
       ObjC.SafetyKit.Internal.Classes
       ObjC.SafetyKit.Internal.Enums

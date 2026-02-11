@@ -30,7 +30,10 @@ module ObjC.AVFoundation.AVURLAsset
   , httpSessionIdentifier
   , mayRequireContentKeysForMediaDataProcessing
   , mediaExtensionProperties
+  , sidecarURL
   , variants
+  , assetCache
+  , resourceLoader
   , initSelector
   , newSelector
   , audiovisualTypesSelector
@@ -45,7 +48,10 @@ module ObjC.AVFoundation.AVURLAsset
   , httpSessionIdentifierSelector
   , mayRequireContentKeysForMediaDataProcessingSelector
   , mediaExtensionPropertiesSelector
+  , sidecarURLSelector
   , variantsSelector
+  , assetCacheSelector
+  , resourceLoaderSelector
 
 
   ) where
@@ -213,6 +219,15 @@ mediaExtensionProperties :: IsAVURLAsset avurlAsset => avurlAsset -> IO (Id AVMe
 mediaExtensionProperties avurlAsset  =
     sendMsg avurlAsset (mkSelector "mediaExtensionProperties") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The sidecar URL used by the MediaExtension.
+--
+-- The sidecar URL is returned only if the MediaExtension format reader supports sidecar files, and implements this property [MEFileInfo setSidecarFilename:]. Will return nil otherwise.
+--
+-- ObjC selector: @- sidecarURL@
+sidecarURL :: IsAVURLAsset avurlAsset => avurlAsset -> IO (Id NSURL)
+sidecarURL avurlAsset  =
+    sendMsg avurlAsset (mkSelector "sidecarURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Provides an array of AVAssetVariants contained in the asset
 --
 -- Some variants may not be playable according to the current device configuration.
@@ -221,6 +236,24 @@ mediaExtensionProperties avurlAsset  =
 variants :: IsAVURLAsset avurlAsset => avurlAsset -> IO (Id NSArray)
 variants avurlAsset  =
     sendMsg avurlAsset (mkSelector "variants") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Provides access to an instance of AVAssetCache to use for inspection of locally cached media data. Will be nil if an asset has not been configured to store or access media data from disk.
+--
+-- ObjC selector: @- assetCache@
+assetCache :: IsAVURLAsset avurlAsset => avurlAsset -> IO (Id AVAssetCache)
+assetCache avurlAsset  =
+    sendMsg avurlAsset (mkSelector "assetCache") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Provides access to an instance of AVAssetResourceLoader, which offers limited control over the handling of URLs that may be loaded in the course of performing operations on the asset, such as playback.
+--
+-- The loading of file URLs cannot be mediated via use of AVAssetResourceLoader.
+--
+-- Note that copies of an AVAsset will vend the same instance of AVAssetResourceLoader.
+--
+-- ObjC selector: @- resourceLoader@
+resourceLoader :: IsAVURLAsset avurlAsset => avurlAsset -> IO (Id AVAssetResourceLoader)
+resourceLoader avurlAsset  =
+    sendMsg avurlAsset (mkSelector "resourceLoader") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -282,7 +315,19 @@ mayRequireContentKeysForMediaDataProcessingSelector = mkSelector "mayRequireCont
 mediaExtensionPropertiesSelector :: Selector
 mediaExtensionPropertiesSelector = mkSelector "mediaExtensionProperties"
 
+-- | @Selector@ for @sidecarURL@
+sidecarURLSelector :: Selector
+sidecarURLSelector = mkSelector "sidecarURL"
+
 -- | @Selector@ for @variants@
 variantsSelector :: Selector
 variantsSelector = mkSelector "variants"
+
+-- | @Selector@ for @assetCache@
+assetCacheSelector :: Selector
+assetCacheSelector = mkSelector "assetCache"
+
+-- | @Selector@ for @resourceLoader@
+resourceLoaderSelector :: Selector
+resourceLoaderSelector = mkSelector "resourceLoader"
 

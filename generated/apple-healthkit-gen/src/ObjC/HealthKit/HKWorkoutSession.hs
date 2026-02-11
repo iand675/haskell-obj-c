@@ -30,6 +30,8 @@ module ObjC.HealthKit.HKWorkoutSession
   , activityType
   , locationType
   , workoutConfiguration
+  , delegate
+  , setDelegate
   , state
   , type_
   , startDate
@@ -54,6 +56,8 @@ module ObjC.HealthKit.HKWorkoutSession
   , activityTypeSelector
   , locationTypeSelector
   , workoutConfigurationSelector
+  , delegateSelector
+  , setDelegateSelector
   , stateSelector
   , typeSelector
   , startDateSelector
@@ -398,6 +402,28 @@ workoutConfiguration :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession 
 workoutConfiguration hkWorkoutSession  =
     sendMsg hkWorkoutSession (mkSelector "workoutConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | delegate
+--
+-- The session delegate, which receives
+--
+-- The session delegate object is the one implementing the methods that get called when the session                state changes or a failure occurs in the session.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> IO RawId
+delegate hkWorkoutSession  =
+    fmap (RawId . castPtr) $ sendMsg hkWorkoutSession (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- The session delegate, which receives
+--
+-- The session delegate object is the one implementing the methods that get called when the session                state changes or a failure occurs in the session.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> RawId -> IO ()
+setDelegate hkWorkoutSession  value =
+    sendMsg hkWorkoutSession (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | state
 --
 -- Indicates the current state of the workout session.
@@ -532,6 +558,14 @@ locationTypeSelector = mkSelector "locationType"
 -- | @Selector@ for @workoutConfiguration@
 workoutConfigurationSelector :: Selector
 workoutConfigurationSelector = mkSelector "workoutConfiguration"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @state@
 stateSelector :: Selector

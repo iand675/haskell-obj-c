@@ -16,6 +16,7 @@ module ObjC.SoundAnalysis.SNClassifySoundRequest
   , new
   , overlapFactor
   , setOverlapFactor
+  , windowDurationConstraint
   , knownClassifications
   , initWithMLModel_errorSelector
   , initWithClassifierIdentifier_errorSelector
@@ -23,6 +24,7 @@ module ObjC.SoundAnalysis.SNClassifySoundRequest
   , newSelector
   , overlapFactorSelector
   , setOverlapFactorSelector
+  , windowDurationConstraintSelector
   , knownClassificationsSelector
 
 
@@ -106,6 +108,15 @@ setOverlapFactor :: IsSNClassifySoundRequest snClassifySoundRequest => snClassif
 setOverlapFactor snClassifySoundRequest  value =
     sendMsg snClassifySoundRequest (mkSelector "setOverlapFactor:") retVoid [argCDouble value]
 
+-- | The constraints governing permitted analysis window durations.
+--
+-- The analysis window duration is controlled using the @windowDuration@ property. If an analysis window duration is selected which does not meet the necessary constraints, it will automatically be adjusted to meet these constraints (see @windowDuration@ for more information regarding how this adjustment will be applied).
+--
+-- ObjC selector: @- windowDurationConstraint@
+windowDurationConstraint :: IsSNClassifySoundRequest snClassifySoundRequest => snClassifySoundRequest -> IO (Id SNTimeDurationConstraint)
+windowDurationConstraint snClassifySoundRequest  =
+    sendMsg snClassifySoundRequest (mkSelector "windowDurationConstraint") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Lists all labels that can be produced by this request.
 --
 -- - Returns: An array of strings containing all sound identifiers which can be produced by this request.
@@ -142,6 +153,10 @@ overlapFactorSelector = mkSelector "overlapFactor"
 -- | @Selector@ for @setOverlapFactor:@
 setOverlapFactorSelector :: Selector
 setOverlapFactorSelector = mkSelector "setOverlapFactor:"
+
+-- | @Selector@ for @windowDurationConstraint@
+windowDurationConstraintSelector :: Selector
+windowDurationConstraintSelector = mkSelector "windowDurationConstraint"
 
 -- | @Selector@ for @knownClassifications@
 knownClassificationsSelector :: Selector

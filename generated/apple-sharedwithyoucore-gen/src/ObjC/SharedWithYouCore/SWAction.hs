@@ -7,7 +7,7 @@ module ObjC.SharedWithYouCore.SWAction
   ( SWAction
   , IsSWAction(..)
   , fulfill
-  , fail
+  , fail_
   , uuid
   , complete
   , fulfillSelector
@@ -39,8 +39,8 @@ fulfill swAction  =
     sendMsg swAction (mkSelector "fulfill") retVoid []
 
 -- | @- fail@
-fail :: IsSWAction swAction => swAction -> IO ()
-fail swAction  =
+fail_ :: IsSWAction swAction => swAction -> IO ()
+fail_ swAction  =
     sendMsg swAction (mkSelector "fail") retVoid []
 
 -- | @- uuid@

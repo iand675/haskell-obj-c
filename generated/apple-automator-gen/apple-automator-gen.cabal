@@ -20,6 +20,7 @@ library
       ObjC.Automator.AMWorkflowController
       ObjC.Automator.AMWorkflowView
       ObjC.Automator.AMWorkspace
+      ObjC.Automator.Delegate.AMWorkflowControllerDelegate
       ObjC.Automator.Enums
       ObjC.Automator.Internal.Classes
       ObjC.Automator.Internal.Enums

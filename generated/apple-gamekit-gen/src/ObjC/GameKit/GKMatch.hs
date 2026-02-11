@@ -17,7 +17,12 @@ module ObjC.GameKit.GKMatch
   , voiceChatWithName
   , chooseBestHostPlayerWithCompletionHandler
   , sendData_toPlayers_withDataMode_error
+  , players
+  , delegate
+  , setDelegate
   , expectedPlayerCount
+  , properties
+  , playerProperties
   , playerIDs
   , sendData_toPlayers_dataMode_errorSelector
   , sendDataToAllPlayers_withDataMode_errorSelector
@@ -27,7 +32,12 @@ module ObjC.GameKit.GKMatch
   , voiceChatWithNameSelector
   , chooseBestHostPlayerWithCompletionHandlerSelector
   , sendData_toPlayers_withDataMode_errorSelector
+  , playersSelector
+  , delegateSelector
+  , setDelegateSelector
   , expectedPlayerCountSelector
+  , propertiesSelector
+  , playerPropertiesSelector
   , playerIDsSelector
 
   -- * Enum types
@@ -118,10 +128,39 @@ sendData_toPlayers_withDataMode_error gkMatch  data_ playerIDs mode error_ =
       withObjCPtr error_ $ \raw_error_ ->
           fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkMatch (mkSelector "sendData:toPlayers:withDataMode:error:") retCULong [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_playerIDs :: Ptr ()), argCLong (coerce mode), argPtr (castPtr raw_error_ :: Ptr ())]
 
+-- | @- players@
+players :: IsGKMatch gkMatch => gkMatch -> IO (Id NSArray)
+players gkMatch  =
+    sendMsg gkMatch (mkSelector "players") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | all the GKPlayers in the match
+--
+-- ObjC selector: @- delegate@
+delegate :: IsGKMatch gkMatch => gkMatch -> IO RawId
+delegate gkMatch  =
+    fmap (RawId . castPtr) $ sendMsg gkMatch (mkSelector "delegate") (retPtr retVoid) []
+
+-- | all the GKPlayers in the match
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsGKMatch gkMatch => gkMatch -> RawId -> IO ()
+setDelegate gkMatch  value =
+    sendMsg gkMatch (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- expectedPlayerCount@
 expectedPlayerCount :: IsGKMatch gkMatch => gkMatch -> IO CULong
 expectedPlayerCount gkMatch  =
     sendMsg gkMatch (mkSelector "expectedPlayerCount") retCULong []
+
+-- | @- properties@
+properties :: IsGKMatch gkMatch => gkMatch -> IO RawId
+properties gkMatch  =
+    fmap (RawId . castPtr) $ sendMsg gkMatch (mkSelector "properties") (retPtr retVoid) []
+
+-- | @- playerProperties@
+playerProperties :: IsGKMatch gkMatch => gkMatch -> IO (Id NSDictionary)
+playerProperties gkMatch  =
+    sendMsg gkMatch (mkSelector "playerProperties") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | * This property is obsolete.  **
 --
@@ -166,9 +205,29 @@ chooseBestHostPlayerWithCompletionHandlerSelector = mkSelector "chooseBestHostPl
 sendData_toPlayers_withDataMode_errorSelector :: Selector
 sendData_toPlayers_withDataMode_errorSelector = mkSelector "sendData:toPlayers:withDataMode:error:"
 
+-- | @Selector@ for @players@
+playersSelector :: Selector
+playersSelector = mkSelector "players"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @expectedPlayerCount@
 expectedPlayerCountSelector :: Selector
 expectedPlayerCountSelector = mkSelector "expectedPlayerCount"
+
+-- | @Selector@ for @properties@
+propertiesSelector :: Selector
+propertiesSelector = mkSelector "properties"
+
+-- | @Selector@ for @playerProperties@
+playerPropertiesSelector :: Selector
+playerPropertiesSelector = mkSelector "playerProperties"
 
 -- | @Selector@ for @playerIDs@
 playerIDsSelector :: Selector

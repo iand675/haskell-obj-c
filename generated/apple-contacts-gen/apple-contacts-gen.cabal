@@ -47,6 +47,7 @@ library
       ObjC.Contacts.CNPostalAddressFormatter
       ObjC.Contacts.CNSaveRequest
       ObjC.Contacts.CNSocialProfile
+      ObjC.Contacts.Delegate.CNChangeHistoryEventVisitor
       ObjC.Contacts.Enums
       ObjC.Contacts.Internal.Classes
       ObjC.Contacts.Internal.Enums

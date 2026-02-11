@@ -12,6 +12,9 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.ScreenCaptureKit.Delegate.SCContentSharingPickerObserver
+      ObjC.ScreenCaptureKit.Delegate.SCRecordingOutputDelegate
+      ObjC.ScreenCaptureKit.Delegate.SCStreamDelegate
       ObjC.ScreenCaptureKit.Enums
       ObjC.ScreenCaptureKit.Internal.Classes
       ObjC.ScreenCaptureKit.Internal.Enums

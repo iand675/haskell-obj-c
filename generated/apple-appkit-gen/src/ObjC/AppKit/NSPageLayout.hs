@@ -17,6 +17,7 @@ module ObjC.AppKit.NSPageLayout
   , accessoryView
   , readPrintInfo
   , writePrintInfo
+  , accessoryControllers
   , printInfo
   , pageLayoutSelector
   , addAccessoryControllerSelector
@@ -29,6 +30,7 @@ module ObjC.AppKit.NSPageLayout
   , accessoryViewSelector
   , readPrintInfoSelector
   , writePrintInfoSelector
+  , accessoryControllersSelector
   , printInfoSelector
 
 
@@ -114,6 +116,11 @@ writePrintInfo :: IsNSPageLayout nsPageLayout => nsPageLayout -> IO ()
 writePrintInfo nsPageLayout  =
     sendMsg nsPageLayout (mkSelector "writePrintInfo") retVoid []
 
+-- | @- accessoryControllers@
+accessoryControllers :: IsNSPageLayout nsPageLayout => nsPageLayout -> IO (Id NSArray)
+accessoryControllers nsPageLayout  =
+    sendMsg nsPageLayout (mkSelector "accessoryControllers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- printInfo@
 printInfo :: IsNSPageLayout nsPageLayout => nsPageLayout -> IO (Id NSPrintInfo)
 printInfo nsPageLayout  =
@@ -166,6 +173,10 @@ readPrintInfoSelector = mkSelector "readPrintInfo"
 -- | @Selector@ for @writePrintInfo@
 writePrintInfoSelector :: Selector
 writePrintInfoSelector = mkSelector "writePrintInfo"
+
+-- | @Selector@ for @accessoryControllers@
+accessoryControllersSelector :: Selector
+accessoryControllersSelector = mkSelector "accessoryControllers"
 
 -- | @Selector@ for @printInfo@
 printInfoSelector :: Selector

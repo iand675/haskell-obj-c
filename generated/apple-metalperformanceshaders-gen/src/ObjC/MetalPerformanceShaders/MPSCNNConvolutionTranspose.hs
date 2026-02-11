@@ -100,13 +100,18 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionTranspose
   , initWithDevice
   , initWithCoder_device
   , encodeToCommandBuffer_sourceImage_convolutionGradientState
+  , encodeBatchToCommandBuffer_sourceImages_convolutionGradientStates
   , encodeToCommandBuffer_sourceImage_convolutionGradientState_destinationImage
+  , encodeBatchToCommandBuffer_sourceImages_convolutionGradientStates_destinationImages
   , resultStateForSourceImage_sourceStates_destinationImage
+  , resultStateBatchForSourceImage_sourceStates_destinationImage
   , temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImage
+  , temporaryResultStateBatchForCommandBuffer_sourceImage_sourceStates_destinationImage
   , reloadWeightsAndBiasesFromDataSource
   , reloadWeightsAndBiasesWithCommandBuffer_state
   , exportWeightsAndBiasesWithCommandBuffer_resultStateCanBeTemporary
   , encodeToCommandBuffer_sourceImage_convolutionGradientState_destinationState_destinationStateIsTemporary
+  , encodeBatchToCommandBuffer_sourceImages_convolutionGradientStates_destinationStates_destinationStateIsTemporary
   , inputFeatureChannels
   , outputFeatureChannels
   , kernelOffsetX
@@ -116,17 +121,23 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionTranspose
   , groups
   , accumulatorPrecisionOption
   , setAccumulatorPrecisionOption
+  , dataSource
   , initWithDevice_weightsSelector
   , initWithDeviceSelector
   , initWithCoder_deviceSelector
   , encodeToCommandBuffer_sourceImage_convolutionGradientStateSelector
+  , encodeBatchToCommandBuffer_sourceImages_convolutionGradientStatesSelector
   , encodeToCommandBuffer_sourceImage_convolutionGradientState_destinationImageSelector
+  , encodeBatchToCommandBuffer_sourceImages_convolutionGradientStates_destinationImagesSelector
   , resultStateForSourceImage_sourceStates_destinationImageSelector
+  , resultStateBatchForSourceImage_sourceStates_destinationImageSelector
   , temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImageSelector
+  , temporaryResultStateBatchForCommandBuffer_sourceImage_sourceStates_destinationImageSelector
   , reloadWeightsAndBiasesFromDataSourceSelector
   , reloadWeightsAndBiasesWithCommandBuffer_stateSelector
   , exportWeightsAndBiasesWithCommandBuffer_resultStateCanBeTemporarySelector
   , encodeToCommandBuffer_sourceImage_convolutionGradientState_destinationState_destinationStateIsTemporarySelector
+  , encodeBatchToCommandBuffer_sourceImages_convolutionGradientStates_destinationStates_destinationStateIsTemporarySelector
   , inputFeatureChannelsSelector
   , outputFeatureChannelsSelector
   , kernelOffsetXSelector
@@ -136,6 +147,7 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionTranspose
   , groupsSelector
   , accumulatorPrecisionOptionSelector
   , setAccumulatorPrecisionOptionSelector
+  , dataSourceSelector
 
   -- * Enum types
   , MPSNNConvolutionAccumulatorPrecisionOption(MPSNNConvolutionAccumulatorPrecisionOption)
@@ -209,6 +221,11 @@ encodeToCommandBuffer_sourceImage_convolutionGradientState mpscnnConvolutionTran
     withObjCPtr convolutionGradientState $ \raw_convolutionGradientState ->
         sendMsg mpscnnConvolutionTranspose (mkSelector "encodeToCommandBuffer:sourceImage:convolutionGradientState:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_convolutionGradientState :: Ptr ())] >>= retainedObject . castPtr
 
+-- | @- encodeBatchToCommandBuffer:sourceImages:convolutionGradientStates:@
+encodeBatchToCommandBuffer_sourceImages_convolutionGradientStates :: IsMPSCNNConvolutionTranspose mpscnnConvolutionTranspose => mpscnnConvolutionTranspose -> RawId -> RawId -> RawId -> IO RawId
+encodeBatchToCommandBuffer_sourceImages_convolutionGradientStates mpscnnConvolutionTranspose  commandBuffer sourceImage convolutionGradientState =
+    fmap (RawId . castPtr) $ sendMsg mpscnnConvolutionTranspose (mkSelector "encodeBatchToCommandBuffer:sourceImages:convolutionGradientStates:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImage) :: Ptr ()), argPtr (castPtr (unRawId convolutionGradientState) :: Ptr ())]
+
 -- | @- encodeToCommandBuffer:sourceImage:convolutionGradientState:destinationImage:@
 encodeToCommandBuffer_sourceImage_convolutionGradientState_destinationImage :: (IsMPSCNNConvolutionTranspose mpscnnConvolutionTranspose, IsMPSImage sourceImage, IsMPSCNNConvolutionGradientState convolutionGradientState, IsMPSImage destinationImage) => mpscnnConvolutionTranspose -> RawId -> sourceImage -> convolutionGradientState -> destinationImage -> IO ()
 encodeToCommandBuffer_sourceImage_convolutionGradientState_destinationImage mpscnnConvolutionTranspose  commandBuffer sourceImage convolutionGradientState destinationImage =
@@ -216,6 +233,11 @@ encodeToCommandBuffer_sourceImage_convolutionGradientState_destinationImage mpsc
     withObjCPtr convolutionGradientState $ \raw_convolutionGradientState ->
       withObjCPtr destinationImage $ \raw_destinationImage ->
           sendMsg mpscnnConvolutionTranspose (mkSelector "encodeToCommandBuffer:sourceImage:convolutionGradientState:destinationImage:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_convolutionGradientState :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())]
+
+-- | @- encodeBatchToCommandBuffer:sourceImages:convolutionGradientStates:destinationImages:@
+encodeBatchToCommandBuffer_sourceImages_convolutionGradientStates_destinationImages :: IsMPSCNNConvolutionTranspose mpscnnConvolutionTranspose => mpscnnConvolutionTranspose -> RawId -> RawId -> RawId -> RawId -> IO ()
+encodeBatchToCommandBuffer_sourceImages_convolutionGradientStates_destinationImages mpscnnConvolutionTranspose  commandBuffer sourceImage convolutionGradientState destinationImage =
+    sendMsg mpscnnConvolutionTranspose (mkSelector "encodeBatchToCommandBuffer:sourceImages:convolutionGradientStates:destinationImages:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImage) :: Ptr ()), argPtr (castPtr (unRawId convolutionGradientState) :: Ptr ()), argPtr (castPtr (unRawId destinationImage) :: Ptr ())]
 
 -- | Allocate a MPCNNConvolutionTransposeGradientState to hold the results from a -encodeBatchToCommandBuffer... operation
 --
@@ -233,6 +255,12 @@ resultStateForSourceImage_sourceStates_destinationImage mpscnnConvolutionTranspo
       withObjCPtr destinationImage $ \raw_destinationImage ->
           sendMsg mpscnnConvolutionTranspose (mkSelector "resultStateForSourceImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())] >>= retainedObject . castPtr
 
+-- | @- resultStateBatchForSourceImage:sourceStates:destinationImage:@
+resultStateBatchForSourceImage_sourceStates_destinationImage :: (IsMPSCNNConvolutionTranspose mpscnnConvolutionTranspose, IsNSArray sourceStates) => mpscnnConvolutionTranspose -> RawId -> sourceStates -> RawId -> IO RawId
+resultStateBatchForSourceImage_sourceStates_destinationImage mpscnnConvolutionTranspose  sourceImage sourceStates destinationImage =
+  withObjCPtr sourceStates $ \raw_sourceStates ->
+      fmap (RawId . castPtr) $ sendMsg mpscnnConvolutionTranspose (mkSelector "resultStateBatchForSourceImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr (unRawId sourceImage) :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr (unRawId destinationImage) :: Ptr ())]
+
 -- | @- temporaryResultStateForCommandBuffer:sourceImage:sourceStates:destinationImage:@
 temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImage :: (IsMPSCNNConvolutionTranspose mpscnnConvolutionTranspose, IsMPSImage sourceImage, IsNSArray sourceStates, IsMPSImage destinationImage) => mpscnnConvolutionTranspose -> RawId -> sourceImage -> sourceStates -> destinationImage -> IO (Id MPSCNNConvolutionTransposeGradientState)
 temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImage mpscnnConvolutionTranspose  commandBuffer sourceImage sourceStates destinationImage =
@@ -240,6 +268,12 @@ temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImage m
     withObjCPtr sourceStates $ \raw_sourceStates ->
       withObjCPtr destinationImage $ \raw_destinationImage ->
           sendMsg mpscnnConvolutionTranspose (mkSelector "temporaryResultStateForCommandBuffer:sourceImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())] >>= retainedObject . castPtr
+
+-- | @- temporaryResultStateBatchForCommandBuffer:sourceImage:sourceStates:destinationImage:@
+temporaryResultStateBatchForCommandBuffer_sourceImage_sourceStates_destinationImage :: (IsMPSCNNConvolutionTranspose mpscnnConvolutionTranspose, IsNSArray sourceStates) => mpscnnConvolutionTranspose -> RawId -> RawId -> sourceStates -> RawId -> IO RawId
+temporaryResultStateBatchForCommandBuffer_sourceImage_sourceStates_destinationImage mpscnnConvolutionTranspose  commandBuffer sourceImage sourceStates destinationImage =
+  withObjCPtr sourceStates $ \raw_sourceStates ->
+      fmap (RawId . castPtr) $ sendMsg mpscnnConvolutionTranspose (mkSelector "temporaryResultStateBatchForCommandBuffer:sourceImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImage) :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr (unRawId destinationImage) :: Ptr ())]
 
 -- | CPU side reload. Reload the updated weights and biases from data provider into internal weights and bias buffers. Weights and biases              gradients needed for update are obtained from MPSCNNConvolutionTransposeGradientState object. Data provider passed in init call is used for this purpose.
 --
@@ -282,6 +316,11 @@ encodeToCommandBuffer_sourceImage_convolutionGradientState_destinationState_dest
     withObjCPtr convolutionGradientState $ \raw_convolutionGradientState ->
       withObjCPtr outState $ \raw_outState ->
           sendMsg mpscnnConvolutionTranspose (mkSelector "encodeToCommandBuffer:sourceImage:convolutionGradientState:destinationState:destinationStateIsTemporary:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_convolutionGradientState :: Ptr ()), argPtr (castPtr raw_outState :: Ptr ()), argCULong (if isTemporary then 1 else 0)] >>= retainedObject . castPtr
+
+-- | @- encodeBatchToCommandBuffer:sourceImages:convolutionGradientStates:destinationStates:destinationStateIsTemporary:@
+encodeBatchToCommandBuffer_sourceImages_convolutionGradientStates_destinationStates_destinationStateIsTemporary :: IsMPSCNNConvolutionTranspose mpscnnConvolutionTranspose => mpscnnConvolutionTranspose -> RawId -> RawId -> RawId -> RawId -> Bool -> IO RawId
+encodeBatchToCommandBuffer_sourceImages_convolutionGradientStates_destinationStates_destinationStateIsTemporary mpscnnConvolutionTranspose  commandBuffer sourceImages convolutionGradientStates outStates isTemporary =
+    fmap (RawId . castPtr) $ sendMsg mpscnnConvolutionTranspose (mkSelector "encodeBatchToCommandBuffer:sourceImages:convolutionGradientStates:destinationStates:destinationStateIsTemporary:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr (unRawId convolutionGradientStates) :: Ptr ()), argPtr (castPtr (unRawId outStates) :: Ptr ()), argCULong (if isTemporary then 1 else 0)]
 
 -- | inputFeatureChannels
 --
@@ -364,6 +403,15 @@ setAccumulatorPrecisionOption :: IsMPSCNNConvolutionTranspose mpscnnConvolutionT
 setAccumulatorPrecisionOption mpscnnConvolutionTranspose  value =
     sendMsg mpscnnConvolutionTranspose (mkSelector "setAccumulatorPrecisionOption:") retVoid [argCULong (coerce value)]
 
+-- | dataSource
+--
+-- dataSource with which convolution transpose object was created
+--
+-- ObjC selector: @- dataSource@
+dataSource :: IsMPSCNNConvolutionTranspose mpscnnConvolutionTranspose => mpscnnConvolutionTranspose -> IO RawId
+dataSource mpscnnConvolutionTranspose  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnConvolutionTranspose (mkSelector "dataSource") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -384,17 +432,33 @@ initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 encodeToCommandBuffer_sourceImage_convolutionGradientStateSelector :: Selector
 encodeToCommandBuffer_sourceImage_convolutionGradientStateSelector = mkSelector "encodeToCommandBuffer:sourceImage:convolutionGradientState:"
 
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:convolutionGradientStates:@
+encodeBatchToCommandBuffer_sourceImages_convolutionGradientStatesSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_convolutionGradientStatesSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:convolutionGradientStates:"
+
 -- | @Selector@ for @encodeToCommandBuffer:sourceImage:convolutionGradientState:destinationImage:@
 encodeToCommandBuffer_sourceImage_convolutionGradientState_destinationImageSelector :: Selector
 encodeToCommandBuffer_sourceImage_convolutionGradientState_destinationImageSelector = mkSelector "encodeToCommandBuffer:sourceImage:convolutionGradientState:destinationImage:"
+
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:convolutionGradientStates:destinationImages:@
+encodeBatchToCommandBuffer_sourceImages_convolutionGradientStates_destinationImagesSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_convolutionGradientStates_destinationImagesSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:convolutionGradientStates:destinationImages:"
 
 -- | @Selector@ for @resultStateForSourceImage:sourceStates:destinationImage:@
 resultStateForSourceImage_sourceStates_destinationImageSelector :: Selector
 resultStateForSourceImage_sourceStates_destinationImageSelector = mkSelector "resultStateForSourceImage:sourceStates:destinationImage:"
 
+-- | @Selector@ for @resultStateBatchForSourceImage:sourceStates:destinationImage:@
+resultStateBatchForSourceImage_sourceStates_destinationImageSelector :: Selector
+resultStateBatchForSourceImage_sourceStates_destinationImageSelector = mkSelector "resultStateBatchForSourceImage:sourceStates:destinationImage:"
+
 -- | @Selector@ for @temporaryResultStateForCommandBuffer:sourceImage:sourceStates:destinationImage:@
 temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImageSelector :: Selector
 temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImageSelector = mkSelector "temporaryResultStateForCommandBuffer:sourceImage:sourceStates:destinationImage:"
+
+-- | @Selector@ for @temporaryResultStateBatchForCommandBuffer:sourceImage:sourceStates:destinationImage:@
+temporaryResultStateBatchForCommandBuffer_sourceImage_sourceStates_destinationImageSelector :: Selector
+temporaryResultStateBatchForCommandBuffer_sourceImage_sourceStates_destinationImageSelector = mkSelector "temporaryResultStateBatchForCommandBuffer:sourceImage:sourceStates:destinationImage:"
 
 -- | @Selector@ for @reloadWeightsAndBiasesFromDataSource@
 reloadWeightsAndBiasesFromDataSourceSelector :: Selector
@@ -411,6 +475,10 @@ exportWeightsAndBiasesWithCommandBuffer_resultStateCanBeTemporarySelector = mkSe
 -- | @Selector@ for @encodeToCommandBuffer:sourceImage:convolutionGradientState:destinationState:destinationStateIsTemporary:@
 encodeToCommandBuffer_sourceImage_convolutionGradientState_destinationState_destinationStateIsTemporarySelector :: Selector
 encodeToCommandBuffer_sourceImage_convolutionGradientState_destinationState_destinationStateIsTemporarySelector = mkSelector "encodeToCommandBuffer:sourceImage:convolutionGradientState:destinationState:destinationStateIsTemporary:"
+
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:convolutionGradientStates:destinationStates:destinationStateIsTemporary:@
+encodeBatchToCommandBuffer_sourceImages_convolutionGradientStates_destinationStates_destinationStateIsTemporarySelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_convolutionGradientStates_destinationStates_destinationStateIsTemporarySelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:convolutionGradientStates:destinationStates:destinationStateIsTemporary:"
 
 -- | @Selector@ for @inputFeatureChannels@
 inputFeatureChannelsSelector :: Selector
@@ -447,4 +515,8 @@ accumulatorPrecisionOptionSelector = mkSelector "accumulatorPrecisionOption"
 -- | @Selector@ for @setAccumulatorPrecisionOption:@
 setAccumulatorPrecisionOptionSelector :: Selector
 setAccumulatorPrecisionOptionSelector = mkSelector "setAccumulatorPrecisionOption:"
+
+-- | @Selector@ for @dataSource@
+dataSourceSelector :: Selector
+dataSourceSelector = mkSelector "dataSource"
 

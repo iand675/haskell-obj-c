@@ -7,8 +7,12 @@ module ObjC.AuthenticationServices.ASWebAuthenticationSessionWebBrowserSessionMa
   ( ASWebAuthenticationSessionWebBrowserSessionManager
   , IsASWebAuthenticationSessionWebBrowserSessionManager(..)
   , sharedManager
+  , sessionHandler
+  , setSessionHandler
   , wasLaunchedByAuthenticationServices
   , sharedManagerSelector
+  , sessionHandlerSelector
+  , setSessionHandlerSelector
   , wasLaunchedByAuthenticationServicesSelector
 
 
@@ -36,6 +40,16 @@ sharedManager  =
     cls' <- getRequiredClass "ASWebAuthenticationSessionWebBrowserSessionManager"
     sendClassMsg cls' (mkSelector "sharedManager") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- sessionHandler@
+sessionHandler :: IsASWebAuthenticationSessionWebBrowserSessionManager asWebAuthenticationSessionWebBrowserSessionManager => asWebAuthenticationSessionWebBrowserSessionManager -> IO RawId
+sessionHandler asWebAuthenticationSessionWebBrowserSessionManager  =
+    fmap (RawId . castPtr) $ sendMsg asWebAuthenticationSessionWebBrowserSessionManager (mkSelector "sessionHandler") (retPtr retVoid) []
+
+-- | @- setSessionHandler:@
+setSessionHandler :: IsASWebAuthenticationSessionWebBrowserSessionManager asWebAuthenticationSessionWebBrowserSessionManager => asWebAuthenticationSessionWebBrowserSessionManager -> RawId -> IO ()
+setSessionHandler asWebAuthenticationSessionWebBrowserSessionManager  value =
+    sendMsg asWebAuthenticationSessionWebBrowserSessionManager (mkSelector "setSessionHandler:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- wasLaunchedByAuthenticationServices@
 wasLaunchedByAuthenticationServices :: IsASWebAuthenticationSessionWebBrowserSessionManager asWebAuthenticationSessionWebBrowserSessionManager => asWebAuthenticationSessionWebBrowserSessionManager -> IO Bool
 wasLaunchedByAuthenticationServices asWebAuthenticationSessionWebBrowserSessionManager  =
@@ -48,6 +62,14 @@ wasLaunchedByAuthenticationServices asWebAuthenticationSessionWebBrowserSessionM
 -- | @Selector@ for @sharedManager@
 sharedManagerSelector :: Selector
 sharedManagerSelector = mkSelector "sharedManager"
+
+-- | @Selector@ for @sessionHandler@
+sessionHandlerSelector :: Selector
+sessionHandlerSelector = mkSelector "sessionHandler"
+
+-- | @Selector@ for @setSessionHandler:@
+setSessionHandlerSelector :: Selector
+setSessionHandlerSelector = mkSelector "setSessionHandler:"
 
 -- | @Selector@ for @wasLaunchedByAuthenticationServices@
 wasLaunchedByAuthenticationServicesSelector :: Selector

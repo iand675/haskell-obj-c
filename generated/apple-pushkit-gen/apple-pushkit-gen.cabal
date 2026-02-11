@@ -12,6 +12,7 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.PushKit.Delegate.PKPushRegistryDelegate
       ObjC.PushKit.Internal.Classes
       ObjC.PushKit.PKPushCredentials
       ObjC.PushKit.PKPushPayload

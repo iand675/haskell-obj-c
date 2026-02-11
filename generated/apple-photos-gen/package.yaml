@@ -18,6 +18,9 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.Photos.Delegate.PHLivePhotoFrame
+  - ObjC.Photos.Delegate.PHPhotoLibraryAvailabilityObserver
+  - ObjC.Photos.Delegate.PHPhotoLibraryChangeObserver
   - ObjC.Photos.Enums
   - ObjC.Photos.Internal.Classes
   - ObjC.Photos.Internal.Enums

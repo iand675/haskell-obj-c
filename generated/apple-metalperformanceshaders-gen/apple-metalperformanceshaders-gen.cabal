@@ -12,6 +12,16 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.MetalPerformanceShaders.Delegate.MPSDeviceProvider
+      ObjC.MetalPerformanceShaders.Delegate.MPSHandle
+      ObjC.MetalPerformanceShaders.Delegate.MPSHeapProvider
+      ObjC.MetalPerformanceShaders.Delegate.MPSImageAllocator
+      ObjC.MetalPerformanceShaders.Delegate.MPSImageSizeEncodingState
+      ObjC.MetalPerformanceShaders.Delegate.MPSNDArrayAllocator
+      ObjC.MetalPerformanceShaders.Delegate.MPSNNGramMatrixCallback
+      ObjC.MetalPerformanceShaders.Delegate.MPSNNLossCallback
+      ObjC.MetalPerformanceShaders.Delegate.MPSNNPadding
+      ObjC.MetalPerformanceShaders.Delegate.MPSSVGFTextureAllocator
       ObjC.MetalPerformanceShaders.Enums
       ObjC.MetalPerformanceShaders.Internal.Classes
       ObjC.MetalPerformanceShaders.Internal.Enums

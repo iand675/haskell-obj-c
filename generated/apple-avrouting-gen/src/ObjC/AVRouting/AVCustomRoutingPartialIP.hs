@@ -13,9 +13,13 @@ module ObjC.AVRouting.AVCustomRoutingPartialIP
   , initWithAddress_mask
   , init_
   , new
+  , address
+  , mask
   , initWithAddress_maskSelector
   , initSelector
   , newSelector
+  , addressSelector
+  , maskSelector
 
 
   ) where
@@ -56,6 +60,28 @@ new  =
     cls' <- getRequiredClass "AVCustomRoutingPartialIP"
     sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | A full or partial IP address for a device known to be on the network.
+--
+-- Use the following code to create a full known IP address.
+--
+-- ```var anIPAddressInBytes:[Byte] = [192, 168, 10, 5]var address = Data(bytes: anAddressInBytes, length: anAddressInBytes.count)var aMaskInBytes:[Byte] = [255, 255, 255, 255]var mask = Data(bytes: aMaskInBytes, length: aMaskInBytes.count)var partialIP = AVCustomRoutingPartialIP(address: address, mask: mask)```
+--
+-- ObjC selector: @- address@
+address :: IsAVCustomRoutingPartialIP avCustomRoutingPartialIP => avCustomRoutingPartialIP -> IO (Id NSData)
+address avCustomRoutingPartialIP  =
+    sendMsg avCustomRoutingPartialIP (mkSelector "address") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | A mask representing how many octets of the IP  address to respect.
+--
+-- Use this mask to pass the last two bytes of the IP address instead of passing all four bytes.
+--
+-- ```var anIPAddressInBytes:[Byte] = [0, 0, 10, 5] var address = Data(bytes: anAddressInBytes, length: anAddressInBytes.count) var aMaskInBytes:[Byte] = [0, 0, 255, 255] var mask = Data(bytes: aMaskInBytes, length: aMaskInBytes.count) var partialIP =AVCustomRoutingPartialIP(address: address, mask: mask) ```
+--
+-- ObjC selector: @- mask@
+mask :: IsAVCustomRoutingPartialIP avCustomRoutingPartialIP => avCustomRoutingPartialIP -> IO (Id NSData)
+mask avCustomRoutingPartialIP  =
+    sendMsg avCustomRoutingPartialIP (mkSelector "mask") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -71,4 +97,12 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @new@
 newSelector :: Selector
 newSelector = mkSelector "new"
+
+-- | @Selector@ for @address@
+addressSelector :: Selector
+addressSelector = mkSelector "address"
+
+-- | @Selector@ for @mask@
+maskSelector :: Selector
+maskSelector = mkSelector "mask"
 

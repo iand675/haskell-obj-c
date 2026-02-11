@@ -30,6 +30,8 @@ module ObjC.Virtualization.VZNetworkBlockDeviceStorageDeviceAttachment
   , timeout
   , forcedReadOnly
   , synchronizationMode
+  , delegate
+  , setDelegate
   , initWithURL_timeout_forcedReadOnly_synchronizationMode_errorSelector
   , initWithURL_errorSelector
   , validateURL_errorSelector
@@ -37,6 +39,8 @@ module ObjC.Virtualization.VZNetworkBlockDeviceStorageDeviceAttachment
   , timeoutSelector
   , forcedReadOnlySelector
   , synchronizationModeSelector
+  , delegateSelector
+  , setDelegateSelector
 
   -- * Enum types
   , VZDiskSynchronizationMode(VZDiskSynchronizationMode)
@@ -148,6 +152,20 @@ synchronizationMode :: IsVZNetworkBlockDeviceStorageDeviceAttachment vzNetworkBl
 synchronizationMode vzNetworkBlockDeviceStorageDeviceAttachment  =
     fmap (coerce :: CLong -> VZDiskSynchronizationMode) $ sendMsg vzNetworkBlockDeviceStorageDeviceAttachment (mkSelector "synchronizationMode") retCLong []
 
+-- | The attachment's delegate.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsVZNetworkBlockDeviceStorageDeviceAttachment vzNetworkBlockDeviceStorageDeviceAttachment => vzNetworkBlockDeviceStorageDeviceAttachment -> IO RawId
+delegate vzNetworkBlockDeviceStorageDeviceAttachment  =
+    fmap (RawId . castPtr) $ sendMsg vzNetworkBlockDeviceStorageDeviceAttachment (mkSelector "delegate") (retPtr retVoid) []
+
+-- | The attachment's delegate.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsVZNetworkBlockDeviceStorageDeviceAttachment vzNetworkBlockDeviceStorageDeviceAttachment => vzNetworkBlockDeviceStorageDeviceAttachment -> RawId -> IO ()
+setDelegate vzNetworkBlockDeviceStorageDeviceAttachment  value =
+    sendMsg vzNetworkBlockDeviceStorageDeviceAttachment (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -179,4 +197,12 @@ forcedReadOnlySelector = mkSelector "forcedReadOnly"
 -- | @Selector@ for @synchronizationMode@
 synchronizationModeSelector :: Selector
 synchronizationModeSelector = mkSelector "synchronizationMode"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

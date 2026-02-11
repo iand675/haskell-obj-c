@@ -21,6 +21,9 @@ module ObjC.ScreenCaptureKit.SCContentFilter
   , pointPixelScale
   , includeMenuBar
   , setIncludeMenuBar
+  , includedDisplays
+  , includedApplications
+  , includedWindows
   , initWithDesktopIndependentWindowSelector
   , initWithDisplay_excludingWindowsSelector
   , initWithDisplay_includingWindowsSelector
@@ -31,6 +34,9 @@ module ObjC.ScreenCaptureKit.SCContentFilter
   , pointPixelScaleSelector
   , includeMenuBarSelector
   , setIncludeMenuBarSelector
+  , includedDisplaysSelector
+  , includedApplicationsSelector
+  , includedWindowsSelector
 
   -- * Enum types
   , SCShareableContentStyle(SCShareableContentStyle)
@@ -173,6 +179,27 @@ setIncludeMenuBar :: IsSCContentFilter scContentFilter => scContentFilter -> Boo
 setIncludeMenuBar scContentFilter  value =
     sendMsg scContentFilter (mkSelector "setIncludeMenuBar:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | SCDisplays that are included in the content filter
+--
+-- ObjC selector: @- includedDisplays@
+includedDisplays :: IsSCContentFilter scContentFilter => scContentFilter -> IO (Id NSArray)
+includedDisplays scContentFilter  =
+    sendMsg scContentFilter (mkSelector "includedDisplays") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Applications that are included in the content filter
+--
+-- ObjC selector: @- includedApplications@
+includedApplications :: IsSCContentFilter scContentFilter => scContentFilter -> IO (Id NSArray)
+includedApplications scContentFilter  =
+    sendMsg scContentFilter (mkSelector "includedApplications") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Windows that are included in the content filter
+--
+-- ObjC selector: @- includedWindows@
+includedWindows :: IsSCContentFilter scContentFilter => scContentFilter -> IO (Id NSArray)
+includedWindows scContentFilter  =
+    sendMsg scContentFilter (mkSelector "includedWindows") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -216,4 +243,16 @@ includeMenuBarSelector = mkSelector "includeMenuBar"
 -- | @Selector@ for @setIncludeMenuBar:@
 setIncludeMenuBarSelector :: Selector
 setIncludeMenuBarSelector = mkSelector "setIncludeMenuBar:"
+
+-- | @Selector@ for @includedDisplays@
+includedDisplaysSelector :: Selector
+includedDisplaysSelector = mkSelector "includedDisplays"
+
+-- | @Selector@ for @includedApplications@
+includedApplicationsSelector :: Selector
+includedApplicationsSelector = mkSelector "includedApplications"
+
+-- | @Selector@ for @includedWindows@
+includedWindowsSelector :: Selector
+includedWindowsSelector = mkSelector "includedWindows"
 

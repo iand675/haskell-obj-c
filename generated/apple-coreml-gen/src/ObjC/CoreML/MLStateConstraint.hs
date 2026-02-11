@@ -9,7 +9,9 @@
 module ObjC.CoreML.MLStateConstraint
   ( MLStateConstraint
   , IsMLStateConstraint(..)
+  , bufferShape
   , dataType
+  , bufferShapeSelector
   , dataTypeSelector
 
   -- * Enum types
@@ -40,6 +42,13 @@ import ObjC.CoreML.Internal.Classes
 import ObjC.CoreML.Internal.Enums
 import ObjC.Foundation.Internal.Classes
 
+-- | The shape of the state buffer.
+--
+-- ObjC selector: @- bufferShape@
+bufferShape :: IsMLStateConstraint mlStateConstraint => mlStateConstraint -> IO (Id NSArray)
+bufferShape mlStateConstraint  =
+    sendMsg mlStateConstraint (mkSelector "bufferShape") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | The data type of scalars in the state buffer.
 --
 -- ObjC selector: @- dataType@
@@ -50,6 +59,10 @@ dataType mlStateConstraint  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @bufferShape@
+bufferShapeSelector :: Selector
+bufferShapeSelector = mkSelector "bufferShape"
 
 -- | @Selector@ for @dataType@
 dataTypeSelector :: Selector

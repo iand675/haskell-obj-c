@@ -12,6 +12,7 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.LocalAuthentication.Delegate.LAEnvironmentObserver
       ObjC.LocalAuthentication.Enums
       ObjC.LocalAuthentication.Internal.Classes
       ObjC.LocalAuthentication.Internal.Enums

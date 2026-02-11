@@ -24,6 +24,7 @@ module ObjC.MetalPerformanceShaders.MPSCNNInstanceNormalization
   , temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImage
   , epsilon
   , setEpsilon
+  , dataSource
   , initWithDevice_dataSourceSelector
   , initWithDeviceSelector
   , initWithCoder_deviceSelector
@@ -34,6 +35,7 @@ module ObjC.MetalPerformanceShaders.MPSCNNInstanceNormalization
   , temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImageSelector
   , epsilonSelector
   , setEpsilonSelector
+  , dataSourceSelector
 
 
   ) where
@@ -151,6 +153,13 @@ setEpsilon :: IsMPSCNNInstanceNormalization mpscnnInstanceNormalization => mpscn
 setEpsilon mpscnnInstanceNormalization  value =
     sendMsg mpscnnInstanceNormalization (mkSelector "setEpsilon:") retVoid [argCFloat value]
 
+-- | The data source that the object was initialized with
+--
+-- ObjC selector: @- dataSource@
+dataSource :: IsMPSCNNInstanceNormalization mpscnnInstanceNormalization => mpscnnInstanceNormalization -> IO RawId
+dataSource mpscnnInstanceNormalization  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnInstanceNormalization (mkSelector "dataSource") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -194,4 +203,8 @@ epsilonSelector = mkSelector "epsilon"
 -- | @Selector@ for @setEpsilon:@
 setEpsilonSelector :: Selector
 setEpsilonSelector = mkSelector "setEpsilon:"
+
+-- | @Selector@ for @dataSource@
+dataSourceSelector :: Selector
+dataSourceSelector = mkSelector "dataSource"
 

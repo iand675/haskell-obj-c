@@ -10,8 +10,10 @@ module ObjC.PencilKit.PKToolPickerItem
   , IsPKToolPickerItem(..)
   , init_
   , identifier
+  , tool
   , initSelector
   , identifierSelector
+  , toolSelector
 
 
   ) where
@@ -43,6 +45,13 @@ identifier :: IsPKToolPickerItem pkToolPickerItem => pkToolPickerItem -> IO (Id 
 identifier pkToolPickerItem  =
     sendMsg pkToolPickerItem (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The @PKTool@ this tool picker item represents.
+--
+-- ObjC selector: @- tool@
+tool :: IsPKToolPickerItem pkToolPickerItem => pkToolPickerItem -> IO (Id PKTool)
+tool pkToolPickerItem  =
+    sendMsg pkToolPickerItem (mkSelector "tool") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -54,4 +63,8 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @identifier@
 identifierSelector :: Selector
 identifierSelector = mkSelector "identifier"
+
+-- | @Selector@ for @tool@
+toolSelector :: Selector
+toolSelector = mkSelector "tool"
 

@@ -17,12 +17,14 @@ module ObjC.GameKit.GKTurnBasedParticipant
   , matchOutcome
   , setMatchOutcome
   , timeoutDate
+  , playerID
   , playerSelector
   , lastTurnDateSelector
   , statusSelector
   , matchOutcomeSelector
   , setMatchOutcomeSelector
   , timeoutDateSelector
+  , playerIDSelector
 
   -- * Enum types
   , GKTurnBasedMatchOutcome(GKTurnBasedMatchOutcome)
@@ -93,6 +95,13 @@ timeoutDate :: IsGKTurnBasedParticipant gkTurnBasedParticipant => gkTurnBasedPar
 timeoutDate gkTurnBasedParticipant  =
     sendMsg gkTurnBasedParticipant (mkSelector "timeoutDate") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | * This property is obsolete. **
+--
+-- ObjC selector: @- playerID@
+playerID :: IsGKTurnBasedParticipant gkTurnBasedParticipant => gkTurnBasedParticipant -> IO (Id NSString)
+playerID gkTurnBasedParticipant  =
+    sendMsg gkTurnBasedParticipant (mkSelector "playerID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -120,4 +129,8 @@ setMatchOutcomeSelector = mkSelector "setMatchOutcome:"
 -- | @Selector@ for @timeoutDate@
 timeoutDateSelector :: Selector
 timeoutDateSelector = mkSelector "timeoutDate"
+
+-- | @Selector@ for @playerID@
+playerIDSelector :: Selector
+playerIDSelector = mkSelector "playerID"
 

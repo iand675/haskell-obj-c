@@ -14,6 +14,14 @@ module ObjC.PassKit.PKPaymentRequestUpdate
   , setPaymentSummaryItems
   , shippingMethods
   , setShippingMethods
+  , multiTokenContexts
+  , setMultiTokenContexts
+  , recurringPaymentRequest
+  , setRecurringPaymentRequest
+  , automaticReloadPaymentRequest
+  , setAutomaticReloadPaymentRequest
+  , deferredPaymentRequest
+  , setDeferredPaymentRequest
   , initWithPaymentSummaryItemsSelector
   , statusSelector
   , setStatusSelector
@@ -21,6 +29,14 @@ module ObjC.PassKit.PKPaymentRequestUpdate
   , setPaymentSummaryItemsSelector
   , shippingMethodsSelector
   , setShippingMethodsSelector
+  , multiTokenContextsSelector
+  , setMultiTokenContextsSelector
+  , recurringPaymentRequestSelector
+  , setRecurringPaymentRequestSelector
+  , automaticReloadPaymentRequestSelector
+  , setAutomaticReloadPaymentRequestSelector
+  , deferredPaymentRequestSelector
+  , setDeferredPaymentRequestSelector
 
   -- * Enum types
   , PKPaymentAuthorizationStatus(PKPaymentAuthorizationStatus)
@@ -89,6 +105,50 @@ setShippingMethods pkPaymentRequestUpdate  value =
   withObjCPtr value $ \raw_value ->
       sendMsg pkPaymentRequestUpdate (mkSelector "setShippingMethods:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- multiTokenContexts@
+multiTokenContexts :: IsPKPaymentRequestUpdate pkPaymentRequestUpdate => pkPaymentRequestUpdate -> IO (Id NSArray)
+multiTokenContexts pkPaymentRequestUpdate  =
+    sendMsg pkPaymentRequestUpdate (mkSelector "multiTokenContexts") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setMultiTokenContexts:@
+setMultiTokenContexts :: (IsPKPaymentRequestUpdate pkPaymentRequestUpdate, IsNSArray value) => pkPaymentRequestUpdate -> value -> IO ()
+setMultiTokenContexts pkPaymentRequestUpdate  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg pkPaymentRequestUpdate (mkSelector "setMultiTokenContexts:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- recurringPaymentRequest@
+recurringPaymentRequest :: IsPKPaymentRequestUpdate pkPaymentRequestUpdate => pkPaymentRequestUpdate -> IO (Id PKRecurringPaymentRequest)
+recurringPaymentRequest pkPaymentRequestUpdate  =
+    sendMsg pkPaymentRequestUpdate (mkSelector "recurringPaymentRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setRecurringPaymentRequest:@
+setRecurringPaymentRequest :: (IsPKPaymentRequestUpdate pkPaymentRequestUpdate, IsPKRecurringPaymentRequest value) => pkPaymentRequestUpdate -> value -> IO ()
+setRecurringPaymentRequest pkPaymentRequestUpdate  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg pkPaymentRequestUpdate (mkSelector "setRecurringPaymentRequest:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- automaticReloadPaymentRequest@
+automaticReloadPaymentRequest :: IsPKPaymentRequestUpdate pkPaymentRequestUpdate => pkPaymentRequestUpdate -> IO (Id PKAutomaticReloadPaymentRequest)
+automaticReloadPaymentRequest pkPaymentRequestUpdate  =
+    sendMsg pkPaymentRequestUpdate (mkSelector "automaticReloadPaymentRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setAutomaticReloadPaymentRequest:@
+setAutomaticReloadPaymentRequest :: (IsPKPaymentRequestUpdate pkPaymentRequestUpdate, IsPKAutomaticReloadPaymentRequest value) => pkPaymentRequestUpdate -> value -> IO ()
+setAutomaticReloadPaymentRequest pkPaymentRequestUpdate  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg pkPaymentRequestUpdate (mkSelector "setAutomaticReloadPaymentRequest:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- deferredPaymentRequest@
+deferredPaymentRequest :: IsPKPaymentRequestUpdate pkPaymentRequestUpdate => pkPaymentRequestUpdate -> IO (Id PKDeferredPaymentRequest)
+deferredPaymentRequest pkPaymentRequestUpdate  =
+    sendMsg pkPaymentRequestUpdate (mkSelector "deferredPaymentRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setDeferredPaymentRequest:@
+setDeferredPaymentRequest :: (IsPKPaymentRequestUpdate pkPaymentRequestUpdate, IsPKDeferredPaymentRequest value) => pkPaymentRequestUpdate -> value -> IO ()
+setDeferredPaymentRequest pkPaymentRequestUpdate  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg pkPaymentRequestUpdate (mkSelector "setDeferredPaymentRequest:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -120,4 +180,36 @@ shippingMethodsSelector = mkSelector "shippingMethods"
 -- | @Selector@ for @setShippingMethods:@
 setShippingMethodsSelector :: Selector
 setShippingMethodsSelector = mkSelector "setShippingMethods:"
+
+-- | @Selector@ for @multiTokenContexts@
+multiTokenContextsSelector :: Selector
+multiTokenContextsSelector = mkSelector "multiTokenContexts"
+
+-- | @Selector@ for @setMultiTokenContexts:@
+setMultiTokenContextsSelector :: Selector
+setMultiTokenContextsSelector = mkSelector "setMultiTokenContexts:"
+
+-- | @Selector@ for @recurringPaymentRequest@
+recurringPaymentRequestSelector :: Selector
+recurringPaymentRequestSelector = mkSelector "recurringPaymentRequest"
+
+-- | @Selector@ for @setRecurringPaymentRequest:@
+setRecurringPaymentRequestSelector :: Selector
+setRecurringPaymentRequestSelector = mkSelector "setRecurringPaymentRequest:"
+
+-- | @Selector@ for @automaticReloadPaymentRequest@
+automaticReloadPaymentRequestSelector :: Selector
+automaticReloadPaymentRequestSelector = mkSelector "automaticReloadPaymentRequest"
+
+-- | @Selector@ for @setAutomaticReloadPaymentRequest:@
+setAutomaticReloadPaymentRequestSelector :: Selector
+setAutomaticReloadPaymentRequestSelector = mkSelector "setAutomaticReloadPaymentRequest:"
+
+-- | @Selector@ for @deferredPaymentRequest@
+deferredPaymentRequestSelector :: Selector
+deferredPaymentRequestSelector = mkSelector "deferredPaymentRequest"
+
+-- | @Selector@ for @setDeferredPaymentRequest:@
+setDeferredPaymentRequestSelector :: Selector
+setDeferredPaymentRequestSelector = mkSelector "setDeferredPaymentRequest:"
 

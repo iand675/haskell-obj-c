@@ -23,6 +23,7 @@ module ObjC.MetricKit.MXDiagnosticPayload
   , cpuExceptionDiagnostics
   , diskWriteExceptionDiagnostics
   , hangDiagnostics
+  , appLaunchDiagnostics
   , crashDiagnostics
   , timeStampBegin
   , timeStampEnd
@@ -31,6 +32,7 @@ module ObjC.MetricKit.MXDiagnosticPayload
   , cpuExceptionDiagnosticsSelector
   , diskWriteExceptionDiagnosticsSelector
   , hangDiagnosticsSelector
+  , appLaunchDiagnosticsSelector
   , crashDiagnosticsSelector
   , timeStampBeginSelector
   , timeStampEndSelector
@@ -102,6 +104,15 @@ hangDiagnostics :: IsMXDiagnosticPayload mxDiagnosticPayload => mxDiagnosticPayl
 hangDiagnostics mxDiagnosticPayload  =
     sendMsg mxDiagnosticPayload (mkSelector "hangDiagnostics") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | appLaunchDiagnostics
+--
+-- An array containing app launch diagnostics for this application.
+--
+-- ObjC selector: @- appLaunchDiagnostics@
+appLaunchDiagnostics :: IsMXDiagnosticPayload mxDiagnosticPayload => mxDiagnosticPayload -> IO (Id NSArray)
+appLaunchDiagnostics mxDiagnosticPayload  =
+    sendMsg mxDiagnosticPayload (mkSelector "appLaunchDiagnostics") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | crashDiagnostics
 --
 -- An array containing crash diagnostics for this application.
@@ -152,6 +163,10 @@ diskWriteExceptionDiagnosticsSelector = mkSelector "diskWriteExceptionDiagnostic
 -- | @Selector@ for @hangDiagnostics@
 hangDiagnosticsSelector :: Selector
 hangDiagnosticsSelector = mkSelector "hangDiagnostics"
+
+-- | @Selector@ for @appLaunchDiagnostics@
+appLaunchDiagnosticsSelector :: Selector
+appLaunchDiagnosticsSelector = mkSelector "appLaunchDiagnostics"
 
 -- | @Selector@ for @crashDiagnostics@
 crashDiagnosticsSelector :: Selector

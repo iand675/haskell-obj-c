@@ -21,6 +21,8 @@ module ObjC.AVFoundation.AVAsynchronousVideoCompositionRequest
   , attachSpatialVideoConfiguration_toPixelBuffer
   , renderContext
   , sourceTrackIDs
+  , sourceSampleDataTrackIDs
+  , videoCompositionInstruction
   , sourceFrameByTrackIDSelector
   , sourceSampleBufferByTrackIDSelector
   , sourceTimedMetadataByTrackIDSelector
@@ -32,6 +34,8 @@ module ObjC.AVFoundation.AVAsynchronousVideoCompositionRequest
   , attachSpatialVideoConfiguration_toPixelBufferSelector
   , renderContextSelector
   , sourceTrackIDsSelector
+  , sourceSampleDataTrackIDsSelector
+  , videoCompositionInstructionSelector
 
 
   ) where
@@ -146,6 +150,20 @@ sourceTrackIDs :: IsAVAsynchronousVideoCompositionRequest avAsynchronousVideoCom
 sourceTrackIDs avAsynchronousVideoCompositionRequest  =
     sendMsg avAsynchronousVideoCompositionRequest (mkSelector "sourceTrackIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | Track IDs of all the source sample data buffers that are available to compose the frame.
+--
+-- ObjC selector: @- sourceSampleDataTrackIDs@
+sourceSampleDataTrackIDs :: IsAVAsynchronousVideoCompositionRequest avAsynchronousVideoCompositionRequest => avAsynchronousVideoCompositionRequest -> IO (Id NSArray)
+sourceSampleDataTrackIDs avAsynchronousVideoCompositionRequest  =
+    sendMsg avAsynchronousVideoCompositionRequest (mkSelector "sourceSampleDataTrackIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The AVVideoCompositionInstruction to use to compose the frame.
+--
+-- ObjC selector: @- videoCompositionInstruction@
+videoCompositionInstruction :: IsAVAsynchronousVideoCompositionRequest avAsynchronousVideoCompositionRequest => avAsynchronousVideoCompositionRequest -> IO RawId
+videoCompositionInstruction avAsynchronousVideoCompositionRequest  =
+    fmap (RawId . castPtr) $ sendMsg avAsynchronousVideoCompositionRequest (mkSelector "videoCompositionInstruction") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -193,4 +211,12 @@ renderContextSelector = mkSelector "renderContext"
 -- | @Selector@ for @sourceTrackIDs@
 sourceTrackIDsSelector :: Selector
 sourceTrackIDsSelector = mkSelector "sourceTrackIDs"
+
+-- | @Selector@ for @sourceSampleDataTrackIDs@
+sourceSampleDataTrackIDsSelector :: Selector
+sourceSampleDataTrackIDsSelector = mkSelector "sourceSampleDataTrackIDs"
+
+-- | @Selector@ for @videoCompositionInstruction@
+videoCompositionInstructionSelector :: Selector
+videoCompositionInstructionSelector = mkSelector "videoCompositionInstruction"
 

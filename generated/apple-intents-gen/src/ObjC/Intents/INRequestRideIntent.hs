@@ -11,13 +11,17 @@ module ObjC.Intents.INRequestRideIntent
   , pickupLocation
   , dropOffLocation
   , rideOptionName
+  , partySize
   , paymentMethod
+  , scheduledPickupTime
   , initWithPickupLocation_dropOffLocation_rideOptionName_partySize_paymentMethod_scheduledPickupTimeSelector
   , initWithPickupLocation_dropOffLocation_rideOptionName_partySize_paymentMethodSelector
   , pickupLocationSelector
   , dropOffLocationSelector
   , rideOptionNameSelector
+  , partySizeSelector
   , paymentMethodSelector
+  , scheduledPickupTimeSelector
 
 
   ) where
@@ -74,10 +78,20 @@ rideOptionName :: IsINRequestRideIntent inRequestRideIntent => inRequestRideInte
 rideOptionName inRequestRideIntent  =
     sendMsg inRequestRideIntent (mkSelector "rideOptionName") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- partySize@
+partySize :: IsINRequestRideIntent inRequestRideIntent => inRequestRideIntent -> IO (Id NSNumber)
+partySize inRequestRideIntent  =
+    sendMsg inRequestRideIntent (mkSelector "partySize") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- paymentMethod@
 paymentMethod :: IsINRequestRideIntent inRequestRideIntent => inRequestRideIntent -> IO (Id INPaymentMethod)
 paymentMethod inRequestRideIntent  =
     sendMsg inRequestRideIntent (mkSelector "paymentMethod") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- scheduledPickupTime@
+scheduledPickupTime :: IsINRequestRideIntent inRequestRideIntent => inRequestRideIntent -> IO (Id INDateComponentsRange)
+scheduledPickupTime inRequestRideIntent  =
+    sendMsg inRequestRideIntent (mkSelector "scheduledPickupTime") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -103,7 +117,15 @@ dropOffLocationSelector = mkSelector "dropOffLocation"
 rideOptionNameSelector :: Selector
 rideOptionNameSelector = mkSelector "rideOptionName"
 
+-- | @Selector@ for @partySize@
+partySizeSelector :: Selector
+partySizeSelector = mkSelector "partySize"
+
 -- | @Selector@ for @paymentMethod@
 paymentMethodSelector :: Selector
 paymentMethodSelector = mkSelector "paymentMethod"
+
+-- | @Selector@ for @scheduledPickupTime@
+scheduledPickupTimeSelector :: Selector
+scheduledPickupTimeSelector = mkSelector "scheduledPickupTime"
 

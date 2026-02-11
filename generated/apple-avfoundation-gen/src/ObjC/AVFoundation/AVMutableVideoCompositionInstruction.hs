@@ -13,6 +13,8 @@ module ObjC.AVFoundation.AVMutableVideoCompositionInstruction
   , setLayerInstructions
   , enablePostProcessing
   , setEnablePostProcessing
+  , requiredSourceSampleDataTrackIDs
+  , setRequiredSourceSampleDataTrackIDs
   , videoCompositionInstructionSelector
   , backgroundColorSelector
   , setBackgroundColorSelector
@@ -20,6 +22,8 @@ module ObjC.AVFoundation.AVMutableVideoCompositionInstruction
   , setLayerInstructionsSelector
   , enablePostProcessingSelector
   , setEnablePostProcessingSelector
+  , requiredSourceSampleDataTrackIDsSelector
+  , setRequiredSourceSampleDataTrackIDsSelector
 
 
   ) where
@@ -105,6 +109,25 @@ setEnablePostProcessing :: IsAVMutableVideoCompositionInstruction avMutableVideo
 setEnablePostProcessing avMutableVideoCompositionInstruction  value =
     sendMsg avMutableVideoCompositionInstruction (mkSelector "setEnablePostProcessing:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | List of sample data track IDs required to compose frames for this instruction.
+--
+-- Currently only tracks of type kCMMediaType_Metadata are allowed to be specified.  If this property is unspecified or is an empty array, no sample data is considered to be required for this instruction.  Note that you must also specify all tracks for which sample data is required for ANY instruction in the AVVideoComposition, in AVVideoComposition's property sourceSampleDataTrackIDs.
+--
+-- ObjC selector: @- requiredSourceSampleDataTrackIDs@
+requiredSourceSampleDataTrackIDs :: IsAVMutableVideoCompositionInstruction avMutableVideoCompositionInstruction => avMutableVideoCompositionInstruction -> IO (Id NSArray)
+requiredSourceSampleDataTrackIDs avMutableVideoCompositionInstruction  =
+    sendMsg avMutableVideoCompositionInstruction (mkSelector "requiredSourceSampleDataTrackIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | List of sample data track IDs required to compose frames for this instruction.
+--
+-- Currently only tracks of type kCMMediaType_Metadata are allowed to be specified.  If this property is unspecified or is an empty array, no sample data is considered to be required for this instruction.  Note that you must also specify all tracks for which sample data is required for ANY instruction in the AVVideoComposition, in AVVideoComposition's property sourceSampleDataTrackIDs.
+--
+-- ObjC selector: @- setRequiredSourceSampleDataTrackIDs:@
+setRequiredSourceSampleDataTrackIDs :: (IsAVMutableVideoCompositionInstruction avMutableVideoCompositionInstruction, IsNSArray value) => avMutableVideoCompositionInstruction -> value -> IO ()
+setRequiredSourceSampleDataTrackIDs avMutableVideoCompositionInstruction  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avMutableVideoCompositionInstruction (mkSelector "setRequiredSourceSampleDataTrackIDs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -136,4 +159,12 @@ enablePostProcessingSelector = mkSelector "enablePostProcessing"
 -- | @Selector@ for @setEnablePostProcessing:@
 setEnablePostProcessingSelector :: Selector
 setEnablePostProcessingSelector = mkSelector "setEnablePostProcessing:"
+
+-- | @Selector@ for @requiredSourceSampleDataTrackIDs@
+requiredSourceSampleDataTrackIDsSelector :: Selector
+requiredSourceSampleDataTrackIDsSelector = mkSelector "requiredSourceSampleDataTrackIDs"
+
+-- | @Selector@ for @setRequiredSourceSampleDataTrackIDs:@
+setRequiredSourceSampleDataTrackIDsSelector :: Selector
+setRequiredSourceSampleDataTrackIDsSelector = mkSelector "setRequiredSourceSampleDataTrackIDs:"
 

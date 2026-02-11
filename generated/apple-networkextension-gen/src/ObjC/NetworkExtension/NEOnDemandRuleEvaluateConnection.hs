@@ -14,6 +14,10 @@
 module ObjC.NetworkExtension.NEOnDemandRuleEvaluateConnection
   ( NEOnDemandRuleEvaluateConnection
   , IsNEOnDemandRuleEvaluateConnection(..)
+  , connectionRules
+  , setConnectionRules
+  , connectionRulesSelector
+  , setConnectionRulesSelector
 
 
   ) where
@@ -33,7 +37,34 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.NetworkExtension.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | connectionRules
+--
+-- An array of NEEvaluateConnectionRule objects. Each NEEvaluateConnectionRule object is evaluated in order against the properties of the network connection being established.
+--
+-- ObjC selector: @- connectionRules@
+connectionRules :: IsNEOnDemandRuleEvaluateConnection neOnDemandRuleEvaluateConnection => neOnDemandRuleEvaluateConnection -> IO (Id NSArray)
+connectionRules neOnDemandRuleEvaluateConnection  =
+    sendMsg neOnDemandRuleEvaluateConnection (mkSelector "connectionRules") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | connectionRules
+--
+-- An array of NEEvaluateConnectionRule objects. Each NEEvaluateConnectionRule object is evaluated in order against the properties of the network connection being established.
+--
+-- ObjC selector: @- setConnectionRules:@
+setConnectionRules :: (IsNEOnDemandRuleEvaluateConnection neOnDemandRuleEvaluateConnection, IsNSArray value) => neOnDemandRuleEvaluateConnection -> value -> IO ()
+setConnectionRules neOnDemandRuleEvaluateConnection  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neOnDemandRuleEvaluateConnection (mkSelector "setConnectionRules:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @connectionRules@
+connectionRulesSelector :: Selector
+connectionRulesSelector = mkSelector "connectionRules"
+
+-- | @Selector@ for @setConnectionRules:@
+setConnectionRulesSelector :: Selector
+setConnectionRulesSelector = mkSelector "setConnectionRules:"
 

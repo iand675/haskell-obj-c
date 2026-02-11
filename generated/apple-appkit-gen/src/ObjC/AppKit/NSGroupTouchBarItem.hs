@@ -20,6 +20,9 @@ module ObjC.AppKit.NSGroupTouchBarItem
   , setPrefersEqualWidths
   , preferredItemWidth
   , setPreferredItemWidth
+  , effectiveCompressionOptions
+  , prioritizedCompressionOptions
+  , setPrioritizedCompressionOptions
   , groupItemWithIdentifier_itemsSelector
   , groupItemWithIdentifier_items_allowedCompressionOptionsSelector
   , alertStyleGroupItemWithIdentifierSelector
@@ -33,6 +36,9 @@ module ObjC.AppKit.NSGroupTouchBarItem
   , setPrefersEqualWidthsSelector
   , preferredItemWidthSelector
   , setPreferredItemWidthSelector
+  , effectiveCompressionOptionsSelector
+  , prioritizedCompressionOptionsSelector
+  , setPrioritizedCompressionOptionsSelector
 
   -- * Enum types
   , NSUserInterfaceLayoutDirection(NSUserInterfaceLayoutDirection)
@@ -136,6 +142,22 @@ setPreferredItemWidth :: IsNSGroupTouchBarItem nsGroupTouchBarItem => nsGroupTou
 setPreferredItemWidth nsGroupTouchBarItem  value =
     sendMsg nsGroupTouchBarItem (mkSelector "setPreferredItemWidth:") retVoid [argCDouble value]
 
+-- | @- effectiveCompressionOptions@
+effectiveCompressionOptions :: IsNSGroupTouchBarItem nsGroupTouchBarItem => nsGroupTouchBarItem -> IO (Id NSUserInterfaceCompressionOptions)
+effectiveCompressionOptions nsGroupTouchBarItem  =
+    sendMsg nsGroupTouchBarItem (mkSelector "effectiveCompressionOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- prioritizedCompressionOptions@
+prioritizedCompressionOptions :: IsNSGroupTouchBarItem nsGroupTouchBarItem => nsGroupTouchBarItem -> IO (Id NSArray)
+prioritizedCompressionOptions nsGroupTouchBarItem  =
+    sendMsg nsGroupTouchBarItem (mkSelector "prioritizedCompressionOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setPrioritizedCompressionOptions:@
+setPrioritizedCompressionOptions :: (IsNSGroupTouchBarItem nsGroupTouchBarItem, IsNSArray value) => nsGroupTouchBarItem -> value -> IO ()
+setPrioritizedCompressionOptions nsGroupTouchBarItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsGroupTouchBarItem (mkSelector "setPrioritizedCompressionOptions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -191,4 +213,16 @@ preferredItemWidthSelector = mkSelector "preferredItemWidth"
 -- | @Selector@ for @setPreferredItemWidth:@
 setPreferredItemWidthSelector :: Selector
 setPreferredItemWidthSelector = mkSelector "setPreferredItemWidth:"
+
+-- | @Selector@ for @effectiveCompressionOptions@
+effectiveCompressionOptionsSelector :: Selector
+effectiveCompressionOptionsSelector = mkSelector "effectiveCompressionOptions"
+
+-- | @Selector@ for @prioritizedCompressionOptions@
+prioritizedCompressionOptionsSelector :: Selector
+prioritizedCompressionOptionsSelector = mkSelector "prioritizedCompressionOptions"
+
+-- | @Selector@ for @setPrioritizedCompressionOptions:@
+setPrioritizedCompressionOptionsSelector :: Selector
+setPrioritizedCompressionOptionsSelector = mkSelector "setPrioritizedCompressionOptions:"
 

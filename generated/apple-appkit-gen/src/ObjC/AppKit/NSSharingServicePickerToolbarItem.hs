@@ -6,6 +6,10 @@
 module ObjC.AppKit.NSSharingServicePickerToolbarItem
   ( NSSharingServicePickerToolbarItem
   , IsNSSharingServicePickerToolbarItem(..)
+  , delegate
+  , setDelegate
+  , delegateSelector
+  , setDelegateSelector
 
 
   ) where
@@ -25,7 +29,25 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.AppKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | @- delegate@
+delegate :: IsNSSharingServicePickerToolbarItem nsSharingServicePickerToolbarItem => nsSharingServicePickerToolbarItem -> IO RawId
+delegate nsSharingServicePickerToolbarItem  =
+    fmap (RawId . castPtr) $ sendMsg nsSharingServicePickerToolbarItem (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSSharingServicePickerToolbarItem nsSharingServicePickerToolbarItem => nsSharingServicePickerToolbarItem -> RawId -> IO ()
+setDelegate nsSharingServicePickerToolbarItem  value =
+    sendMsg nsSharingServicePickerToolbarItem (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

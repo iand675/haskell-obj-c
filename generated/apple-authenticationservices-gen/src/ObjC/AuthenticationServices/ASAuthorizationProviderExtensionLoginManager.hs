@@ -30,6 +30,10 @@ module ObjC.AuthenticationServices.ASAuthorizationProviderExtensionLoginManager
   , userRegistered
   , registrationToken
   , authenticationMethod
+  , extensionData
+  , loginUserName
+  , setLoginUserName
+  , userLoginConfiguration
   , ssoTokens
   , setSsoTokens
   , loginConfiguration
@@ -56,6 +60,10 @@ module ObjC.AuthenticationServices.ASAuthorizationProviderExtensionLoginManager
   , userRegisteredSelector
   , registrationTokenSelector
   , authenticationMethodSelector
+  , extensionDataSelector
+  , loginUserNameSelector
+  , setLoginUserNameSelector
+  , userLoginConfigurationSelector
   , ssoTokensSelector
   , setSsoTokensSelector
   , loginConfigurationSelector
@@ -290,6 +298,35 @@ authenticationMethod :: IsASAuthorizationProviderExtensionLoginManager asAuthori
 authenticationMethod asAuthorizationProviderExtensionLoginManager  =
     fmap (coerce :: CLong -> ASAuthorizationProviderExtensionAuthenticationMethod) $ sendMsg asAuthorizationProviderExtensionLoginManager (mkSelector "authenticationMethod") retCLong []
 
+-- | Returns the extension data from the MDM profile.
+--
+-- ObjC selector: @- extensionData@
+extensionData :: IsASAuthorizationProviderExtensionLoginManager asAuthorizationProviderExtensionLoginManager => asAuthorizationProviderExtensionLoginManager -> IO (Id NSDictionary)
+extensionData asAuthorizationProviderExtensionLoginManager  =
+    sendMsg asAuthorizationProviderExtensionLoginManager (mkSelector "extensionData") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The user name to use when authenticating with the identity provider.
+--
+-- ObjC selector: @- loginUserName@
+loginUserName :: IsASAuthorizationProviderExtensionLoginManager asAuthorizationProviderExtensionLoginManager => asAuthorizationProviderExtensionLoginManager -> IO (Id NSString)
+loginUserName asAuthorizationProviderExtensionLoginManager  =
+    sendMsg asAuthorizationProviderExtensionLoginManager (mkSelector "loginUserName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The user name to use when authenticating with the identity provider.
+--
+-- ObjC selector: @- setLoginUserName:@
+setLoginUserName :: (IsASAuthorizationProviderExtensionLoginManager asAuthorizationProviderExtensionLoginManager, IsNSString value) => asAuthorizationProviderExtensionLoginManager -> value -> IO ()
+setLoginUserName asAuthorizationProviderExtensionLoginManager  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginManager (mkSelector "setLoginUserName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | Retrieves the current user login configuration for the extension.
+--
+-- ObjC selector: @- userLoginConfiguration@
+userLoginConfiguration :: IsASAuthorizationProviderExtensionLoginManager asAuthorizationProviderExtensionLoginManager => asAuthorizationProviderExtensionLoginManager -> IO (Id ASAuthorizationProviderExtensionUserLoginConfiguration)
+userLoginConfiguration asAuthorizationProviderExtensionLoginManager  =
+    sendMsg asAuthorizationProviderExtensionLoginManager (mkSelector "userLoginConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Retrieves or sets the current SSO tokens response for the current user and extension.
 --
 -- ObjC selector: @- ssoTokens@
@@ -407,6 +444,22 @@ registrationTokenSelector = mkSelector "registrationToken"
 -- | @Selector@ for @authenticationMethod@
 authenticationMethodSelector :: Selector
 authenticationMethodSelector = mkSelector "authenticationMethod"
+
+-- | @Selector@ for @extensionData@
+extensionDataSelector :: Selector
+extensionDataSelector = mkSelector "extensionData"
+
+-- | @Selector@ for @loginUserName@
+loginUserNameSelector :: Selector
+loginUserNameSelector = mkSelector "loginUserName"
+
+-- | @Selector@ for @setLoginUserName:@
+setLoginUserNameSelector :: Selector
+setLoginUserNameSelector = mkSelector "setLoginUserName:"
+
+-- | @Selector@ for @userLoginConfiguration@
+userLoginConfigurationSelector :: Selector
+userLoginConfigurationSelector = mkSelector "userLoginConfiguration"
 
 -- | @Selector@ for @ssoTokens@
 ssoTokensSelector :: Selector

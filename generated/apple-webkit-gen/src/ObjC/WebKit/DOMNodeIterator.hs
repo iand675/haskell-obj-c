@@ -11,6 +11,7 @@ module ObjC.WebKit.DOMNodeIterator
   , detach
   , root
   , whatToShow
+  , filter_
   , expandEntityReferences
   , referenceNode
   , pointerBeforeReferenceNode
@@ -19,6 +20,7 @@ module ObjC.WebKit.DOMNodeIterator
   , detachSelector
   , rootSelector
   , whatToShowSelector
+  , filterSelector
   , expandEntityReferencesSelector
   , referenceNodeSelector
   , pointerBeforeReferenceNodeSelector
@@ -66,6 +68,11 @@ whatToShow :: IsDOMNodeIterator domNodeIterator => domNodeIterator -> IO CUInt
 whatToShow domNodeIterator  =
     sendMsg domNodeIterator (mkSelector "whatToShow") retCUInt []
 
+-- | @- filter@
+filter_ :: IsDOMNodeIterator domNodeIterator => domNodeIterator -> IO RawId
+filter_ domNodeIterator  =
+    fmap (RawId . castPtr) $ sendMsg domNodeIterator (mkSelector "filter") (retPtr retVoid) []
+
 -- | @- expandEntityReferences@
 expandEntityReferences :: IsDOMNodeIterator domNodeIterator => domNodeIterator -> IO Bool
 expandEntityReferences domNodeIterator  =
@@ -104,6 +111,10 @@ rootSelector = mkSelector "root"
 -- | @Selector@ for @whatToShow@
 whatToShowSelector :: Selector
 whatToShowSelector = mkSelector "whatToShow"
+
+-- | @Selector@ for @filter@
+filterSelector :: Selector
+filterSelector = mkSelector "filter"
 
 -- | @Selector@ for @expandEntityReferences@
 expandEntityReferencesSelector :: Selector

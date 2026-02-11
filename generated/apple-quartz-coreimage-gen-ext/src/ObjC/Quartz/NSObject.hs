@@ -9,6 +9,8 @@ module ObjC.Quartz.NSObject
   , saveOptions_shouldShowUTType
   , imageBrowserSelectionDidChange
   , imageBrowser_cellWasDoubleClickedAtIndex
+  , imageBrowser_cellWasRightClickedAtIndex_withEvent
+  , imageBrowser_backgroundWasRightClickedWithEvent
   , imageUID
   , imageRepresentationType
   , imageRepresentation
@@ -19,6 +21,7 @@ module ObjC.Quartz.NSObject
   , imageBrowser_itemAtIndex
   , imageBrowser_removeItemsAtIndexes
   , imageBrowser_moveItemsAtIndexes_toIndex
+  , imageBrowser_writeItemsAtIndexes_toPasteboard
   , numberOfGroupsInImageBrowser
   , imageBrowser_groupAtIndex
   , quartzFilterManager_didAddFilter
@@ -34,6 +37,8 @@ module ObjC.Quartz.NSObject
   , saveOptions_shouldShowUTTypeSelector
   , imageBrowserSelectionDidChangeSelector
   , imageBrowser_cellWasDoubleClickedAtIndexSelector
+  , imageBrowser_cellWasRightClickedAtIndex_withEventSelector
+  , imageBrowser_backgroundWasRightClickedWithEventSelector
   , imageUIDSelector
   , imageRepresentationTypeSelector
   , imageRepresentationSelector
@@ -44,6 +49,7 @@ module ObjC.Quartz.NSObject
   , imageBrowser_itemAtIndexSelector
   , imageBrowser_removeItemsAtIndexesSelector
   , imageBrowser_moveItemsAtIndexes_toIndexSelector
+  , imageBrowser_writeItemsAtIndexes_toPasteboardSelector
   , numberOfGroupsInImageBrowserSelector
   , imageBrowser_groupAtIndexSelector
   , quartzFilterManager_didAddFilterSelector
@@ -103,6 +109,28 @@ imageBrowser_cellWasDoubleClickedAtIndex :: (IsNSObject nsObject, IsIKImageBrows
 imageBrowser_cellWasDoubleClickedAtIndex nsObject  aBrowser index =
   withObjCPtr aBrowser $ \raw_aBrowser ->
       sendMsg nsObject (mkSelector "imageBrowser:cellWasDoubleClickedAtIndex:") retVoid [argPtr (castPtr raw_aBrowser :: Ptr ()), argCULong index]
+
+-- | imageBrowser:cellWasRightClickedAtIndex:withEvent:
+--
+-- Invoked by 'aBrowser' when a cell was right clicked or left clicked with the Alt key pressed.
+--
+-- @index@ — Index of the cell that was right clicked.
+--
+-- ObjC selector: @- imageBrowser:cellWasRightClickedAtIndex:withEvent:@
+imageBrowser_cellWasRightClickedAtIndex_withEvent :: (IsNSObject nsObject, IsIKImageBrowserView aBrowser) => nsObject -> aBrowser -> CULong -> RawId -> IO ()
+imageBrowser_cellWasRightClickedAtIndex_withEvent nsObject  aBrowser index event =
+  withObjCPtr aBrowser $ \raw_aBrowser ->
+      sendMsg nsObject (mkSelector "imageBrowser:cellWasRightClickedAtIndex:withEvent:") retVoid [argPtr (castPtr raw_aBrowser :: Ptr ()), argCULong index, argPtr (castPtr (unRawId event) :: Ptr ())]
+
+-- | imageBrowser:backgroundWasRightClickedWithEvent:
+--
+-- Invoked by 'aBrowser' when a the background was right clicked or left clicked with the Alt key pressed.
+--
+-- ObjC selector: @- imageBrowser:backgroundWasRightClickedWithEvent:@
+imageBrowser_backgroundWasRightClickedWithEvent :: (IsNSObject nsObject, IsIKImageBrowserView aBrowser) => nsObject -> aBrowser -> RawId -> IO ()
+imageBrowser_backgroundWasRightClickedWithEvent nsObject  aBrowser event =
+  withObjCPtr aBrowser $ \raw_aBrowser ->
+      sendMsg nsObject (mkSelector "imageBrowser:backgroundWasRightClickedWithEvent:") retVoid [argPtr (castPtr raw_aBrowser :: Ptr ()), argPtr (castPtr (unRawId event) :: Ptr ())]
 
 -- | imageUID
 --
@@ -211,6 +239,19 @@ imageBrowser_moveItemsAtIndexes_toIndex nsObject  aBrowser indexes destinationIn
   withObjCPtr aBrowser $ \raw_aBrowser ->
     withObjCPtr indexes $ \raw_indexes ->
         fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "imageBrowser:moveItemsAtIndexes:toIndex:") retCULong [argPtr (castPtr raw_aBrowser :: Ptr ()), argPtr (castPtr raw_indexes :: Ptr ()), argCULong destinationIndex]
+
+-- | imageBrowser:writeItemsAtIndexes:toPasteboard:
+--
+-- This method is called after it has been determined that a drag should begin, but before the drag has been started. 'itemIndexes' contains the indexes that will be participating in the drag. Return the number of items effectively written to the pasteboard.
+--
+-- optional - drag and drop support
+--
+-- ObjC selector: @- imageBrowser:writeItemsAtIndexes:toPasteboard:@
+imageBrowser_writeItemsAtIndexes_toPasteboard :: (IsNSObject nsObject, IsIKImageBrowserView aBrowser, IsNSIndexSet itemIndexes) => nsObject -> aBrowser -> itemIndexes -> RawId -> IO CULong
+imageBrowser_writeItemsAtIndexes_toPasteboard nsObject  aBrowser itemIndexes pasteboard =
+  withObjCPtr aBrowser $ \raw_aBrowser ->
+    withObjCPtr itemIndexes $ \raw_itemIndexes ->
+        sendMsg nsObject (mkSelector "imageBrowser:writeItemsAtIndexes:toPasteboard:") retCULong [argPtr (castPtr raw_aBrowser :: Ptr ()), argPtr (castPtr raw_itemIndexes :: Ptr ()), argPtr (castPtr (unRawId pasteboard) :: Ptr ())]
 
 -- | numberOfGroupsInImageBrowser:
 --
@@ -325,6 +366,14 @@ imageBrowserSelectionDidChangeSelector = mkSelector "imageBrowserSelectionDidCha
 imageBrowser_cellWasDoubleClickedAtIndexSelector :: Selector
 imageBrowser_cellWasDoubleClickedAtIndexSelector = mkSelector "imageBrowser:cellWasDoubleClickedAtIndex:"
 
+-- | @Selector@ for @imageBrowser:cellWasRightClickedAtIndex:withEvent:@
+imageBrowser_cellWasRightClickedAtIndex_withEventSelector :: Selector
+imageBrowser_cellWasRightClickedAtIndex_withEventSelector = mkSelector "imageBrowser:cellWasRightClickedAtIndex:withEvent:"
+
+-- | @Selector@ for @imageBrowser:backgroundWasRightClickedWithEvent:@
+imageBrowser_backgroundWasRightClickedWithEventSelector :: Selector
+imageBrowser_backgroundWasRightClickedWithEventSelector = mkSelector "imageBrowser:backgroundWasRightClickedWithEvent:"
+
 -- | @Selector@ for @imageUID@
 imageUIDSelector :: Selector
 imageUIDSelector = mkSelector "imageUID"
@@ -364,6 +413,10 @@ imageBrowser_removeItemsAtIndexesSelector = mkSelector "imageBrowser:removeItems
 -- | @Selector@ for @imageBrowser:moveItemsAtIndexes:toIndex:@
 imageBrowser_moveItemsAtIndexes_toIndexSelector :: Selector
 imageBrowser_moveItemsAtIndexes_toIndexSelector = mkSelector "imageBrowser:moveItemsAtIndexes:toIndex:"
+
+-- | @Selector@ for @imageBrowser:writeItemsAtIndexes:toPasteboard:@
+imageBrowser_writeItemsAtIndexes_toPasteboardSelector :: Selector
+imageBrowser_writeItemsAtIndexes_toPasteboardSelector = mkSelector "imageBrowser:writeItemsAtIndexes:toPasteboard:"
 
 -- | @Selector@ for @numberOfGroupsInImageBrowser:@
 numberOfGroupsInImageBrowserSelector :: Selector

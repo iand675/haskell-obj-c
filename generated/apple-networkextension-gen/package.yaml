@@ -17,6 +17,8 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.NetworkExtension.Delegate.NEAppPushDelegate
+  - ObjC.NetworkExtension.Delegate.NWTCPConnectionAuthenticationDelegate
   - ObjC.NetworkExtension.Enums
   - ObjC.NetworkExtension.Internal.Classes
   - ObjC.NetworkExtension.Internal.Enums

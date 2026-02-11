@@ -9,12 +9,16 @@ module ObjC.MultipeerConnectivity.MCNearbyServiceAdvertiser
   , initWithPeer_discoveryInfo_serviceType
   , startAdvertisingPeer
   , stopAdvertisingPeer
+  , delegate
+  , setDelegate
   , myPeerID
   , discoveryInfo
   , serviceType
   , initWithPeer_discoveryInfo_serviceTypeSelector
   , startAdvertisingPeerSelector
   , stopAdvertisingPeerSelector
+  , delegateSelector
+  , setDelegateSelector
   , myPeerIDSelector
   , discoveryInfoSelector
   , serviceTypeSelector
@@ -55,6 +59,16 @@ stopAdvertisingPeer :: IsMCNearbyServiceAdvertiser mcNearbyServiceAdvertiser => 
 stopAdvertisingPeer mcNearbyServiceAdvertiser  =
     sendMsg mcNearbyServiceAdvertiser (mkSelector "stopAdvertisingPeer") retVoid []
 
+-- | @- delegate@
+delegate :: IsMCNearbyServiceAdvertiser mcNearbyServiceAdvertiser => mcNearbyServiceAdvertiser -> IO RawId
+delegate mcNearbyServiceAdvertiser  =
+    fmap (RawId . castPtr) $ sendMsg mcNearbyServiceAdvertiser (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsMCNearbyServiceAdvertiser mcNearbyServiceAdvertiser => mcNearbyServiceAdvertiser -> RawId -> IO ()
+setDelegate mcNearbyServiceAdvertiser  value =
+    sendMsg mcNearbyServiceAdvertiser (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- myPeerID@
 myPeerID :: IsMCNearbyServiceAdvertiser mcNearbyServiceAdvertiser => mcNearbyServiceAdvertiser -> IO (Id MCPeerID)
 myPeerID mcNearbyServiceAdvertiser  =
@@ -85,6 +99,14 @@ startAdvertisingPeerSelector = mkSelector "startAdvertisingPeer"
 -- | @Selector@ for @stopAdvertisingPeer@
 stopAdvertisingPeerSelector :: Selector
 stopAdvertisingPeerSelector = mkSelector "stopAdvertisingPeer"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @myPeerID@
 myPeerIDSelector :: Selector

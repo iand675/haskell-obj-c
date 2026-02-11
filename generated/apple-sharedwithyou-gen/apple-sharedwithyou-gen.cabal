@@ -12,6 +12,9 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.SharedWithYou.Delegate.SWCollaborationViewDelegate
+      ObjC.SharedWithYou.Delegate.SWHighlightCenterDelegate
+      ObjC.SharedWithYou.Delegate.SWHighlightEvent
       ObjC.SharedWithYou.Enums
       ObjC.SharedWithYou.Internal.Classes
       ObjC.SharedWithYou.Internal.Enums

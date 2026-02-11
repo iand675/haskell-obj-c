@@ -27,6 +27,8 @@ library:
   - ObjC.DiscRecording.DRMSFFormatter
   - ObjC.DiscRecording.DRNotificationCenter
   - ObjC.DiscRecording.DRTrack
+  - ObjC.DiscRecording.Delegate.DRFileDataProduction
+  - ObjC.DiscRecording.Delegate.DRTrackDataProduction
   - ObjC.DiscRecording.Internal.Classes
   - ObjC.DiscRecording.Internal.Structs
   - ObjC.DiscRecording.Structs

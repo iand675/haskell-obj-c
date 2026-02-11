@@ -18,6 +18,7 @@ module ObjC.EventKit.EKParticipant
   , participantRole
   , participantType
   , currentUser
+  , contactPredicate
   , abPersonInAddressBookSelector
   , urlSelector
   , nameSelector
@@ -25,6 +26,7 @@ module ObjC.EventKit.EKParticipant
   , participantRoleSelector
   , participantTypeSelector
   , currentUserSelector
+  , contactPredicateSelector
 
   -- * Enum types
   , EKParticipantRole(EKParticipantRole)
@@ -140,6 +142,17 @@ currentUser :: IsEKParticipant ekParticipant => ekParticipant -> IO Bool
 currentUser ekParticipant  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekParticipant (mkSelector "currentUser") retCULong []
 
+-- | contactPredicate
+--
+-- Returns a predicate to use with Contacts.framework to retrieve the corresponding                CNContact instance.
+--
+-- This method returns a predicate that can be used with a CNContactStore to fetch                a CNContact instance for this participant, if one exists.
+--
+-- ObjC selector: @- contactPredicate@
+contactPredicate :: IsEKParticipant ekParticipant => ekParticipant -> IO RawId
+contactPredicate ekParticipant  =
+    fmap (RawId . castPtr) $ sendMsg ekParticipant (mkSelector "contactPredicate") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -171,4 +184,8 @@ participantTypeSelector = mkSelector "participantType"
 -- | @Selector@ for @currentUser@
 currentUserSelector :: Selector
 currentUserSelector = mkSelector "currentUser"
+
+-- | @Selector@ for @contactPredicate@
+contactPredicateSelector :: Selector
+contactPredicateSelector = mkSelector "contactPredicate"
 

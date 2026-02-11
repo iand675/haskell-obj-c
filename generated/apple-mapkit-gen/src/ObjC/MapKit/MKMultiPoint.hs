@@ -6,9 +6,13 @@
 module ObjC.MapKit.MKMultiPoint
   ( MKMultiPoint
   , IsMKMultiPoint(..)
+  , points
+  , getCoordinates_range
   , locationAtPointIndex
   , locationsAtPointIndexes
   , pointCount
+  , pointsSelector
+  , getCoordinates_rangeSelector
   , locationAtPointIndexSelector
   , locationsAtPointIndexesSelector
   , pointCountSelector
@@ -32,6 +36,16 @@ import ObjC.MapKit.Internal.Classes
 import ObjC.Foundation.Internal.Structs
 import ObjC.Foundation.Internal.Classes
 
+-- | @- points@
+points :: IsMKMultiPoint mkMultiPoint => mkMultiPoint -> IO RawId
+points mkMultiPoint  =
+    fmap (RawId . castPtr) $ sendMsg mkMultiPoint (mkSelector "points") (retPtr retVoid) []
+
+-- | @- getCoordinates:range:@
+getCoordinates_range :: IsMKMultiPoint mkMultiPoint => mkMultiPoint -> RawId -> NSRange -> IO ()
+getCoordinates_range mkMultiPoint  coords range =
+    sendMsg mkMultiPoint (mkSelector "getCoordinates:range:") retVoid [argPtr (castPtr (unRawId coords) :: Ptr ()), argNSRange range]
+
 -- | @- locationAtPointIndex:@
 locationAtPointIndex :: IsMKMultiPoint mkMultiPoint => mkMultiPoint -> CULong -> IO CDouble
 locationAtPointIndex mkMultiPoint  index =
@@ -51,6 +65,14 @@ pointCount mkMultiPoint  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @points@
+pointsSelector :: Selector
+pointsSelector = mkSelector "points"
+
+-- | @Selector@ for @getCoordinates:range:@
+getCoordinates_rangeSelector :: Selector
+getCoordinates_rangeSelector = mkSelector "getCoordinates:range:"
 
 -- | @Selector@ for @locationAtPointIndex:@
 locationAtPointIndexSelector :: Selector

@@ -15,9 +15,11 @@ module ObjC.AVFoundation.AVPlayerVideoOutputConfiguration
   , init_
   , new
   , sourcePlayerItem
+  , dataChannelDescriptions
   , initSelector
   , newSelector
   , sourcePlayerItemSelector
+  , dataChannelDescriptionsSelector
 
 
   ) where
@@ -60,6 +62,17 @@ sourcePlayerItem :: IsAVPlayerVideoOutputConfiguration avPlayerVideoOutputConfig
 sourcePlayerItem avPlayerVideoOutputConfiguration  =
     sendMsg avPlayerVideoOutputConfiguration (mkSelector "sourcePlayerItem") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | dataChannelDescriptions
+--
+-- List of data channels, represented as CMTagCollections, selected for this configuration.
+--
+-- Returns an Array of CMTagCollections
+--
+-- ObjC selector: @- dataChannelDescriptions@
+dataChannelDescriptions :: IsAVPlayerVideoOutputConfiguration avPlayerVideoOutputConfiguration => avPlayerVideoOutputConfiguration -> IO (Id NSArray)
+dataChannelDescriptions avPlayerVideoOutputConfiguration  =
+    sendMsg avPlayerVideoOutputConfiguration (mkSelector "dataChannelDescriptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -75,4 +88,8 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @sourcePlayerItem@
 sourcePlayerItemSelector :: Selector
 sourcePlayerItemSelector = mkSelector "sourcePlayerItem"
+
+-- | @Selector@ for @dataChannelDescriptions@
+dataChannelDescriptionsSelector :: Selector
+dataChannelDescriptionsSelector = mkSelector "dataChannelDescriptions"
 

@@ -7,9 +7,13 @@ module ObjC.PassKit.PKPaymentToken
   ( PKPaymentToken
   , IsPKPaymentToken(..)
   , paymentMethod
+  , paymentInstrumentName
+  , paymentNetwork
   , transactionIdentifier
   , paymentData
   , paymentMethodSelector
+  , paymentInstrumentNameSelector
+  , paymentNetworkSelector
   , transactionIdentifierSelector
   , paymentDataSelector
 
@@ -36,6 +40,16 @@ paymentMethod :: IsPKPaymentToken pkPaymentToken => pkPaymentToken -> IO (Id PKP
 paymentMethod pkPaymentToken  =
     sendMsg pkPaymentToken (mkSelector "paymentMethod") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- paymentInstrumentName@
+paymentInstrumentName :: IsPKPaymentToken pkPaymentToken => pkPaymentToken -> IO (Id NSString)
+paymentInstrumentName pkPaymentToken  =
+    sendMsg pkPaymentToken (mkSelector "paymentInstrumentName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- paymentNetwork@
+paymentNetwork :: IsPKPaymentToken pkPaymentToken => pkPaymentToken -> IO (Id NSString)
+paymentNetwork pkPaymentToken  =
+    sendMsg pkPaymentToken (mkSelector "paymentNetwork") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- transactionIdentifier@
 transactionIdentifier :: IsPKPaymentToken pkPaymentToken => pkPaymentToken -> IO (Id NSString)
 transactionIdentifier pkPaymentToken  =
@@ -53,6 +67,14 @@ paymentData pkPaymentToken  =
 -- | @Selector@ for @paymentMethod@
 paymentMethodSelector :: Selector
 paymentMethodSelector = mkSelector "paymentMethod"
+
+-- | @Selector@ for @paymentInstrumentName@
+paymentInstrumentNameSelector :: Selector
+paymentInstrumentNameSelector = mkSelector "paymentInstrumentName"
+
+-- | @Selector@ for @paymentNetwork@
+paymentNetworkSelector :: Selector
+paymentNetworkSelector = mkSelector "paymentNetwork"
 
 -- | @Selector@ for @transactionIdentifier@
 transactionIdentifierSelector :: Selector

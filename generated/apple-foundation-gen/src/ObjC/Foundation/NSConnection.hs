@@ -34,6 +34,8 @@ module ObjC.Foundation.NSConnection
   , setReplyTimeout
   , rootObject
   , setRootObject
+  , delegate
+  , setDelegate
   , independentConversationQueueing
   , setIndependentConversationQueueing
   , valid
@@ -72,6 +74,8 @@ module ObjC.Foundation.NSConnection
   , setReplyTimeoutSelector
   , rootObjectSelector
   , setRootObjectSelector
+  , delegateSelector
+  , setDelegateSelector
   , independentConversationQueueingSelector
   , setIndependentConversationQueueingSelector
   , validSelector
@@ -285,6 +289,16 @@ setRootObject :: IsNSConnection nsConnection => nsConnection -> RawId -> IO ()
 setRootObject nsConnection  value =
     sendMsg nsConnection (mkSelector "setRootObject:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsNSConnection nsConnection => nsConnection -> IO RawId
+delegate nsConnection  =
+    fmap (RawId . castPtr) $ sendMsg nsConnection (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSConnection nsConnection => nsConnection -> RawId -> IO ()
+setDelegate nsConnection  value =
+    sendMsg nsConnection (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- independentConversationQueueing@
 independentConversationQueueing :: IsNSConnection nsConnection => nsConnection -> IO Bool
 independentConversationQueueing nsConnection  =
@@ -450,6 +464,14 @@ rootObjectSelector = mkSelector "rootObject"
 -- | @Selector@ for @setRootObject:@
 setRootObjectSelector :: Selector
 setRootObjectSelector = mkSelector "setRootObject:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @independentConversationQueueing@
 independentConversationQueueingSelector :: Selector

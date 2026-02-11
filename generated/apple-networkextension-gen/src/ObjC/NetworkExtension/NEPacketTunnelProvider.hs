@@ -18,12 +18,14 @@ module ObjC.NetworkExtension.NEPacketTunnelProvider
   , cancelTunnelWithError
   , createTCPConnectionThroughTunnelToEndpoint_enableTLS_TLSParameters_delegate
   , createUDPSessionThroughTunnelToEndpoint_fromEndpoint
+  , packetFlow
   , virtualInterface
   , startTunnelWithOptions_completionHandlerSelector
   , stopTunnelWithReason_completionHandlerSelector
   , cancelTunnelWithErrorSelector
   , createTCPConnectionThroughTunnelToEndpoint_enableTLS_TLSParameters_delegateSelector
   , createUDPSessionThroughTunnelToEndpoint_fromEndpointSelector
+  , packetFlowSelector
   , virtualInterfaceSelector
 
   -- * Enum types
@@ -142,6 +144,15 @@ createUDPSessionThroughTunnelToEndpoint_fromEndpoint nePacketTunnelProvider  rem
     withObjCPtr localEndpoint $ \raw_localEndpoint ->
         sendMsg nePacketTunnelProvider (mkSelector "createUDPSessionThroughTunnelToEndpoint:fromEndpoint:") (retPtr retVoid) [argPtr (castPtr raw_remoteEndpoint :: Ptr ()), argPtr (castPtr raw_localEndpoint :: Ptr ())] >>= retainedObject . castPtr
 
+-- | packetFlow
+--
+-- An NEPacketFlow object that the tunnel provider implementation should use to receive packets from the network stack and inject packets into the network stack. Every time the tunnel is started the packet flow object is in an initialized state and must be explicitly opened before any packets can be received or injected.
+--
+-- ObjC selector: @- packetFlow@
+packetFlow :: IsNEPacketTunnelProvider nePacketTunnelProvider => nePacketTunnelProvider -> IO (Id NEPacketTunnelFlow)
+packetFlow nePacketTunnelProvider  =
+    sendMsg nePacketTunnelProvider (mkSelector "packetFlow") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | virtualInterface
 --
 -- The virtual network interface used to route packets to the packet tunnel provider.
@@ -176,6 +187,10 @@ createTCPConnectionThroughTunnelToEndpoint_enableTLS_TLSParameters_delegateSelec
 -- | @Selector@ for @createUDPSessionThroughTunnelToEndpoint:fromEndpoint:@
 createUDPSessionThroughTunnelToEndpoint_fromEndpointSelector :: Selector
 createUDPSessionThroughTunnelToEndpoint_fromEndpointSelector = mkSelector "createUDPSessionThroughTunnelToEndpoint:fromEndpoint:"
+
+-- | @Selector@ for @packetFlow@
+packetFlowSelector :: Selector
+packetFlowSelector = mkSelector "packetFlow"
 
 -- | @Selector@ for @virtualInterface@
 virtualInterfaceSelector :: Selector

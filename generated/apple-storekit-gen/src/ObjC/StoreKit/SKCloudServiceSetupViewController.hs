@@ -7,7 +7,11 @@ module ObjC.StoreKit.SKCloudServiceSetupViewController
   ( SKCloudServiceSetupViewController
   , IsSKCloudServiceSetupViewController(..)
   , loadWithOptions_completionHandler
+  , delegate
+  , setDelegate
   , loadWithOptions_completionHandlerSelector
+  , delegateSelector
+  , setDelegateSelector
 
 
   ) where
@@ -36,6 +40,20 @@ loadWithOptions_completionHandler skCloudServiceSetupViewController  options com
   withObjCPtr options $ \raw_options ->
       sendMsg skCloudServiceSetupViewController (mkSelector "loadWithOptions:completionHandler:") retVoid [argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
 
+-- | Optional delegate.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsSKCloudServiceSetupViewController skCloudServiceSetupViewController => skCloudServiceSetupViewController -> IO RawId
+delegate skCloudServiceSetupViewController  =
+    fmap (RawId . castPtr) $ sendMsg skCloudServiceSetupViewController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | Optional delegate.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsSKCloudServiceSetupViewController skCloudServiceSetupViewController => skCloudServiceSetupViewController -> RawId -> IO ()
+setDelegate skCloudServiceSetupViewController  value =
+    sendMsg skCloudServiceSetupViewController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -43,4 +61,12 @@ loadWithOptions_completionHandler skCloudServiceSetupViewController  options com
 -- | @Selector@ for @loadWithOptions:completionHandler:@
 loadWithOptions_completionHandlerSelector :: Selector
 loadWithOptions_completionHandlerSelector = mkSelector "loadWithOptions:completionHandler:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

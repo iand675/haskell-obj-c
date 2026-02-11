@@ -23,7 +23,10 @@ module ObjC.CoreBluetooth.CBPeripheral
   , readValueForDescriptor
   , writeValue_forDescriptor
   , openL2CAPChannel
+  , delegate
+  , setDelegate
   , name
+  , rssi
   , state
   , services
   , canSendWriteWithoutResponse
@@ -40,7 +43,10 @@ module ObjC.CoreBluetooth.CBPeripheral
   , readValueForDescriptorSelector
   , writeValue_forDescriptorSelector
   , openL2CAPChannelSelector
+  , delegateSelector
+  , setDelegateSelector
   , nameSelector
+  , rssiSelector
   , stateSelector
   , servicesSelector
   , canSendWriteWithoutResponseSelector
@@ -269,6 +275,24 @@ openL2CAPChannel :: IsCBPeripheral cbPeripheral => cbPeripheral -> CUShort -> IO
 openL2CAPChannel cbPeripheral  psm =
     sendMsg cbPeripheral (mkSelector "openL2CAPChannel:") retVoid [argCUInt (fromIntegral psm)]
 
+-- | delegate
+--
+-- The delegate object that will receive peripheral events.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsCBPeripheral cbPeripheral => cbPeripheral -> IO RawId
+delegate cbPeripheral  =
+    fmap (RawId . castPtr) $ sendMsg cbPeripheral (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- The delegate object that will receive peripheral events.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsCBPeripheral cbPeripheral => cbPeripheral -> RawId -> IO ()
+setDelegate cbPeripheral  value =
+    sendMsg cbPeripheral (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | name
 --
 -- The name of the peripheral.
@@ -277,6 +301,19 @@ openL2CAPChannel cbPeripheral  psm =
 name :: IsCBPeripheral cbPeripheral => cbPeripheral -> IO (Id NSString)
 name cbPeripheral  =
     sendMsg cbPeripheral (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | RSSI
+--
+-- The most recently read RSSI, in decibels.
+--
+-- Use {
+--
+-- peripheral:didReadRSSI:error:} instead.
+--
+-- ObjC selector: @- RSSI@
+rssi :: IsCBPeripheral cbPeripheral => cbPeripheral -> IO RawId
+rssi cbPeripheral  =
+    fmap (RawId . castPtr) $ sendMsg cbPeripheral (mkSelector "RSSI") (retPtr retVoid) []
 
 -- | state
 --
@@ -366,9 +403,21 @@ writeValue_forDescriptorSelector = mkSelector "writeValue:forDescriptor:"
 openL2CAPChannelSelector :: Selector
 openL2CAPChannelSelector = mkSelector "openL2CAPChannel:"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @name@
 nameSelector :: Selector
 nameSelector = mkSelector "name"
+
+-- | @Selector@ for @RSSI@
+rssiSelector :: Selector
+rssiSelector = mkSelector "RSSI"
 
 -- | @Selector@ for @state@
 stateSelector :: Selector

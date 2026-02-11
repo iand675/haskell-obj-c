@@ -15,6 +15,8 @@ module ObjC.AppKit.NSToolbar
   , runCustomizationPalette
   , validateVisibleItems
   , setConfigurationFromDictionary
+  , delegate
+  , setDelegate
   , visible
   , setVisible
   , customizationPaletteIsRunning
@@ -41,12 +43,15 @@ module ObjC.AppKit.NSToolbar
   , setSizeMode
   , centeredItemIdentifier
   , setCenteredItemIdentifier
+  , fullScreenAccessoryView
+  , setFullScreenAccessoryView
   , fullScreenAccessoryViewMinHeight
   , setFullScreenAccessoryViewMinHeight
   , fullScreenAccessoryViewMaxHeight
   , setFullScreenAccessoryViewMaxHeight
   , showsBaselineSeparator
   , setShowsBaselineSeparator
+  , configurationDictionary
   , initWithIdentifierSelector
   , initSelector
   , insertItemWithItemIdentifier_atIndexSelector
@@ -55,6 +60,8 @@ module ObjC.AppKit.NSToolbar
   , runCustomizationPaletteSelector
   , validateVisibleItemsSelector
   , setConfigurationFromDictionarySelector
+  , delegateSelector
+  , setDelegateSelector
   , visibleSelector
   , setVisibleSelector
   , customizationPaletteIsRunningSelector
@@ -81,12 +88,15 @@ module ObjC.AppKit.NSToolbar
   , setSizeModeSelector
   , centeredItemIdentifierSelector
   , setCenteredItemIdentifierSelector
+  , fullScreenAccessoryViewSelector
+  , setFullScreenAccessoryViewSelector
   , fullScreenAccessoryViewMinHeightSelector
   , setFullScreenAccessoryViewMinHeightSelector
   , fullScreenAccessoryViewMaxHeightSelector
   , setFullScreenAccessoryViewMaxHeightSelector
   , showsBaselineSeparatorSelector
   , setShowsBaselineSeparatorSelector
+  , configurationDictionarySelector
 
   -- * Enum types
   , NSToolbarDisplayMode(NSToolbarDisplayMode)
@@ -180,6 +190,20 @@ setConfigurationFromDictionary :: (IsNSToolbar nsToolbar, IsNSDictionary configD
 setConfigurationFromDictionary nsToolbar  configDict =
   withObjCPtr configDict $ \raw_configDict ->
       sendMsg nsToolbar (mkSelector "setConfigurationFromDictionary:") retVoid [argPtr (castPtr raw_configDict :: Ptr ())]
+
+-- | Customizable toolbars must have a delegate, and must implement the required @NSToolbarDelegate@ methods.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsNSToolbar nsToolbar => nsToolbar -> IO RawId
+delegate nsToolbar  =
+    fmap (RawId . castPtr) $ sendMsg nsToolbar (mkSelector "delegate") (retPtr retVoid) []
+
+-- | Customizable toolbars must have a delegate, and must implement the required @NSToolbarDelegate@ methods.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsNSToolbar nsToolbar => nsToolbar -> RawId -> IO ()
+setDelegate nsToolbar  value =
+    sendMsg nsToolbar (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | Toggles the visibility of the toolbar. This property may be modified by the user in toolbars with @allowsUserCustomization@ enabled. This property is key value observable on macOS 14.0 and higher.
 --
@@ -359,6 +383,17 @@ setCenteredItemIdentifier nsToolbar  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsToolbar (mkSelector "setCenteredItemIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- fullScreenAccessoryView@
+fullScreenAccessoryView :: IsNSToolbar nsToolbar => nsToolbar -> IO (Id NSView)
+fullScreenAccessoryView nsToolbar  =
+    sendMsg nsToolbar (mkSelector "fullScreenAccessoryView") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setFullScreenAccessoryView:@
+setFullScreenAccessoryView :: (IsNSToolbar nsToolbar, IsNSView value) => nsToolbar -> value -> IO ()
+setFullScreenAccessoryView nsToolbar  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsToolbar (mkSelector "setFullScreenAccessoryView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- fullScreenAccessoryViewMinHeight@
 fullScreenAccessoryViewMinHeight :: IsNSToolbar nsToolbar => nsToolbar -> IO CDouble
 fullScreenAccessoryViewMinHeight nsToolbar  =
@@ -388,6 +423,11 @@ showsBaselineSeparator nsToolbar  =
 setShowsBaselineSeparator :: IsNSToolbar nsToolbar => nsToolbar -> Bool -> IO ()
 setShowsBaselineSeparator nsToolbar  value =
     sendMsg nsToolbar (mkSelector "setShowsBaselineSeparator:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | @- configurationDictionary@
+configurationDictionary :: IsNSToolbar nsToolbar => nsToolbar -> IO (Id NSDictionary)
+configurationDictionary nsToolbar  =
+    sendMsg nsToolbar (mkSelector "configurationDictionary") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -424,6 +464,14 @@ validateVisibleItemsSelector = mkSelector "validateVisibleItems"
 -- | @Selector@ for @setConfigurationFromDictionary:@
 setConfigurationFromDictionarySelector :: Selector
 setConfigurationFromDictionarySelector = mkSelector "setConfigurationFromDictionary:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @visible@
 visibleSelector :: Selector
@@ -529,6 +577,14 @@ centeredItemIdentifierSelector = mkSelector "centeredItemIdentifier"
 setCenteredItemIdentifierSelector :: Selector
 setCenteredItemIdentifierSelector = mkSelector "setCenteredItemIdentifier:"
 
+-- | @Selector@ for @fullScreenAccessoryView@
+fullScreenAccessoryViewSelector :: Selector
+fullScreenAccessoryViewSelector = mkSelector "fullScreenAccessoryView"
+
+-- | @Selector@ for @setFullScreenAccessoryView:@
+setFullScreenAccessoryViewSelector :: Selector
+setFullScreenAccessoryViewSelector = mkSelector "setFullScreenAccessoryView:"
+
 -- | @Selector@ for @fullScreenAccessoryViewMinHeight@
 fullScreenAccessoryViewMinHeightSelector :: Selector
 fullScreenAccessoryViewMinHeightSelector = mkSelector "fullScreenAccessoryViewMinHeight"
@@ -552,4 +608,8 @@ showsBaselineSeparatorSelector = mkSelector "showsBaselineSeparator"
 -- | @Selector@ for @setShowsBaselineSeparator:@
 setShowsBaselineSeparatorSelector :: Selector
 setShowsBaselineSeparatorSelector = mkSelector "setShowsBaselineSeparator:"
+
+-- | @Selector@ for @configurationDictionary@
+configurationDictionarySelector :: Selector
+configurationDictionarySelector = mkSelector "configurationDictionary"
 

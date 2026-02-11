@@ -10,10 +10,18 @@
 module ObjC.NetworkExtension.NWTLSParameters
   ( NWTLSParameters
   , IsNWTLSParameters(..)
+  , tlsSessionID
+  , setTLSSessionID
+  , sslCipherSuites
+  , setSSLCipherSuites
   , minimumSSLProtocolVersion
   , setMinimumSSLProtocolVersion
   , maximumSSLProtocolVersion
   , setMaximumSSLProtocolVersion
+  , tlsSessionIDSelector
+  , setTLSSessionIDSelector
+  , sslCipherSuitesSelector
+  , setSSLCipherSuitesSelector
   , minimumSSLProtocolVersionSelector
   , setMinimumSSLProtocolVersionSelector
   , maximumSSLProtocolVersionSelector
@@ -36,6 +44,44 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.NetworkExtension.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | TLSSessionID
+--
+-- The session ID for the associated connection, used for TLS session resumption.		This property is optional when using TLS.
+--
+-- ObjC selector: @- TLSSessionID@
+tlsSessionID :: IsNWTLSParameters nwtlsParameters => nwtlsParameters -> IO (Id NSData)
+tlsSessionID nwtlsParameters  =
+    sendMsg nwtlsParameters (mkSelector "TLSSessionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | TLSSessionID
+--
+-- The session ID for the associated connection, used for TLS session resumption.		This property is optional when using TLS.
+--
+-- ObjC selector: @- setTLSSessionID:@
+setTLSSessionID :: (IsNWTLSParameters nwtlsParameters, IsNSData value) => nwtlsParameters -> value -> IO ()
+setTLSSessionID nwtlsParameters  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nwtlsParameters (mkSelector "setTLSSessionID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | SSLCipherSuites
+--
+-- The set of allowed cipher suites, as defined in <Security/CipherSuite.h>.		If set to nil, the default cipher suites will be used.
+--
+-- ObjC selector: @- SSLCipherSuites@
+sslCipherSuites :: IsNWTLSParameters nwtlsParameters => nwtlsParameters -> IO (Id NSSet)
+sslCipherSuites nwtlsParameters  =
+    sendMsg nwtlsParameters (mkSelector "SSLCipherSuites") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | SSLCipherSuites
+--
+-- The set of allowed cipher suites, as defined in <Security/CipherSuite.h>.		If set to nil, the default cipher suites will be used.
+--
+-- ObjC selector: @- setSSLCipherSuites:@
+setSSLCipherSuites :: (IsNWTLSParameters nwtlsParameters, IsNSSet value) => nwtlsParameters -> value -> IO ()
+setSSLCipherSuites nwtlsParameters  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nwtlsParameters (mkSelector "setSSLCipherSuites:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | minimumSSLProtocolVersion
 --
@@ -76,6 +122,22 @@ setMaximumSSLProtocolVersion nwtlsParameters  value =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @TLSSessionID@
+tlsSessionIDSelector :: Selector
+tlsSessionIDSelector = mkSelector "TLSSessionID"
+
+-- | @Selector@ for @setTLSSessionID:@
+setTLSSessionIDSelector :: Selector
+setTLSSessionIDSelector = mkSelector "setTLSSessionID:"
+
+-- | @Selector@ for @SSLCipherSuites@
+sslCipherSuitesSelector :: Selector
+sslCipherSuitesSelector = mkSelector "SSLCipherSuites"
+
+-- | @Selector@ for @setSSLCipherSuites:@
+setSSLCipherSuitesSelector :: Selector
+setSSLCipherSuitesSelector = mkSelector "setSSLCipherSuites:"
 
 -- | @Selector@ for @minimumSSLProtocolVersion@
 minimumSSLProtocolVersionSelector :: Selector

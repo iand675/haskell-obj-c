@@ -18,6 +18,8 @@ module ObjC.Contacts.CNContactFormatter
   , delimiterForContact
   , stringFromContact
   , attributedStringFromContact_defaultAttributes
+  , descriptorForRequiredKeysForNameOrder
+  , descriptorForRequiredKeysForDelimiter
   , style
   , setStyle
   , descriptorForRequiredKeysForStyleSelector
@@ -27,6 +29,8 @@ module ObjC.Contacts.CNContactFormatter
   , delimiterForContactSelector
   , stringFromContactSelector
   , attributedStringFromContact_defaultAttributesSelector
+  , descriptorForRequiredKeysForNameOrderSelector
+  , descriptorForRequiredKeysForDelimiterSelector
   , styleSelector
   , setStyleSelector
 
@@ -158,6 +162,32 @@ attributedStringFromContact_defaultAttributes cnContactFormatter  contact attrib
     withObjCPtr attributes $ \raw_attributes ->
         sendMsg cnContactFormatter (mkSelector "attributedStringFromContact:defaultAttributes:") (retPtr retVoid) [argPtr (castPtr raw_contact :: Ptr ()), argPtr (castPtr raw_attributes :: Ptr ())] >>= retainedObject . castPtr
 
+-- | The contact key descriptor required for the name order.
+--
+-- Use to fetch all contact keys required for +nameOrderForContact:. Can combine key descriptors for different formatter styles in the fetch.
+--
+-- Returns: The contact key descriptor for the name order.
+--
+-- ObjC selector: @+ descriptorForRequiredKeysForNameOrder@
+descriptorForRequiredKeysForNameOrder :: IO RawId
+descriptorForRequiredKeysForNameOrder  =
+  do
+    cls' <- getRequiredClass "CNContactFormatter"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "descriptorForRequiredKeysForNameOrder") (retPtr retVoid) []
+
+-- | The contact key descriptor required for the name delimiter.
+--
+-- Use to fetch all contact keys required for +delimiterForContact:. Can combine key descriptors for different formatter styles in the fetch.
+--
+-- Returns: The contact key descriptor for the name delimiter.
+--
+-- ObjC selector: @+ descriptorForRequiredKeysForDelimiter@
+descriptorForRequiredKeysForDelimiter :: IO RawId
+descriptorForRequiredKeysForDelimiter  =
+  do
+    cls' <- getRequiredClass "CNContactFormatter"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "descriptorForRequiredKeysForDelimiter") (retPtr retVoid) []
+
 -- | The style for a contact formatter instance.
 --
 -- The default value is CNContactFormatterStyleFullName.
@@ -207,6 +237,14 @@ stringFromContactSelector = mkSelector "stringFromContact:"
 -- | @Selector@ for @attributedStringFromContact:defaultAttributes:@
 attributedStringFromContact_defaultAttributesSelector :: Selector
 attributedStringFromContact_defaultAttributesSelector = mkSelector "attributedStringFromContact:defaultAttributes:"
+
+-- | @Selector@ for @descriptorForRequiredKeysForNameOrder@
+descriptorForRequiredKeysForNameOrderSelector :: Selector
+descriptorForRequiredKeysForNameOrderSelector = mkSelector "descriptorForRequiredKeysForNameOrder"
+
+-- | @Selector@ for @descriptorForRequiredKeysForDelimiter@
+descriptorForRequiredKeysForDelimiterSelector :: Selector
+descriptorForRequiredKeysForDelimiterSelector = mkSelector "descriptorForRequiredKeysForDelimiter"
 
 -- | @Selector@ for @style@
 styleSelector :: Selector

@@ -21,6 +21,7 @@ module ObjC.Foundation.NSThread
   , cancel
   , start
   , main
+  , currentThread
   , threadDictionary
   , threadPriority
   , setThreadPriority
@@ -52,6 +53,7 @@ module ObjC.Foundation.NSThread
   , cancelSelector
   , startSelector
   , mainSelector
+  , currentThreadSelector
   , threadDictionarySelector
   , qualityOfServiceSelector
   , setQualityOfServiceSelector
@@ -178,6 +180,13 @@ start nsThread  =
 main :: IsNSThread nsThread => nsThread -> IO ()
 main nsThread  =
     sendMsg nsThread (mkSelector "main") retVoid []
+
+-- | @+ currentThread@
+currentThread :: IO (Id NSThread)
+currentThread  =
+  do
+    cls' <- getRequiredClass "NSThread"
+    sendClassMsg cls' (mkSelector "currentThread") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- threadDictionary@
 threadDictionary :: IsNSThread nsThread => nsThread -> IO (Id NSMutableDictionary)
@@ -332,6 +341,10 @@ startSelector = mkSelector "start"
 -- | @Selector@ for @main@
 mainSelector :: Selector
 mainSelector = mkSelector "main"
+
+-- | @Selector@ for @currentThread@
+currentThreadSelector :: Selector
+currentThreadSelector = mkSelector "currentThread"
 
 -- | @Selector@ for @threadDictionary@
 threadDictionarySelector :: Selector

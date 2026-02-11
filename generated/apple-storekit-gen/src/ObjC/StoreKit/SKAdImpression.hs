@@ -14,6 +14,8 @@ module ObjC.StoreKit.SKAdImpression
   , setAdNetworkIdentifier
   , adCampaignIdentifier
   , setAdCampaignIdentifier
+  , sourceIdentifier
+  , setSourceIdentifier
   , adImpressionIdentifier
   , setAdImpressionIdentifier
   , adType
@@ -36,6 +38,8 @@ module ObjC.StoreKit.SKAdImpression
   , setAdNetworkIdentifierSelector
   , adCampaignIdentifierSelector
   , setAdCampaignIdentifierSelector
+  , sourceIdentifierSelector
+  , setSourceIdentifierSelector
   , adImpressionIdentifierSelector
   , setAdImpressionIdentifierSelector
   , adTypeSelector
@@ -128,6 +132,21 @@ setAdCampaignIdentifier :: (IsSKAdImpression skAdImpression, IsNSNumber value) =
 setAdCampaignIdentifier skAdImpression  value =
   withObjCPtr value $ \raw_value ->
       sendMsg skAdImpression (mkSelector "setAdCampaignIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The source identifier
+--
+-- ObjC selector: @- sourceIdentifier@
+sourceIdentifier :: IsSKAdImpression skAdImpression => skAdImpression -> IO (Id NSNumber)
+sourceIdentifier skAdImpression  =
+    sendMsg skAdImpression (mkSelector "sourceIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The source identifier
+--
+-- ObjC selector: @- setSourceIdentifier:@
+setSourceIdentifier :: (IsSKAdImpression skAdImpression, IsNSNumber value) => skAdImpression -> value -> IO ()
+setSourceIdentifier skAdImpression  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg skAdImpression (mkSelector "setSourceIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | The nonce used to generate the signature.
 --
@@ -269,6 +288,14 @@ adCampaignIdentifierSelector = mkSelector "adCampaignIdentifier"
 -- | @Selector@ for @setAdCampaignIdentifier:@
 setAdCampaignIdentifierSelector :: Selector
 setAdCampaignIdentifierSelector = mkSelector "setAdCampaignIdentifier:"
+
+-- | @Selector@ for @sourceIdentifier@
+sourceIdentifierSelector :: Selector
+sourceIdentifierSelector = mkSelector "sourceIdentifier"
+
+-- | @Selector@ for @setSourceIdentifier:@
+setSourceIdentifierSelector :: Selector
+setSourceIdentifierSelector = mkSelector "setSourceIdentifier:"
 
 -- | @Selector@ for @adImpressionIdentifier@
 adImpressionIdentifierSelector :: Selector

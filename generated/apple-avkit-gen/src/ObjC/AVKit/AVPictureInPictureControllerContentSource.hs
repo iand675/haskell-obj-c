@@ -18,12 +18,14 @@ module ObjC.AVKit.AVPictureInPictureControllerContentSource
   , initWithSampleBufferDisplayLayer_playbackDelegate
   , playerLayer
   , sampleBufferDisplayLayer
+  , sampleBufferPlaybackDelegate
   , initSelector
   , newSelector
   , initWithPlayerLayerSelector
   , initWithSampleBufferDisplayLayer_playbackDelegateSelector
   , playerLayerSelector
   , sampleBufferDisplayLayerSelector
+  , sampleBufferPlaybackDelegateSelector
 
 
   ) where
@@ -100,6 +102,15 @@ sampleBufferDisplayLayer :: IsAVPictureInPictureControllerContentSource avPictur
 sampleBufferDisplayLayer avPictureInPictureControllerContentSource  =
     sendMsg avPictureInPictureControllerContentSource (mkSelector "sampleBufferDisplayLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | sampleBufferPlaybackDelegate
+--
+-- The receiver's sample buffer playback delegate.
+--
+-- ObjC selector: @- sampleBufferPlaybackDelegate@
+sampleBufferPlaybackDelegate :: IsAVPictureInPictureControllerContentSource avPictureInPictureControllerContentSource => avPictureInPictureControllerContentSource -> IO RawId
+sampleBufferPlaybackDelegate avPictureInPictureControllerContentSource  =
+    fmap (RawId . castPtr) $ sendMsg avPictureInPictureControllerContentSource (mkSelector "sampleBufferPlaybackDelegate") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -127,4 +138,8 @@ playerLayerSelector = mkSelector "playerLayer"
 -- | @Selector@ for @sampleBufferDisplayLayer@
 sampleBufferDisplayLayerSelector :: Selector
 sampleBufferDisplayLayerSelector = mkSelector "sampleBufferDisplayLayer"
+
+-- | @Selector@ for @sampleBufferPlaybackDelegate@
+sampleBufferPlaybackDelegateSelector :: Selector
+sampleBufferPlaybackDelegateSelector = mkSelector "sampleBufferPlaybackDelegate"
 

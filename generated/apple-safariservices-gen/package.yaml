@@ -17,6 +17,7 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.SafariServices.Delegate.SFSafariExtensionHandling
   - ObjC.SafariServices.Enums
   - ObjC.SafariServices.Internal.Classes
   - ObjC.SafariServices.Internal.Enums

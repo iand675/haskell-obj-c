@@ -17,8 +17,11 @@ module ObjC.NetworkExtension.NWUDPSession
   , writeDatagram_completionHandler
   , cancel
   , state
+  , endpoint
+  , resolvedEndpoint
   , viable
   , hasBetterPath
+  , currentPath
   , maximumDatagramLength
   , initWithUpgradeForSessionSelector
   , tryNextResolvedEndpointSelector
@@ -26,8 +29,11 @@ module ObjC.NetworkExtension.NWUDPSession
   , writeDatagram_completionHandlerSelector
   , cancelSelector
   , stateSelector
+  , endpointSelector
+  , resolvedEndpointSelector
   , viableSelector
   , hasBetterPathSelector
+  , currentPathSelector
   , maximumDatagramLengthSelector
 
   -- * Enum types
@@ -128,6 +134,24 @@ state :: IsNWUDPSession nwudpSession => nwudpSession -> IO NWUDPSessionState
 state nwudpSession  =
     fmap (coerce :: CLong -> NWUDPSessionState) $ sendMsg nwudpSession (mkSelector "state") retCLong []
 
+-- | endpoint
+--
+-- The provided endpoint.
+--
+-- ObjC selector: @- endpoint@
+endpoint :: IsNWUDPSession nwudpSession => nwudpSession -> IO (Id NWEndpoint)
+endpoint nwudpSession  =
+    sendMsg nwudpSession (mkSelector "endpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | resolvedEndpoint
+--
+-- The currently targeted remote endpoint. Use KVO to watch for changes.
+--
+-- ObjC selector: @- resolvedEndpoint@
+resolvedEndpoint :: IsNWUDPSession nwudpSession => nwudpSession -> IO (Id NWEndpoint)
+resolvedEndpoint nwudpSession  =
+    sendMsg nwudpSession (mkSelector "resolvedEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | viable
 --
 -- YES if the connection can read and write data, NO otherwise.		Use KVO to watch this property.
@@ -145,6 +169,15 @@ viable nwudpSession  =
 hasBetterPath :: IsNWUDPSession nwudpSession => nwudpSession -> IO Bool
 hasBetterPath nwudpSession  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg nwudpSession (mkSelector "hasBetterPath") retCULong []
+
+-- | currentPath
+--
+-- The current evaluated path for the resolvedEndpoint. Use KVO to watch for changes.
+--
+-- ObjC selector: @- currentPath@
+currentPath :: IsNWUDPSession nwudpSession => nwudpSession -> IO (Id NWPath)
+currentPath nwudpSession  =
+    sendMsg nwudpSession (mkSelector "currentPath") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | maximumDatagramLength
 --
@@ -183,6 +216,14 @@ cancelSelector = mkSelector "cancel"
 stateSelector :: Selector
 stateSelector = mkSelector "state"
 
+-- | @Selector@ for @endpoint@
+endpointSelector :: Selector
+endpointSelector = mkSelector "endpoint"
+
+-- | @Selector@ for @resolvedEndpoint@
+resolvedEndpointSelector :: Selector
+resolvedEndpointSelector = mkSelector "resolvedEndpoint"
+
 -- | @Selector@ for @viable@
 viableSelector :: Selector
 viableSelector = mkSelector "viable"
@@ -190,6 +231,10 @@ viableSelector = mkSelector "viable"
 -- | @Selector@ for @hasBetterPath@
 hasBetterPathSelector :: Selector
 hasBetterPathSelector = mkSelector "hasBetterPath"
+
+-- | @Selector@ for @currentPath@
+currentPathSelector :: Selector
+currentPathSelector = mkSelector "currentPath"
 
 -- | @Selector@ for @maximumDatagramLength@
 maximumDatagramLengthSelector :: Selector

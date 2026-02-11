@@ -41,10 +41,13 @@ module ObjC.AVFoundation.AVPlayer
   , observationEnabled
   , setObservationEnabled
   , audioOutputSuppressedDueToNonMixableAudioRoute
+  , intendedSpatialAudioExperience
+  , setIntendedSpatialAudioExperience
   , networkResourcePriority
   , setNetworkResourcePriority
   , videoOutput
   , setVideoOutput
+  , playbackCoordinator
   , audiovisualBackgroundPlaybackPolicy
   , setAudiovisualBackgroundPlaybackPolicy
   , preventsAutomaticBackgroundingDuringVideoPlayback
@@ -63,6 +66,8 @@ module ObjC.AVFoundation.AVPlayer
   , setUsesExternalPlaybackWhileExternalScreenIsActive
   , externalPlaybackVideoGravity
   , setExternalPlaybackVideoGravity
+  , audioOutputDeviceUniqueID
+  , setAudioOutputDeviceUniqueID
   , appliesMediaSelectionCriteriaAutomatically
   , setAppliesMediaSelectionCriteriaAutomatically
   , volume
@@ -108,10 +113,13 @@ module ObjC.AVFoundation.AVPlayer
   , observationEnabledSelector
   , setObservationEnabledSelector
   , audioOutputSuppressedDueToNonMixableAudioRouteSelector
+  , intendedSpatialAudioExperienceSelector
+  , setIntendedSpatialAudioExperienceSelector
   , networkResourcePrioritySelector
   , setNetworkResourcePrioritySelector
   , videoOutputSelector
   , setVideoOutputSelector
+  , playbackCoordinatorSelector
   , audiovisualBackgroundPlaybackPolicySelector
   , setAudiovisualBackgroundPlaybackPolicySelector
   , preventsAutomaticBackgroundingDuringVideoPlaybackSelector
@@ -130,6 +138,8 @@ module ObjC.AVFoundation.AVPlayer
   , setUsesExternalPlaybackWhileExternalScreenIsActiveSelector
   , externalPlaybackVideoGravitySelector
   , setExternalPlaybackVideoGravitySelector
+  , audioOutputDeviceUniqueIDSelector
+  , setAudioOutputDeviceUniqueIDSelector
   , appliesMediaSelectionCriteriaAutomaticallySelector
   , setAppliesMediaSelectionCriteriaAutomaticallySelector
   , volumeSelector
@@ -506,6 +516,24 @@ audioOutputSuppressedDueToNonMixableAudioRoute :: IsAVPlayer avPlayer => avPlaye
 audioOutputSuppressedDueToNonMixableAudioRoute avPlayer  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayer (mkSelector "audioOutputSuppressedDueToNonMixableAudioRoute") retCULong []
 
+-- | The AVPlayer's intended spatial audio experience.
+--
+-- The default value of CAAutomaticSpatialAudio means the player uses its AVAudioSession's intended spatial experience. If the anchoring strategy is impossible (e.g. it uses a destroyed UIScene's identifier), the player follows a "front" anchoring strategy instead.
+--
+-- ObjC selector: @- intendedSpatialAudioExperience@
+intendedSpatialAudioExperience :: IsAVPlayer avPlayer => avPlayer -> IO RawId
+intendedSpatialAudioExperience avPlayer  =
+    fmap (RawId . castPtr) $ sendMsg avPlayer (mkSelector "intendedSpatialAudioExperience") (retPtr retVoid) []
+
+-- | The AVPlayer's intended spatial audio experience.
+--
+-- The default value of CAAutomaticSpatialAudio means the player uses its AVAudioSession's intended spatial experience. If the anchoring strategy is impossible (e.g. it uses a destroyed UIScene's identifier), the player follows a "front" anchoring strategy instead.
+--
+-- ObjC selector: @- setIntendedSpatialAudioExperience:@
+setIntendedSpatialAudioExperience :: IsAVPlayer avPlayer => avPlayer -> RawId -> IO ()
+setIntendedSpatialAudioExperience avPlayer  value =
+    sendMsg avPlayer (mkSelector "setIntendedSpatialAudioExperience:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Indicates the priority of this player for network bandwidth resource distribution.
 --
 -- This value determines the priority of the player during network resource allocation among all other players within the same application process. The default value for this is AVPlayerNetworkResourcePriorityDefault.
@@ -546,6 +574,15 @@ setVideoOutput :: (IsAVPlayer avPlayer, IsAVPlayerVideoOutput value) => avPlayer
 setVideoOutput avPlayer  value =
   withObjCPtr value $ \raw_value ->
       sendMsg avPlayer (mkSelector "setVideoOutput:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The playback coordinator for this player.
+--
+-- If the playback coordinator is connected to other participants, rate changes and seeks on the current item will be automatically mirrored to all connected participants. Depending on policies, the coordinator may also intercept rate changes to non-zero to coordinate playback start with the rest of the group. Use [AVPlayer playImmediatelyAtRate:] to override the coordinated startup behavior and start playback immediately. This is useful to give users an opportunity to override waiting caused by other participants' suspensions. Player configuration other than rate and seeks are not communicated to other participants and can be configured independently by each participant. A player with a connected playbackCoordinator will change behavior in situations that require the player to pause for internal reasons, such as a route change or a stall. When resuming after these events, the player will not resume at the stop time. Instead, it will attempt to rejoin the group, potentially seeking to match the other participant's progress. It is left to the owner of the AVPlayer to ensure that all participants are playing the same item. See the discussion of AVPlaybackCoordinator for considerations about item transitions.
+--
+-- ObjC selector: @- playbackCoordinator@
+playbackCoordinator :: IsAVPlayer avPlayer => avPlayer -> IO (Id AVPlayerPlaybackCoordinator)
+playbackCoordinator avPlayer  =
+    sendMsg avPlayer (mkSelector "playbackCoordinator") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | Controls the policy to be used in deciding how playback of audiovisual content should continue while the application transitions to background.
 --
@@ -709,6 +746,29 @@ setExternalPlaybackVideoGravity :: (IsAVPlayer avPlayer, IsNSString value) => av
 setExternalPlaybackVideoGravity avPlayer  value =
   withObjCPtr value $ \raw_value ->
       sendMsg avPlayer (mkSelector "setExternalPlaybackVideoGravity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | Specifies the unique ID of the Core Audio output device used to play audio.
+--
+-- By default, the value of this property is nil, indicating that the default audio output device is used. Otherwise the value of this property is an NSString containing the unique ID of the Core Audio output device to be used for audio output.
+--
+-- Core Audio's kAudioDevicePropertyDeviceUID is a suitable source of audio output device unique IDs.
+--
+-- ObjC selector: @- audioOutputDeviceUniqueID@
+audioOutputDeviceUniqueID :: IsAVPlayer avPlayer => avPlayer -> IO (Id NSString)
+audioOutputDeviceUniqueID avPlayer  =
+    sendMsg avPlayer (mkSelector "audioOutputDeviceUniqueID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Specifies the unique ID of the Core Audio output device used to play audio.
+--
+-- By default, the value of this property is nil, indicating that the default audio output device is used. Otherwise the value of this property is an NSString containing the unique ID of the Core Audio output device to be used for audio output.
+--
+-- Core Audio's kAudioDevicePropertyDeviceUID is a suitable source of audio output device unique IDs.
+--
+-- ObjC selector: @- setAudioOutputDeviceUniqueID:@
+setAudioOutputDeviceUniqueID :: (IsAVPlayer avPlayer, IsNSString value) => avPlayer -> value -> IO ()
+setAudioOutputDeviceUniqueID avPlayer  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avPlayer (mkSelector "setAudioOutputDeviceUniqueID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | Indicates whether the receiver should apply the current selection criteria automatically to AVPlayerItems.
 --
@@ -1029,6 +1089,14 @@ setObservationEnabledSelector = mkSelector "setObservationEnabled:"
 audioOutputSuppressedDueToNonMixableAudioRouteSelector :: Selector
 audioOutputSuppressedDueToNonMixableAudioRouteSelector = mkSelector "audioOutputSuppressedDueToNonMixableAudioRoute"
 
+-- | @Selector@ for @intendedSpatialAudioExperience@
+intendedSpatialAudioExperienceSelector :: Selector
+intendedSpatialAudioExperienceSelector = mkSelector "intendedSpatialAudioExperience"
+
+-- | @Selector@ for @setIntendedSpatialAudioExperience:@
+setIntendedSpatialAudioExperienceSelector :: Selector
+setIntendedSpatialAudioExperienceSelector = mkSelector "setIntendedSpatialAudioExperience:"
+
 -- | @Selector@ for @networkResourcePriority@
 networkResourcePrioritySelector :: Selector
 networkResourcePrioritySelector = mkSelector "networkResourcePriority"
@@ -1044,6 +1112,10 @@ videoOutputSelector = mkSelector "videoOutput"
 -- | @Selector@ for @setVideoOutput:@
 setVideoOutputSelector :: Selector
 setVideoOutputSelector = mkSelector "setVideoOutput:"
+
+-- | @Selector@ for @playbackCoordinator@
+playbackCoordinatorSelector :: Selector
+playbackCoordinatorSelector = mkSelector "playbackCoordinator"
 
 -- | @Selector@ for @audiovisualBackgroundPlaybackPolicy@
 audiovisualBackgroundPlaybackPolicySelector :: Selector
@@ -1116,6 +1188,14 @@ externalPlaybackVideoGravitySelector = mkSelector "externalPlaybackVideoGravity"
 -- | @Selector@ for @setExternalPlaybackVideoGravity:@
 setExternalPlaybackVideoGravitySelector :: Selector
 setExternalPlaybackVideoGravitySelector = mkSelector "setExternalPlaybackVideoGravity:"
+
+-- | @Selector@ for @audioOutputDeviceUniqueID@
+audioOutputDeviceUniqueIDSelector :: Selector
+audioOutputDeviceUniqueIDSelector = mkSelector "audioOutputDeviceUniqueID"
+
+-- | @Selector@ for @setAudioOutputDeviceUniqueID:@
+setAudioOutputDeviceUniqueIDSelector :: Selector
+setAudioOutputDeviceUniqueIDSelector = mkSelector "setAudioOutputDeviceUniqueID:"
 
 -- | @Selector@ for @appliesMediaSelectionCriteriaAutomatically@
 appliesMediaSelectionCriteriaAutomaticallySelector :: Selector

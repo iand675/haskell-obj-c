@@ -10,11 +10,15 @@ module ObjC.GameKit.GKTurnBasedMatchmakerViewController
   ( GKTurnBasedMatchmakerViewController
   , IsGKTurnBasedMatchmakerViewController(..)
   , initWithMatchRequest
+  , turnBasedMatchmakerDelegate
+  , setTurnBasedMatchmakerDelegate
   , showExistingMatches
   , setShowExistingMatches
   , matchmakingMode
   , setMatchmakingMode
   , initWithMatchRequestSelector
+  , turnBasedMatchmakerDelegateSelector
+  , setTurnBasedMatchmakerDelegateSelector
   , showExistingMatchesSelector
   , setShowExistingMatchesSelector
   , matchmakingModeSelector
@@ -52,6 +56,16 @@ initWithMatchRequest gkTurnBasedMatchmakerViewController  request =
   withObjCPtr request $ \raw_request ->
       fmap (RawId . castPtr) $ sendMsg gkTurnBasedMatchmakerViewController (mkSelector "initWithMatchRequest:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ())]
 
+-- | @- turnBasedMatchmakerDelegate@
+turnBasedMatchmakerDelegate :: IsGKTurnBasedMatchmakerViewController gkTurnBasedMatchmakerViewController => gkTurnBasedMatchmakerViewController -> IO RawId
+turnBasedMatchmakerDelegate gkTurnBasedMatchmakerViewController  =
+    fmap (RawId . castPtr) $ sendMsg gkTurnBasedMatchmakerViewController (mkSelector "turnBasedMatchmakerDelegate") (retPtr retVoid) []
+
+-- | @- setTurnBasedMatchmakerDelegate:@
+setTurnBasedMatchmakerDelegate :: IsGKTurnBasedMatchmakerViewController gkTurnBasedMatchmakerViewController => gkTurnBasedMatchmakerViewController -> RawId -> IO ()
+setTurnBasedMatchmakerDelegate gkTurnBasedMatchmakerViewController  value =
+    sendMsg gkTurnBasedMatchmakerViewController (mkSelector "setTurnBasedMatchmakerDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- showExistingMatches@
 showExistingMatches :: IsGKTurnBasedMatchmakerViewController gkTurnBasedMatchmakerViewController => gkTurnBasedMatchmakerViewController -> IO Bool
 showExistingMatches gkTurnBasedMatchmakerViewController  =
@@ -83,6 +97,14 @@ setMatchmakingMode gkTurnBasedMatchmakerViewController  value =
 -- | @Selector@ for @initWithMatchRequest:@
 initWithMatchRequestSelector :: Selector
 initWithMatchRequestSelector = mkSelector "initWithMatchRequest:"
+
+-- | @Selector@ for @turnBasedMatchmakerDelegate@
+turnBasedMatchmakerDelegateSelector :: Selector
+turnBasedMatchmakerDelegateSelector = mkSelector "turnBasedMatchmakerDelegate"
+
+-- | @Selector@ for @setTurnBasedMatchmakerDelegate:@
+setTurnBasedMatchmakerDelegateSelector :: Selector
+setTurnBasedMatchmakerDelegateSelector = mkSelector "setTurnBasedMatchmakerDelegate:"
 
 -- | @Selector@ for @showExistingMatches@
 showExistingMatchesSelector :: Selector

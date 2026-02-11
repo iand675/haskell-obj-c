@@ -12,6 +12,8 @@ module ObjC.Contacts.CNChangeHistoryFetchRequest
   , IsCNChangeHistoryFetchRequest(..)
   , startingToken
   , setStartingToken
+  , additionalContactKeyDescriptors
+  , setAdditionalContactKeyDescriptors
   , shouldUnifyResults
   , setShouldUnifyResults
   , mutableObjects
@@ -22,6 +24,8 @@ module ObjC.Contacts.CNChangeHistoryFetchRequest
   , setExcludedTransactionAuthors
   , startingTokenSelector
   , setStartingTokenSelector
+  , additionalContactKeyDescriptorsSelector
+  , setAdditionalContactKeyDescriptorsSelector
   , shouldUnifyResultsSelector
   , setShouldUnifyResultsSelector
   , mutableObjectsSelector
@@ -71,6 +75,29 @@ setStartingToken :: (IsCNChangeHistoryFetchRequest cnChangeHistoryFetchRequest, 
 setStartingToken cnChangeHistoryFetchRequest  value =
   withObjCPtr value $ \raw_value ->
       sendMsg cnChangeHistoryFetchRequest (mkSelector "setStartingToken:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | Additional keys to include in the fetched contacts.
+--
+-- By default, only @CNContactIdentifierKey@ will be fetched. If you              would like to include additional key descriptors to process the contacts,              include the key descriptors you need.
+--
+-- @CNContactIdentifierKey@ will always be fetched, whether you              request it or not.
+--
+-- ObjC selector: @- additionalContactKeyDescriptors@
+additionalContactKeyDescriptors :: IsCNChangeHistoryFetchRequest cnChangeHistoryFetchRequest => cnChangeHistoryFetchRequest -> IO (Id NSArray)
+additionalContactKeyDescriptors cnChangeHistoryFetchRequest  =
+    sendMsg cnChangeHistoryFetchRequest (mkSelector "additionalContactKeyDescriptors") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Additional keys to include in the fetched contacts.
+--
+-- By default, only @CNContactIdentifierKey@ will be fetched. If you              would like to include additional key descriptors to process the contacts,              include the key descriptors you need.
+--
+-- @CNContactIdentifierKey@ will always be fetched, whether you              request it or not.
+--
+-- ObjC selector: @- setAdditionalContactKeyDescriptors:@
+setAdditionalContactKeyDescriptors :: (IsCNChangeHistoryFetchRequest cnChangeHistoryFetchRequest, IsNSArray value) => cnChangeHistoryFetchRequest -> value -> IO ()
+setAdditionalContactKeyDescriptors cnChangeHistoryFetchRequest  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg cnChangeHistoryFetchRequest (mkSelector "setAdditionalContactKeyDescriptors:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | Returns contact changes as unified contacts.
 --
@@ -156,6 +183,14 @@ startingTokenSelector = mkSelector "startingToken"
 -- | @Selector@ for @setStartingToken:@
 setStartingTokenSelector :: Selector
 setStartingTokenSelector = mkSelector "setStartingToken:"
+
+-- | @Selector@ for @additionalContactKeyDescriptors@
+additionalContactKeyDescriptorsSelector :: Selector
+additionalContactKeyDescriptorsSelector = mkSelector "additionalContactKeyDescriptors"
+
+-- | @Selector@ for @setAdditionalContactKeyDescriptors:@
+setAdditionalContactKeyDescriptorsSelector :: Selector
+setAdditionalContactKeyDescriptorsSelector = mkSelector "setAdditionalContactKeyDescriptors:"
 
 -- | @Selector@ for @shouldUnifyResults@
 shouldUnifyResultsSelector :: Selector

@@ -12,11 +12,13 @@ module ObjC.Photos.PHCollection
   , fetchTopLevelUserCollectionsWithOptions
   , canContainAssets
   , canContainCollections
+  , localizedTitle
   , canPerformEditOperationSelector
   , fetchCollectionsInCollectionList_optionsSelector
   , fetchTopLevelUserCollectionsWithOptionsSelector
   , canContainAssetsSelector
   , canContainCollectionsSelector
+  , localizedTitleSelector
 
   -- * Enum types
   , PHCollectionEditOperation(PHCollectionEditOperation)
@@ -78,6 +80,11 @@ canContainCollections :: IsPHCollection phCollection => phCollection -> IO Bool
 canContainCollections phCollection  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg phCollection (mkSelector "canContainCollections") retCULong []
 
+-- | @- localizedTitle@
+localizedTitle :: IsPHCollection phCollection => phCollection -> IO (Id NSString)
+localizedTitle phCollection  =
+    sendMsg phCollection (mkSelector "localizedTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -101,4 +108,8 @@ canContainAssetsSelector = mkSelector "canContainAssets"
 -- | @Selector@ for @canContainCollections@
 canContainCollectionsSelector :: Selector
 canContainCollectionsSelector = mkSelector "canContainCollections"
+
+-- | @Selector@ for @localizedTitle@
+localizedTitleSelector :: Selector
+localizedTitleSelector = mkSelector "localizedTitle"
 

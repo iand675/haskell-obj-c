@@ -11,7 +11,13 @@ module ObjC.MLCompute.MLCSliceLayer
   ( MLCSliceLayer
   , IsMLCSliceLayer(..)
   , sliceLayerWithStart_end_stride
+  , start
+  , end
+  , stride
   , sliceLayerWithStart_end_strideSelector
+  , startSelector
+  , endSelector
+  , strideSelector
 
 
   ) where
@@ -47,6 +53,33 @@ sliceLayerWithStart_end_stride start end stride =
         withObjCPtr stride $ \raw_stride ->
           sendClassMsg cls' (mkSelector "sliceLayerWithStart:end:stride:") (retPtr retVoid) [argPtr (castPtr raw_start :: Ptr ()), argPtr (castPtr raw_end :: Ptr ()), argPtr (castPtr raw_stride :: Ptr ())] >>= retainedObject . castPtr
 
+-- | start
+--
+-- A vector of length equal to that of source. The element at index i specifies the beginning of slice in dimension i.
+--
+-- ObjC selector: @- start@
+start :: IsMLCSliceLayer mlcSliceLayer => mlcSliceLayer -> IO (Id NSArray)
+start mlcSliceLayer  =
+    sendMsg mlcSliceLayer (mkSelector "start") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | end
+--
+-- A vector of length equal to that of source. The element at index i specifies the end of slice in dimension i.
+--
+-- ObjC selector: @- end@
+end :: IsMLCSliceLayer mlcSliceLayer => mlcSliceLayer -> IO (Id NSArray)
+end mlcSliceLayer  =
+    sendMsg mlcSliceLayer (mkSelector "end") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | stride
+--
+-- A vector of length equal to that of source. The element at index i specifies the stride of slice in dimension i.
+--
+-- ObjC selector: @- stride@
+stride :: IsMLCSliceLayer mlcSliceLayer => mlcSliceLayer -> IO (Id NSArray)
+stride mlcSliceLayer  =
+    sendMsg mlcSliceLayer (mkSelector "stride") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -54,4 +87,16 @@ sliceLayerWithStart_end_stride start end stride =
 -- | @Selector@ for @sliceLayerWithStart:end:stride:@
 sliceLayerWithStart_end_strideSelector :: Selector
 sliceLayerWithStart_end_strideSelector = mkSelector "sliceLayerWithStart:end:stride:"
+
+-- | @Selector@ for @start@
+startSelector :: Selector
+startSelector = mkSelector "start"
+
+-- | @Selector@ for @end@
+endSelector :: Selector
+endSelector = mkSelector "end"
+
+-- | @Selector@ for @stride@
+strideSelector :: Selector
+strideSelector = mkSelector "stride"
 

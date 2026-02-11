@@ -6,6 +6,8 @@
 module ObjC.Intents.CLPlacemark
   ( CLPlacemark
   , IsCLPlacemark(..)
+  , placemarkWithLocation_name_postalAddress
+  , placemarkWithLocation_name_postalAddressSelector
 
 
   ) where
@@ -27,7 +29,20 @@ import ObjC.Contacts.Internal.Classes
 import ObjC.CoreLocation.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | @+ placemarkWithLocation:name:postalAddress:@
+placemarkWithLocation_name_postalAddress :: (IsNSString name, IsCNPostalAddress postalAddress) => RawId -> name -> postalAddress -> IO (Id CLPlacemark)
+placemarkWithLocation_name_postalAddress location name postalAddress =
+  do
+    cls' <- getRequiredClass "CLPlacemark"
+    withObjCPtr name $ \raw_name ->
+      withObjCPtr postalAddress $ \raw_postalAddress ->
+        sendClassMsg cls' (mkSelector "placemarkWithLocation:name:postalAddress:") (retPtr retVoid) [argPtr (castPtr (unRawId location) :: Ptr ()), argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_postalAddress :: Ptr ())] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @placemarkWithLocation:name:postalAddress:@
+placemarkWithLocation_name_postalAddressSelector :: Selector
+placemarkWithLocation_name_postalAddressSelector = mkSelector "placemarkWithLocation:name:postalAddress:"
 

@@ -24,6 +24,8 @@ module ObjC.AppKit.NSStackView
   , removeView
   , viewsInGravity
   , setViews_inGravity
+  , delegate
+  , setDelegate
   , orientation
   , setOrientation
   , alignment
@@ -36,6 +38,7 @@ module ObjC.AppKit.NSStackView
   , setSpacing
   , detachesHiddenViews
   , setDetachesHiddenViews
+  , arrangedSubviews
   , detachedViews
   , hasEqualSpacing
   , setHasEqualSpacing
@@ -57,6 +60,8 @@ module ObjC.AppKit.NSStackView
   , removeViewSelector
   , viewsInGravitySelector
   , setViews_inGravitySelector
+  , delegateSelector
+  , setDelegateSelector
   , orientationSelector
   , setOrientationSelector
   , alignmentSelector
@@ -69,6 +74,7 @@ module ObjC.AppKit.NSStackView
   , setSpacingSelector
   , detachesHiddenViewsSelector
   , setDetachesHiddenViewsSelector
+  , arrangedSubviewsSelector
   , detachedViewsSelector
   , hasEqualSpacingSelector
   , setHasEqualSpacingSelector
@@ -234,6 +240,16 @@ setViews_inGravity nsStackView  views gravity =
   withObjCPtr views $ \raw_views ->
       sendMsg nsStackView (mkSelector "setViews:inGravity:") retVoid [argPtr (castPtr raw_views :: Ptr ()), argCLong (coerce gravity)]
 
+-- | @- delegate@
+delegate :: IsNSStackView nsStackView => nsStackView -> IO RawId
+delegate nsStackView  =
+    fmap (RawId . castPtr) $ sendMsg nsStackView (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSStackView nsStackView => nsStackView -> RawId -> IO ()
+setDelegate nsStackView  value =
+    sendMsg nsStackView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Orientation of the StackView, defaults to NSUserInterfaceLayoutOrientationHorizontal
 --
 -- ObjC selector: @- orientation@
@@ -317,6 +333,13 @@ detachesHiddenViews nsStackView  =
 setDetachesHiddenViews :: IsNSStackView nsStackView => nsStackView -> Bool -> IO ()
 setDetachesHiddenViews nsStackView  value =
     sendMsg nsStackView (mkSelector "setDetachesHiddenViews:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | The list of views that are arranged in a stack by the receiver. They are a subset of @-subviews,@ with potential difference in ordering.
+--
+-- ObjC selector: @- arrangedSubviews@
+arrangedSubviews :: IsNSStackView nsStackView => nsStackView -> IO (Id NSArray)
+arrangedSubviews nsStackView  =
+    sendMsg nsStackView (mkSelector "arrangedSubviews") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | The arrangedSubviews that are currently detached/hidden.
 --
@@ -412,6 +435,14 @@ viewsInGravitySelector = mkSelector "viewsInGravity:"
 setViews_inGravitySelector :: Selector
 setViews_inGravitySelector = mkSelector "setViews:inGravity:"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @orientation@
 orientationSelector :: Selector
 orientationSelector = mkSelector "orientation"
@@ -459,6 +490,10 @@ detachesHiddenViewsSelector = mkSelector "detachesHiddenViews"
 -- | @Selector@ for @setDetachesHiddenViews:@
 setDetachesHiddenViewsSelector :: Selector
 setDetachesHiddenViewsSelector = mkSelector "setDetachesHiddenViews:"
+
+-- | @Selector@ for @arrangedSubviews@
+arrangedSubviewsSelector :: Selector
+arrangedSubviewsSelector = mkSelector "arrangedSubviews"
 
 -- | @Selector@ for @detachedViews@
 detachedViewsSelector :: Selector

@@ -9,10 +9,14 @@ module ObjC.Intents.INSetDefrosterSettingsInCarIntent
   , IsINSetDefrosterSettingsInCarIntent(..)
   , initWithEnable_defroster_carName
   , initWithEnable_defroster
+  , enable
   , defroster
+  , carName
   , initWithEnable_defroster_carNameSelector
   , initWithEnable_defrosterSelector
+  , enableSelector
   , defrosterSelector
+  , carNameSelector
 
   -- * Enum types
   , INCarDefroster(INCarDefroster)
@@ -52,10 +56,20 @@ initWithEnable_defroster inSetDefrosterSettingsInCarIntent  enable defroster =
   withObjCPtr enable $ \raw_enable ->
       sendMsg inSetDefrosterSettingsInCarIntent (mkSelector "initWithEnable:defroster:") (retPtr retVoid) [argPtr (castPtr raw_enable :: Ptr ()), argCLong (coerce defroster)] >>= ownedObject . castPtr
 
+-- | @- enable@
+enable :: IsINSetDefrosterSettingsInCarIntent inSetDefrosterSettingsInCarIntent => inSetDefrosterSettingsInCarIntent -> IO (Id NSNumber)
+enable inSetDefrosterSettingsInCarIntent  =
+    sendMsg inSetDefrosterSettingsInCarIntent (mkSelector "enable") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- defroster@
 defroster :: IsINSetDefrosterSettingsInCarIntent inSetDefrosterSettingsInCarIntent => inSetDefrosterSettingsInCarIntent -> IO INCarDefroster
 defroster inSetDefrosterSettingsInCarIntent  =
     fmap (coerce :: CLong -> INCarDefroster) $ sendMsg inSetDefrosterSettingsInCarIntent (mkSelector "defroster") retCLong []
+
+-- | @- carName@
+carName :: IsINSetDefrosterSettingsInCarIntent inSetDefrosterSettingsInCarIntent => inSetDefrosterSettingsInCarIntent -> IO (Id INSpeakableString)
+carName inSetDefrosterSettingsInCarIntent  =
+    sendMsg inSetDefrosterSettingsInCarIntent (mkSelector "carName") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -69,7 +83,15 @@ initWithEnable_defroster_carNameSelector = mkSelector "initWithEnable:defroster:
 initWithEnable_defrosterSelector :: Selector
 initWithEnable_defrosterSelector = mkSelector "initWithEnable:defroster:"
 
+-- | @Selector@ for @enable@
+enableSelector :: Selector
+enableSelector = mkSelector "enable"
+
 -- | @Selector@ for @defroster@
 defrosterSelector :: Selector
 defrosterSelector = mkSelector "defroster"
+
+-- | @Selector@ for @carName@
+carNameSelector :: Selector
+carNameSelector = mkSelector "carName"
 

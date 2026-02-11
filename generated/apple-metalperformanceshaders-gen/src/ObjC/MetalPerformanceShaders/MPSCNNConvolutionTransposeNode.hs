@@ -10,8 +10,10 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionTransposeNode
   , IsMPSCNNConvolutionTransposeNode(..)
   , nodeWithSource_convolutionGradientState_weights
   , initWithSource_convolutionGradientState_weights
+  , convolutionGradientState
   , nodeWithSource_convolutionGradientState_weightsSelector
   , initWithSource_convolutionGradientState_weightsSelector
+  , convolutionGradientStateSelector
 
 
   ) where
@@ -67,6 +69,13 @@ initWithSource_convolutionGradientState_weights mpscnnConvolutionTransposeNode  
     withObjCPtr convolutionGradientState $ \raw_convolutionGradientState ->
         sendMsg mpscnnConvolutionTransposeNode (mkSelector "initWithSource:convolutionGradientState:weights:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argPtr (castPtr raw_convolutionGradientState :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ())] >>= ownedObject . castPtr
 
+-- | unavailable
+--
+-- ObjC selector: @- convolutionGradientState@
+convolutionGradientState :: IsMPSCNNConvolutionTransposeNode mpscnnConvolutionTransposeNode => mpscnnConvolutionTransposeNode -> IO RawId
+convolutionGradientState mpscnnConvolutionTransposeNode  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnConvolutionTransposeNode (mkSelector "convolutionGradientState") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -78,4 +87,8 @@ nodeWithSource_convolutionGradientState_weightsSelector = mkSelector "nodeWithSo
 -- | @Selector@ for @initWithSource:convolutionGradientState:weights:@
 initWithSource_convolutionGradientState_weightsSelector :: Selector
 initWithSource_convolutionGradientState_weightsSelector = mkSelector "initWithSource:convolutionGradientState:weights:"
+
+-- | @Selector@ for @convolutionGradientState@
+convolutionGradientStateSelector :: Selector
+convolutionGradientStateSelector = mkSelector "convolutionGradientState"
 

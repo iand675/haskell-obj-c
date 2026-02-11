@@ -43,6 +43,8 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionDescriptor
   , setDilationRateY
   , fusedNeuronDescriptor
   , setFusedNeuronDescriptor
+  , neuron
+  , setNeuron
   , supportsSecureCoding
   , encodeWithCoderSelector
   , initWithCoderSelector
@@ -74,6 +76,8 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionDescriptor
   , setDilationRateYSelector
   , fusedNeuronDescriptorSelector
   , setFusedNeuronDescriptorSelector
+  , neuronSelector
+  , setNeuronSelector
   , supportsSecureCodingSelector
 
   -- * Enum types
@@ -475,6 +479,24 @@ setFusedNeuronDescriptor mpscnnConvolutionDescriptor  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mpscnnConvolutionDescriptor (mkSelector "setFusedNeuronDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | neuron
+--
+-- MPSCNNNeuron filter to be applied as part of convolution. This is applied after BatchNormalization in the end.              Default is nil.              This is deprecated. You dont need to create MPSCNNNeuron object to fuse with convolution. Use neuron properties              in this descriptor.
+--
+-- ObjC selector: @- neuron@
+neuron :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> IO RawId
+neuron mpscnnConvolutionDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnConvolutionDescriptor (mkSelector "neuron") (retPtr retVoid) []
+
+-- | neuron
+--
+-- MPSCNNNeuron filter to be applied as part of convolution. This is applied after BatchNormalization in the end.              Default is nil.              This is deprecated. You dont need to create MPSCNNNeuron object to fuse with convolution. Use neuron properties              in this descriptor.
+--
+-- ObjC selector: @- setNeuron:@
+setNeuron :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> RawId -> IO ()
+setNeuron mpscnnConvolutionDescriptor  value =
+    sendMsg mpscnnConvolutionDescriptor (mkSelector "setNeuron:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | <NSSecureCoding> support
 --
 -- ObjC selector: @+ supportsSecureCoding@
@@ -607,6 +629,14 @@ fusedNeuronDescriptorSelector = mkSelector "fusedNeuronDescriptor"
 -- | @Selector@ for @setFusedNeuronDescriptor:@
 setFusedNeuronDescriptorSelector :: Selector
 setFusedNeuronDescriptorSelector = mkSelector "setFusedNeuronDescriptor:"
+
+-- | @Selector@ for @neuron@
+neuronSelector :: Selector
+neuronSelector = mkSelector "neuron"
+
+-- | @Selector@ for @setNeuron:@
+setNeuronSelector :: Selector
+setNeuronSelector = mkSelector "setNeuron:"
 
 -- | @Selector@ for @supportsSecureCoding@
 supportsSecureCodingSelector :: Selector

@@ -13,6 +13,11 @@ module ObjC.MetalKit.MTKView
   , initWithCoder
   , releaseDrawables
   , draw
+  , delegate
+  , setDelegate
+  , device
+  , setDevice
+  , currentDrawable
   , framebufferOnly
   , setFramebufferOnly
   , depthStencilAttachmentTextureUsage
@@ -33,12 +38,15 @@ module ObjC.MetalKit.MTKView
   , setClearDepth
   , clearStencil
   , setClearStencil
+  , depthStencilTexture
+  , multisampleColorTexture
   , preferredFramesPerSecond
   , setPreferredFramesPerSecond
   , enableSetNeedsDisplay
   , setEnableSetNeedsDisplay
   , autoResizeDrawable
   , setAutoResizeDrawable
+  , preferredDevice
   , paused
   , setPaused
   , colorspace
@@ -46,6 +54,11 @@ module ObjC.MetalKit.MTKView
   , initWithCoderSelector
   , releaseDrawablesSelector
   , drawSelector
+  , delegateSelector
+  , setDelegateSelector
+  , deviceSelector
+  , setDeviceSelector
+  , currentDrawableSelector
   , framebufferOnlySelector
   , setFramebufferOnlySelector
   , depthStencilAttachmentTextureUsageSelector
@@ -66,12 +79,15 @@ module ObjC.MetalKit.MTKView
   , setClearDepthSelector
   , clearStencilSelector
   , setClearStencilSelector
+  , depthStencilTextureSelector
+  , multisampleColorTextureSelector
   , preferredFramesPerSecondSelector
   , setPreferredFramesPerSecondSelector
   , enableSetNeedsDisplaySelector
   , setEnableSetNeedsDisplaySelector
   , autoResizeDrawableSelector
   , setAutoResizeDrawableSelector
+  , preferredDeviceSelector
   , pausedSelector
   , setPausedSelector
   , colorspaceSelector
@@ -129,6 +145,57 @@ releaseDrawables mtkView  =
 draw :: IsMTKView mtkView => mtkView -> IO ()
 draw mtkView  =
     sendMsg mtkView (mkSelector "draw") retVoid []
+
+-- | delegate
+--
+-- The delegate handling common view operations
+--
+-- ObjC selector: @- delegate@
+delegate :: IsMTKView mtkView => mtkView -> IO RawId
+delegate mtkView  =
+    fmap (RawId . castPtr) $ sendMsg mtkView (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- The delegate handling common view operations
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsMTKView mtkView => mtkView -> RawId -> IO ()
+setDelegate mtkView  value =
+    sendMsg mtkView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | device
+--
+-- The MTLDevice used to create Metal objects
+--
+-- This must be explicitly set by the application unless it was passed into the initializer. Defaults to nil
+--
+-- ObjC selector: @- device@
+device :: IsMTKView mtkView => mtkView -> IO RawId
+device mtkView  =
+    fmap (RawId . castPtr) $ sendMsg mtkView (mkSelector "device") (retPtr retVoid) []
+
+-- | device
+--
+-- The MTLDevice used to create Metal objects
+--
+-- This must be explicitly set by the application unless it was passed into the initializer. Defaults to nil
+--
+-- ObjC selector: @- setDevice:@
+setDevice :: IsMTKView mtkView => mtkView -> RawId -> IO ()
+setDevice mtkView  value =
+    sendMsg mtkView (mkSelector "setDevice:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | currentDrawable
+--
+-- The drawable to be used for the current frame.
+--
+-- currentDrawable is updated at the end -draw (i.e. after the delegate's drawInMTKView method is called)
+--
+-- ObjC selector: @- currentDrawable@
+currentDrawable :: IsMTKView mtkView => mtkView -> IO RawId
+currentDrawable mtkView  =
+    fmap (RawId . castPtr) $ sendMsg mtkView (mkSelector "currentDrawable") (retPtr retVoid) []
 
 -- | framebufferOnly
 --
@@ -338,6 +405,28 @@ setClearStencil :: IsMTKView mtkView => mtkView -> CUInt -> IO ()
 setClearStencil mtkView  value =
     sendMsg mtkView (mkSelector "setClearStencil:") retVoid [argCUInt value]
 
+-- | depthStencilTexture
+--
+-- A packed depth and stencil texture to be attached to a MTLRenderPassDescriptor
+--
+-- The view will generate the depth buffer using the specified depthPixelFormat.  This will be nil if depthStencilPixelFormat is MTLPixelFormatInvalid.
+--
+-- ObjC selector: @- depthStencilTexture@
+depthStencilTexture :: IsMTKView mtkView => mtkView -> IO RawId
+depthStencilTexture mtkView  =
+    fmap (RawId . castPtr) $ sendMsg mtkView (mkSelector "depthStencilTexture") (retPtr retVoid) []
+
+-- | multisampleColorTexture
+--
+-- A multisample color texture that will be resolved into the currentDrawable's texture
+--
+-- The view will generate the multisample color buffer using the specified colorPixelFormat.  This will be nil if sampleCount is less than or equal to 1.
+--
+-- ObjC selector: @- multisampleColorTexture@
+multisampleColorTexture :: IsMTKView mtkView => mtkView -> IO RawId
+multisampleColorTexture mtkView  =
+    fmap (RawId . castPtr) $ sendMsg mtkView (mkSelector "multisampleColorTexture") (retPtr retVoid) []
+
 -- | preferredFramesPerSecond
 --
 -- The rate you want the view to redraw its contents.
@@ -404,6 +493,17 @@ setAutoResizeDrawable :: IsMTKView mtkView => mtkView -> Bool -> IO ()
 setAutoResizeDrawable mtkView  value =
     sendMsg mtkView (mkSelector "setAutoResizeDrawable:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | preferredDevice
+--
+-- The preferred device is updated per-frame by the system in order to identify the most efficient GPU for presentation (e.g. the one being used for compositing).
+--
+-- This value is determined by the underlying CAMetalLayer and this property is a convenience accessor for it.
+--
+-- ObjC selector: @- preferredDevice@
+preferredDevice :: IsMTKView mtkView => mtkView -> IO RawId
+preferredDevice mtkView  =
+    fmap (RawId . castPtr) $ sendMsg mtkView (mkSelector "preferredDevice") (retPtr retVoid) []
+
 -- | paused
 --
 -- Controls whether the draw methods should countinue at preferredFramesPerSecond
@@ -463,6 +563,26 @@ releaseDrawablesSelector = mkSelector "releaseDrawables"
 -- | @Selector@ for @draw@
 drawSelector :: Selector
 drawSelector = mkSelector "draw"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @device@
+deviceSelector :: Selector
+deviceSelector = mkSelector "device"
+
+-- | @Selector@ for @setDevice:@
+setDeviceSelector :: Selector
+setDeviceSelector = mkSelector "setDevice:"
+
+-- | @Selector@ for @currentDrawable@
+currentDrawableSelector :: Selector
+currentDrawableSelector = mkSelector "currentDrawable"
 
 -- | @Selector@ for @framebufferOnly@
 framebufferOnlySelector :: Selector
@@ -544,6 +664,14 @@ clearStencilSelector = mkSelector "clearStencil"
 setClearStencilSelector :: Selector
 setClearStencilSelector = mkSelector "setClearStencil:"
 
+-- | @Selector@ for @depthStencilTexture@
+depthStencilTextureSelector :: Selector
+depthStencilTextureSelector = mkSelector "depthStencilTexture"
+
+-- | @Selector@ for @multisampleColorTexture@
+multisampleColorTextureSelector :: Selector
+multisampleColorTextureSelector = mkSelector "multisampleColorTexture"
+
 -- | @Selector@ for @preferredFramesPerSecond@
 preferredFramesPerSecondSelector :: Selector
 preferredFramesPerSecondSelector = mkSelector "preferredFramesPerSecond"
@@ -567,6 +695,10 @@ autoResizeDrawableSelector = mkSelector "autoResizeDrawable"
 -- | @Selector@ for @setAutoResizeDrawable:@
 setAutoResizeDrawableSelector :: Selector
 setAutoResizeDrawableSelector = mkSelector "setAutoResizeDrawable:"
+
+-- | @Selector@ for @preferredDevice@
+preferredDeviceSelector :: Selector
+preferredDeviceSelector = mkSelector "preferredDevice"
 
 -- | @Selector@ for @paused@
 pausedSelector :: Selector

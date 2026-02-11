@@ -15,11 +15,13 @@ module ObjC.AVFoundation.AVDelegatingPlaybackCoordinator
   , coordinateRateChangeToRate_options
   , transitionToItemWithIdentifier_proposingInitialTimingBasedOnTimebase
   , reapplyCurrentItemStateToPlaybackControlDelegate
+  , playbackControlDelegate
   , currentItemIdentifier
   , initWithPlaybackControlDelegateSelector
   , coordinateRateChangeToRate_optionsSelector
   , transitionToItemWithIdentifier_proposingInitialTimingBasedOnTimebaseSelector
   , reapplyCurrentItemStateToPlaybackControlDelegateSelector
+  , playbackControlDelegateSelector
   , currentItemIdentifierSelector
 
   -- * Enum types
@@ -97,6 +99,13 @@ reapplyCurrentItemStateToPlaybackControlDelegate :: IsAVDelegatingPlaybackCoordi
 reapplyCurrentItemStateToPlaybackControlDelegate avDelegatingPlaybackCoordinator  =
     sendMsg avDelegatingPlaybackCoordinator (mkSelector "reapplyCurrentItemStateToPlaybackControlDelegate") retVoid []
 
+-- | The custom player implementation controlled by the coordinator.
+--
+-- ObjC selector: @- playbackControlDelegate@
+playbackControlDelegate :: IsAVDelegatingPlaybackCoordinator avDelegatingPlaybackCoordinator => avDelegatingPlaybackCoordinator -> IO RawId
+playbackControlDelegate avDelegatingPlaybackCoordinator  =
+    fmap (RawId . castPtr) $ sendMsg avDelegatingPlaybackCoordinator (mkSelector "playbackControlDelegate") (retPtr retVoid) []
+
 -- | The item identifier of the current item. Previously set by a call to transitionToItemWithIdentifier:proposingInitialTimingBasedOnTimebase:
 --
 -- ObjC selector: @- currentItemIdentifier@
@@ -123,6 +132,10 @@ transitionToItemWithIdentifier_proposingInitialTimingBasedOnTimebaseSelector = m
 -- | @Selector@ for @reapplyCurrentItemStateToPlaybackControlDelegate@
 reapplyCurrentItemStateToPlaybackControlDelegateSelector :: Selector
 reapplyCurrentItemStateToPlaybackControlDelegateSelector = mkSelector "reapplyCurrentItemStateToPlaybackControlDelegate"
+
+-- | @Selector@ for @playbackControlDelegate@
+playbackControlDelegateSelector :: Selector
+playbackControlDelegateSelector = mkSelector "playbackControlDelegate"
 
 -- | @Selector@ for @currentItemIdentifier@
 currentItemIdentifierSelector :: Selector

@@ -12,6 +12,8 @@ module ObjC.AppKit.NSAccessibilityCustomAction
   , setName
   , handler
   , setHandler
+  , target
+  , setTarget
   , selector
   , setSelector
   , initWithName_handlerSelector
@@ -20,6 +22,8 @@ module ObjC.AppKit.NSAccessibilityCustomAction
   , setNameSelector
   , handlerSelector
   , setHandlerSelector
+  , targetSelector
+  , setTargetSelector
   , selectorSelector
   , setSelectorSelector
 
@@ -74,6 +78,16 @@ setHandler :: IsNSAccessibilityCustomAction nsAccessibilityCustomAction => nsAcc
 setHandler nsAccessibilityCustomAction  value =
     sendMsg nsAccessibilityCustomAction (mkSelector "setHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
 
+-- | @- target@
+target :: IsNSAccessibilityCustomAction nsAccessibilityCustomAction => nsAccessibilityCustomAction -> IO RawId
+target nsAccessibilityCustomAction  =
+    fmap (RawId . castPtr) $ sendMsg nsAccessibilityCustomAction (mkSelector "target") (retPtr retVoid) []
+
+-- | @- setTarget:@
+setTarget :: IsNSAccessibilityCustomAction nsAccessibilityCustomAction => nsAccessibilityCustomAction -> RawId -> IO ()
+setTarget nsAccessibilityCustomAction  value =
+    sendMsg nsAccessibilityCustomAction (mkSelector "setTarget:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- selector@
 selector :: IsNSAccessibilityCustomAction nsAccessibilityCustomAction => nsAccessibilityCustomAction -> IO Selector
 selector nsAccessibilityCustomAction  =
@@ -111,6 +125,14 @@ handlerSelector = mkSelector "handler"
 -- | @Selector@ for @setHandler:@
 setHandlerSelector :: Selector
 setHandlerSelector = mkSelector "setHandler:"
+
+-- | @Selector@ for @target@
+targetSelector :: Selector
+targetSelector = mkSelector "target"
+
+-- | @Selector@ for @setTarget:@
+setTargetSelector :: Selector
+setTargetSelector = mkSelector "setTarget:"
 
 -- | @Selector@ for @selector@
 selectorSelector :: Selector

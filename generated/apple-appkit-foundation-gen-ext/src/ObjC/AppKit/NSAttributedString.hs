@@ -47,6 +47,8 @@ module ObjC.AppKit.NSAttributedString
   , dataFromRange_documentAttributes_error
   , fileWrapperFromRange_documentAttributes_error
   , containsAttachments
+  , textTypes
+  , textUnfilteredTypes
   , attributedStringWithAdaptiveImageGlyph_attributesSelector
   , drawWithRect_optionsSelector
   , boundingRectWithSize_optionsSelector
@@ -87,6 +89,8 @@ module ObjC.AppKit.NSAttributedString
   , dataFromRange_documentAttributes_errorSelector
   , fileWrapperFromRange_documentAttributes_errorSelector
   , containsAttachmentsSelector
+  , textTypesSelector
+  , textUnfilteredTypesSelector
 
   -- * Enum types
   , NSStringDrawingOptions(NSStringDrawingOptions)
@@ -376,6 +380,20 @@ containsAttachments :: IsNSAttributedString nsAttributedString => nsAttributedSt
 containsAttachments nsAttributedString  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsAttributedString (mkSelector "containsAttachments") retCULong []
 
+-- | @+ textTypes@
+textTypes :: IO (Id NSArray)
+textTypes  =
+  do
+    cls' <- getRequiredClass "NSAttributedString"
+    sendClassMsg cls' (mkSelector "textTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ textUnfilteredTypes@
+textUnfilteredTypes :: IO (Id NSArray)
+textUnfilteredTypes  =
+  do
+    cls' <- getRequiredClass "NSAttributedString"
+    sendClassMsg cls' (mkSelector "textUnfilteredTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -539,4 +557,12 @@ fileWrapperFromRange_documentAttributes_errorSelector = mkSelector "fileWrapperF
 -- | @Selector@ for @containsAttachments@
 containsAttachmentsSelector :: Selector
 containsAttachmentsSelector = mkSelector "containsAttachments"
+
+-- | @Selector@ for @textTypes@
+textTypesSelector :: Selector
+textTypesSelector = mkSelector "textTypes"
+
+-- | @Selector@ for @textUnfilteredTypes@
+textUnfilteredTypesSelector :: Selector
+textUnfilteredTypesSelector = mkSelector "textUnfilteredTypes"
 

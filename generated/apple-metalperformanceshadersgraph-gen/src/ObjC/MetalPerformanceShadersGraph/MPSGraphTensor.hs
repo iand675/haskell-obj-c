@@ -12,9 +12,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphTensor
   ( MPSGraphTensor
   , IsMPSGraphTensor(..)
   , init_
+  , shape
   , dataType
   , operation
   , initSelector
+  , shapeSelector
   , dataTypeSelector
   , operationSelector
 
@@ -73,6 +75,15 @@ init_ :: IsMPSGraphTensor mpsGraphTensor => mpsGraphTensor -> IO (Id MPSGraphTen
 init_ mpsGraphTensor  =
     sendMsg mpsGraphTensor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | The shape of the tensor.
+--
+-- nil shape represents an unranked tensor. -1 value for a dimension represents that it will be resolved via shape inference at runtime and it can be anything.
+--
+-- ObjC selector: @- shape@
+shape :: IsMPSGraphTensor mpsGraphTensor => mpsGraphTensor -> IO RawId
+shape mpsGraphTensor  =
+    fmap (RawId . castPtr) $ sendMsg mpsGraphTensor (mkSelector "shape") (retPtr retVoid) []
+
 -- | The data type of the tensor.
 --
 -- ObjC selector: @- dataType@
@@ -94,6 +105,10 @@ operation mpsGraphTensor  =
 -- | @Selector@ for @init@
 initSelector :: Selector
 initSelector = mkSelector "init"
+
+-- | @Selector@ for @shape@
+shapeSelector :: Selector
+shapeSelector = mkSelector "shape"
 
 -- | @Selector@ for @dataType@
 dataTypeSelector :: Selector

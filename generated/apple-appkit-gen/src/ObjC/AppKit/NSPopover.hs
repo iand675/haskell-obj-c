@@ -13,6 +13,11 @@ module ObjC.AppKit.NSPopover
   , showRelativeToToolbarItem
   , performClose
   , close
+  , delegate
+  , setDelegate
+  , appearance
+  , setAppearance
+  , effectiveAppearance
   , behavior
   , setBehavior
   , animates
@@ -33,6 +38,11 @@ module ObjC.AppKit.NSPopover
   , showRelativeToToolbarItemSelector
   , performCloseSelector
   , closeSelector
+  , delegateSelector
+  , setDelegateSelector
+  , appearanceSelector
+  , setAppearanceSelector
+  , effectiveAppearanceSelector
   , behaviorSelector
   , setBehaviorSelector
   , animatesSelector
@@ -129,6 +139,36 @@ performClose nsPopover  sender =
 close :: IsNSPopover nsPopover => nsPopover -> IO ()
 close nsPopover  =
     sendMsg nsPopover (mkSelector "close") retVoid []
+
+-- | @- delegate@
+delegate :: IsNSPopover nsPopover => nsPopover -> IO RawId
+delegate nsPopover  =
+    fmap (RawId . castPtr) $ sendMsg nsPopover (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSPopover nsPopover => nsPopover -> RawId -> IO ()
+setDelegate nsPopover  value =
+    sendMsg nsPopover (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | The appearance of the popover. The popover's contentView will inherit this appearance. The default effective appearance is the NSAppearanceNameVibrantLight appearance. If nil is set, nil will be returned, and the effective appearance will return to the default. To prevent conflicts with the previous appearance property, this is only available for apps that target 10.10 and higher.
+--
+-- ObjC selector: @- appearance@
+appearance :: IsNSPopover nsPopover => nsPopover -> IO (Id NSAppearance)
+appearance nsPopover  =
+    sendMsg nsPopover (mkSelector "appearance") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The appearance of the popover. The popover's contentView will inherit this appearance. The default effective appearance is the NSAppearanceNameVibrantLight appearance. If nil is set, nil will be returned, and the effective appearance will return to the default. To prevent conflicts with the previous appearance property, this is only available for apps that target 10.10 and higher.
+--
+-- ObjC selector: @- setAppearance:@
+setAppearance :: (IsNSPopover nsPopover, IsNSAppearance value) => nsPopover -> value -> IO ()
+setAppearance nsPopover  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsPopover (mkSelector "setAppearance:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- effectiveAppearance@
+effectiveAppearance :: IsNSPopover nsPopover => nsPopover -> IO (Id NSAppearance)
+effectiveAppearance nsPopover  =
+    sendMsg nsPopover (mkSelector "effectiveAppearance") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- behavior@
 behavior :: IsNSPopover nsPopover => nsPopover -> IO NSPopoverBehavior
@@ -230,6 +270,26 @@ performCloseSelector = mkSelector "performClose:"
 -- | @Selector@ for @close@
 closeSelector :: Selector
 closeSelector = mkSelector "close"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @appearance@
+appearanceSelector :: Selector
+appearanceSelector = mkSelector "appearance"
+
+-- | @Selector@ for @setAppearance:@
+setAppearanceSelector :: Selector
+setAppearanceSelector = mkSelector "setAppearance:"
+
+-- | @Selector@ for @effectiveAppearance@
+effectiveAppearanceSelector :: Selector
+effectiveAppearanceSelector = mkSelector "effectiveAppearance"
 
 -- | @Selector@ for @behavior@
 behaviorSelector :: Selector

@@ -40,6 +40,8 @@ module ObjC.AppKit.NSTabView
   , setDrawsBackground
   , controlSize
   , setControlSize
+  , delegate
+  , setDelegate
   , contentRect
   , numberOfTabViewItems
   , controlTint
@@ -77,6 +79,8 @@ module ObjC.AppKit.NSTabView
   , setDrawsBackgroundSelector
   , controlSizeSelector
   , setControlSizeSelector
+  , delegateSelector
+  , setDelegateSelector
   , contentRectSelector
   , numberOfTabViewItemsSelector
   , controlTintSelector
@@ -304,6 +308,16 @@ setControlSize :: IsNSTabView nsTabView => nsTabView -> NSControlSize -> IO ()
 setControlSize nsTabView  value =
     sendMsg nsTabView (mkSelector "setControlSize:") retVoid [argCULong (coerce value)]
 
+-- | @- delegate@
+delegate :: IsNSTabView nsTabView => nsTabView -> IO RawId
+delegate nsTabView  =
+    fmap (RawId . castPtr) $ sendMsg nsTabView (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSTabView nsTabView => nsTabView -> RawId -> IO ()
+setDelegate nsTabView  value =
+    sendMsg nsTabView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- contentRect@
 contentRect :: IsNSTabView nsTabView => nsTabView -> IO NSRect
 contentRect nsTabView  =
@@ -459,6 +473,14 @@ controlSizeSelector = mkSelector "controlSize"
 -- | @Selector@ for @setControlSize:@
 setControlSizeSelector :: Selector
 setControlSizeSelector = mkSelector "setControlSize:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @contentRect@
 contentRectSelector :: Selector

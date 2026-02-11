@@ -16,6 +16,7 @@ module ObjC.AVFoundation.AVPlayerItemLegibleOutput
   , IsAVPlayerItemLegibleOutput(..)
   , setDelegate_queue
   , initWithMediaSubtypesForNativeRepresentation
+  , delegate
   , delegateQueue
   , advanceIntervalForDelegateInvocation
   , setAdvanceIntervalForDelegateInvocation
@@ -23,6 +24,7 @@ module ObjC.AVFoundation.AVPlayerItemLegibleOutput
   , setTextStylingResolution
   , setDelegate_queueSelector
   , initWithMediaSubtypesForNativeRepresentationSelector
+  , delegateSelector
   , delegateQueueSelector
   , advanceIntervalForDelegateInvocationSelector
   , setAdvanceIntervalForDelegateInvocationSelector
@@ -82,6 +84,17 @@ initWithMediaSubtypesForNativeRepresentation :: (IsAVPlayerItemLegibleOutput avP
 initWithMediaSubtypesForNativeRepresentation avPlayerItemLegibleOutput  subtypes =
   withObjCPtr subtypes $ \raw_subtypes ->
       sendMsg avPlayerItemLegibleOutput (mkSelector "initWithMediaSubtypesForNativeRepresentation:") (retPtr retVoid) [argPtr (castPtr raw_subtypes :: Ptr ())] >>= ownedObject . castPtr
+
+-- | delegate
+--
+-- The receiver's delegate.
+--
+-- The delegate is held using a zeroing-weak reference, so this property will have a value of nil after a delegate that was previously set has been deallocated.  This property is not key-value observable.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsAVPlayerItemLegibleOutput avPlayerItemLegibleOutput => avPlayerItemLegibleOutput -> IO RawId
+delegate avPlayerItemLegibleOutput  =
+    fmap (RawId . castPtr) $ sendMsg avPlayerItemLegibleOutput (mkSelector "delegate") (retPtr retVoid) []
 
 -- | delegateQueue
 --
@@ -150,6 +163,10 @@ setDelegate_queueSelector = mkSelector "setDelegate:queue:"
 -- | @Selector@ for @initWithMediaSubtypesForNativeRepresentation:@
 initWithMediaSubtypesForNativeRepresentationSelector :: Selector
 initWithMediaSubtypesForNativeRepresentationSelector = mkSelector "initWithMediaSubtypesForNativeRepresentation:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @delegateQueue@
 delegateQueueSelector :: Selector

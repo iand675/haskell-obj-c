@@ -15,13 +15,21 @@ module ObjC.PassKit.PKIdentityElement
   , familyNameElement
   , portraitElement
   , addressElement
+  , heightElement
+  , weightElement
+  , eyeColorElement
+  , hairColorElement
+  , organDonorStatusElement
+  , veteranStatusElement
   , issuingAuthorityElement
   , documentIssueDateElement
   , documentExpirationDateElement
+  , documentDHSComplianceStatusElement
   , documentNumberElement
   , drivingPrivilegesElement
   , ageElement
   , dateOfBirthElement
+  , sexElement
   , ageThresholdElementWithAgeSelector
   , initSelector
   , newSelector
@@ -29,13 +37,21 @@ module ObjC.PassKit.PKIdentityElement
   , familyNameElementSelector
   , portraitElementSelector
   , addressElementSelector
+  , heightElementSelector
+  , weightElementSelector
+  , eyeColorElementSelector
+  , hairColorElementSelector
+  , organDonorStatusElementSelector
+  , veteranStatusElementSelector
   , issuingAuthorityElementSelector
   , documentIssueDateElementSelector
   , documentExpirationDateElementSelector
+  , documentDHSComplianceStatusElementSelector
   , documentNumberElementSelector
   , drivingPrivilegesElementSelector
   , ageElementSelector
   , dateOfBirthElementSelector
+  , sexElementSelector
 
 
   ) where
@@ -112,6 +128,60 @@ addressElement  =
     cls' <- getRequiredClass "PKIdentityElement"
     sendClassMsg cls' (mkSelector "addressElement") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The user's height on record with the issuer.
+--
+-- ObjC selector: @+ heightElement@
+heightElement :: IO (Id PKIdentityElement)
+heightElement  =
+  do
+    cls' <- getRequiredClass "PKIdentityElement"
+    sendClassMsg cls' (mkSelector "heightElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The user's weight on record with the issuer.
+--
+-- ObjC selector: @+ weightElement@
+weightElement :: IO (Id PKIdentityElement)
+weightElement  =
+  do
+    cls' <- getRequiredClass "PKIdentityElement"
+    sendClassMsg cls' (mkSelector "weightElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The user's eye color on record with the issuer.
+--
+-- ObjC selector: @+ eyeColorElement@
+eyeColorElement :: IO (Id PKIdentityElement)
+eyeColorElement  =
+  do
+    cls' <- getRequiredClass "PKIdentityElement"
+    sendClassMsg cls' (mkSelector "eyeColorElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The user's hair color on record with the issuer.
+--
+-- ObjC selector: @+ hairColorElement@
+hairColorElement :: IO (Id PKIdentityElement)
+hairColorElement  =
+  do
+    cls' <- getRequiredClass "PKIdentityElement"
+    sendClassMsg cls' (mkSelector "hairColorElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The user's organ donor status on record with the issuer.
+--
+-- ObjC selector: @+ organDonorStatusElement@
+organDonorStatusElement :: IO (Id PKIdentityElement)
+organDonorStatusElement  =
+  do
+    cls' <- getRequiredClass "PKIdentityElement"
+    sendClassMsg cls' (mkSelector "organDonorStatusElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The user's veteran status on record with the issuer.
+--
+-- ObjC selector: @+ veteranStatusElement@
+veteranStatusElement :: IO (Id PKIdentityElement)
+veteranStatusElement  =
+  do
+    cls' <- getRequiredClass "PKIdentityElement"
+    sendClassMsg cls' (mkSelector "veteranStatusElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | The state or government that issued the identity document.
 --
 -- ObjC selector: @+ issuingAuthorityElement@
@@ -138,6 +208,17 @@ documentExpirationDateElement  =
   do
     cls' <- getRequiredClass "PKIdentityElement"
     sendClassMsg cls' (mkSelector "documentExpirationDateElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The document's DHS (U.S. Department of Homeland Security) compliance status.
+--
+-- This is also known as the document's "REAL ID status".
+--
+-- ObjC selector: @+ documentDHSComplianceStatusElement@
+documentDHSComplianceStatusElement :: IO (Id PKIdentityElement)
+documentDHSComplianceStatusElement  =
+  do
+    cls' <- getRequiredClass "PKIdentityElement"
+    sendClassMsg cls' (mkSelector "documentDHSComplianceStatusElement") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | The document's number, as defined by the document's issuing authority.
 --
@@ -175,6 +256,15 @@ dateOfBirthElement  =
     cls' <- getRequiredClass "PKIdentityElement"
     sendClassMsg cls' (mkSelector "dateOfBirthElement") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The user's sex.
+--
+-- ObjC selector: @+ sexElement@
+sexElement :: IO (Id PKIdentityElement)
+sexElement  =
+  do
+    cls' <- getRequiredClass "PKIdentityElement"
+    sendClassMsg cls' (mkSelector "sexElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -207,6 +297,30 @@ portraitElementSelector = mkSelector "portraitElement"
 addressElementSelector :: Selector
 addressElementSelector = mkSelector "addressElement"
 
+-- | @Selector@ for @heightElement@
+heightElementSelector :: Selector
+heightElementSelector = mkSelector "heightElement"
+
+-- | @Selector@ for @weightElement@
+weightElementSelector :: Selector
+weightElementSelector = mkSelector "weightElement"
+
+-- | @Selector@ for @eyeColorElement@
+eyeColorElementSelector :: Selector
+eyeColorElementSelector = mkSelector "eyeColorElement"
+
+-- | @Selector@ for @hairColorElement@
+hairColorElementSelector :: Selector
+hairColorElementSelector = mkSelector "hairColorElement"
+
+-- | @Selector@ for @organDonorStatusElement@
+organDonorStatusElementSelector :: Selector
+organDonorStatusElementSelector = mkSelector "organDonorStatusElement"
+
+-- | @Selector@ for @veteranStatusElement@
+veteranStatusElementSelector :: Selector
+veteranStatusElementSelector = mkSelector "veteranStatusElement"
+
 -- | @Selector@ for @issuingAuthorityElement@
 issuingAuthorityElementSelector :: Selector
 issuingAuthorityElementSelector = mkSelector "issuingAuthorityElement"
@@ -218,6 +332,10 @@ documentIssueDateElementSelector = mkSelector "documentIssueDateElement"
 -- | @Selector@ for @documentExpirationDateElement@
 documentExpirationDateElementSelector :: Selector
 documentExpirationDateElementSelector = mkSelector "documentExpirationDateElement"
+
+-- | @Selector@ for @documentDHSComplianceStatusElement@
+documentDHSComplianceStatusElementSelector :: Selector
+documentDHSComplianceStatusElementSelector = mkSelector "documentDHSComplianceStatusElement"
 
 -- | @Selector@ for @documentNumberElement@
 documentNumberElementSelector :: Selector
@@ -234,4 +352,8 @@ ageElementSelector = mkSelector "ageElement"
 -- | @Selector@ for @dateOfBirthElement@
 dateOfBirthElementSelector :: Selector
 dateOfBirthElementSelector = mkSelector "dateOfBirthElement"
+
+-- | @Selector@ for @sexElement@
+sexElementSelector :: Selector
+sexElementSelector = mkSelector "sexElement"
 

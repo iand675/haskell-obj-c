@@ -10,6 +10,8 @@ module ObjC.MapKit.MKPinAnnotationView
   , redPinColor
   , greenPinColor
   , purplePinColor
+  , pinTintColor
+  , setPinTintColor
   , animatesDrop
   , setAnimatesDrop
   , pinColor
@@ -17,6 +19,8 @@ module ObjC.MapKit.MKPinAnnotationView
   , redPinColorSelector
   , greenPinColorSelector
   , purplePinColorSelector
+  , pinTintColorSelector
+  , setPinTintColorSelector
   , animatesDropSelector
   , setAnimatesDropSelector
   , pinColorSelector
@@ -68,6 +72,16 @@ purplePinColor  =
     cls' <- getRequiredClass "MKPinAnnotationView"
     sendClassMsg cls' (mkSelector "purplePinColor") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- pinTintColor@
+pinTintColor :: IsMKPinAnnotationView mkPinAnnotationView => mkPinAnnotationView -> IO RawId
+pinTintColor mkPinAnnotationView  =
+    fmap (RawId . castPtr) $ sendMsg mkPinAnnotationView (mkSelector "pinTintColor") (retPtr retVoid) []
+
+-- | @- setPinTintColor:@
+setPinTintColor :: IsMKPinAnnotationView mkPinAnnotationView => mkPinAnnotationView -> RawId -> IO ()
+setPinTintColor mkPinAnnotationView  value =
+    sendMsg mkPinAnnotationView (mkSelector "setPinTintColor:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- animatesDrop@
 animatesDrop :: IsMKPinAnnotationView mkPinAnnotationView => mkPinAnnotationView -> IO Bool
 animatesDrop mkPinAnnotationView  =
@@ -103,6 +117,14 @@ greenPinColorSelector = mkSelector "greenPinColor"
 -- | @Selector@ for @purplePinColor@
 purplePinColorSelector :: Selector
 purplePinColorSelector = mkSelector "purplePinColor"
+
+-- | @Selector@ for @pinTintColor@
+pinTintColorSelector :: Selector
+pinTintColorSelector = mkSelector "pinTintColor"
+
+-- | @Selector@ for @setPinTintColor:@
+setPinTintColorSelector :: Selector
+setPinTintColorSelector = mkSelector "setPinTintColor:"
 
 -- | @Selector@ for @animatesDrop@
 animatesDropSelector :: Selector

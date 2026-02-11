@@ -37,18 +37,27 @@ module ObjC.MetalPerformanceShaders.MPSCNNMultiaryKernel
   , setDilationRateY_atIndex
   , initWithCoder_device
   , encodeToCommandBuffer_sourceImages_destinationImage
+  , encodeBatchToCommandBuffer_sourceImages_destinationImages
   , encodeToCommandBuffer_sourceImages
+  , encodeBatchToCommandBuffer_sourceImages
   , encodeToCommandBuffer_sourceImages_destinationState_destinationStateIsTemporary
+  , encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary
   , isResultStateReusedAcrossBatch
   , appendBatchBarrier
   , resultStateForSourceImages_sourceStates_destinationImage
+  , resultStateBatchForSourceImages_sourceStates_destinationImage
   , temporaryResultStateForCommandBuffer_sourceImages_sourceStates_destinationImage
+  , temporaryResultStateBatchForCommandBuffer_sourceImages_sourceStates_destinationImage
   , destinationImageDescriptorForSourceImages_sourceStates
   , sourceCount
   , destinationFeatureChannelOffset
   , setDestinationFeatureChannelOffset
   , isBackwards
   , isStateModified
+  , padding
+  , setPadding
+  , destinationImageAllocator
+  , setDestinationImageAllocator
   , initWithDevice_sourceCountSelector
   , initWithDeviceSelector
   , sourceFeatureChannelOffsetAtIndexSelector
@@ -71,18 +80,27 @@ module ObjC.MetalPerformanceShaders.MPSCNNMultiaryKernel
   , setDilationRateY_atIndexSelector
   , initWithCoder_deviceSelector
   , encodeToCommandBuffer_sourceImages_destinationImageSelector
+  , encodeBatchToCommandBuffer_sourceImages_destinationImagesSelector
   , encodeToCommandBuffer_sourceImagesSelector
+  , encodeBatchToCommandBuffer_sourceImagesSelector
   , encodeToCommandBuffer_sourceImages_destinationState_destinationStateIsTemporarySelector
+  , encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporarySelector
   , isResultStateReusedAcrossBatchSelector
   , appendBatchBarrierSelector
   , resultStateForSourceImages_sourceStates_destinationImageSelector
+  , resultStateBatchForSourceImages_sourceStates_destinationImageSelector
   , temporaryResultStateForCommandBuffer_sourceImages_sourceStates_destinationImageSelector
+  , temporaryResultStateBatchForCommandBuffer_sourceImages_sourceStates_destinationImageSelector
   , destinationImageDescriptorForSourceImages_sourceStatesSelector
   , sourceCountSelector
   , destinationFeatureChannelOffsetSelector
   , setDestinationFeatureChannelOffsetSelector
   , isBackwardsSelector
   , isStateModifiedSelector
+  , paddingSelector
+  , setPaddingSelector
+  , destinationImageAllocatorSelector
+  , setDestinationImageAllocatorSelector
 
   -- * Enum types
   , MPSImageEdgeMode(MPSImageEdgeMode)
@@ -387,6 +405,22 @@ encodeToCommandBuffer_sourceImages_destinationImage mpscnnMultiaryKernel  comman
     withObjCPtr destinationImage $ \raw_destinationImage ->
         sendMsg mpscnnMultiaryKernel (mkSelector "encodeToCommandBuffer:sourceImages:destinationImage:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImages :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())]
 
+-- | Encode a MPSCNNKernel into a command Buffer.  The operation shall proceed out-of-place.
+--
+-- This is the older style of encode which reads the offset, doesn't change it,              and ignores the padding method. Multiple images are processed concurrently.              All images must have MPSImage.numberOfImages = 1.
+--
+-- @commandBuffer@ — A valid MTLCommandBuffer to receive the encoded filter
+--
+-- @sourceImages@ — An array of image batches containing the source images.
+--
+-- @destinationImages@ — An array of MPSImage objects to contain the result images.                                    destinationImages may not alias primarySourceImages or secondarySourceImages                                    in any manner.
+--
+-- ObjC selector: @- encodeBatchToCommandBuffer:sourceImages:destinationImages:@
+encodeBatchToCommandBuffer_sourceImages_destinationImages :: (IsMPSCNNMultiaryKernel mpscnnMultiaryKernel, IsNSArray sourceImages) => mpscnnMultiaryKernel -> RawId -> sourceImages -> RawId -> IO ()
+encodeBatchToCommandBuffer_sourceImages_destinationImages mpscnnMultiaryKernel  commandBuffer sourceImages destinationImages =
+  withObjCPtr sourceImages $ \raw_sourceImages ->
+      sendMsg mpscnnMultiaryKernel (mkSelector "encodeBatchToCommandBuffer:sourceImages:destinationImages:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImages :: Ptr ()), argPtr (castPtr (unRawId destinationImages) :: Ptr ())]
+
 -- | Encode a MPSCNNKernel into a command Buffer. Create a texture to hold the result and return it.
 --
 -- In the first iteration on this method, encodeToCommandBuffer:sourceImage:destinationImage:                  some work was left for the developer to do in the form of correctly setting the offset property                  and sizing the result buffer. With the introduction of the padding policy (see padding property)                  the filter can do this work itself. If you would like to have some input into what sort of MPSImage                  (e.g. temporary vs. regular) or what size it is or where it is allocated, you may set the                  destinationImageAllocator to allocate the image yourself.
@@ -404,6 +438,24 @@ encodeToCommandBuffer_sourceImages :: (IsMPSCNNMultiaryKernel mpscnnMultiaryKern
 encodeToCommandBuffer_sourceImages mpscnnMultiaryKernel  commandBuffer sourceImages =
   withObjCPtr sourceImages $ \raw_sourceImages ->
       sendMsg mpscnnMultiaryKernel (mkSelector "encodeToCommandBuffer:sourceImages:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImages :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Encode a MPSCNNKernel into a command Buffer. Create textures to hold the results and return them.
+--
+-- In the first iteration on this method, encodeBatchToCommandBuffer:sourceImage:destinationImage:                  some work was left for the developer to do in the form of correctly setting the offset property                  and sizing the result buffer. With the introduction of the padding policy (see padding property)                  the filter can do this work itself. If you would like to have some input into what sort of MPSImage                  (e.g. temporary vs. regular) or what size it is or where it is allocated, you may set the                  destinationImageAllocator to allocate the image yourself.
+--
+-- This method uses the MPSNNPadding padding property to figure out how to size                  the result image and to set the offset property.  See discussion in MPSNeuralNetworkTypes.h.                  All images in a batch must have MPSImage.numberOfImages = 1.
+--
+-- @commandBuffer@ — The command buffer
+--
+-- @sourceImageBatches@ — An array of image batches to use as the source images for the filter.
+--
+-- Returns: A MPSImage or MPSTemporaryImage allocated per the destinationImageAllocator containing the output of the graph.                  The returned image will be automatically released when the command buffer completes. If you want to                  keep it around for longer, retain the image. (ARC will do this for you if you use it later.)
+--
+-- ObjC selector: @- encodeBatchToCommandBuffer:sourceImages:@
+encodeBatchToCommandBuffer_sourceImages :: (IsMPSCNNMultiaryKernel mpscnnMultiaryKernel, IsNSArray sourceImageBatches) => mpscnnMultiaryKernel -> RawId -> sourceImageBatches -> IO RawId
+encodeBatchToCommandBuffer_sourceImages mpscnnMultiaryKernel  commandBuffer sourceImageBatches =
+  withObjCPtr sourceImageBatches $ \raw_sourceImageBatches ->
+      fmap (RawId . castPtr) $ sendMsg mpscnnMultiaryKernel (mkSelector "encodeBatchToCommandBuffer:sourceImages:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImageBatches :: Ptr ())]
 
 -- | Encode a MPSCNNKernel into a command Buffer. Create a texture and state to hold the results and return them.
 --
@@ -427,6 +479,28 @@ encodeToCommandBuffer_sourceImages_destinationState_destinationStateIsTemporary 
   withObjCPtr sourceImages $ \raw_sourceImages ->
     withObjCPtr outState $ \raw_outState ->
         sendMsg mpscnnMultiaryKernel (mkSelector "encodeToCommandBuffer:sourceImages:destinationState:destinationStateIsTemporary:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImages :: Ptr ()), argPtr (castPtr raw_outState :: Ptr ()), argCULong (if isTemporary then 1 else 0)] >>= retainedObject . castPtr
+
+-- | Encode a MPSCNNKernel into a command Buffer. Create a texture and state to hold the results and return them.
+--
+-- In the first iteration on this method, encodeToCommandBuffer:sourceImage:destinationState:destinationImage:                  some work was left for the developer to do in the form of correctly setting the offset property                  and sizing the result buffer. With the introduction of the padding policy (see padding property)                  the filter can do this work itself. If you would like to have some input into what sort of MPSImage                  (e.g. temporary vs. regular) or what size it is or where it is allocated, you may set the                  destinationImageAllocator to allocate the image yourself.
+--
+-- This method uses the MPSNNPadding padding property to figure out how to size                  the result image and to set the offset property. See discussion in MPSNeuralNetworkTypes.h.                  All images in a batch must have MPSImage.numberOfImages = 1.
+--
+-- @commandBuffer@ — The command buffer
+--
+-- @sourceImageBatches@ — An array of batches to use as the source images for the filter.
+--
+-- @outState@ — A new state object is returned here.
+--
+-- @isTemporary@ — YES if the outState should be a temporary object
+--
+-- Returns: A MPSImage or MPSTemporaryImage allocated per the destinationImageAllocator containing the output of the graph.                  The offset property will be adjusted to reflect the offset used during the encode.                  The returned image will be automatically released when the command buffer completes. If you want to                  keep it around for longer, retain the image. (ARC will do this for you if you use it later.)
+--
+-- ObjC selector: @- encodeBatchToCommandBuffer:sourceImages:destinationStates:destinationStateIsTemporary:@
+encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary :: (IsMPSCNNMultiaryKernel mpscnnMultiaryKernel, IsNSArray sourceImageBatches) => mpscnnMultiaryKernel -> RawId -> sourceImageBatches -> RawId -> Bool -> IO RawId
+encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary mpscnnMultiaryKernel  commandBuffer sourceImageBatches outState isTemporary =
+  withObjCPtr sourceImageBatches $ \raw_sourceImageBatches ->
+      fmap (RawId . castPtr) $ sendMsg mpscnnMultiaryKernel (mkSelector "encodeBatchToCommandBuffer:sourceImages:destinationStates:destinationStateIsTemporary:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImageBatches :: Ptr ()), argPtr (castPtr (unRawId outState) :: Ptr ()), argCULong (if isTemporary then 1 else 0)]
 
 -- | Returns YES if the same state is used for every operation in a batch
 --
@@ -488,6 +562,13 @@ resultStateForSourceImages_sourceStates_destinationImage mpscnnMultiaryKernel  s
       withObjCPtr destinationImage $ \raw_destinationImage ->
           sendMsg mpscnnMultiaryKernel (mkSelector "resultStateForSourceImages:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr raw_sourceImages :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())] >>= retainedObject . castPtr
 
+-- | @- resultStateBatchForSourceImages:sourceStates:destinationImage:@
+resultStateBatchForSourceImages_sourceStates_destinationImage :: (IsMPSCNNMultiaryKernel mpscnnMultiaryKernel, IsNSArray sourceImages, IsNSArray sourceStates) => mpscnnMultiaryKernel -> sourceImages -> sourceStates -> RawId -> IO RawId
+resultStateBatchForSourceImages_sourceStates_destinationImage mpscnnMultiaryKernel  sourceImages sourceStates destinationImage =
+  withObjCPtr sourceImages $ \raw_sourceImages ->
+    withObjCPtr sourceStates $ \raw_sourceStates ->
+        fmap (RawId . castPtr) $ sendMsg mpscnnMultiaryKernel (mkSelector "resultStateBatchForSourceImages:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr raw_sourceImages :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr (unRawId destinationImage) :: Ptr ())]
+
 -- | Allocate a temporary MPSState (subclass) to hold the results from a -encodeBatchToCommandBuffer... operation
 --
 -- A graph may need to allocate storage up front before executing.  This may be              necessary to avoid using too much memory and to manage large batches.  The function              should allocate any MPSState objects that will be produced by an -encode call              with the indicated sourceImages and sourceStates inputs. Though the states              can be further adjusted in the ensuing -encode call, the states should              be initialized with all important data and all MTLResource storage allocated.              The data stored in the MTLResource need not be initialized, unless the ensuing              -encode call expects it to be.
@@ -525,6 +606,13 @@ temporaryResultStateForCommandBuffer_sourceImages_sourceStates_destinationImage 
     withObjCPtr sourceStates $ \raw_sourceStates ->
       withObjCPtr destinationImage $ \raw_destinationImage ->
           sendMsg mpscnnMultiaryKernel (mkSelector "temporaryResultStateForCommandBuffer:sourceImages:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())] >>= retainedObject . castPtr
+
+-- | @- temporaryResultStateBatchForCommandBuffer:sourceImages:sourceStates:destinationImage:@
+temporaryResultStateBatchForCommandBuffer_sourceImages_sourceStates_destinationImage :: (IsMPSCNNMultiaryKernel mpscnnMultiaryKernel, IsNSArray sourceImage, IsNSArray sourceStates) => mpscnnMultiaryKernel -> RawId -> sourceImage -> sourceStates -> RawId -> IO RawId
+temporaryResultStateBatchForCommandBuffer_sourceImages_sourceStates_destinationImage mpscnnMultiaryKernel  commandBuffer sourceImage sourceStates destinationImage =
+  withObjCPtr sourceImage $ \raw_sourceImage ->
+    withObjCPtr sourceStates $ \raw_sourceStates ->
+        fmap (RawId . castPtr) $ sendMsg mpscnnMultiaryKernel (mkSelector "temporaryResultStateBatchForCommandBuffer:sourceImages:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr (unRawId destinationImage) :: Ptr ())]
 
 -- | Get a suggested destination image descriptor for a source image
 --
@@ -613,6 +701,46 @@ isBackwards mpscnnMultiaryKernel  =
 isStateModified :: IsMPSCNNMultiaryKernel mpscnnMultiaryKernel => mpscnnMultiaryKernel -> IO Bool
 isStateModified mpscnnMultiaryKernel  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpscnnMultiaryKernel (mkSelector "isStateModified") retCULong []
+
+-- | padding
+--
+-- The padding method used by the filter
+--
+-- This influences how strideInPixelsX/Y should be interpreted.              Default:  MPSNNPaddingMethodAlignCentered | MPSNNPaddingMethodAddRemainderToTopLeft | MPSNNPaddingMethodSizeSame              Some object types (e.g. MPSCNNFullyConnected) may override this default with something appropriate to its operation.
+--
+-- ObjC selector: @- padding@
+padding :: IsMPSCNNMultiaryKernel mpscnnMultiaryKernel => mpscnnMultiaryKernel -> IO RawId
+padding mpscnnMultiaryKernel  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnMultiaryKernel (mkSelector "padding") (retPtr retVoid) []
+
+-- | padding
+--
+-- The padding method used by the filter
+--
+-- This influences how strideInPixelsX/Y should be interpreted.              Default:  MPSNNPaddingMethodAlignCentered | MPSNNPaddingMethodAddRemainderToTopLeft | MPSNNPaddingMethodSizeSame              Some object types (e.g. MPSCNNFullyConnected) may override this default with something appropriate to its operation.
+--
+-- ObjC selector: @- setPadding:@
+setPadding :: IsMPSCNNMultiaryKernel mpscnnMultiaryKernel => mpscnnMultiaryKernel -> RawId -> IO ()
+setPadding mpscnnMultiaryKernel  value =
+    sendMsg mpscnnMultiaryKernel (mkSelector "setPadding:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | Method to allocate the result image for -encodeToCommandBuffer:sourceImage:
+--
+-- Default: MPSTemporaryImage.defaultAllocator
+--
+-- ObjC selector: @- destinationImageAllocator@
+destinationImageAllocator :: IsMPSCNNMultiaryKernel mpscnnMultiaryKernel => mpscnnMultiaryKernel -> IO RawId
+destinationImageAllocator mpscnnMultiaryKernel  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnMultiaryKernel (mkSelector "destinationImageAllocator") (retPtr retVoid) []
+
+-- | Method to allocate the result image for -encodeToCommandBuffer:sourceImage:
+--
+-- Default: MPSTemporaryImage.defaultAllocator
+--
+-- ObjC selector: @- setDestinationImageAllocator:@
+setDestinationImageAllocator :: IsMPSCNNMultiaryKernel mpscnnMultiaryKernel => mpscnnMultiaryKernel -> RawId -> IO ()
+setDestinationImageAllocator mpscnnMultiaryKernel  value =
+    sendMsg mpscnnMultiaryKernel (mkSelector "setDestinationImageAllocator:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -706,13 +834,25 @@ initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 encodeToCommandBuffer_sourceImages_destinationImageSelector :: Selector
 encodeToCommandBuffer_sourceImages_destinationImageSelector = mkSelector "encodeToCommandBuffer:sourceImages:destinationImage:"
 
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:destinationImages:@
+encodeBatchToCommandBuffer_sourceImages_destinationImagesSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_destinationImagesSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:destinationImages:"
+
 -- | @Selector@ for @encodeToCommandBuffer:sourceImages:@
 encodeToCommandBuffer_sourceImagesSelector :: Selector
 encodeToCommandBuffer_sourceImagesSelector = mkSelector "encodeToCommandBuffer:sourceImages:"
 
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:@
+encodeBatchToCommandBuffer_sourceImagesSelector :: Selector
+encodeBatchToCommandBuffer_sourceImagesSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:"
+
 -- | @Selector@ for @encodeToCommandBuffer:sourceImages:destinationState:destinationStateIsTemporary:@
 encodeToCommandBuffer_sourceImages_destinationState_destinationStateIsTemporarySelector :: Selector
 encodeToCommandBuffer_sourceImages_destinationState_destinationStateIsTemporarySelector = mkSelector "encodeToCommandBuffer:sourceImages:destinationState:destinationStateIsTemporary:"
+
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:destinationStates:destinationStateIsTemporary:@
+encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporarySelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporarySelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:destinationStates:destinationStateIsTemporary:"
 
 -- | @Selector@ for @isResultStateReusedAcrossBatch@
 isResultStateReusedAcrossBatchSelector :: Selector
@@ -726,9 +866,17 @@ appendBatchBarrierSelector = mkSelector "appendBatchBarrier"
 resultStateForSourceImages_sourceStates_destinationImageSelector :: Selector
 resultStateForSourceImages_sourceStates_destinationImageSelector = mkSelector "resultStateForSourceImages:sourceStates:destinationImage:"
 
+-- | @Selector@ for @resultStateBatchForSourceImages:sourceStates:destinationImage:@
+resultStateBatchForSourceImages_sourceStates_destinationImageSelector :: Selector
+resultStateBatchForSourceImages_sourceStates_destinationImageSelector = mkSelector "resultStateBatchForSourceImages:sourceStates:destinationImage:"
+
 -- | @Selector@ for @temporaryResultStateForCommandBuffer:sourceImages:sourceStates:destinationImage:@
 temporaryResultStateForCommandBuffer_sourceImages_sourceStates_destinationImageSelector :: Selector
 temporaryResultStateForCommandBuffer_sourceImages_sourceStates_destinationImageSelector = mkSelector "temporaryResultStateForCommandBuffer:sourceImages:sourceStates:destinationImage:"
+
+-- | @Selector@ for @temporaryResultStateBatchForCommandBuffer:sourceImages:sourceStates:destinationImage:@
+temporaryResultStateBatchForCommandBuffer_sourceImages_sourceStates_destinationImageSelector :: Selector
+temporaryResultStateBatchForCommandBuffer_sourceImages_sourceStates_destinationImageSelector = mkSelector "temporaryResultStateBatchForCommandBuffer:sourceImages:sourceStates:destinationImage:"
 
 -- | @Selector@ for @destinationImageDescriptorForSourceImages:sourceStates:@
 destinationImageDescriptorForSourceImages_sourceStatesSelector :: Selector
@@ -753,4 +901,20 @@ isBackwardsSelector = mkSelector "isBackwards"
 -- | @Selector@ for @isStateModified@
 isStateModifiedSelector :: Selector
 isStateModifiedSelector = mkSelector "isStateModified"
+
+-- | @Selector@ for @padding@
+paddingSelector :: Selector
+paddingSelector = mkSelector "padding"
+
+-- | @Selector@ for @setPadding:@
+setPaddingSelector :: Selector
+setPaddingSelector = mkSelector "setPadding:"
+
+-- | @Selector@ for @destinationImageAllocator@
+destinationImageAllocatorSelector :: Selector
+destinationImageAllocatorSelector = mkSelector "destinationImageAllocator"
+
+-- | @Selector@ for @setDestinationImageAllocator:@
+setDestinationImageAllocatorSelector :: Selector
+setDestinationImageAllocatorSelector = mkSelector "setDestinationImageAllocator:"
 

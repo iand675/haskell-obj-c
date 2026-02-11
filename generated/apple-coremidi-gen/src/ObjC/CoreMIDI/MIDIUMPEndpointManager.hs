@@ -12,7 +12,9 @@
 module ObjC.CoreMIDI.MIDIUMPEndpointManager
   ( MIDIUMPEndpointManager
   , IsMIDIUMPEndpointManager(..)
+  , sharedInstance
   , umpEndpoints
+  , sharedInstanceSelector
   , umpEndpointsSelector
 
 
@@ -33,6 +35,19 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.CoreMIDI.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | sharedInstance
+--
+-- Retrieve the shared UMP Endpoint manager for the client process.
+--
+-- After first access to this property, the client process may begin observing notifications				which are posted when the system-wide cache changes.
+--
+-- ObjC selector: @+ sharedInstance@
+sharedInstance :: IO (Id MIDIUMPEndpointManager)
+sharedInstance  =
+  do
+    cls' <- getRequiredClass "MIDIUMPEndpointManager"
+    sendClassMsg cls' (mkSelector "sharedInstance") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | UMPEndpoints
 --
 -- A  list of UMP endpoints discovered using UMP endpoint discovery.
@@ -45,6 +60,10 @@ umpEndpoints midiumpEndpointManager  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @sharedInstance@
+sharedInstanceSelector :: Selector
+sharedInstanceSelector = mkSelector "sharedInstance"
 
 -- | @Selector@ for @UMPEndpoints@
 umpEndpointsSelector :: Selector

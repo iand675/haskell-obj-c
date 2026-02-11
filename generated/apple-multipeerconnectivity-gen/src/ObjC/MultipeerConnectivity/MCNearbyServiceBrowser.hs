@@ -10,12 +10,16 @@ module ObjC.MultipeerConnectivity.MCNearbyServiceBrowser
   , startBrowsingForPeers
   , stopBrowsingForPeers
   , invitePeer_toSession_withContext_timeout
+  , delegate
+  , setDelegate
   , myPeerID
   , serviceType
   , initWithPeer_serviceTypeSelector
   , startBrowsingForPeersSelector
   , stopBrowsingForPeersSelector
   , invitePeer_toSession_withContext_timeoutSelector
+  , delegateSelector
+  , setDelegateSelector
   , myPeerIDSelector
   , serviceTypeSelector
 
@@ -62,6 +66,16 @@ invitePeer_toSession_withContext_timeout mcNearbyServiceBrowser  peerID session 
       withObjCPtr context $ \raw_context ->
           sendMsg mcNearbyServiceBrowser (mkSelector "invitePeer:toSession:withContext:timeout:") retVoid [argPtr (castPtr raw_peerID :: Ptr ()), argPtr (castPtr raw_session :: Ptr ()), argPtr (castPtr raw_context :: Ptr ()), argCDouble timeout]
 
+-- | @- delegate@
+delegate :: IsMCNearbyServiceBrowser mcNearbyServiceBrowser => mcNearbyServiceBrowser -> IO RawId
+delegate mcNearbyServiceBrowser  =
+    fmap (RawId . castPtr) $ sendMsg mcNearbyServiceBrowser (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsMCNearbyServiceBrowser mcNearbyServiceBrowser => mcNearbyServiceBrowser -> RawId -> IO ()
+setDelegate mcNearbyServiceBrowser  value =
+    sendMsg mcNearbyServiceBrowser (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- myPeerID@
 myPeerID :: IsMCNearbyServiceBrowser mcNearbyServiceBrowser => mcNearbyServiceBrowser -> IO (Id MCPeerID)
 myPeerID mcNearbyServiceBrowser  =
@@ -91,6 +105,14 @@ stopBrowsingForPeersSelector = mkSelector "stopBrowsingForPeers"
 -- | @Selector@ for @invitePeer:toSession:withContext:timeout:@
 invitePeer_toSession_withContext_timeoutSelector :: Selector
 invitePeer_toSession_withContext_timeoutSelector = mkSelector "invitePeer:toSession:withContext:timeout:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @myPeerID@
 myPeerIDSelector :: Selector

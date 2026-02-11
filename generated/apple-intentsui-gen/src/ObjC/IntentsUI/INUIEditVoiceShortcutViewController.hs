@@ -13,9 +13,13 @@ module ObjC.IntentsUI.INUIEditVoiceShortcutViewController
   , initWithVoiceShortcut
   , init_
   , initWithNibName_bundle
+  , delegate
+  , setDelegate
   , initWithVoiceShortcutSelector
   , initSelector
   , initWithNibName_bundleSelector
+  , delegateSelector
+  , setDelegateSelector
 
 
   ) where
@@ -57,6 +61,16 @@ initWithNibName_bundle inuiEditVoiceShortcutViewController  nibNameOrNil nibBund
     withObjCPtr nibBundleOrNil $ \raw_nibBundleOrNil ->
         sendMsg inuiEditVoiceShortcutViewController (mkSelector "initWithNibName:bundle:") (retPtr retVoid) [argPtr (castPtr raw_nibNameOrNil :: Ptr ()), argPtr (castPtr raw_nibBundleOrNil :: Ptr ())] >>= ownedObject . castPtr
 
+-- | @- delegate@
+delegate :: IsINUIEditVoiceShortcutViewController inuiEditVoiceShortcutViewController => inuiEditVoiceShortcutViewController -> IO RawId
+delegate inuiEditVoiceShortcutViewController  =
+    fmap (RawId . castPtr) $ sendMsg inuiEditVoiceShortcutViewController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsINUIEditVoiceShortcutViewController inuiEditVoiceShortcutViewController => inuiEditVoiceShortcutViewController -> RawId -> IO ()
+setDelegate inuiEditVoiceShortcutViewController  value =
+    sendMsg inuiEditVoiceShortcutViewController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -72,4 +86,12 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @initWithNibName:bundle:@
 initWithNibName_bundleSelector :: Selector
 initWithNibName_bundleSelector = mkSelector "initWithNibName:bundle:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

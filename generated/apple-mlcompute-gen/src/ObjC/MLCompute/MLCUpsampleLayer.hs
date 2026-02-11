@@ -13,10 +13,12 @@ module ObjC.MLCompute.MLCUpsampleLayer
   , IsMLCUpsampleLayer(..)
   , layerWithShape
   , layerWithShape_sampleMode_alignsCorners
+  , shape
   , sampleMode
   , alignsCorners
   , layerWithShapeSelector
   , layerWithShape_sampleMode_alignsCornersSelector
+  , shapeSelector
   , sampleModeSelector
   , alignsCornersSelector
 
@@ -75,6 +77,15 @@ layerWithShape_sampleMode_alignsCorners shape sampleMode alignsCorners =
     withObjCPtr shape $ \raw_shape ->
       sendClassMsg cls' (mkSelector "layerWithShape:sampleMode:alignsCorners:") (retPtr retVoid) [argPtr (castPtr raw_shape :: Ptr ()), argCInt (coerce sampleMode), argCULong (if alignsCorners then 1 else 0)] >>= retainedObject . castPtr
 
+-- | shape
+--
+-- A NSArray<NSNumber *> representing just the width if number of entries in shape array is 1 or                the height followed by width of result tensor if the number of entries in shape array is 2.
+--
+-- ObjC selector: @- shape@
+shape :: IsMLCUpsampleLayer mlcUpsampleLayer => mlcUpsampleLayer -> IO (Id NSArray)
+shape mlcUpsampleLayer  =
+    sendMsg mlcUpsampleLayer (mkSelector "shape") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | sampleMode
 --
 -- The sampling mode to use when performing the upsample.
@@ -106,6 +117,10 @@ layerWithShapeSelector = mkSelector "layerWithShape:"
 -- | @Selector@ for @layerWithShape:sampleMode:alignsCorners:@
 layerWithShape_sampleMode_alignsCornersSelector :: Selector
 layerWithShape_sampleMode_alignsCornersSelector = mkSelector "layerWithShape:sampleMode:alignsCorners:"
+
+-- | @Selector@ for @shape@
+shapeSelector :: Selector
+shapeSelector = mkSelector "shape"
 
 -- | @Selector@ for @sampleMode@
 sampleModeSelector :: Selector

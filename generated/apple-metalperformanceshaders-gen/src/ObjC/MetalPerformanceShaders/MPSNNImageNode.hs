@@ -19,8 +19,12 @@ module ObjC.MetalPerformanceShaders.MPSNNImageNode
   , nodeWithHandle
   , exportedNodeWithHandle
   , init_
+  , handle
+  , setHandle
   , format
   , setFormat
+  , imageAllocator
+  , setImageAllocator
   , exportFromGraph
   , setExportFromGraph
   , synchronizeResource
@@ -31,8 +35,12 @@ module ObjC.MetalPerformanceShaders.MPSNNImageNode
   , nodeWithHandleSelector
   , exportedNodeWithHandleSelector
   , initSelector
+  , handleSelector
+  , setHandleSelector
   , formatSelector
   , setFormatSelector
+  , imageAllocatorSelector
+  , setImageAllocatorSelector
   , exportFromGraphSelector
   , setExportFromGraphSelector
   , synchronizeResourceSelector
@@ -99,6 +107,24 @@ init_ :: IsMPSNNImageNode mpsnnImageNode => mpsnnImageNode -> IO (Id MPSNNImageN
 init_ mpsnnImageNode  =
     sendMsg mpsnnImageNode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | MPS resource identifier
+--
+-- See MPSHandle protocol description.  Default: nil
+--
+-- ObjC selector: @- handle@
+handle :: IsMPSNNImageNode mpsnnImageNode => mpsnnImageNode -> IO RawId
+handle mpsnnImageNode  =
+    fmap (RawId . castPtr) $ sendMsg mpsnnImageNode (mkSelector "handle") (retPtr retVoid) []
+
+-- | MPS resource identifier
+--
+-- See MPSHandle protocol description.  Default: nil
+--
+-- ObjC selector: @- setHandle:@
+setHandle :: IsMPSNNImageNode mpsnnImageNode => mpsnnImageNode -> RawId -> IO ()
+setHandle mpsnnImageNode  value =
+    sendMsg mpsnnImageNode (mkSelector "setHandle:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | The preferred precision for the image
 --
 -- Default: MPSImageFeatureChannelFormatNone, meaning MPS should pick a format                       Typically, this is 16-bit floating-point.
@@ -116,6 +142,24 @@ format mpsnnImageNode  =
 setFormat :: IsMPSNNImageNode mpsnnImageNode => mpsnnImageNode -> MPSImageFeatureChannelFormat -> IO ()
 setFormat mpsnnImageNode  value =
     sendMsg mpsnnImageNode (mkSelector "setFormat:") retVoid [argCULong (coerce value)]
+
+-- | Configurability for image allocation
+--
+-- Allows you to influence how the image is allocated              Default: MPSTemporaryImage.defaultAllocator
+--
+-- ObjC selector: @- imageAllocator@
+imageAllocator :: IsMPSNNImageNode mpsnnImageNode => mpsnnImageNode -> IO RawId
+imageAllocator mpsnnImageNode  =
+    fmap (RawId . castPtr) $ sendMsg mpsnnImageNode (mkSelector "imageAllocator") (retPtr retVoid) []
+
+-- | Configurability for image allocation
+--
+-- Allows you to influence how the image is allocated              Default: MPSTemporaryImage.defaultAllocator
+--
+-- ObjC selector: @- setImageAllocator:@
+setImageAllocator :: IsMPSNNImageNode mpsnnImageNode => mpsnnImageNode -> RawId -> IO ()
+setImageAllocator mpsnnImageNode  value =
+    sendMsg mpsnnImageNode (mkSelector "setImageAllocator:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | Tag a image node for view later
 --
@@ -199,6 +243,14 @@ exportedNodeWithHandleSelector = mkSelector "exportedNodeWithHandle:"
 initSelector :: Selector
 initSelector = mkSelector "init"
 
+-- | @Selector@ for @handle@
+handleSelector :: Selector
+handleSelector = mkSelector "handle"
+
+-- | @Selector@ for @setHandle:@
+setHandleSelector :: Selector
+setHandleSelector = mkSelector "setHandle:"
+
 -- | @Selector@ for @format@
 formatSelector :: Selector
 formatSelector = mkSelector "format"
@@ -206,6 +258,14 @@ formatSelector = mkSelector "format"
 -- | @Selector@ for @setFormat:@
 setFormatSelector :: Selector
 setFormatSelector = mkSelector "setFormat:"
+
+-- | @Selector@ for @imageAllocator@
+imageAllocatorSelector :: Selector
+imageAllocatorSelector = mkSelector "imageAllocator"
+
+-- | @Selector@ for @setImageAllocator:@
+setImageAllocatorSelector :: Selector
+setImageAllocatorSelector = mkSelector "setImageAllocator:"
 
 -- | @Selector@ for @exportFromGraph@
 exportFromGraphSelector :: Selector

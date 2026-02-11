@@ -283,6 +283,10 @@ module ObjC.CoreSpotlight.CSSearchableItemAttributeSet
   , setInstantMessageAddresses
   , likelyJunk
   , setLikelyJunk
+  , isPriority
+  , textContentSummary
+  , transcribedTextContent
+  , setTranscribedTextContent
   , dueDate
   , setDueDate
   , completionDate
@@ -335,6 +339,10 @@ module ObjC.CoreSpotlight.CSSearchableItemAttributeSet
   , setSupportsPhoneCall
   , supportsNavigation
   , setSupportsNavigation
+  , actionIdentifiers
+  , setActionIdentifiers
+  , sharedItemContentType
+  , setSharedItemContentType
   , displayName
   , setDisplayName
   , alternateNames
@@ -351,6 +359,8 @@ module ObjC.CoreSpotlight.CSSearchableItemAttributeSet
   , setDarkThumbnailURL
   , relatedUniqueIdentifier
   , setRelatedUniqueIdentifier
+  , weakRelatedUniqueIdentifier
+  , setWeakRelatedUniqueIdentifier
   , metadataModificationDate
   , setMetadataModificationDate
   , contentType
@@ -363,6 +373,16 @@ module ObjC.CoreSpotlight.CSSearchableItemAttributeSet
   , setTitle
   , version
   , setVersion
+  , userCreated
+  , setUserCreated
+  , userOwned
+  , setUserOwned
+  , userCurated
+  , setUserCurated
+  , rankingHint
+  , setRankingHint
+  , domainIdentifier
+  , setDomainIdentifier
   , initWithItemContentTypeSelector
   , initWithContentTypeSelector
   , moveFromSelector
@@ -640,6 +660,10 @@ module ObjC.CoreSpotlight.CSSearchableItemAttributeSet
   , setInstantMessageAddressesSelector
   , likelyJunkSelector
   , setLikelyJunkSelector
+  , isPrioritySelector
+  , textContentSummarySelector
+  , transcribedTextContentSelector
+  , setTranscribedTextContentSelector
   , dueDateSelector
   , setDueDateSelector
   , completionDateSelector
@@ -692,6 +716,10 @@ module ObjC.CoreSpotlight.CSSearchableItemAttributeSet
   , setSupportsPhoneCallSelector
   , supportsNavigationSelector
   , setSupportsNavigationSelector
+  , actionIdentifiersSelector
+  , setActionIdentifiersSelector
+  , sharedItemContentTypeSelector
+  , setSharedItemContentTypeSelector
   , displayNameSelector
   , setDisplayNameSelector
   , alternateNamesSelector
@@ -708,6 +736,8 @@ module ObjC.CoreSpotlight.CSSearchableItemAttributeSet
   , setDarkThumbnailURLSelector
   , relatedUniqueIdentifierSelector
   , setRelatedUniqueIdentifierSelector
+  , weakRelatedUniqueIdentifierSelector
+  , setWeakRelatedUniqueIdentifierSelector
   , metadataModificationDateSelector
   , setMetadataModificationDateSelector
   , contentTypeSelector
@@ -720,6 +750,16 @@ module ObjC.CoreSpotlight.CSSearchableItemAttributeSet
   , setTitleSelector
   , versionSelector
   , setVersionSelector
+  , userCreatedSelector
+  , setUserCreatedSelector
+  , userOwnedSelector
+  , setUserOwnedSelector
+  , userCuratedSelector
+  , setUserCuratedSelector
+  , rankingHintSelector
+  , setRankingHintSelector
+  , domainIdentifierSelector
+  , setDomainIdentifierSelector
 
 
   ) where
@@ -2266,6 +2306,26 @@ setLikelyJunk csSearchableItemAttributeSet  value =
   withObjCPtr value $ \raw_value ->
       sendMsg csSearchableItemAttributeSet (mkSelector "setLikelyJunk:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- isPriority@
+isPriority :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO RawId
+isPriority csSearchableItemAttributeSet  =
+    fmap (RawId . castPtr) $ sendMsg csSearchableItemAttributeSet (mkSelector "isPriority") (retPtr retVoid) []
+
+-- | @- textContentSummary@
+textContentSummary :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO RawId
+textContentSummary csSearchableItemAttributeSet  =
+    fmap (RawId . castPtr) $ sendMsg csSearchableItemAttributeSet (mkSelector "textContentSummary") (retPtr retVoid) []
+
+-- | @- transcribedTextContent@
+transcribedTextContent :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO RawId
+transcribedTextContent csSearchableItemAttributeSet  =
+    fmap (RawId . castPtr) $ sendMsg csSearchableItemAttributeSet (mkSelector "transcribedTextContent") (retPtr retVoid) []
+
+-- | @- setTranscribedTextContent:@
+setTranscribedTextContent :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> RawId -> IO ()
+setTranscribedTextContent csSearchableItemAttributeSet  value =
+    sendMsg csSearchableItemAttributeSet (mkSelector "setTranscribedTextContent:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- dueDate@
 dueDate :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSDate)
 dueDate csSearchableItemAttributeSet  =
@@ -2556,6 +2616,28 @@ setSupportsNavigation csSearchableItemAttributeSet  value =
   withObjCPtr value $ \raw_value ->
       sendMsg csSearchableItemAttributeSet (mkSelector "setSupportsNavigation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- actionIdentifiers@
+actionIdentifiers :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
+actionIdentifiers csSearchableItemAttributeSet  =
+    sendMsg csSearchableItemAttributeSet (mkSelector "actionIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setActionIdentifiers:@
+setActionIdentifiers :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
+setActionIdentifiers csSearchableItemAttributeSet  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg csSearchableItemAttributeSet (mkSelector "setActionIdentifiers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- sharedItemContentType@
+sharedItemContentType :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id UTType)
+sharedItemContentType csSearchableItemAttributeSet  =
+    sendMsg csSearchableItemAttributeSet (mkSelector "sharedItemContentType") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setSharedItemContentType:@
+setSharedItemContentType :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsUTType value) => csSearchableItemAttributeSet -> value -> IO ()
+setSharedItemContentType csSearchableItemAttributeSet  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg csSearchableItemAttributeSet (mkSelector "setSharedItemContentType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- displayName@
 displayName :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
 displayName csSearchableItemAttributeSet  =
@@ -2644,6 +2726,16 @@ setRelatedUniqueIdentifier csSearchableItemAttributeSet  value =
   withObjCPtr value $ \raw_value ->
       sendMsg csSearchableItemAttributeSet (mkSelector "setRelatedUniqueIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- weakRelatedUniqueIdentifier@
+weakRelatedUniqueIdentifier :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO RawId
+weakRelatedUniqueIdentifier csSearchableItemAttributeSet  =
+    fmap (RawId . castPtr) $ sendMsg csSearchableItemAttributeSet (mkSelector "weakRelatedUniqueIdentifier") (retPtr retVoid) []
+
+-- | @- setWeakRelatedUniqueIdentifier:@
+setWeakRelatedUniqueIdentifier :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> RawId -> IO ()
+setWeakRelatedUniqueIdentifier csSearchableItemAttributeSet  value =
+    sendMsg csSearchableItemAttributeSet (mkSelector "setWeakRelatedUniqueIdentifier:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- metadataModificationDate@
 metadataModificationDate :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSDate)
 metadataModificationDate csSearchableItemAttributeSet  =
@@ -2709,6 +2801,56 @@ setVersion :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNS
 setVersion csSearchableItemAttributeSet  value =
   withObjCPtr value $ \raw_value ->
       sendMsg csSearchableItemAttributeSet (mkSelector "setVersion:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- userCreated@
+userCreated :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO RawId
+userCreated csSearchableItemAttributeSet  =
+    fmap (RawId . castPtr) $ sendMsg csSearchableItemAttributeSet (mkSelector "userCreated") (retPtr retVoid) []
+
+-- | @- setUserCreated:@
+setUserCreated :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> RawId -> IO ()
+setUserCreated csSearchableItemAttributeSet  value =
+    sendMsg csSearchableItemAttributeSet (mkSelector "setUserCreated:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- userOwned@
+userOwned :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO RawId
+userOwned csSearchableItemAttributeSet  =
+    fmap (RawId . castPtr) $ sendMsg csSearchableItemAttributeSet (mkSelector "userOwned") (retPtr retVoid) []
+
+-- | @- setUserOwned:@
+setUserOwned :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> RawId -> IO ()
+setUserOwned csSearchableItemAttributeSet  value =
+    sendMsg csSearchableItemAttributeSet (mkSelector "setUserOwned:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- userCurated@
+userCurated :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO RawId
+userCurated csSearchableItemAttributeSet  =
+    fmap (RawId . castPtr) $ sendMsg csSearchableItemAttributeSet (mkSelector "userCurated") (retPtr retVoid) []
+
+-- | @- setUserCurated:@
+setUserCurated :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> RawId -> IO ()
+setUserCurated csSearchableItemAttributeSet  value =
+    sendMsg csSearchableItemAttributeSet (mkSelector "setUserCurated:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- rankingHint@
+rankingHint :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO RawId
+rankingHint csSearchableItemAttributeSet  =
+    fmap (RawId . castPtr) $ sendMsg csSearchableItemAttributeSet (mkSelector "rankingHint") (retPtr retVoid) []
+
+-- | @- setRankingHint:@
+setRankingHint :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> RawId -> IO ()
+setRankingHint csSearchableItemAttributeSet  value =
+    sendMsg csSearchableItemAttributeSet (mkSelector "setRankingHint:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- domainIdentifier@
+domainIdentifier :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO RawId
+domainIdentifier csSearchableItemAttributeSet  =
+    fmap (RawId . castPtr) $ sendMsg csSearchableItemAttributeSet (mkSelector "domainIdentifier") (retPtr retVoid) []
+
+-- | @- setDomainIdentifier:@
+setDomainIdentifier :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> RawId -> IO ()
+setDomainIdentifier csSearchableItemAttributeSet  value =
+    sendMsg csSearchableItemAttributeSet (mkSelector "setDomainIdentifier:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -3822,6 +3964,22 @@ likelyJunkSelector = mkSelector "likelyJunk"
 setLikelyJunkSelector :: Selector
 setLikelyJunkSelector = mkSelector "setLikelyJunk:"
 
+-- | @Selector@ for @isPriority@
+isPrioritySelector :: Selector
+isPrioritySelector = mkSelector "isPriority"
+
+-- | @Selector@ for @textContentSummary@
+textContentSummarySelector :: Selector
+textContentSummarySelector = mkSelector "textContentSummary"
+
+-- | @Selector@ for @transcribedTextContent@
+transcribedTextContentSelector :: Selector
+transcribedTextContentSelector = mkSelector "transcribedTextContent"
+
+-- | @Selector@ for @setTranscribedTextContent:@
+setTranscribedTextContentSelector :: Selector
+setTranscribedTextContentSelector = mkSelector "setTranscribedTextContent:"
+
 -- | @Selector@ for @dueDate@
 dueDateSelector :: Selector
 dueDateSelector = mkSelector "dueDate"
@@ -4030,6 +4188,22 @@ supportsNavigationSelector = mkSelector "supportsNavigation"
 setSupportsNavigationSelector :: Selector
 setSupportsNavigationSelector = mkSelector "setSupportsNavigation:"
 
+-- | @Selector@ for @actionIdentifiers@
+actionIdentifiersSelector :: Selector
+actionIdentifiersSelector = mkSelector "actionIdentifiers"
+
+-- | @Selector@ for @setActionIdentifiers:@
+setActionIdentifiersSelector :: Selector
+setActionIdentifiersSelector = mkSelector "setActionIdentifiers:"
+
+-- | @Selector@ for @sharedItemContentType@
+sharedItemContentTypeSelector :: Selector
+sharedItemContentTypeSelector = mkSelector "sharedItemContentType"
+
+-- | @Selector@ for @setSharedItemContentType:@
+setSharedItemContentTypeSelector :: Selector
+setSharedItemContentTypeSelector = mkSelector "setSharedItemContentType:"
+
 -- | @Selector@ for @displayName@
 displayNameSelector :: Selector
 displayNameSelector = mkSelector "displayName"
@@ -4094,6 +4268,14 @@ relatedUniqueIdentifierSelector = mkSelector "relatedUniqueIdentifier"
 setRelatedUniqueIdentifierSelector :: Selector
 setRelatedUniqueIdentifierSelector = mkSelector "setRelatedUniqueIdentifier:"
 
+-- | @Selector@ for @weakRelatedUniqueIdentifier@
+weakRelatedUniqueIdentifierSelector :: Selector
+weakRelatedUniqueIdentifierSelector = mkSelector "weakRelatedUniqueIdentifier"
+
+-- | @Selector@ for @setWeakRelatedUniqueIdentifier:@
+setWeakRelatedUniqueIdentifierSelector :: Selector
+setWeakRelatedUniqueIdentifierSelector = mkSelector "setWeakRelatedUniqueIdentifier:"
+
 -- | @Selector@ for @metadataModificationDate@
 metadataModificationDateSelector :: Selector
 metadataModificationDateSelector = mkSelector "metadataModificationDate"
@@ -4141,4 +4323,44 @@ versionSelector = mkSelector "version"
 -- | @Selector@ for @setVersion:@
 setVersionSelector :: Selector
 setVersionSelector = mkSelector "setVersion:"
+
+-- | @Selector@ for @userCreated@
+userCreatedSelector :: Selector
+userCreatedSelector = mkSelector "userCreated"
+
+-- | @Selector@ for @setUserCreated:@
+setUserCreatedSelector :: Selector
+setUserCreatedSelector = mkSelector "setUserCreated:"
+
+-- | @Selector@ for @userOwned@
+userOwnedSelector :: Selector
+userOwnedSelector = mkSelector "userOwned"
+
+-- | @Selector@ for @setUserOwned:@
+setUserOwnedSelector :: Selector
+setUserOwnedSelector = mkSelector "setUserOwned:"
+
+-- | @Selector@ for @userCurated@
+userCuratedSelector :: Selector
+userCuratedSelector = mkSelector "userCurated"
+
+-- | @Selector@ for @setUserCurated:@
+setUserCuratedSelector :: Selector
+setUserCuratedSelector = mkSelector "setUserCurated:"
+
+-- | @Selector@ for @rankingHint@
+rankingHintSelector :: Selector
+rankingHintSelector = mkSelector "rankingHint"
+
+-- | @Selector@ for @setRankingHint:@
+setRankingHintSelector :: Selector
+setRankingHintSelector = mkSelector "setRankingHint:"
+
+-- | @Selector@ for @domainIdentifier@
+domainIdentifierSelector :: Selector
+domainIdentifierSelector = mkSelector "domainIdentifier"
+
+-- | @Selector@ for @setDomainIdentifier:@
+setDomainIdentifierSelector :: Selector
+setDomainIdentifierSelector = mkSelector "setDomainIdentifier:"
 

@@ -11,12 +11,16 @@ module ObjC.AppKit.NSTextElement
   , setTextContentManager
   , elementRange
   , setElementRange
+  , childElements
+  , parentElement
   , isRepresentedElement
   , initWithTextContentManagerSelector
   , textContentManagerSelector
   , setTextContentManagerSelector
   , elementRangeSelector
   , setElementRangeSelector
+  , childElementsSelector
+  , parentElementSelector
   , isRepresentedElementSelector
 
 
@@ -65,6 +69,16 @@ setElementRange nsTextElement  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsTextElement (mkSelector "setElementRange:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- childElements@
+childElements :: IsNSTextElement nsTextElement => nsTextElement -> IO (Id NSArray)
+childElements nsTextElement  =
+    sendMsg nsTextElement (mkSelector "childElements") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- parentElement@
+parentElement :: IsNSTextElement nsTextElement => nsTextElement -> IO (Id NSTextElement)
+parentElement nsTextElement  =
+    sendMsg nsTextElement (mkSelector "parentElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- isRepresentedElement@
 isRepresentedElement :: IsNSTextElement nsTextElement => nsTextElement -> IO Bool
 isRepresentedElement nsTextElement  =
@@ -93,6 +107,14 @@ elementRangeSelector = mkSelector "elementRange"
 -- | @Selector@ for @setElementRange:@
 setElementRangeSelector :: Selector
 setElementRangeSelector = mkSelector "setElementRange:"
+
+-- | @Selector@ for @childElements@
+childElementsSelector :: Selector
+childElementsSelector = mkSelector "childElements"
+
+-- | @Selector@ for @parentElement@
+parentElementSelector :: Selector
+parentElementSelector = mkSelector "parentElement"
 
 -- | @Selector@ for @isRepresentedElement@
 isRepresentedElementSelector :: Selector

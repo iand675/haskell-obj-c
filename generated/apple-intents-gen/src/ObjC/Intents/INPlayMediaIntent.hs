@@ -11,15 +11,21 @@ module ObjC.Intents.INPlayMediaIntent
   , initWithMediaItems_mediaContainer_playShuffled_playbackRepeatMode_resumePlayback
   , mediaItems
   , mediaContainer
+  , playShuffled
   , playbackRepeatMode
+  , resumePlayback
   , playbackQueueLocation
+  , playbackSpeed
   , mediaSearch
   , initWithMediaItems_mediaContainer_playShuffled_playbackRepeatMode_resumePlayback_playbackQueueLocation_playbackSpeed_mediaSearchSelector
   , initWithMediaItems_mediaContainer_playShuffled_playbackRepeatMode_resumePlaybackSelector
   , mediaItemsSelector
   , mediaContainerSelector
+  , playShuffledSelector
   , playbackRepeatModeSelector
+  , resumePlaybackSelector
   , playbackQueueLocationSelector
+  , playbackSpeedSelector
   , mediaSearchSelector
 
   -- * Enum types
@@ -82,15 +88,30 @@ mediaContainer :: IsINPlayMediaIntent inPlayMediaIntent => inPlayMediaIntent -> 
 mediaContainer inPlayMediaIntent  =
     sendMsg inPlayMediaIntent (mkSelector "mediaContainer") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- playShuffled@
+playShuffled :: IsINPlayMediaIntent inPlayMediaIntent => inPlayMediaIntent -> IO (Id NSNumber)
+playShuffled inPlayMediaIntent  =
+    sendMsg inPlayMediaIntent (mkSelector "playShuffled") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- playbackRepeatMode@
 playbackRepeatMode :: IsINPlayMediaIntent inPlayMediaIntent => inPlayMediaIntent -> IO INPlaybackRepeatMode
 playbackRepeatMode inPlayMediaIntent  =
     fmap (coerce :: CLong -> INPlaybackRepeatMode) $ sendMsg inPlayMediaIntent (mkSelector "playbackRepeatMode") retCLong []
 
+-- | @- resumePlayback@
+resumePlayback :: IsINPlayMediaIntent inPlayMediaIntent => inPlayMediaIntent -> IO (Id NSNumber)
+resumePlayback inPlayMediaIntent  =
+    sendMsg inPlayMediaIntent (mkSelector "resumePlayback") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- playbackQueueLocation@
 playbackQueueLocation :: IsINPlayMediaIntent inPlayMediaIntent => inPlayMediaIntent -> IO INPlaybackQueueLocation
 playbackQueueLocation inPlayMediaIntent  =
     fmap (coerce :: CLong -> INPlaybackQueueLocation) $ sendMsg inPlayMediaIntent (mkSelector "playbackQueueLocation") retCLong []
+
+-- | @- playbackSpeed@
+playbackSpeed :: IsINPlayMediaIntent inPlayMediaIntent => inPlayMediaIntent -> IO (Id NSNumber)
+playbackSpeed inPlayMediaIntent  =
+    sendMsg inPlayMediaIntent (mkSelector "playbackSpeed") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- mediaSearch@
 mediaSearch :: IsINPlayMediaIntent inPlayMediaIntent => inPlayMediaIntent -> IO (Id INMediaSearch)
@@ -117,13 +138,25 @@ mediaItemsSelector = mkSelector "mediaItems"
 mediaContainerSelector :: Selector
 mediaContainerSelector = mkSelector "mediaContainer"
 
+-- | @Selector@ for @playShuffled@
+playShuffledSelector :: Selector
+playShuffledSelector = mkSelector "playShuffled"
+
 -- | @Selector@ for @playbackRepeatMode@
 playbackRepeatModeSelector :: Selector
 playbackRepeatModeSelector = mkSelector "playbackRepeatMode"
 
+-- | @Selector@ for @resumePlayback@
+resumePlaybackSelector :: Selector
+resumePlaybackSelector = mkSelector "resumePlayback"
+
 -- | @Selector@ for @playbackQueueLocation@
 playbackQueueLocationSelector :: Selector
 playbackQueueLocationSelector = mkSelector "playbackQueueLocation"
+
+-- | @Selector@ for @playbackSpeed@
+playbackSpeedSelector :: Selector
+playbackSpeedSelector = mkSelector "playbackSpeed"
 
 -- | @Selector@ for @mediaSearch@
 mediaSearchSelector :: Selector

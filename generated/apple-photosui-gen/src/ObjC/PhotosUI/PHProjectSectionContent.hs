@@ -14,12 +14,14 @@ module ObjC.PhotosUI.PHProjectSectionContent
   , numberOfColumns
   , aspectRatio
   , cloudAssetIdentifiers
+  , backgroundColor
   , initSelector
   , newSelector
   , elementsSelector
   , numberOfColumnsSelector
   , aspectRatioSelector
   , cloudAssetIdentifiersSelector
+  , backgroundColorSelector
 
 
   ) where
@@ -80,6 +82,13 @@ cloudAssetIdentifiers :: IsPHProjectSectionContent phProjectSectionContent => ph
 cloudAssetIdentifiers phProjectSectionContent  =
     sendMsg phProjectSectionContent (mkSelector "cloudAssetIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | Background color of the section content. This property is only used when the user creates a new project from an existing Apple Print Product
+--
+-- ObjC selector: @- backgroundColor@
+backgroundColor :: IsPHProjectSectionContent phProjectSectionContent => phProjectSectionContent -> IO (Id NSColor)
+backgroundColor phProjectSectionContent  =
+    sendMsg phProjectSectionContent (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -107,4 +116,8 @@ aspectRatioSelector = mkSelector "aspectRatio"
 -- | @Selector@ for @cloudAssetIdentifiers@
 cloudAssetIdentifiersSelector :: Selector
 cloudAssetIdentifiersSelector = mkSelector "cloudAssetIdentifiers"
+
+-- | @Selector@ for @backgroundColor@
+backgroundColorSelector :: Selector
+backgroundColorSelector = mkSelector "backgroundColor"
 

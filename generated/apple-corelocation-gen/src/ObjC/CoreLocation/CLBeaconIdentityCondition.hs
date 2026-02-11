@@ -10,10 +10,14 @@ module ObjC.CoreLocation.CLBeaconIdentityCondition
   , initWithUUID_major
   , initWithUUID_major_minor
   , uuid
+  , major
+  , minor
   , initWithUUIDSelector
   , initWithUUID_majorSelector
   , initWithUUID_major_minorSelector
   , uuidSelector
+  , majorSelector
+  , minorSelector
 
 
   ) where
@@ -56,6 +60,16 @@ uuid :: IsCLBeaconIdentityCondition clBeaconIdentityCondition => clBeaconIdentit
 uuid clBeaconIdentityCondition  =
     sendMsg clBeaconIdentityCondition (mkSelector "UUID") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- major@
+major :: IsCLBeaconIdentityCondition clBeaconIdentityCondition => clBeaconIdentityCondition -> IO (Id NSNumber)
+major clBeaconIdentityCondition  =
+    sendMsg clBeaconIdentityCondition (mkSelector "major") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- minor@
+minor :: IsCLBeaconIdentityCondition clBeaconIdentityCondition => clBeaconIdentityCondition -> IO (Id NSNumber)
+minor clBeaconIdentityCondition  =
+    sendMsg clBeaconIdentityCondition (mkSelector "minor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -75,4 +89,12 @@ initWithUUID_major_minorSelector = mkSelector "initWithUUID:major:minor:"
 -- | @Selector@ for @UUID@
 uuidSelector :: Selector
 uuidSelector = mkSelector "UUID"
+
+-- | @Selector@ for @major@
+majorSelector :: Selector
+majorSelector = mkSelector "major"
+
+-- | @Selector@ for @minor@
+minorSelector :: Selector
+minorSelector = mkSelector "minor"
 

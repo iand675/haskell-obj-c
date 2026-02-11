@@ -16,6 +16,8 @@ module ObjC.PhotosUI.PHProjectInfo
   , sections
   , brandingEnabled
   , pageNumbersEnabled
+  , productIdentifier
+  , themeIdentifier
   , initSelector
   , newSelector
   , creationSourceSelector
@@ -23,6 +25,8 @@ module ObjC.PhotosUI.PHProjectInfo
   , sectionsSelector
   , brandingEnabledSelector
   , pageNumbersEnabledSelector
+  , productIdentifierSelector
+  , themeIdentifierSelector
 
   -- * Enum types
   , PHProjectCreationSource(PHProjectCreationSource)
@@ -106,6 +110,20 @@ pageNumbersEnabled :: IsPHProjectInfo phProjectInfo => phProjectInfo -> IO Bool
 pageNumbersEnabled phProjectInfo  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg phProjectInfo (mkSelector "pageNumbersEnabled") retCULong []
 
+-- | The product identifier of the originating Apple Print Product.
+--
+-- ObjC selector: @- productIdentifier@
+productIdentifier :: IsPHProjectInfo phProjectInfo => phProjectInfo -> IO (Id NSString)
+productIdentifier phProjectInfo  =
+    sendMsg phProjectInfo (mkSelector "productIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The product theme identifier of the originating Apple Print Product.
+--
+-- ObjC selector: @- themeIdentifier@
+themeIdentifier :: IsPHProjectInfo phProjectInfo => phProjectInfo -> IO (Id NSString)
+themeIdentifier phProjectInfo  =
+    sendMsg phProjectInfo (mkSelector "themeIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -137,4 +155,12 @@ brandingEnabledSelector = mkSelector "brandingEnabled"
 -- | @Selector@ for @pageNumbersEnabled@
 pageNumbersEnabledSelector :: Selector
 pageNumbersEnabledSelector = mkSelector "pageNumbersEnabled"
+
+-- | @Selector@ for @productIdentifier@
+productIdentifierSelector :: Selector
+productIdentifierSelector = mkSelector "productIdentifier"
+
+-- | @Selector@ for @themeIdentifier@
+themeIdentifierSelector :: Selector
+themeIdentifierSelector = mkSelector "themeIdentifier"
 

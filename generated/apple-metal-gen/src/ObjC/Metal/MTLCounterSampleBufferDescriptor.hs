@@ -11,12 +11,16 @@
 module ObjC.Metal.MTLCounterSampleBufferDescriptor
   ( MTLCounterSampleBufferDescriptor
   , IsMTLCounterSampleBufferDescriptor(..)
+  , counterSet
+  , setCounterSet
   , label
   , setLabel
   , storageMode
   , setStorageMode
   , sampleCount
   , setSampleCount
+  , counterSetSelector
+  , setCounterSetSelector
   , labelSelector
   , setLabelSelector
   , storageModeSelector
@@ -48,6 +52,20 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.Metal.Internal.Classes
 import ObjC.Metal.Internal.Enums
 import ObjC.Foundation.Internal.Classes
+
+-- | counterSet The counterset to be sampled for this counter sample buffer
+--
+-- ObjC selector: @- counterSet@
+counterSet :: IsMTLCounterSampleBufferDescriptor mtlCounterSampleBufferDescriptor => mtlCounterSampleBufferDescriptor -> IO RawId
+counterSet mtlCounterSampleBufferDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlCounterSampleBufferDescriptor (mkSelector "counterSet") (retPtr retVoid) []
+
+-- | counterSet The counterset to be sampled for this counter sample buffer
+--
+-- ObjC selector: @- setCounterSet:@
+setCounterSet :: IsMTLCounterSampleBufferDescriptor mtlCounterSampleBufferDescriptor => mtlCounterSampleBufferDescriptor -> RawId -> IO ()
+setCounterSet mtlCounterSampleBufferDescriptor  value =
+    sendMsg mtlCounterSampleBufferDescriptor (mkSelector "setCounterSet:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | label A label to identify the sample buffer in debugging tools.
 --
@@ -103,6 +121,14 @@ setSampleCount mtlCounterSampleBufferDescriptor  value =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @counterSet@
+counterSetSelector :: Selector
+counterSetSelector = mkSelector "counterSet"
+
+-- | @Selector@ for @setCounterSet:@
+setCounterSetSelector :: Selector
+setCounterSetSelector = mkSelector "setCounterSet:"
 
 -- | @Selector@ for @label@
 labelSelector :: Selector

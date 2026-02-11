@@ -18,12 +18,16 @@ module ObjC.SceneKit.SCNTechnique
   , objectForKeyedSubscript
   , setObject_forKeyedSubscript
   , dictionaryRepresentation
+  , library
+  , setLibrary
   , techniqueWithDictionarySelector
   , techniqueBySequencingTechniquesSelector
   , handleBindingOfSymbol_usingBlockSelector
   , objectForKeyedSubscriptSelector
   , setObject_forKeyedSubscriptSelector
   , dictionaryRepresentationSelector
+  , librarySelector
+  , setLibrarySelector
 
 
   ) where
@@ -186,6 +190,24 @@ dictionaryRepresentation :: IsSCNTechnique scnTechnique => scnTechnique -> IO (I
 dictionaryRepresentation scnTechnique  =
     sendMsg scnTechnique (mkSelector "dictionaryRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | library
+--
+-- The Metal library to use to load the Metal programs specified in the technique description. Defaults to nil which corresponds to the default Metal library.
+--
+-- ObjC selector: @- library@
+library :: IsSCNTechnique scnTechnique => scnTechnique -> IO RawId
+library scnTechnique  =
+    fmap (RawId . castPtr) $ sendMsg scnTechnique (mkSelector "library") (retPtr retVoid) []
+
+-- | library
+--
+-- The Metal library to use to load the Metal programs specified in the technique description. Defaults to nil which corresponds to the default Metal library.
+--
+-- ObjC selector: @- setLibrary:@
+setLibrary :: IsSCNTechnique scnTechnique => scnTechnique -> RawId -> IO ()
+setLibrary scnTechnique  value =
+    sendMsg scnTechnique (mkSelector "setLibrary:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -213,4 +235,12 @@ setObject_forKeyedSubscriptSelector = mkSelector "setObject:forKeyedSubscript:"
 -- | @Selector@ for @dictionaryRepresentation@
 dictionaryRepresentationSelector :: Selector
 dictionaryRepresentationSelector = mkSelector "dictionaryRepresentation"
+
+-- | @Selector@ for @library@
+librarySelector :: Selector
+librarySelector = mkSelector "library"
+
+-- | @Selector@ for @setLibrary:@
+setLibrarySelector :: Selector
+setLibrarySelector = mkSelector "setLibrary:"
 

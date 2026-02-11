@@ -13,11 +13,13 @@ module ObjC.AuthenticationServices.ASPasskeyCredentialRequestParameters
   , clientDataHash
   , userVerificationPreference
   , allowedCredentials
+  , extensionInput
   , initSelector
   , relyingPartyIdentifierSelector
   , clientDataHashSelector
   , userVerificationPreferenceSelector
   , allowedCredentialsSelector
+  , extensionInputSelector
 
 
   ) where
@@ -70,6 +72,13 @@ allowedCredentials :: IsASPasskeyCredentialRequestParameters asPasskeyCredential
 allowedCredentials asPasskeyCredentialRequestParameters  =
     sendMsg asPasskeyCredentialRequestParameters (mkSelector "allowedCredentials") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | Inputs for WebAuthn extensions used for passkey assertion.
+--
+-- ObjC selector: @- extensionInput@
+extensionInput :: IsASPasskeyCredentialRequestParameters asPasskeyCredentialRequestParameters => asPasskeyCredentialRequestParameters -> IO (Id ASPasskeyAssertionCredentialExtensionInput)
+extensionInput asPasskeyCredentialRequestParameters  =
+    sendMsg asPasskeyCredentialRequestParameters (mkSelector "extensionInput") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -93,4 +102,8 @@ userVerificationPreferenceSelector = mkSelector "userVerificationPreference"
 -- | @Selector@ for @allowedCredentials@
 allowedCredentialsSelector :: Selector
 allowedCredentialsSelector = mkSelector "allowedCredentials"
+
+-- | @Selector@ for @extensionInput@
+extensionInputSelector :: Selector
+extensionInputSelector = mkSelector "extensionInput"
 

@@ -9,9 +9,15 @@ module ObjC.AppKit.NSBindingSelectionMarker
   , init_
   , setDefaultPlaceholder_forMarker_onClass_withBinding
   , defaultPlaceholderForMarker_onClass_withBinding
+  , multipleValuesSelectionMarker
+  , noSelectionMarker
+  , notApplicableSelectionMarker
   , initSelector
   , setDefaultPlaceholder_forMarker_onClass_withBindingSelector
   , defaultPlaceholderForMarker_onClass_withBindingSelector
+  , multipleValuesSelectionMarkerSelector
+  , noSelectionMarkerSelector
+  , notApplicableSelectionMarkerSelector
 
 
   ) where
@@ -54,6 +60,27 @@ defaultPlaceholderForMarker_onClass_withBinding marker objectClass binding =
       withObjCPtr binding $ \raw_binding ->
         fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "defaultPlaceholderForMarker:onClass:withBinding:") (retPtr retVoid) [argPtr (castPtr raw_marker :: Ptr ()), argPtr (unClass objectClass), argPtr (castPtr raw_binding :: Ptr ())]
 
+-- | @+ multipleValuesSelectionMarker@
+multipleValuesSelectionMarker :: IO (Id NSBindingSelectionMarker)
+multipleValuesSelectionMarker  =
+  do
+    cls' <- getRequiredClass "NSBindingSelectionMarker"
+    sendClassMsg cls' (mkSelector "multipleValuesSelectionMarker") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ noSelectionMarker@
+noSelectionMarker :: IO (Id NSBindingSelectionMarker)
+noSelectionMarker  =
+  do
+    cls' <- getRequiredClass "NSBindingSelectionMarker"
+    sendClassMsg cls' (mkSelector "noSelectionMarker") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ notApplicableSelectionMarker@
+notApplicableSelectionMarker :: IO (Id NSBindingSelectionMarker)
+notApplicableSelectionMarker  =
+  do
+    cls' <- getRequiredClass "NSBindingSelectionMarker"
+    sendClassMsg cls' (mkSelector "notApplicableSelectionMarker") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -69,4 +96,16 @@ setDefaultPlaceholder_forMarker_onClass_withBindingSelector = mkSelector "setDef
 -- | @Selector@ for @defaultPlaceholderForMarker:onClass:withBinding:@
 defaultPlaceholderForMarker_onClass_withBindingSelector :: Selector
 defaultPlaceholderForMarker_onClass_withBindingSelector = mkSelector "defaultPlaceholderForMarker:onClass:withBinding:"
+
+-- | @Selector@ for @multipleValuesSelectionMarker@
+multipleValuesSelectionMarkerSelector :: Selector
+multipleValuesSelectionMarkerSelector = mkSelector "multipleValuesSelectionMarker"
+
+-- | @Selector@ for @noSelectionMarker@
+noSelectionMarkerSelector :: Selector
+noSelectionMarkerSelector = mkSelector "noSelectionMarker"
+
+-- | @Selector@ for @notApplicableSelectionMarker@
+notApplicableSelectionMarkerSelector :: Selector
+notApplicableSelectionMarkerSelector = mkSelector "notApplicableSelectionMarker"
 

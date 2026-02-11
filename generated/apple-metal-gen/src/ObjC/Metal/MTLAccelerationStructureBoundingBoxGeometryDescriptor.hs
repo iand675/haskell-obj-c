@@ -9,6 +9,8 @@ module ObjC.Metal.MTLAccelerationStructureBoundingBoxGeometryDescriptor
   ( MTLAccelerationStructureBoundingBoxGeometryDescriptor
   , IsMTLAccelerationStructureBoundingBoxGeometryDescriptor(..)
   , descriptor
+  , boundingBoxBuffer
+  , setBoundingBoxBuffer
   , boundingBoxBufferOffset
   , setBoundingBoxBufferOffset
   , boundingBoxStride
@@ -16,6 +18,8 @@ module ObjC.Metal.MTLAccelerationStructureBoundingBoxGeometryDescriptor
   , boundingBoxCount
   , setBoundingBoxCount
   , descriptorSelector
+  , boundingBoxBufferSelector
+  , setBoundingBoxBufferSelector
   , boundingBoxBufferOffsetSelector
   , setBoundingBoxBufferOffsetSelector
   , boundingBoxStrideSelector
@@ -47,6 +51,20 @@ descriptor  =
   do
     cls' <- getRequiredClass "MTLAccelerationStructureBoundingBoxGeometryDescriptor"
     sendClassMsg cls' (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Bounding box buffer containing MTLAxisAlignedBoundingBoxes. Must not be nil.
+--
+-- ObjC selector: @- boundingBoxBuffer@
+boundingBoxBuffer :: IsMTLAccelerationStructureBoundingBoxGeometryDescriptor mtlAccelerationStructureBoundingBoxGeometryDescriptor => mtlAccelerationStructureBoundingBoxGeometryDescriptor -> IO RawId
+boundingBoxBuffer mtlAccelerationStructureBoundingBoxGeometryDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlAccelerationStructureBoundingBoxGeometryDescriptor (mkSelector "boundingBoxBuffer") (retPtr retVoid) []
+
+-- | Bounding box buffer containing MTLAxisAlignedBoundingBoxes. Must not be nil.
+--
+-- ObjC selector: @- setBoundingBoxBuffer:@
+setBoundingBoxBuffer :: IsMTLAccelerationStructureBoundingBoxGeometryDescriptor mtlAccelerationStructureBoundingBoxGeometryDescriptor => mtlAccelerationStructureBoundingBoxGeometryDescriptor -> RawId -> IO ()
+setBoundingBoxBuffer mtlAccelerationStructureBoundingBoxGeometryDescriptor  value =
+    sendMsg mtlAccelerationStructureBoundingBoxGeometryDescriptor (mkSelector "setBoundingBoxBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | Bounding box buffer offset. Must be a multiple of the bounding box stride and must be aligned to the platform's buffer offset alignment.
 --
@@ -97,6 +115,14 @@ setBoundingBoxCount mtlAccelerationStructureBoundingBoxGeometryDescriptor  value
 -- | @Selector@ for @descriptor@
 descriptorSelector :: Selector
 descriptorSelector = mkSelector "descriptor"
+
+-- | @Selector@ for @boundingBoxBuffer@
+boundingBoxBufferSelector :: Selector
+boundingBoxBufferSelector = mkSelector "boundingBoxBuffer"
+
+-- | @Selector@ for @setBoundingBoxBuffer:@
+setBoundingBoxBufferSelector :: Selector
+setBoundingBoxBufferSelector = mkSelector "setBoundingBoxBuffer:"
 
 -- | @Selector@ for @boundingBoxBufferOffset@
 boundingBoxBufferOffsetSelector :: Selector

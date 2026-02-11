@@ -35,6 +35,9 @@ module ObjC.Foundation.NSDecimalNumber
   , minimumDecimalNumber
   , maximumDecimalNumber
   , notANumber
+  , defaultBehavior
+  , setDefaultBehavior
+  , objCType
   , doubleValue
   , initWithMantissa_exponent_isNegativeSelector
   , initWithStringSelector
@@ -62,6 +65,9 @@ module ObjC.Foundation.NSDecimalNumber
   , minimumDecimalNumberSelector
   , maximumDecimalNumberSelector
   , notANumberSelector
+  , defaultBehaviorSelector
+  , setDefaultBehaviorSelector
+  , objCTypeSelector
   , doubleValueSelector
 
   -- * Enum types
@@ -246,6 +252,25 @@ notANumber  =
     cls' <- getRequiredClass "NSDecimalNumber"
     sendClassMsg cls' (mkSelector "notANumber") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @+ defaultBehavior@
+defaultBehavior :: IO RawId
+defaultBehavior  =
+  do
+    cls' <- getRequiredClass "NSDecimalNumber"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "defaultBehavior") (retPtr retVoid) []
+
+-- | @+ setDefaultBehavior:@
+setDefaultBehavior :: RawId -> IO ()
+setDefaultBehavior value =
+  do
+    cls' <- getRequiredClass "NSDecimalNumber"
+    sendClassMsg cls' (mkSelector "setDefaultBehavior:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- objCType@
+objCType :: IsNSDecimalNumber nsDecimalNumber => nsDecimalNumber -> IO (Ptr CChar)
+objCType nsDecimalNumber  =
+    fmap castPtr $ sendMsg nsDecimalNumber (mkSelector "objCType") (retPtr retVoid) []
+
 -- | @- doubleValue@
 doubleValue :: IsNSDecimalNumber nsDecimalNumber => nsDecimalNumber -> IO CDouble
 doubleValue nsDecimalNumber  =
@@ -358,6 +383,18 @@ maximumDecimalNumberSelector = mkSelector "maximumDecimalNumber"
 -- | @Selector@ for @notANumber@
 notANumberSelector :: Selector
 notANumberSelector = mkSelector "notANumber"
+
+-- | @Selector@ for @defaultBehavior@
+defaultBehaviorSelector :: Selector
+defaultBehaviorSelector = mkSelector "defaultBehavior"
+
+-- | @Selector@ for @setDefaultBehavior:@
+setDefaultBehaviorSelector :: Selector
+setDefaultBehaviorSelector = mkSelector "setDefaultBehavior:"
+
+-- | @Selector@ for @objCType@
+objCTypeSelector :: Selector
+objCTypeSelector = mkSelector "objCType"
 
 -- | @Selector@ for @doubleValue@
 doubleValueSelector :: Selector

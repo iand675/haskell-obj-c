@@ -16,12 +16,14 @@ module ObjC.MetalPerformanceShaders.MPSImageCopyToMatrix
   , initWithDevice_dataLayout
   , initWithCoder_device
   , encodeToCommandBuffer_sourceImage_destinationMatrix
+  , encodeBatchToCommandBuffer_sourceImages_destinationMatrix
   , destinationMatrixBatchIndex
   , setDestinationMatrixBatchIndex
   , dataLayout
   , initWithDevice_dataLayoutSelector
   , initWithCoder_deviceSelector
   , encodeToCommandBuffer_sourceImage_destinationMatrixSelector
+  , encodeBatchToCommandBuffer_sourceImages_destinationMatrixSelector
   , destinationMatrixBatchIndexSelector
   , setDestinationMatrixBatchIndexSelector
   , dataLayoutSelector
@@ -97,6 +99,24 @@ encodeToCommandBuffer_sourceImage_destinationMatrix mpsImageCopyToMatrix  comman
     withObjCPtr destinationMatrix $ \raw_destinationMatrix ->
         sendMsg mpsImageCopyToMatrix (mkSelector "encodeToCommandBuffer:sourceImage:destinationMatrix:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_destinationMatrix :: Ptr ())]
 
+-- | Encode a kernel that copies a MPSImageBatch to a MPSMatrix into a command buffer            using a MTLComputeCommandEncoder.
+--
+-- The kernel copies feature channels from sourceImage to the buffer              associated with destinationMatrix.  The kernel will not begin to execute until              after the command buffer has been enqueued and committed.              Each image will be copied to its own row in the matrix, starting with row              destinationMatrixOrigin.x.
+--
+-- NOTE: The destinationMatrix.dataType must match the feature channel data type in sourceImage.              NOTE: All the images in the source batch should be of the same size and have numberOfImages = 1.
+--
+-- @commandBuffer@ — A valid MTLCommandBuffer.
+--
+-- @sourceImages@ — A valid MPSImageBatch describing the images to copy from.
+--
+-- @destinationMatrix@ — A valid MPSMatrix or MPSTemporaryMatrix object describing the matrix to copy to.
+--
+-- ObjC selector: @- encodeBatchToCommandBuffer:sourceImages:destinationMatrix:@
+encodeBatchToCommandBuffer_sourceImages_destinationMatrix :: (IsMPSImageCopyToMatrix mpsImageCopyToMatrix, IsMPSMatrix destinationMatrix) => mpsImageCopyToMatrix -> RawId -> RawId -> destinationMatrix -> IO ()
+encodeBatchToCommandBuffer_sourceImages_destinationMatrix mpsImageCopyToMatrix  commandBuffer sourceImages destinationMatrix =
+  withObjCPtr destinationMatrix $ \raw_destinationMatrix ->
+      sendMsg mpsImageCopyToMatrix (mkSelector "encodeBatchToCommandBuffer:sourceImages:destinationMatrix:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr raw_destinationMatrix :: Ptr ())]
+
 -- | destinationMatrixBatchIndex
 --
 -- The index of the destination matrix in the batch.  This property is              modifiable and defaults to 0 at initialization time.
@@ -141,6 +161,10 @@ initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 -- | @Selector@ for @encodeToCommandBuffer:sourceImage:destinationMatrix:@
 encodeToCommandBuffer_sourceImage_destinationMatrixSelector :: Selector
 encodeToCommandBuffer_sourceImage_destinationMatrixSelector = mkSelector "encodeToCommandBuffer:sourceImage:destinationMatrix:"
+
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:destinationMatrix:@
+encodeBatchToCommandBuffer_sourceImages_destinationMatrixSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_destinationMatrixSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:destinationMatrix:"
 
 -- | @Selector@ for @destinationMatrixBatchIndex@
 destinationMatrixBatchIndexSelector :: Selector

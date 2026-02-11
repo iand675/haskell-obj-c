@@ -15,6 +15,7 @@ module ObjC.BackgroundAssets.BAAssetPack
   , new
   , download
   , downloadForContentRequest
+  , identifier
   , downloadSize
   , version
   , userInfo
@@ -22,6 +23,7 @@ module ObjC.BackgroundAssets.BAAssetPack
   , newSelector
   , downloadSelector
   , downloadForContentRequestSelector
+  , identifierSelector
   , downloadSizeSelector
   , versionSelector
   , userInfoSelector
@@ -76,6 +78,13 @@ downloadForContentRequest :: IsBAAssetPack baAssetPack => baAssetPack -> BAConte
 downloadForContentRequest baAssetPack  contentRequest =
     sendMsg baAssetPack (mkSelector "downloadForContentRequest:") (retPtr retVoid) [argCLong (coerce contentRequest)] >>= retainedObject . castPtr
 
+-- | A unique identifier for the asset pack.
+--
+-- ObjC selector: @- identifier@
+identifier :: IsBAAssetPack baAssetPack => baAssetPack -> IO (Id NSString)
+identifier baAssetPack  =
+    sendMsg baAssetPack (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | The size of the download file containing the asset pack in bytes.
 --
 -- This is different than the installation size, which could be larger.
@@ -120,6 +129,10 @@ downloadSelector = mkSelector "download"
 -- | @Selector@ for @downloadForContentRequest:@
 downloadForContentRequestSelector :: Selector
 downloadForContentRequestSelector = mkSelector "downloadForContentRequest:"
+
+-- | @Selector@ for @identifier@
+identifierSelector :: Selector
+identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @downloadSize@
 downloadSizeSelector :: Selector

@@ -26,9 +26,24 @@ module ObjC.PDFKit.PDFAnnotation
   , setShouldDisplay
   , shouldPrint
   , setShouldPrint
+  , modificationDate
+  , setModificationDate
+  , userName
+  , setUserName
+  , popup
+  , setPopup
+  , border
+  , setBorder
+  , color
+  , setColor
+  , contents
+  , setContents
+  , action
+  , setAction
   , hasAppearanceStream
   , highlighted
   , setHighlighted
+  , annotationKeyValues
   , font
   , setFont
   , fontColor
@@ -96,6 +111,9 @@ module ObjC.PDFKit.PDFAnnotation
   , setBackgroundColor
   , stampName
   , setStampName
+  , toolTip
+  , mouseUpAction
+  , setMouseUpAction
   , drawWithBox_inContextSelector
   , lineStyleFromNameSelector
   , nameForLineStyleSelector
@@ -115,9 +133,24 @@ module ObjC.PDFKit.PDFAnnotation
   , setShouldDisplaySelector
   , shouldPrintSelector
   , setShouldPrintSelector
+  , modificationDateSelector
+  , setModificationDateSelector
+  , userNameSelector
+  , setUserNameSelector
+  , popupSelector
+  , setPopupSelector
+  , borderSelector
+  , setBorderSelector
+  , colorSelector
+  , setColorSelector
+  , contentsSelector
+  , setContentsSelector
+  , actionSelector
+  , setActionSelector
   , hasAppearanceStreamSelector
   , highlightedSelector
   , setHighlightedSelector
+  , annotationKeyValuesSelector
   , fontSelector
   , setFontSelector
   , fontColorSelector
@@ -185,6 +218,9 @@ module ObjC.PDFKit.PDFAnnotation
   , setBackgroundColorSelector
   , stampNameSelector
   , setStampNameSelector
+  , toolTipSelector
+  , mouseUpActionSelector
+  , setMouseUpActionSelector
 
   -- * Enum types
   , NSTextAlignment(NSTextAlignment)
@@ -356,6 +392,76 @@ setShouldPrint :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> Bool -> IO (
 setShouldPrint pdfAnnotation  value =
     sendMsg pdfAnnotation (mkSelector "setShouldPrint:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @- modificationDate@
+modificationDate :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> IO RawId
+modificationDate pdfAnnotation  =
+    fmap (RawId . castPtr) $ sendMsg pdfAnnotation (mkSelector "modificationDate") (retPtr retVoid) []
+
+-- | @- setModificationDate:@
+setModificationDate :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> RawId -> IO ()
+setModificationDate pdfAnnotation  value =
+    sendMsg pdfAnnotation (mkSelector "setModificationDate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- userName@
+userName :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> IO RawId
+userName pdfAnnotation  =
+    fmap (RawId . castPtr) $ sendMsg pdfAnnotation (mkSelector "userName") (retPtr retVoid) []
+
+-- | @- setUserName:@
+setUserName :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> RawId -> IO ()
+setUserName pdfAnnotation  value =
+    sendMsg pdfAnnotation (mkSelector "setUserName:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- popup@
+popup :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> IO RawId
+popup pdfAnnotation  =
+    fmap (RawId . castPtr) $ sendMsg pdfAnnotation (mkSelector "popup") (retPtr retVoid) []
+
+-- | @- setPopup:@
+setPopup :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> RawId -> IO ()
+setPopup pdfAnnotation  value =
+    sendMsg pdfAnnotation (mkSelector "setPopup:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- border@
+border :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> IO RawId
+border pdfAnnotation  =
+    fmap (RawId . castPtr) $ sendMsg pdfAnnotation (mkSelector "border") (retPtr retVoid) []
+
+-- | @- setBorder:@
+setBorder :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> RawId -> IO ()
+setBorder pdfAnnotation  value =
+    sendMsg pdfAnnotation (mkSelector "setBorder:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- color@
+color :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> IO RawId
+color pdfAnnotation  =
+    fmap (RawId . castPtr) $ sendMsg pdfAnnotation (mkSelector "color") (retPtr retVoid) []
+
+-- | @- setColor:@
+setColor :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> RawId -> IO ()
+setColor pdfAnnotation  value =
+    sendMsg pdfAnnotation (mkSelector "setColor:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- contents@
+contents :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> IO RawId
+contents pdfAnnotation  =
+    fmap (RawId . castPtr) $ sendMsg pdfAnnotation (mkSelector "contents") (retPtr retVoid) []
+
+-- | @- setContents:@
+setContents :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> RawId -> IO ()
+setContents pdfAnnotation  value =
+    sendMsg pdfAnnotation (mkSelector "setContents:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- action@
+action :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> IO RawId
+action pdfAnnotation  =
+    fmap (RawId . castPtr) $ sendMsg pdfAnnotation (mkSelector "action") (retPtr retVoid) []
+
+-- | @- setAction:@
+setAction :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> RawId -> IO ()
+setAction pdfAnnotation  value =
+    sendMsg pdfAnnotation (mkSelector "setAction:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- hasAppearanceStream@
 hasAppearanceStream :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> IO Bool
 hasAppearanceStream pdfAnnotation  =
@@ -370,6 +476,11 @@ highlighted pdfAnnotation  =
 setHighlighted :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> Bool -> IO ()
 setHighlighted pdfAnnotation  value =
     sendMsg pdfAnnotation (mkSelector "setHighlighted:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | @- annotationKeyValues@
+annotationKeyValues :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> IO RawId
+annotationKeyValues pdfAnnotation  =
+    fmap (RawId . castPtr) $ sendMsg pdfAnnotation (mkSelector "annotationKeyValues") (retPtr retVoid) []
 
 -- | @- font@
 font :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> IO (Id NSFont)
@@ -721,6 +832,21 @@ setStampName pdfAnnotation  value =
   withObjCPtr value $ \raw_value ->
       sendMsg pdfAnnotation (mkSelector "setStampName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- toolTip@
+toolTip :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> IO RawId
+toolTip pdfAnnotation  =
+    fmap (RawId . castPtr) $ sendMsg pdfAnnotation (mkSelector "toolTip") (retPtr retVoid) []
+
+-- | @- mouseUpAction@
+mouseUpAction :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> IO RawId
+mouseUpAction pdfAnnotation  =
+    fmap (RawId . castPtr) $ sendMsg pdfAnnotation (mkSelector "mouseUpAction") (retPtr retVoid) []
+
+-- | @- setMouseUpAction:@
+setMouseUpAction :: IsPDFAnnotation pdfAnnotation => pdfAnnotation -> RawId -> IO ()
+setMouseUpAction pdfAnnotation  value =
+    sendMsg pdfAnnotation (mkSelector "setMouseUpAction:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -801,6 +927,62 @@ shouldPrintSelector = mkSelector "shouldPrint"
 setShouldPrintSelector :: Selector
 setShouldPrintSelector = mkSelector "setShouldPrint:"
 
+-- | @Selector@ for @modificationDate@
+modificationDateSelector :: Selector
+modificationDateSelector = mkSelector "modificationDate"
+
+-- | @Selector@ for @setModificationDate:@
+setModificationDateSelector :: Selector
+setModificationDateSelector = mkSelector "setModificationDate:"
+
+-- | @Selector@ for @userName@
+userNameSelector :: Selector
+userNameSelector = mkSelector "userName"
+
+-- | @Selector@ for @setUserName:@
+setUserNameSelector :: Selector
+setUserNameSelector = mkSelector "setUserName:"
+
+-- | @Selector@ for @popup@
+popupSelector :: Selector
+popupSelector = mkSelector "popup"
+
+-- | @Selector@ for @setPopup:@
+setPopupSelector :: Selector
+setPopupSelector = mkSelector "setPopup:"
+
+-- | @Selector@ for @border@
+borderSelector :: Selector
+borderSelector = mkSelector "border"
+
+-- | @Selector@ for @setBorder:@
+setBorderSelector :: Selector
+setBorderSelector = mkSelector "setBorder:"
+
+-- | @Selector@ for @color@
+colorSelector :: Selector
+colorSelector = mkSelector "color"
+
+-- | @Selector@ for @setColor:@
+setColorSelector :: Selector
+setColorSelector = mkSelector "setColor:"
+
+-- | @Selector@ for @contents@
+contentsSelector :: Selector
+contentsSelector = mkSelector "contents"
+
+-- | @Selector@ for @setContents:@
+setContentsSelector :: Selector
+setContentsSelector = mkSelector "setContents:"
+
+-- | @Selector@ for @action@
+actionSelector :: Selector
+actionSelector = mkSelector "action"
+
+-- | @Selector@ for @setAction:@
+setActionSelector :: Selector
+setActionSelector = mkSelector "setAction:"
+
 -- | @Selector@ for @hasAppearanceStream@
 hasAppearanceStreamSelector :: Selector
 hasAppearanceStreamSelector = mkSelector "hasAppearanceStream"
@@ -812,6 +994,10 @@ highlightedSelector = mkSelector "highlighted"
 -- | @Selector@ for @setHighlighted:@
 setHighlightedSelector :: Selector
 setHighlightedSelector = mkSelector "setHighlighted:"
+
+-- | @Selector@ for @annotationKeyValues@
+annotationKeyValuesSelector :: Selector
+annotationKeyValuesSelector = mkSelector "annotationKeyValues"
 
 -- | @Selector@ for @font@
 fontSelector :: Selector
@@ -1080,4 +1266,16 @@ stampNameSelector = mkSelector "stampName"
 -- | @Selector@ for @setStampName:@
 setStampNameSelector :: Selector
 setStampNameSelector = mkSelector "setStampName:"
+
+-- | @Selector@ for @toolTip@
+toolTipSelector :: Selector
+toolTipSelector = mkSelector "toolTip"
+
+-- | @Selector@ for @mouseUpAction@
+mouseUpActionSelector :: Selector
+mouseUpActionSelector = mkSelector "mouseUpAction"
+
+-- | @Selector@ for @setMouseUpAction:@
+setMouseUpActionSelector :: Selector
+setMouseUpActionSelector = mkSelector "setMouseUpAction:"
 

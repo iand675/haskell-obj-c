@@ -12,11 +12,15 @@ module ObjC.PassKit.PKPaymentAuthorizationResult
   , setStatus
   , errors
   , setErrors
+  , orderDetails
+  , setOrderDetails
   , initWithStatus_errorsSelector
   , statusSelector
   , setStatusSelector
   , errorsSelector
   , setErrorsSelector
+  , orderDetailsSelector
+  , setOrderDetailsSelector
 
   -- * Enum types
   , PKPaymentAuthorizationStatus(PKPaymentAuthorizationStatus)
@@ -74,6 +78,17 @@ setErrors pkPaymentAuthorizationResult  value =
   withObjCPtr value $ \raw_value ->
       sendMsg pkPaymentAuthorizationResult (mkSelector "setErrors:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- orderDetails@
+orderDetails :: IsPKPaymentAuthorizationResult pkPaymentAuthorizationResult => pkPaymentAuthorizationResult -> IO (Id PKPaymentOrderDetails)
+orderDetails pkPaymentAuthorizationResult  =
+    sendMsg pkPaymentAuthorizationResult (mkSelector "orderDetails") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setOrderDetails:@
+setOrderDetails :: (IsPKPaymentAuthorizationResult pkPaymentAuthorizationResult, IsPKPaymentOrderDetails value) => pkPaymentAuthorizationResult -> value -> IO ()
+setOrderDetails pkPaymentAuthorizationResult  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg pkPaymentAuthorizationResult (mkSelector "setOrderDetails:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -97,4 +112,12 @@ errorsSelector = mkSelector "errors"
 -- | @Selector@ for @setErrors:@
 setErrorsSelector :: Selector
 setErrorsSelector = mkSelector "setErrors:"
+
+-- | @Selector@ for @orderDetails@
+orderDetailsSelector :: Selector
+orderDetailsSelector = mkSelector "orderDetails"
+
+-- | @Selector@ for @setOrderDetails:@
+setOrderDetailsSelector :: Selector
+setOrderDetailsSelector = mkSelector "setOrderDetails:"
 

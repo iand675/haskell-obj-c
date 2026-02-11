@@ -11,6 +11,7 @@ module ObjC.PDFKit.PDFOutline
   , insertChild_atIndex
   , removeFromParent
   , document
+  , parent
   , numberOfChildren
   , index
   , label
@@ -19,11 +20,14 @@ module ObjC.PDFKit.PDFOutline
   , setIsOpen
   , destination
   , setDestination
+  , action
+  , setAction
   , initSelector
   , childAtIndexSelector
   , insertChild_atIndexSelector
   , removeFromParentSelector
   , documentSelector
+  , parentSelector
   , numberOfChildrenSelector
   , indexSelector
   , labelSelector
@@ -32,6 +36,8 @@ module ObjC.PDFKit.PDFOutline
   , setIsOpenSelector
   , destinationSelector
   , setDestinationSelector
+  , actionSelector
+  , setActionSelector
 
 
   ) where
@@ -77,6 +83,11 @@ document :: IsPDFOutline pdfOutline => pdfOutline -> IO (Id PDFDocument)
 document pdfOutline  =
     sendMsg pdfOutline (mkSelector "document") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- parent@
+parent :: IsPDFOutline pdfOutline => pdfOutline -> IO RawId
+parent pdfOutline  =
+    fmap (RawId . castPtr) $ sendMsg pdfOutline (mkSelector "parent") (retPtr retVoid) []
+
 -- | @- numberOfChildren@
 numberOfChildren :: IsPDFOutline pdfOutline => pdfOutline -> IO CULong
 numberOfChildren pdfOutline  =
@@ -119,6 +130,16 @@ setDestination pdfOutline  value =
   withObjCPtr value $ \raw_value ->
       sendMsg pdfOutline (mkSelector "setDestination:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- action@
+action :: IsPDFOutline pdfOutline => pdfOutline -> IO RawId
+action pdfOutline  =
+    fmap (RawId . castPtr) $ sendMsg pdfOutline (mkSelector "action") (retPtr retVoid) []
+
+-- | @- setAction:@
+setAction :: IsPDFOutline pdfOutline => pdfOutline -> RawId -> IO ()
+setAction pdfOutline  value =
+    sendMsg pdfOutline (mkSelector "setAction:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -142,6 +163,10 @@ removeFromParentSelector = mkSelector "removeFromParent"
 -- | @Selector@ for @document@
 documentSelector :: Selector
 documentSelector = mkSelector "document"
+
+-- | @Selector@ for @parent@
+parentSelector :: Selector
+parentSelector = mkSelector "parent"
 
 -- | @Selector@ for @numberOfChildren@
 numberOfChildrenSelector :: Selector
@@ -174,4 +199,12 @@ destinationSelector = mkSelector "destination"
 -- | @Selector@ for @setDestination:@
 setDestinationSelector :: Selector
 setDestinationSelector = mkSelector "setDestination:"
+
+-- | @Selector@ for @action@
+actionSelector :: Selector
+actionSelector = mkSelector "action"
+
+-- | @Selector@ for @setAction:@
+setActionSelector :: Selector
+setActionSelector = mkSelector "setAction:"
 

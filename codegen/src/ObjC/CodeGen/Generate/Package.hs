@@ -51,6 +51,8 @@ import ObjC.CodeGen.Generate.Structs
 import ObjC.CodeGen.Generate.InternalClasses (generateInternalClassesModule)
 import ObjC.CodeGen.Generate.ClassModule
   ( generateClassModule, generateExtensionModules )
+import ObjC.CodeGen.Generate.DelegateModule
+  ( generateDelegateModules )
 
 -- ---------------------------------------------------------------------------
 -- Top-level entry point
@@ -218,6 +220,9 @@ generatePackageWith depOverrides hierarchy fwMap allKnown availableFws (framewor
       modules = fmap (generateClassModule fwMap hierarchy allKnown framework depFws) ordered
       protocolsMod = Nothing
 
+      -- Delegate modules (per-protocol override records + constructors)
+      delegateMods = generateDelegateModules hierarchy framework
+
       pkgName  = fwToPackageName framework
       prefix   = "ObjC." <> framework
       publicStructsMod = generatePublicStructsModule prefix fwStructs
@@ -231,6 +236,7 @@ generatePackageWith depOverrides hierarchy fwMap allKnown availableFws (framewor
         , [publicEnumsMod    | not (null fwEnums)]
         , maybe [] (: []) protocolsMod
         , modules
+        , delegateMods
         ]
 
       structReExport = generateStructReExportModule prefix fwStructs
@@ -310,6 +316,9 @@ generatePackage hierarchy fwMap allKnown availableFws (framework, classNames) =
       -- constraints, __kindof types, and known-typedef parameters correctly.
       protocolsMod = Nothing -- generateProtocolsModule ...
 
+      -- Delegate modules (per-protocol override records + constructors)
+      delegateMods = generateDelegateModules hierarchy framework
+
       -- Public re-export modules
       publicStructsMod = generatePublicStructsModule prefix fwStructs
       publicEnumsMod   = generatePublicEnumsModule prefix fwEnums
@@ -322,6 +331,7 @@ generatePackage hierarchy fwMap allKnown availableFws (framework, classNames) =
         , [publicEnumsMod    | not (null fwEnums)]
         , maybe [] (: []) protocolsMod
         , modules
+        , delegateMods
         ]
 
       pkgName  = fwToPackageName framework

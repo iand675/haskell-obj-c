@@ -6,12 +6,14 @@
 module ObjC.Intents.INRestaurant
   ( INRestaurant
   , IsINRestaurant(..)
+  , initWithLocation_name_vendorIdentifier_restaurantIdentifier
   , name
   , setName
   , vendorIdentifier
   , setVendorIdentifier
   , restaurantIdentifier
   , setRestaurantIdentifier
+  , initWithLocation_name_vendorIdentifier_restaurantIdentifierSelector
   , nameSelector
   , setNameSelector
   , vendorIdentifierSelector
@@ -36,6 +38,14 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.Intents.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | @- initWithLocation:name:vendorIdentifier:restaurantIdentifier:@
+initWithLocation_name_vendorIdentifier_restaurantIdentifier :: (IsINRestaurant inRestaurant, IsNSString name, IsNSString vendorIdentifier, IsNSString restaurantIdentifier) => inRestaurant -> RawId -> name -> vendorIdentifier -> restaurantIdentifier -> IO (Id INRestaurant)
+initWithLocation_name_vendorIdentifier_restaurantIdentifier inRestaurant  location name vendorIdentifier restaurantIdentifier =
+  withObjCPtr name $ \raw_name ->
+    withObjCPtr vendorIdentifier $ \raw_vendorIdentifier ->
+      withObjCPtr restaurantIdentifier $ \raw_restaurantIdentifier ->
+          sendMsg inRestaurant (mkSelector "initWithLocation:name:vendorIdentifier:restaurantIdentifier:") (retPtr retVoid) [argPtr (castPtr (unRawId location) :: Ptr ()), argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_vendorIdentifier :: Ptr ()), argPtr (castPtr raw_restaurantIdentifier :: Ptr ())] >>= ownedObject . castPtr
 
 -- | @- name@
 name :: IsINRestaurant inRestaurant => inRestaurant -> IO (Id NSString)
@@ -73,6 +83,10 @@ setRestaurantIdentifier inRestaurant  value =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @initWithLocation:name:vendorIdentifier:restaurantIdentifier:@
+initWithLocation_name_vendorIdentifier_restaurantIdentifierSelector :: Selector
+initWithLocation_name_vendorIdentifier_restaurantIdentifierSelector = mkSelector "initWithLocation:name:vendorIdentifier:restaurantIdentifier:"
 
 -- | @Selector@ for @name@
 nameSelector :: Selector

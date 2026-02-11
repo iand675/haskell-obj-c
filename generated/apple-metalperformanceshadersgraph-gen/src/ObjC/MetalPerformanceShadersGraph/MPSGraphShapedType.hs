@@ -9,10 +9,16 @@
 module ObjC.MetalPerformanceShadersGraph.MPSGraphShapedType
   ( MPSGraphShapedType
   , IsMPSGraphShapedType(..)
+  , initWithShape_dataType
   , isEqualTo
+  , shape
+  , setShape
   , dataType
   , setDataType
+  , initWithShape_dataTypeSelector
   , isEqualToSelector
+  , shapeSelector
+  , setShapeSelector
   , dataTypeSelector
   , setDataTypeSelector
 
@@ -64,6 +70,15 @@ import ObjC.MetalPerformanceShadersGraph.Internal.Classes
 import ObjC.MetalPerformanceShaders.Internal.Enums
 import ObjC.Foundation.Internal.Classes
 
+-- | Initializes a shaped type.
+--
+-- - Parameters:   - shape: The shape of the shaped type.   - dataType: The dataType of the shaped type. - Returns: A valid MPSGraphShapedType, or nil if allocation failure.
+--
+-- ObjC selector: @- initWithShape:dataType:@
+initWithShape_dataType :: IsMPSGraphShapedType mpsGraphShapedType => mpsGraphShapedType -> RawId -> MPSDataType -> IO (Id MPSGraphShapedType)
+initWithShape_dataType mpsGraphShapedType  shape dataType =
+    sendMsg mpsGraphShapedType (mkSelector "initWithShape:dataType:") (retPtr retVoid) [argPtr (castPtr (unRawId shape) :: Ptr ()), argCUInt (coerce dataType)] >>= ownedObject . castPtr
+
 -- | Checks if shapes and element data type are the same as the input shaped type.
 --
 -- - Parameters:   - object: shapedType to compare to - Returns: true if equal, false if unequal
@@ -73,6 +88,20 @@ isEqualTo :: (IsMPSGraphShapedType mpsGraphShapedType, IsMPSGraphShapedType obje
 isEqualTo mpsGraphShapedType  object =
   withObjCPtr object $ \raw_object ->
       fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphShapedType (mkSelector "isEqualTo:") retCULong [argPtr (castPtr raw_object :: Ptr ())]
+
+-- | The Shape of the shaped type.
+--
+-- ObjC selector: @- shape@
+shape :: IsMPSGraphShapedType mpsGraphShapedType => mpsGraphShapedType -> IO RawId
+shape mpsGraphShapedType  =
+    fmap (RawId . castPtr) $ sendMsg mpsGraphShapedType (mkSelector "shape") (retPtr retVoid) []
+
+-- | The Shape of the shaped type.
+--
+-- ObjC selector: @- setShape:@
+setShape :: IsMPSGraphShapedType mpsGraphShapedType => mpsGraphShapedType -> RawId -> IO ()
+setShape mpsGraphShapedType  value =
+    sendMsg mpsGraphShapedType (mkSelector "setShape:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | The data type of the shaped type.
 --
@@ -92,9 +121,21 @@ setDataType mpsGraphShapedType  value =
 -- Selectors
 -- ---------------------------------------------------------------------------
 
+-- | @Selector@ for @initWithShape:dataType:@
+initWithShape_dataTypeSelector :: Selector
+initWithShape_dataTypeSelector = mkSelector "initWithShape:dataType:"
+
 -- | @Selector@ for @isEqualTo:@
 isEqualToSelector :: Selector
 isEqualToSelector = mkSelector "isEqualTo:"
+
+-- | @Selector@ for @shape@
+shapeSelector :: Selector
+shapeSelector = mkSelector "shape"
+
+-- | @Selector@ for @setShape:@
+setShapeSelector :: Selector
+setShapeSelector = mkSelector "setShape:"
 
 -- | @Selector@ for @dataType@
 dataTypeSelector :: Selector

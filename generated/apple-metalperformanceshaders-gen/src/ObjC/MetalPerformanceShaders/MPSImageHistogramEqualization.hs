@@ -18,8 +18,10 @@
 module ObjC.MetalPerformanceShaders.MPSImageHistogramEqualization
   ( MPSImageHistogramEqualization
   , IsMPSImageHistogramEqualization(..)
+  , initWithDevice_histogramInfo
   , initWithCoder_device
   , encodeTransformToCommandBuffer_sourceTexture_histogram_histogramOffset
+  , initWithDevice_histogramInfoSelector
   , initWithCoder_deviceSelector
   , encodeTransformToCommandBuffer_sourceTexture_histogram_histogramOffsetSelector
 
@@ -40,6 +42,19 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.MetalPerformanceShaders.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | Specifies information about the histogram for the channels of an image.
+--
+-- @device@ — The device the filter will run on
+--
+-- @histogramInfo@ — Pointer to the MPSHistogramInfo struct
+--
+-- Returns: A valid MPSImageHistogramEqualization object or nil, if failure.
+--
+-- ObjC selector: @- initWithDevice:histogramInfo:@
+initWithDevice_histogramInfo :: IsMPSImageHistogramEqualization mpsImageHistogramEqualization => mpsImageHistogramEqualization -> RawId -> Const RawId -> IO (Id MPSImageHistogramEqualization)
+initWithDevice_histogramInfo mpsImageHistogramEqualization  device histogramInfo =
+    sendMsg mpsImageHistogramEqualization (mkSelector "initWithDevice:histogramInfo:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr (unRawId (unConst histogramInfo)) :: Ptr ())] >>= ownedObject . castPtr
 
 -- | NSSecureCoding compatability
 --
@@ -77,6 +92,10 @@ encodeTransformToCommandBuffer_sourceTexture_histogram_histogramOffset mpsImageH
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @initWithDevice:histogramInfo:@
+initWithDevice_histogramInfoSelector :: Selector
+initWithDevice_histogramInfoSelector = mkSelector "initWithDevice:histogramInfo:"
 
 -- | @Selector@ for @initWithCoder:device:@
 initWithCoder_deviceSelector :: Selector

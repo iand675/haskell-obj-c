@@ -18,14 +18,20 @@ module ObjC.MetalPerformanceShaders.MPSCNNBinaryKernel
   , initWithDevice
   , initWithCoder_device
   , encodeToCommandBuffer_primaryImage_secondaryImage_destinationImage
+  , encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImages
   , encodeToCommandBuffer_primaryImage_secondaryImage
+  , encodeBatchToCommandBuffer_primaryImages_secondaryImages
   , encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationStateIsTemporary
+  , encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationStateIsTemporary
   , resultStateForPrimaryImage_secondaryImage_sourceStates_destinationImage
+  , resultStateBatchForPrimaryImage_secondaryImage_sourceStates_destinationImage
   , temporaryResultStateForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImage
+  , temporaryResultStateBatchForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImage
   , isResultStateReusedAcrossBatch
   , appendBatchBarrier
   , destinationImageDescriptorForSourceImages_sourceStates
   , encodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImage
+  , batchEncodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImage
   , destinationFeatureChannelOffset
   , setDestinationFeatureChannelOffset
   , primarySourceFeatureChannelOffset
@@ -58,17 +64,27 @@ module ObjC.MetalPerformanceShaders.MPSCNNBinaryKernel
   , secondaryDilationRateY
   , isBackwards
   , isStateModified
+  , padding
+  , setPadding
+  , destinationImageAllocator
+  , setDestinationImageAllocator
   , initWithDeviceSelector
   , initWithCoder_deviceSelector
   , encodeToCommandBuffer_primaryImage_secondaryImage_destinationImageSelector
+  , encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImagesSelector
   , encodeToCommandBuffer_primaryImage_secondaryImageSelector
+  , encodeBatchToCommandBuffer_primaryImages_secondaryImagesSelector
   , encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationStateIsTemporarySelector
+  , encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationStateIsTemporarySelector
   , resultStateForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector
+  , resultStateBatchForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector
   , temporaryResultStateForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImageSelector
+  , temporaryResultStateBatchForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImageSelector
   , isResultStateReusedAcrossBatchSelector
   , appendBatchBarrierSelector
   , destinationImageDescriptorForSourceImages_sourceStatesSelector
   , encodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector
+  , batchEncodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector
   , destinationFeatureChannelOffsetSelector
   , setDestinationFeatureChannelOffsetSelector
   , primarySourceFeatureChannelOffsetSelector
@@ -101,6 +117,10 @@ module ObjC.MetalPerformanceShaders.MPSCNNBinaryKernel
   , secondaryDilationRateYSelector
   , isBackwardsSelector
   , isStateModifiedSelector
+  , paddingSelector
+  , setPaddingSelector
+  , destinationImageAllocatorSelector
+  , setDestinationImageAllocatorSelector
 
   -- * Enum types
   , MPSImageEdgeMode(MPSImageEdgeMode)
@@ -175,6 +195,23 @@ encodeToCommandBuffer_primaryImage_secondaryImage_destinationImage mpscnnBinaryK
       withObjCPtr destinationImage $ \raw_destinationImage ->
           sendMsg mpscnnBinaryKernel (mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:destinationImage:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_primaryImage :: Ptr ()), argPtr (castPtr raw_secondaryImage :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())]
 
+-- | Encode a MPSCNNKernel into a command Buffer.  The operation shall proceed out-of-place.
+--
+-- This is the older style of encode which reads the offset, doesn't change it,              and ignores the padding method. Multiple images are processed concurrently.              All images must have MPSImage.numberOfImages = 1.
+--
+-- @commandBuffer@ — A valid MTLCommandBuffer to receive the encoded filter
+--
+-- @primaryImages@ — An array of MPSImage objects containing the primary source images.
+--
+-- @secondaryImages@ — An array MPSImage objects containing the secondary source images.
+--
+-- @destinationImages@ — An array of MPSImage objects to contain the result images.                                    destinationImages may not alias primarySourceImages or secondarySourceImages                                    in any manner.
+--
+-- ObjC selector: @- encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationImages:@
+encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImages :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> RawId -> RawId -> RawId -> RawId -> IO ()
+encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImages mpscnnBinaryKernel  commandBuffer primaryImages secondaryImages destinationImages =
+    sendMsg mpscnnBinaryKernel (mkSelector "encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationImages:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId primaryImages) :: Ptr ()), argPtr (castPtr (unRawId secondaryImages) :: Ptr ()), argPtr (castPtr (unRawId destinationImages) :: Ptr ())]
+
 -- | Encode a MPSCNNKernel into a command Buffer. Create a texture to hold the result and return it.
 --
 -- In the first iteration on this method, encodeToCommandBuffer:sourceImage:destinationImage:                  some work was left for the developer to do in the form of correctly setting the offset property                  and sizing the result buffer. With the introduction of the padding policy (see padding property)                  the filter can do this work itself. If you would like to have some input into what sort of MPSImage                  (e.g. temporary vs. regular) or what size it is or where it is allocated, you may set the                  destinationImageAllocator to allocate the image yourself.
@@ -195,6 +232,25 @@ encodeToCommandBuffer_primaryImage_secondaryImage mpscnnBinaryKernel  commandBuf
   withObjCPtr primaryImage $ \raw_primaryImage ->
     withObjCPtr secondaryImage $ \raw_secondaryImage ->
         sendMsg mpscnnBinaryKernel (mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_primaryImage :: Ptr ()), argPtr (castPtr raw_secondaryImage :: Ptr ())] >>= retainedObject . castPtr
+
+-- | Encode a MPSCNNKernel into a command Buffer. Create textures to hold the results and return them.
+--
+-- In the first iteration on this method, encodeBatchToCommandBuffer:sourceImage:destinationImage:                  some work was left for the developer to do in the form of correctly setting the offset property                  and sizing the result buffer. With the introduction of the padding policy (see padding property)                  the filter can do this work itself. If you would like to have some input into what sort of MPSImage                  (e.g. temporary vs. regular) or what size it is or where it is allocated, you may set the                  destinationImageAllocator to allocate the image yourself.
+--
+-- This method uses the MPSNNPadding padding property to figure out how to size                  the result image and to set the offset property.  See discussion in MPSNeuralNetworkTypes.h.                  All images in a batch must have MPSImage.numberOfImages = 1.
+--
+-- @commandBuffer@ — The command buffer
+--
+-- @primaryImage@ — A MPSImages to use as the primary source images for the filter.
+--
+-- @secondaryImage@ — A MPSImages to use as the secondary source images for the filter.
+--
+-- Returns: A MPSImage or MPSTemporaryImage allocated per the destinationImageAllocator containing the output of the graph.                  The returned image will be automatically released when the command buffer completes. If you want to                  keep it around for longer, retain the image. (ARC will do this for you if you use it later.)
+--
+-- ObjC selector: @- encodeBatchToCommandBuffer:primaryImages:secondaryImages:@
+encodeBatchToCommandBuffer_primaryImages_secondaryImages :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> RawId -> RawId -> RawId -> IO RawId
+encodeBatchToCommandBuffer_primaryImages_secondaryImages mpscnnBinaryKernel  commandBuffer primaryImage secondaryImage =
+    fmap (RawId . castPtr) $ sendMsg mpscnnBinaryKernel (mkSelector "encodeBatchToCommandBuffer:primaryImages:secondaryImages:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId primaryImage) :: Ptr ()), argPtr (castPtr (unRawId secondaryImage) :: Ptr ())]
 
 -- | Encode a MPSCNNKernel into a command Buffer. Create a texture and state to hold the results and return them.
 --
@@ -222,6 +278,29 @@ encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationSt
       withObjCPtr outState $ \raw_outState ->
           sendMsg mpscnnBinaryKernel (mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:destinationState:destinationStateIsTemporary:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_primaryImage :: Ptr ()), argPtr (castPtr raw_secondaryImage :: Ptr ()), argPtr (castPtr raw_outState :: Ptr ()), argCULong (if isTemporary then 1 else 0)] >>= retainedObject . castPtr
 
+-- | Encode a MPSCNNKernel into a command Buffer. Create a texture and state to hold the results and return them.
+--
+-- In the first iteration on this method, encodeToCommandBuffer:sourceImage:destinationState:destinationImage:                  some work was left for the developer to do in the form of correctly setting the offset property                  and sizing the result buffer. With the introduction of the padding policy (see padding property)                  the filter can do this work itself. If you would like to have some input into what sort of MPSImage                  (e.g. temporary vs. regular) or what size it is or where it is allocated, you may set the                  destinationImageAllocator to allocate the image yourself.
+--
+-- This method uses the MPSNNPadding padding property to figure out how to size                  the result image and to set the offset property. See discussion in MPSNeuralNetworkTypes.h.                  All images in a batch must have MPSImage.numberOfImages = 1.
+--
+-- @commandBuffer@ — The command buffer
+--
+-- @primaryImages@ — A MPSImage to use as the source images for the filter.
+--
+-- @secondaryImages@ — A MPSImage to use as the source images for the filter.
+--
+-- @outState@ — A new state object is returned here.
+--
+-- @isTemporary@ — YES if the outState should be a temporary object
+--
+-- Returns: A MPSImage or MPSTemporaryImage allocated per the destinationImageAllocator containing the output of the graph.                  The offset property will be adjusted to reflect the offset used during the encode.                  The returned image will be automatically released when the command buffer completes. If you want to                  keep it around for longer, retain the image. (ARC will do this for you if you use it later.)
+--
+-- ObjC selector: @- encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationStates:destinationStateIsTemporary:@
+encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationStateIsTemporary :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> RawId -> RawId -> RawId -> RawId -> Bool -> IO RawId
+encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationStateIsTemporary mpscnnBinaryKernel  commandBuffer primaryImages secondaryImages outState isTemporary =
+    fmap (RawId . castPtr) $ sendMsg mpscnnBinaryKernel (mkSelector "encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationStates:destinationStateIsTemporary:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId primaryImages) :: Ptr ()), argPtr (castPtr (unRawId secondaryImages) :: Ptr ()), argPtr (castPtr (unRawId outState) :: Ptr ()), argCULong (if isTemporary then 1 else 0)]
+
 -- | Allocate a MPSState (subclass) to hold the results from a -encodeBatchToCommandBuffer... operation
 --
 -- A graph may need to allocate storage up front before executing.  This may be              necessary to avoid using too much memory and to manage large batches.  The function              should allocate a MPSState object (if any) that will be produced by an -encode call              with the indicated sourceImages and sourceStates inputs. Though the states              can be further adjusted in the ensuing -encode call, the states should              be initialized with all important data and all MTLResource storage allocated.              The data stored in the MTLResource need not be initialized, unless the ensuing              -encode call expects it to be.
@@ -248,6 +327,12 @@ resultStateForPrimaryImage_secondaryImage_sourceStates_destinationImage mpscnnBi
       withObjCPtr sourceStates $ \raw_sourceStates ->
         withObjCPtr destinationImage $ \raw_destinationImage ->
             sendMsg mpscnnBinaryKernel (mkSelector "resultStateForPrimaryImage:secondaryImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr raw_primaryImage :: Ptr ()), argPtr (castPtr raw_secondaryImage :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())] >>= retainedObject . castPtr
+
+-- | @- resultStateBatchForPrimaryImage:secondaryImage:sourceStates:destinationImage:@
+resultStateBatchForPrimaryImage_secondaryImage_sourceStates_destinationImage :: (IsMPSCNNBinaryKernel mpscnnBinaryKernel, IsNSArray sourceStates) => mpscnnBinaryKernel -> RawId -> RawId -> sourceStates -> RawId -> IO RawId
+resultStateBatchForPrimaryImage_secondaryImage_sourceStates_destinationImage mpscnnBinaryKernel  primaryImage secondaryImage sourceStates destinationImage =
+  withObjCPtr sourceStates $ \raw_sourceStates ->
+      fmap (RawId . castPtr) $ sendMsg mpscnnBinaryKernel (mkSelector "resultStateBatchForPrimaryImage:secondaryImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr (unRawId primaryImage) :: Ptr ()), argPtr (castPtr (unRawId secondaryImage) :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr (unRawId destinationImage) :: Ptr ())]
 
 -- | Allocate a temporary MPSState (subclass) to hold the results from a -encodeBatchToCommandBuffer... operation
 --
@@ -277,6 +362,12 @@ temporaryResultStateForCommandBuffer_primaryImage_secondaryImage_sourceStates_de
       withObjCPtr sourceStates $ \raw_sourceStates ->
         withObjCPtr destinationImage $ \raw_destinationImage ->
             sendMsg mpscnnBinaryKernel (mkSelector "temporaryResultStateForCommandBuffer:primaryImage:secondaryImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_primaryImage :: Ptr ()), argPtr (castPtr raw_secondaryImage :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())] >>= retainedObject . castPtr
+
+-- | @- temporaryResultStateBatchForCommandBuffer:primaryImage:secondaryImage:sourceStates:destinationImage:@
+temporaryResultStateBatchForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImage :: (IsMPSCNNBinaryKernel mpscnnBinaryKernel, IsNSArray sourceStates) => mpscnnBinaryKernel -> RawId -> RawId -> RawId -> sourceStates -> RawId -> IO RawId
+temporaryResultStateBatchForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImage mpscnnBinaryKernel  commandBuffer primaryImage secondaryImage sourceStates destinationImage =
+  withObjCPtr sourceStates $ \raw_sourceStates ->
+      fmap (RawId . castPtr) $ sendMsg mpscnnBinaryKernel (mkSelector "temporaryResultStateBatchForCommandBuffer:primaryImage:secondaryImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId primaryImage) :: Ptr ()), argPtr (castPtr (unRawId secondaryImage) :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr (unRawId destinationImage) :: Ptr ())]
 
 -- | Returns YES if the same state is used for every operation in a batch
 --
@@ -353,6 +444,16 @@ encodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImage 
       withObjCPtr sourceStates $ \raw_sourceStates ->
         withObjCPtr destinationImage $ \raw_destinationImage ->
             sendMsg mpscnnBinaryKernel (mkSelector "encodingStorageSizeForPrimaryImage:secondaryImage:sourceStates:destinationImage:") retCULong [argPtr (castPtr raw_primaryImage :: Ptr ()), argPtr (castPtr raw_secondaryImage :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())]
+
+-- | The size of extra MPS heap storage allocated while the kernel is encoding a batch
+--
+-- This is best effort and just describes things that are likely to end up on the MPS heap. It does not              describe all allocation done by the -encode call.  It is intended for use with high water calculations              for MTLHeap sizing. Allocations are typically for temporary storage needed for multipass algorithms.              This interface should not be used to detect multipass algorithms.
+--
+-- ObjC selector: @- batchEncodingStorageSizeForPrimaryImage:secondaryImage:sourceStates:destinationImage:@
+batchEncodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImage :: (IsMPSCNNBinaryKernel mpscnnBinaryKernel, IsNSArray sourceStates) => mpscnnBinaryKernel -> RawId -> RawId -> sourceStates -> RawId -> IO CULong
+batchEncodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImage mpscnnBinaryKernel  primaryImage secondaryImage sourceStates destinationImage =
+  withObjCPtr sourceStates $ \raw_sourceStates ->
+      sendMsg mpscnnBinaryKernel (mkSelector "batchEncodingStorageSizeForPrimaryImage:secondaryImage:sourceStates:destinationImage:") retCULong [argPtr (castPtr (unRawId primaryImage) :: Ptr ()), argPtr (castPtr (unRawId secondaryImage) :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr (unRawId destinationImage) :: Ptr ())]
 
 -- | destinationFeatureChannelOffset
 --
@@ -706,6 +807,46 @@ isStateModified :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel
 isStateModified mpscnnBinaryKernel  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpscnnBinaryKernel (mkSelector "isStateModified") retCULong []
 
+-- | padding
+--
+-- The padding method used by the filter
+--
+-- This influences how strideInPixelsX/Y should be interpreted.              Default:  MPSNNPaddingMethodAlignCentered | MPSNNPaddingMethodAddRemainderToTopLeft | MPSNNPaddingMethodSizeSame              Some object types (e.g. MPSCNNFullyConnected) may override this default with something appropriate to its operation.
+--
+-- ObjC selector: @- padding@
+padding :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO RawId
+padding mpscnnBinaryKernel  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnBinaryKernel (mkSelector "padding") (retPtr retVoid) []
+
+-- | padding
+--
+-- The padding method used by the filter
+--
+-- This influences how strideInPixelsX/Y should be interpreted.              Default:  MPSNNPaddingMethodAlignCentered | MPSNNPaddingMethodAddRemainderToTopLeft | MPSNNPaddingMethodSizeSame              Some object types (e.g. MPSCNNFullyConnected) may override this default with something appropriate to its operation.
+--
+-- ObjC selector: @- setPadding:@
+setPadding :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> RawId -> IO ()
+setPadding mpscnnBinaryKernel  value =
+    sendMsg mpscnnBinaryKernel (mkSelector "setPadding:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | Method to allocate the result image for -encodeToCommandBuffer:sourceImage:
+--
+-- Default: MPSTemporaryImage.defaultAllocator
+--
+-- ObjC selector: @- destinationImageAllocator@
+destinationImageAllocator :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO RawId
+destinationImageAllocator mpscnnBinaryKernel  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnBinaryKernel (mkSelector "destinationImageAllocator") (retPtr retVoid) []
+
+-- | Method to allocate the result image for -encodeToCommandBuffer:sourceImage:
+--
+-- Default: MPSTemporaryImage.defaultAllocator
+--
+-- ObjC selector: @- setDestinationImageAllocator:@
+setDestinationImageAllocator :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> RawId -> IO ()
+setDestinationImageAllocator mpscnnBinaryKernel  value =
+    sendMsg mpscnnBinaryKernel (mkSelector "setDestinationImageAllocator:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -722,21 +863,41 @@ initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 encodeToCommandBuffer_primaryImage_secondaryImage_destinationImageSelector :: Selector
 encodeToCommandBuffer_primaryImage_secondaryImage_destinationImageSelector = mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:destinationImage:"
 
+-- | @Selector@ for @encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationImages:@
+encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImagesSelector :: Selector
+encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImagesSelector = mkSelector "encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationImages:"
+
 -- | @Selector@ for @encodeToCommandBuffer:primaryImage:secondaryImage:@
 encodeToCommandBuffer_primaryImage_secondaryImageSelector :: Selector
 encodeToCommandBuffer_primaryImage_secondaryImageSelector = mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:"
+
+-- | @Selector@ for @encodeBatchToCommandBuffer:primaryImages:secondaryImages:@
+encodeBatchToCommandBuffer_primaryImages_secondaryImagesSelector :: Selector
+encodeBatchToCommandBuffer_primaryImages_secondaryImagesSelector = mkSelector "encodeBatchToCommandBuffer:primaryImages:secondaryImages:"
 
 -- | @Selector@ for @encodeToCommandBuffer:primaryImage:secondaryImage:destinationState:destinationStateIsTemporary:@
 encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationStateIsTemporarySelector :: Selector
 encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationStateIsTemporarySelector = mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:destinationState:destinationStateIsTemporary:"
 
+-- | @Selector@ for @encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationStates:destinationStateIsTemporary:@
+encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationStateIsTemporarySelector :: Selector
+encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationStateIsTemporarySelector = mkSelector "encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationStates:destinationStateIsTemporary:"
+
 -- | @Selector@ for @resultStateForPrimaryImage:secondaryImage:sourceStates:destinationImage:@
 resultStateForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector :: Selector
 resultStateForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector = mkSelector "resultStateForPrimaryImage:secondaryImage:sourceStates:destinationImage:"
 
+-- | @Selector@ for @resultStateBatchForPrimaryImage:secondaryImage:sourceStates:destinationImage:@
+resultStateBatchForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector :: Selector
+resultStateBatchForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector = mkSelector "resultStateBatchForPrimaryImage:secondaryImage:sourceStates:destinationImage:"
+
 -- | @Selector@ for @temporaryResultStateForCommandBuffer:primaryImage:secondaryImage:sourceStates:destinationImage:@
 temporaryResultStateForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImageSelector :: Selector
 temporaryResultStateForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImageSelector = mkSelector "temporaryResultStateForCommandBuffer:primaryImage:secondaryImage:sourceStates:destinationImage:"
+
+-- | @Selector@ for @temporaryResultStateBatchForCommandBuffer:primaryImage:secondaryImage:sourceStates:destinationImage:@
+temporaryResultStateBatchForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImageSelector :: Selector
+temporaryResultStateBatchForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImageSelector = mkSelector "temporaryResultStateBatchForCommandBuffer:primaryImage:secondaryImage:sourceStates:destinationImage:"
 
 -- | @Selector@ for @isResultStateReusedAcrossBatch@
 isResultStateReusedAcrossBatchSelector :: Selector
@@ -753,6 +914,10 @@ destinationImageDescriptorForSourceImages_sourceStatesSelector = mkSelector "des
 -- | @Selector@ for @encodingStorageSizeForPrimaryImage:secondaryImage:sourceStates:destinationImage:@
 encodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector :: Selector
 encodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector = mkSelector "encodingStorageSizeForPrimaryImage:secondaryImage:sourceStates:destinationImage:"
+
+-- | @Selector@ for @batchEncodingStorageSizeForPrimaryImage:secondaryImage:sourceStates:destinationImage:@
+batchEncodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector :: Selector
+batchEncodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector = mkSelector "batchEncodingStorageSizeForPrimaryImage:secondaryImage:sourceStates:destinationImage:"
 
 -- | @Selector@ for @destinationFeatureChannelOffset@
 destinationFeatureChannelOffsetSelector :: Selector
@@ -881,4 +1046,20 @@ isBackwardsSelector = mkSelector "isBackwards"
 -- | @Selector@ for @isStateModified@
 isStateModifiedSelector :: Selector
 isStateModifiedSelector = mkSelector "isStateModified"
+
+-- | @Selector@ for @padding@
+paddingSelector :: Selector
+paddingSelector = mkSelector "padding"
+
+-- | @Selector@ for @setPadding:@
+setPaddingSelector :: Selector
+setPaddingSelector = mkSelector "setPadding:"
+
+-- | @Selector@ for @destinationImageAllocator@
+destinationImageAllocatorSelector :: Selector
+destinationImageAllocatorSelector = mkSelector "destinationImageAllocator"
+
+-- | @Selector@ for @setDestinationImageAllocator:@
+setDestinationImageAllocatorSelector :: Selector
+setDestinationImageAllocatorSelector = mkSelector "setDestinationImageAllocator:"
 

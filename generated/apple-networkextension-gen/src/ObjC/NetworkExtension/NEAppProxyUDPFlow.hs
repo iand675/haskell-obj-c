@@ -14,9 +14,11 @@
 module ObjC.NetworkExtension.NEAppProxyUDPFlow
   ( NEAppProxyUDPFlow
   , IsNEAppProxyUDPFlow(..)
+  , writeDatagrams_sentByFlowEndpoints_completionHandler
   , writeDatagrams_sentByEndpoints_completionHandler
   , localFlowEndpoint
   , localEndpoint
+  , writeDatagrams_sentByFlowEndpoints_completionHandlerSelector
   , writeDatagrams_sentByEndpoints_completionHandlerSelector
   , localFlowEndpointSelector
   , localEndpointSelector
@@ -38,6 +40,22 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.NetworkExtension.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | writeDatagrams:sentByFlowEndpoints:completionHandler:
+--
+-- Write datagrams to the flow.
+--
+-- @datagrams@ — An array of NSData objects containing the data to be written.
+--
+-- @remoteEndpoints@ — The source endpoints of the datagrams.
+--
+-- @completionHandler@ — A block that will be executed when the datagrams have been written to the corresponding socket's receive buffer.
+--
+-- ObjC selector: @- writeDatagrams:sentByFlowEndpoints:completionHandler:@
+writeDatagrams_sentByFlowEndpoints_completionHandler :: (IsNEAppProxyUDPFlow neAppProxyUDPFlow, IsNSArray datagrams) => neAppProxyUDPFlow -> datagrams -> RawId -> Ptr () -> IO ()
+writeDatagrams_sentByFlowEndpoints_completionHandler neAppProxyUDPFlow  datagrams remoteEndpoints completionHandler =
+  withObjCPtr datagrams $ \raw_datagrams ->
+      sendMsg neAppProxyUDPFlow (mkSelector "writeDatagrams:sentByFlowEndpoints:completionHandler:") retVoid [argPtr (castPtr raw_datagrams :: Ptr ()), argPtr (castPtr (unRawId remoteEndpoints) :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
 
 -- | writeDatagrams:sentByEndpoint:completionHandler:
 --
@@ -77,6 +95,10 @@ localEndpoint neAppProxyUDPFlow  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @writeDatagrams:sentByFlowEndpoints:completionHandler:@
+writeDatagrams_sentByFlowEndpoints_completionHandlerSelector :: Selector
+writeDatagrams_sentByFlowEndpoints_completionHandlerSelector = mkSelector "writeDatagrams:sentByFlowEndpoints:completionHandler:"
 
 -- | @Selector@ for @writeDatagrams:sentByEndpoints:completionHandler:@
 writeDatagrams_sentByEndpoints_completionHandlerSelector :: Selector

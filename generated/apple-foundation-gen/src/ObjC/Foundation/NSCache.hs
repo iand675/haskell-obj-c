@@ -13,6 +13,8 @@ module ObjC.Foundation.NSCache
   , removeAllObjects
   , name
   , setName
+  , delegate
+  , setDelegate
   , totalCostLimit
   , setTotalCostLimit
   , countLimit
@@ -26,6 +28,8 @@ module ObjC.Foundation.NSCache
   , removeAllObjectsSelector
   , nameSelector
   , setNameSelector
+  , delegateSelector
+  , setDelegateSelector
   , totalCostLimitSelector
   , setTotalCostLimitSelector
   , countLimitSelector
@@ -85,6 +89,16 @@ setName :: (IsNSCache nsCache, IsNSString value) => nsCache -> value -> IO ()
 setName nsCache  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsCache (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- delegate@
+delegate :: IsNSCache nsCache => nsCache -> IO RawId
+delegate nsCache  =
+    fmap (RawId . castPtr) $ sendMsg nsCache (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSCache nsCache => nsCache -> RawId -> IO ()
+setDelegate nsCache  value =
+    sendMsg nsCache (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- totalCostLimit@
 totalCostLimit :: IsNSCache nsCache => nsCache -> IO CULong
@@ -147,6 +161,14 @@ nameSelector = mkSelector "name"
 -- | @Selector@ for @setName:@
 setNameSelector :: Selector
 setNameSelector = mkSelector "setName:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @totalCostLimit@
 totalCostLimitSelector :: Selector

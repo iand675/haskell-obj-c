@@ -16,9 +16,11 @@ module ObjC.AVFoundation.AVPlayerItemMetadataCollector
   , IsAVPlayerItemMetadataCollector(..)
   , initWithIdentifiers_classifyingLabels
   , setDelegate_queue
+  , delegate
   , delegateQueue
   , initWithIdentifiers_classifyingLabelsSelector
   , setDelegate_queueSelector
+  , delegateSelector
   , delegateQueueSelector
 
 
@@ -72,6 +74,17 @@ setDelegate_queue avPlayerItemMetadataCollector  delegate delegateQueue =
   withObjCPtr delegateQueue $ \raw_delegateQueue ->
       sendMsg avPlayerItemMetadataCollector (mkSelector "setDelegate:queue:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_delegateQueue :: Ptr ())]
 
+-- | delegate
+--
+-- The receiver's delegate.
+--
+-- The delegate is held using a zeroing-weak reference, so this property will have a value of nil after a delegate that was previously set has been deallocated.  This property is not key-value observable.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsAVPlayerItemMetadataCollector avPlayerItemMetadataCollector => avPlayerItemMetadataCollector -> IO RawId
+delegate avPlayerItemMetadataCollector  =
+    fmap (RawId . castPtr) $ sendMsg avPlayerItemMetadataCollector (mkSelector "delegate") (retPtr retVoid) []
+
 -- | delegateQueue
 --
 -- The dispatch queue on which messages are sent to the delegate.
@@ -94,6 +107,10 @@ initWithIdentifiers_classifyingLabelsSelector = mkSelector "initWithIdentifiers:
 -- | @Selector@ for @setDelegate:queue:@
 setDelegate_queueSelector :: Selector
 setDelegate_queueSelector = mkSelector "setDelegate:queue:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @delegateQueue@
 delegateQueueSelector :: Selector

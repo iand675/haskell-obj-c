@@ -9,12 +9,16 @@ module ObjC.MultipeerConnectivity.MCAdvertiserAssistant
   , initWithServiceType_discoveryInfo_session
   , start
   , stop
+  , delegate
+  , setDelegate
   , session
   , discoveryInfo
   , serviceType
   , initWithServiceType_discoveryInfo_sessionSelector
   , startSelector
   , stopSelector
+  , delegateSelector
+  , setDelegateSelector
   , sessionSelector
   , discoveryInfoSelector
   , serviceTypeSelector
@@ -55,6 +59,16 @@ stop :: IsMCAdvertiserAssistant mcAdvertiserAssistant => mcAdvertiserAssistant -
 stop mcAdvertiserAssistant  =
     sendMsg mcAdvertiserAssistant (mkSelector "stop") retVoid []
 
+-- | @- delegate@
+delegate :: IsMCAdvertiserAssistant mcAdvertiserAssistant => mcAdvertiserAssistant -> IO RawId
+delegate mcAdvertiserAssistant  =
+    fmap (RawId . castPtr) $ sendMsg mcAdvertiserAssistant (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsMCAdvertiserAssistant mcAdvertiserAssistant => mcAdvertiserAssistant -> RawId -> IO ()
+setDelegate mcAdvertiserAssistant  value =
+    sendMsg mcAdvertiserAssistant (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- session@
 session :: IsMCAdvertiserAssistant mcAdvertiserAssistant => mcAdvertiserAssistant -> IO (Id MCSession)
 session mcAdvertiserAssistant  =
@@ -85,6 +99,14 @@ startSelector = mkSelector "start"
 -- | @Selector@ for @stop@
 stopSelector :: Selector
 stopSelector = mkSelector "stop"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @session@
 sessionSelector :: Selector

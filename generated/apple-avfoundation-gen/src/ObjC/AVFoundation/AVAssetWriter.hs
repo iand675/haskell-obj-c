@@ -41,9 +41,14 @@ module ObjC.AVFoundation.AVAssetWriter
   , setMetadata
   , shouldOptimizeForNetworkUse
   , setShouldOptimizeForNetworkUse
+  , directoryForTemporaryFiles
+  , setDirectoryForTemporaryFiles
   , inputs
   , outputFileTypeProfile
   , setOutputFileTypeProfile
+  , delegate
+  , setDelegate
+  , inputGroups
   , initialMovieFragmentSequenceNumber
   , setInitialMovieFragmentSequenceNumber
   , producesCombinableFragments
@@ -74,9 +79,14 @@ module ObjC.AVFoundation.AVAssetWriter
   , setMetadataSelector
   , shouldOptimizeForNetworkUseSelector
   , setShouldOptimizeForNetworkUseSelector
+  , directoryForTemporaryFilesSelector
+  , setDirectoryForTemporaryFilesSelector
   , inputsSelector
   , outputFileTypeProfileSelector
   , setOutputFileTypeProfileSelector
+  , delegateSelector
+  , setDelegateSelector
+  , inputGroupsSelector
   , initialMovieFragmentSequenceNumberSelector
   , setInitialMovieFragmentSequenceNumberSelector
   , producesCombinableFragmentsSelector
@@ -459,6 +469,37 @@ setShouldOptimizeForNetworkUse :: IsAVAssetWriter avAssetWriter => avAssetWriter
 setShouldOptimizeForNetworkUse avAssetWriter  value =
     sendMsg avAssetWriter (mkSelector "setShouldOptimizeForNetworkUse:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | directoryForTemporaryFiles
+--
+-- Specifies a directory that is suitable for containing temporary files generated during the process of writing an asset.
+--
+-- AVAssetWriter may need to write temporary files when configured in certain ways, such as when performsMultiPassEncodingIfSupported is set to YES on one or more of its inputs.  This property can be used to control where in the filesystem those temporary files are created.  All temporary files will be deleted when asset writing is completed, is canceled, or fails.
+--
+-- When the value of this property is nil, the asset writer will choose a suitable location when writing temporary files.  The default value is nil.
+--
+-- This property cannot be set after writing has started.  The asset writer will fail if a file cannot be created in this directory (for example, due to insufficient permissions).
+--
+-- ObjC selector: @- directoryForTemporaryFiles@
+directoryForTemporaryFiles :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO (Id NSURL)
+directoryForTemporaryFiles avAssetWriter  =
+    sendMsg avAssetWriter (mkSelector "directoryForTemporaryFiles") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | directoryForTemporaryFiles
+--
+-- Specifies a directory that is suitable for containing temporary files generated during the process of writing an asset.
+--
+-- AVAssetWriter may need to write temporary files when configured in certain ways, such as when performsMultiPassEncodingIfSupported is set to YES on one or more of its inputs.  This property can be used to control where in the filesystem those temporary files are created.  All temporary files will be deleted when asset writing is completed, is canceled, or fails.
+--
+-- When the value of this property is nil, the asset writer will choose a suitable location when writing temporary files.  The default value is nil.
+--
+-- This property cannot be set after writing has started.  The asset writer will fail if a file cannot be created in this directory (for example, due to insufficient permissions).
+--
+-- ObjC selector: @- setDirectoryForTemporaryFiles:@
+setDirectoryForTemporaryFiles :: (IsAVAssetWriter avAssetWriter, IsNSURL value) => avAssetWriter -> value -> IO ()
+setDirectoryForTemporaryFiles avAssetWriter  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avAssetWriter (mkSelector "setDirectoryForTemporaryFiles:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | inputs
 --
 -- The inputs from which the asset writer receives media data.
@@ -504,6 +545,39 @@ setOutputFileTypeProfile :: (IsAVAssetWriter avAssetWriter, IsNSString value) =>
 setOutputFileTypeProfile avAssetWriter  value =
   withObjCPtr value $ \raw_value ->
       sendMsg avAssetWriter (mkSelector "setOutputFileTypeProfile:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | delegate
+--
+-- An object that implements one or more of the methods in the AVAssetWriterDelegate protocol.
+--
+-- This property cannot be set after writing has started.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO RawId
+delegate avAssetWriter  =
+    fmap (RawId . castPtr) $ sendMsg avAssetWriter (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- An object that implements one or more of the methods in the AVAssetWriterDelegate protocol.
+--
+-- This property cannot be set after writing has started.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsAVAssetWriter avAssetWriter => avAssetWriter -> RawId -> IO ()
+setDelegate avAssetWriter  value =
+    sendMsg avAssetWriter (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | inputGroups
+--
+-- The instances of AVAssetWriterInputGroup that have been added to the AVAssetWriter.
+--
+-- The value of this property is an NSArray containing concrete instances of AVAssetWriterInputGroup.  Input groups can be added to the receiver using the addInputGroup: method.
+--
+-- ObjC selector: @- inputGroups@
+inputGroups :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO (Id NSArray)
+inputGroups avAssetWriter  =
+    sendMsg avAssetWriter (mkSelector "inputGroups") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | initialMovieFragmentSequenceNumber
 --
@@ -695,6 +769,14 @@ shouldOptimizeForNetworkUseSelector = mkSelector "shouldOptimizeForNetworkUse"
 setShouldOptimizeForNetworkUseSelector :: Selector
 setShouldOptimizeForNetworkUseSelector = mkSelector "setShouldOptimizeForNetworkUse:"
 
+-- | @Selector@ for @directoryForTemporaryFiles@
+directoryForTemporaryFilesSelector :: Selector
+directoryForTemporaryFilesSelector = mkSelector "directoryForTemporaryFiles"
+
+-- | @Selector@ for @setDirectoryForTemporaryFiles:@
+setDirectoryForTemporaryFilesSelector :: Selector
+setDirectoryForTemporaryFilesSelector = mkSelector "setDirectoryForTemporaryFiles:"
+
 -- | @Selector@ for @inputs@
 inputsSelector :: Selector
 inputsSelector = mkSelector "inputs"
@@ -706,6 +788,18 @@ outputFileTypeProfileSelector = mkSelector "outputFileTypeProfile"
 -- | @Selector@ for @setOutputFileTypeProfile:@
 setOutputFileTypeProfileSelector :: Selector
 setOutputFileTypeProfileSelector = mkSelector "setOutputFileTypeProfile:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @inputGroups@
+inputGroupsSelector :: Selector
+inputGroupsSelector = mkSelector "inputGroups"
 
 -- | @Selector@ for @initialMovieFragmentSequenceNumber@
 initialMovieFragmentSequenceNumberSelector :: Selector

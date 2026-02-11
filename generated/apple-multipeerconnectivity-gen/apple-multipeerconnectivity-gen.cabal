@@ -12,6 +12,11 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.MultipeerConnectivity.Delegate.MCAdvertiserAssistantDelegate
+      ObjC.MultipeerConnectivity.Delegate.MCBrowserViewControllerDelegate
+      ObjC.MultipeerConnectivity.Delegate.MCNearbyServiceAdvertiserDelegate
+      ObjC.MultipeerConnectivity.Delegate.MCNearbyServiceBrowserDelegate
+      ObjC.MultipeerConnectivity.Delegate.MCSessionDelegate
       ObjC.MultipeerConnectivity.Enums
       ObjC.MultipeerConnectivity.Internal.Classes
       ObjC.MultipeerConnectivity.Internal.Enums

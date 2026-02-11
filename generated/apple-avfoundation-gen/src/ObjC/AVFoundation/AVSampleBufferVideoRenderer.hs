@@ -15,6 +15,7 @@ module ObjC.AVFoundation.AVSampleBufferVideoRenderer
   , status
   , error_
   , requiresFlushToResumeDecoding
+  , recommendedPixelBufferAttributes
   , flushWithRemovalOfDisplayedImage_completionHandlerSelector
   , loadVideoPerformanceMetricsWithCompletionHandlerSelector
   , expectMonotonicallyIncreasingUpcomingSampleBufferPresentationTimesSelector
@@ -23,6 +24,7 @@ module ObjC.AVFoundation.AVSampleBufferVideoRenderer
   , statusSelector
   , errorSelector
   , requiresFlushToResumeDecodingSelector
+  , recommendedPixelBufferAttributesSelector
 
   -- * Enum types
   , AVQueuedSampleBufferRenderingStatus(AVQueuedSampleBufferRenderingStatus)
@@ -144,6 +146,17 @@ requiresFlushToResumeDecoding :: IsAVSampleBufferVideoRenderer avSampleBufferVid
 requiresFlushToResumeDecoding avSampleBufferVideoRenderer  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSampleBufferVideoRenderer (mkSelector "requiresFlushToResumeDecoding") retCULong []
 
+-- | recommendedPixelBufferAttributes
+--
+-- Recommended pixel buffer attributes for optimal performance when using CMSampleBuffers containing CVPixelBuffers.
+--
+-- The returned dictionary does not contain all of the attributes needed for creating pixel buffers.					Use ``CVPixelBufferCreateResolvedAttributesDictionary()`` to reconcile these attributes with the pixel buffer creation attributes.
+--
+-- ObjC selector: @- recommendedPixelBufferAttributes@
+recommendedPixelBufferAttributes :: IsAVSampleBufferVideoRenderer avSampleBufferVideoRenderer => avSampleBufferVideoRenderer -> IO (Id NSDictionary)
+recommendedPixelBufferAttributes avSampleBufferVideoRenderer  =
+    sendMsg avSampleBufferVideoRenderer (mkSelector "recommendedPixelBufferAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -179,4 +192,8 @@ errorSelector = mkSelector "error"
 -- | @Selector@ for @requiresFlushToResumeDecoding@
 requiresFlushToResumeDecodingSelector :: Selector
 requiresFlushToResumeDecodingSelector = mkSelector "requiresFlushToResumeDecoding"
+
+-- | @Selector@ for @recommendedPixelBufferAttributes@
+recommendedPixelBufferAttributesSelector :: Selector
+recommendedPixelBufferAttributesSelector = mkSelector "recommendedPixelBufferAttributes"
 

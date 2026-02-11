@@ -12,10 +12,12 @@ module ObjC.PhotosUI.PHProjectMapElement
   , heading
   , pitch
   , altitude
+  , annotations
   , mapTypeSelector
   , headingSelector
   , pitchSelector
   , altitudeSelector
+  , annotationsSelector
 
 
   ) where
@@ -57,6 +59,11 @@ altitude :: IsPHProjectMapElement phProjectMapElement => phProjectMapElement -> 
 altitude phProjectMapElement  =
     sendMsg phProjectMapElement (mkSelector "altitude") retCDouble []
 
+-- | @- annotations@
+annotations :: IsPHProjectMapElement phProjectMapElement => phProjectMapElement -> IO (Id NSArray)
+annotations phProjectMapElement  =
+    sendMsg phProjectMapElement (mkSelector "annotations") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -76,4 +83,8 @@ pitchSelector = mkSelector "pitch"
 -- | @Selector@ for @altitude@
 altitudeSelector :: Selector
 altitudeSelector = mkSelector "altitude"
+
+-- | @Selector@ for @annotations@
+annotationsSelector :: Selector
+annotationsSelector = mkSelector "annotations"
 

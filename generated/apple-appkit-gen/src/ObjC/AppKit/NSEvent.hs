@@ -29,6 +29,7 @@ module ObjC.AppKit.NSEvent
   , timestamp
   , window
   , windowNumber
+  , context
   , clickCount
   , buttonNumber
   , eventNumber
@@ -47,9 +48,12 @@ module ObjC.AppKit.NSEvent
   , aRepeat
   , keyCode
   , trackingNumber
+  , userData
+  , trackingArea
   , subtype
   , data1
   , data2
+  , eventRef
   , cgEvent
   , mouseCoalescingEnabled
   , setMouseCoalescingEnabled
@@ -107,6 +111,7 @@ module ObjC.AppKit.NSEvent
   , timestampSelector
   , windowSelector
   , windowNumberSelector
+  , contextSelector
   , clickCountSelector
   , buttonNumberSelector
   , eventNumberSelector
@@ -125,9 +130,12 @@ module ObjC.AppKit.NSEvent
   , aRepeatSelector
   , keyCodeSelector
   , trackingNumberSelector
+  , userDataSelector
+  , trackingAreaSelector
   , subtypeSelector
   , data1Selector
   , data2Selector
+  , eventRefSelector
   , cgEventSelector
   , mouseCoalescingEnabledSelector
   , setMouseCoalescingEnabledSelector
@@ -454,6 +462,11 @@ windowNumber :: IsNSEvent nsEvent => nsEvent -> IO CLong
 windowNumber nsEvent  =
     sendMsg nsEvent (mkSelector "windowNumber") retCLong []
 
+-- | @- context@
+context :: IsNSEvent nsEvent => nsEvent -> IO (Id NSGraphicsContext)
+context nsEvent  =
+    sendMsg nsEvent (mkSelector "context") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- clickCount@
 clickCount :: IsNSEvent nsEvent => nsEvent -> IO CLong
 clickCount nsEvent  =
@@ -544,6 +557,16 @@ trackingNumber :: IsNSEvent nsEvent => nsEvent -> IO CLong
 trackingNumber nsEvent  =
     sendMsg nsEvent (mkSelector "trackingNumber") retCLong []
 
+-- | @- userData@
+userData :: IsNSEvent nsEvent => nsEvent -> IO (Ptr ())
+userData nsEvent  =
+    fmap castPtr $ sendMsg nsEvent (mkSelector "userData") (retPtr retVoid) []
+
+-- | @- trackingArea@
+trackingArea :: IsNSEvent nsEvent => nsEvent -> IO (Id NSTrackingArea)
+trackingArea nsEvent  =
+    sendMsg nsEvent (mkSelector "trackingArea") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- subtype@
 subtype :: IsNSEvent nsEvent => nsEvent -> IO NSEventSubtype
 subtype nsEvent  =
@@ -558,6 +581,11 @@ data1 nsEvent  =
 data2 :: IsNSEvent nsEvent => nsEvent -> IO CLong
 data2 nsEvent  =
     sendMsg nsEvent (mkSelector "data2") retCLong []
+
+-- | @- eventRef@
+eventRef :: IsNSEvent nsEvent => nsEvent -> IO RawId
+eventRef nsEvent  =
+    fmap (RawId . castPtr) $ sendMsg nsEvent (mkSelector "eventRef") (retPtr retVoid) []
 
 -- | @- CGEvent@
 cgEvent :: IsNSEvent nsEvent => nsEvent -> IO (Ptr ())
@@ -844,6 +872,10 @@ windowSelector = mkSelector "window"
 windowNumberSelector :: Selector
 windowNumberSelector = mkSelector "windowNumber"
 
+-- | @Selector@ for @context@
+contextSelector :: Selector
+contextSelector = mkSelector "context"
+
 -- | @Selector@ for @clickCount@
 clickCountSelector :: Selector
 clickCountSelector = mkSelector "clickCount"
@@ -916,6 +948,14 @@ keyCodeSelector = mkSelector "keyCode"
 trackingNumberSelector :: Selector
 trackingNumberSelector = mkSelector "trackingNumber"
 
+-- | @Selector@ for @userData@
+userDataSelector :: Selector
+userDataSelector = mkSelector "userData"
+
+-- | @Selector@ for @trackingArea@
+trackingAreaSelector :: Selector
+trackingAreaSelector = mkSelector "trackingArea"
+
 -- | @Selector@ for @subtype@
 subtypeSelector :: Selector
 subtypeSelector = mkSelector "subtype"
@@ -927,6 +967,10 @@ data1Selector = mkSelector "data1"
 -- | @Selector@ for @data2@
 data2Selector :: Selector
 data2Selector = mkSelector "data2"
+
+-- | @Selector@ for @eventRef@
+eventRefSelector :: Selector
+eventRefSelector = mkSelector "eventRef"
 
 -- | @Selector@ for @CGEvent@
 cgEventSelector :: Selector

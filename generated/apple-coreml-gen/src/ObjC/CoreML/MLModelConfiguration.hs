@@ -13,22 +13,30 @@ module ObjC.CoreML.MLModelConfiguration
   , setModelDisplayName
   , computeUnits
   , setComputeUnits
+  , optimizationHints
+  , setOptimizationHints
   , functionName
   , setFunctionName
   , parameters
   , setParameters
   , allowLowPrecisionAccumulationOnGPU
   , setAllowLowPrecisionAccumulationOnGPU
+  , preferredMetalDevice
+  , setPreferredMetalDevice
   , modelDisplayNameSelector
   , setModelDisplayNameSelector
   , computeUnitsSelector
   , setComputeUnitsSelector
+  , optimizationHintsSelector
+  , setOptimizationHintsSelector
   , functionNameSelector
   , setFunctionNameSelector
   , parametersSelector
   , setParametersSelector
   , allowLowPrecisionAccumulationOnGPUSelector
   , setAllowLowPrecisionAccumulationOnGPUSelector
+  , preferredMetalDeviceSelector
+  , setPreferredMetalDeviceSelector
 
   -- * Enum types
   , MLComputeUnits(MLComputeUnits)
@@ -92,6 +100,21 @@ setComputeUnits :: IsMLModelConfiguration mlModelConfiguration => mlModelConfigu
 setComputeUnits mlModelConfiguration  value =
     sendMsg mlModelConfiguration (mkSelector "setComputeUnits:") retVoid [argCLong (coerce value)]
 
+-- | A group of hints for CoreML to optimize
+--
+-- ObjC selector: @- optimizationHints@
+optimizationHints :: IsMLModelConfiguration mlModelConfiguration => mlModelConfiguration -> IO (Id MLOptimizationHints)
+optimizationHints mlModelConfiguration  =
+    sendMsg mlModelConfiguration (mkSelector "optimizationHints") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | A group of hints for CoreML to optimize
+--
+-- ObjC selector: @- setOptimizationHints:@
+setOptimizationHints :: (IsMLModelConfiguration mlModelConfiguration, IsMLOptimizationHints value) => mlModelConfiguration -> value -> IO ()
+setOptimizationHints mlModelConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mlModelConfiguration (mkSelector "setOptimizationHints:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | Function name that @MLModel@ will use.
 --
 -- Some model types (e.g. ML Program) supports multiple functions in a model asset, where each @MLModel@ instance is associated with a particular function.
@@ -144,6 +167,20 @@ setAllowLowPrecisionAccumulationOnGPU :: IsMLModelConfiguration mlModelConfigura
 setAllowLowPrecisionAccumulationOnGPU mlModelConfiguration  value =
     sendMsg mlModelConfiguration (mkSelector "setAllowLowPrecisionAccumulationOnGPU:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | Set to specify a preferred Metal device. Defaults to nil which indicates automatic selection
+--
+-- ObjC selector: @- preferredMetalDevice@
+preferredMetalDevice :: IsMLModelConfiguration mlModelConfiguration => mlModelConfiguration -> IO RawId
+preferredMetalDevice mlModelConfiguration  =
+    fmap (RawId . castPtr) $ sendMsg mlModelConfiguration (mkSelector "preferredMetalDevice") (retPtr retVoid) []
+
+-- | Set to specify a preferred Metal device. Defaults to nil which indicates automatic selection
+--
+-- ObjC selector: @- setPreferredMetalDevice:@
+setPreferredMetalDevice :: IsMLModelConfiguration mlModelConfiguration => mlModelConfiguration -> RawId -> IO ()
+setPreferredMetalDevice mlModelConfiguration  value =
+    sendMsg mlModelConfiguration (mkSelector "setPreferredMetalDevice:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -163,6 +200,14 @@ computeUnitsSelector = mkSelector "computeUnits"
 -- | @Selector@ for @setComputeUnits:@
 setComputeUnitsSelector :: Selector
 setComputeUnitsSelector = mkSelector "setComputeUnits:"
+
+-- | @Selector@ for @optimizationHints@
+optimizationHintsSelector :: Selector
+optimizationHintsSelector = mkSelector "optimizationHints"
+
+-- | @Selector@ for @setOptimizationHints:@
+setOptimizationHintsSelector :: Selector
+setOptimizationHintsSelector = mkSelector "setOptimizationHints:"
 
 -- | @Selector@ for @functionName@
 functionNameSelector :: Selector
@@ -187,4 +232,12 @@ allowLowPrecisionAccumulationOnGPUSelector = mkSelector "allowLowPrecisionAccumu
 -- | @Selector@ for @setAllowLowPrecisionAccumulationOnGPU:@
 setAllowLowPrecisionAccumulationOnGPUSelector :: Selector
 setAllowLowPrecisionAccumulationOnGPUSelector = mkSelector "setAllowLowPrecisionAccumulationOnGPU:"
+
+-- | @Selector@ for @preferredMetalDevice@
+preferredMetalDeviceSelector :: Selector
+preferredMetalDeviceSelector = mkSelector "preferredMetalDevice"
+
+-- | @Selector@ for @setPreferredMetalDevice:@
+setPreferredMetalDeviceSelector :: Selector
+setPreferredMetalDeviceSelector = mkSelector "setPreferredMetalDevice:"
 

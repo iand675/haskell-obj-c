@@ -8,9 +8,11 @@ module ObjC.FileProvider.NSFileProviderRequest
   , IsNSFileProviderRequest(..)
   , isSystemRequest
   , isFileViewerRequest
+  , requestingExecutable
   , domainVersion
   , isSystemRequestSelector
   , isFileViewerRequestSelector
+  , requestingExecutableSelector
   , domainVersionSelector
 
 
@@ -53,6 +55,13 @@ isFileViewerRequest :: IsNSFileProviderRequest nsFileProviderRequest => nsFilePr
 isFileViewerRequest nsFileProviderRequest  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileProviderRequest (mkSelector "isFileViewerRequest") retCULong []
 
+-- | The URL of the requesting executable. This will always be nil unless both an MDM profile key is set, and the provider's application is installed by an MDM profile.
+--
+-- ObjC selector: @- requestingExecutable@
+requestingExecutable :: IsNSFileProviderRequest nsFileProviderRequest => nsFileProviderRequest -> IO (Id NSURL)
+requestingExecutable nsFileProviderRequest  =
+    sendMsg nsFileProviderRequest (mkSelector "requestingExecutable") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | The version of the domain when the event that triggered the request was observed.
 --
 -- If the extension doesn't implement the NSFileProviderDomainState protocol, this will be nil.
@@ -73,6 +82,10 @@ isSystemRequestSelector = mkSelector "isSystemRequest"
 -- | @Selector@ for @isFileViewerRequest@
 isFileViewerRequestSelector :: Selector
 isFileViewerRequestSelector = mkSelector "isFileViewerRequest"
+
+-- | @Selector@ for @requestingExecutable@
+requestingExecutableSelector :: Selector
+requestingExecutableSelector = mkSelector "requestingExecutable"
 
 -- | @Selector@ for @domainVersion@
 domainVersionSelector :: Selector

@@ -12,6 +12,10 @@ module ObjC.MediaPlayer.MPPlayableContentManager
   , reloadData
   , beginUpdates
   , endUpdates
+  , dataSource
+  , setDataSource
+  , delegate
+  , setDelegate
   , context
   , nowPlayingIdentifiers
   , setNowPlayingIdentifiers
@@ -19,6 +23,10 @@ module ObjC.MediaPlayer.MPPlayableContentManager
   , reloadDataSelector
   , beginUpdatesSelector
   , endUpdatesSelector
+  , dataSourceSelector
+  , setDataSourceSelector
+  , delegateSelector
+  , setDelegateSelector
   , contextSelector
   , nowPlayingIdentifiersSelector
   , setNowPlayingIdentifiersSelector
@@ -71,6 +79,26 @@ endUpdates :: IsMPPlayableContentManager mpPlayableContentManager => mpPlayableC
 endUpdates mpPlayableContentManager  =
     sendMsg mpPlayableContentManager (mkSelector "endUpdates") retVoid []
 
+-- | @- dataSource@
+dataSource :: IsMPPlayableContentManager mpPlayableContentManager => mpPlayableContentManager -> IO RawId
+dataSource mpPlayableContentManager  =
+    fmap (RawId . castPtr) $ sendMsg mpPlayableContentManager (mkSelector "dataSource") (retPtr retVoid) []
+
+-- | @- setDataSource:@
+setDataSource :: IsMPPlayableContentManager mpPlayableContentManager => mpPlayableContentManager -> RawId -> IO ()
+setDataSource mpPlayableContentManager  value =
+    sendMsg mpPlayableContentManager (mkSelector "setDataSource:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- delegate@
+delegate :: IsMPPlayableContentManager mpPlayableContentManager => mpPlayableContentManager -> IO RawId
+delegate mpPlayableContentManager  =
+    fmap (RawId . castPtr) $ sendMsg mpPlayableContentManager (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsMPPlayableContentManager mpPlayableContentManager => mpPlayableContentManager -> RawId -> IO ()
+setDelegate mpPlayableContentManager  value =
+    sendMsg mpPlayableContentManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- context@
 context :: IsMPPlayableContentManager mpPlayableContentManager => mpPlayableContentManager -> IO (Id MPPlayableContentManagerContext)
 context mpPlayableContentManager  =
@@ -110,6 +138,22 @@ beginUpdatesSelector = mkSelector "beginUpdates"
 -- | @Selector@ for @endUpdates@
 endUpdatesSelector :: Selector
 endUpdatesSelector = mkSelector "endUpdates"
+
+-- | @Selector@ for @dataSource@
+dataSourceSelector :: Selector
+dataSourceSelector = mkSelector "dataSource"
+
+-- | @Selector@ for @setDataSource:@
+setDataSourceSelector :: Selector
+setDataSourceSelector = mkSelector "setDataSource:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @context@
 contextSelector :: Selector

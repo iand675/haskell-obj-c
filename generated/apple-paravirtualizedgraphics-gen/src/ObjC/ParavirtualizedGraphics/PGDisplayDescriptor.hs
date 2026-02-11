@@ -12,6 +12,8 @@
 module ObjC.ParavirtualizedGraphics.PGDisplayDescriptor
   ( PGDisplayDescriptor
   , IsPGDisplayDescriptor(..)
+  , name
+  , setName
   , sizeInMillimeters
   , setSizeInMillimeters
   , queue
@@ -26,6 +28,8 @@ module ObjC.ParavirtualizedGraphics.PGDisplayDescriptor
   , setCursorShowHandler
   , cursorMoveHandler
   , setCursorMoveHandler
+  , nameSelector
+  , setNameSelector
   , sizeInMillimetersSelector
   , setSizeInMillimetersSelector
   , queueSelector
@@ -59,6 +63,29 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.ParavirtualizedGraphics.Internal.Classes
 import ObjC.Foundation.Internal.Structs
 import ObjC.Foundation.Internal.Classes
+
+-- | name
+--
+-- Client supplied name of display, as seen by guest.
+--
+-- Truncates to 13 characters.  Defaults to "Apple Virtual".  Value provided here may be made visible via guest UI.
+--
+-- ObjC selector: @- name@
+name :: IsPGDisplayDescriptor pgDisplayDescriptor => pgDisplayDescriptor -> IO (Id NSString)
+name pgDisplayDescriptor  =
+    sendMsg pgDisplayDescriptor (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | name
+--
+-- Client supplied name of display, as seen by guest.
+--
+-- Truncates to 13 characters.  Defaults to "Apple Virtual".  Value provided here may be made visible via guest UI.
+--
+-- ObjC selector: @- setName:@
+setName :: (IsPGDisplayDescriptor pgDisplayDescriptor, IsNSString value) => pgDisplayDescriptor -> value -> IO ()
+setName pgDisplayDescriptor  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg pgDisplayDescriptor (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | sizeInMillimeters
 --
@@ -218,6 +245,14 @@ setCursorMoveHandler pgDisplayDescriptor  value =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @name@
+nameSelector :: Selector
+nameSelector = mkSelector "name"
+
+-- | @Selector@ for @setName:@
+setNameSelector :: Selector
+setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @sizeInMillimeters@
 sizeInMillimetersSelector :: Selector

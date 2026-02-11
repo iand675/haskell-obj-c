@@ -18,6 +18,7 @@ module ObjC.NetworkExtension.NEAppPushProvider
   , reportPushToTalkMessageWithUserInfo
   , handleTimerEvent
   , unmatchEthernet
+  , providerConfiguration
   , startWithCompletionHandlerSelector
   , startSelector
   , stopWithReason_completionHandlerSelector
@@ -25,6 +26,7 @@ module ObjC.NetworkExtension.NEAppPushProvider
   , reportPushToTalkMessageWithUserInfoSelector
   , handleTimerEventSelector
   , unmatchEthernetSelector
+  , providerConfigurationSelector
 
   -- * Enum types
   , NEProviderStopReason(NEProviderStopReason)
@@ -140,6 +142,15 @@ unmatchEthernet :: IsNEAppPushProvider neAppPushProvider => neAppPushProvider ->
 unmatchEthernet neAppPushProvider  =
     sendMsg neAppPushProvider (mkSelector "unmatchEthernet") retVoid []
 
+-- | providerConfiguration
+--
+-- A dictionary containing current vendor-specific configuration parameters. This dictionary is provided by NEAppPushManager. Use KVO to watch for changes.
+--
+-- ObjC selector: @- providerConfiguration@
+providerConfiguration :: IsNEAppPushProvider neAppPushProvider => neAppPushProvider -> IO (Id NSDictionary)
+providerConfiguration neAppPushProvider  =
+    sendMsg neAppPushProvider (mkSelector "providerConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -171,4 +182,8 @@ handleTimerEventSelector = mkSelector "handleTimerEvent"
 -- | @Selector@ for @unmatchEthernet@
 unmatchEthernetSelector :: Selector
 unmatchEthernetSelector = mkSelector "unmatchEthernet"
+
+-- | @Selector@ for @providerConfiguration@
+providerConfigurationSelector :: Selector
+providerConfigurationSelector = mkSelector "providerConfiguration"
 

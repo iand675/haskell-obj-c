@@ -22,12 +22,14 @@ module ObjC.Speech.SFTranscriptionSegment
   , duration
   , confidence
   , alternativeSubstrings
+  , voiceAnalytics
   , substringSelector
   , substringRangeSelector
   , timestampSelector
   , durationSelector
   , confidenceSelector
   , alternativeSubstringsSelector
+  , voiceAnalyticsSelector
 
 
   ) where
@@ -98,6 +100,13 @@ alternativeSubstrings :: IsSFTranscriptionSegment sfTranscriptionSegment => sfTr
 alternativeSubstrings sfTranscriptionSegment  =
     sendMsg sfTranscriptionSegment (mkSelector "alternativeSubstrings") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | An analysis of the transcription segment's vocal properties.
+--
+-- ObjC selector: @- voiceAnalytics@
+voiceAnalytics :: IsSFTranscriptionSegment sfTranscriptionSegment => sfTranscriptionSegment -> IO RawId
+voiceAnalytics sfTranscriptionSegment  =
+    fmap (RawId . castPtr) $ sendMsg sfTranscriptionSegment (mkSelector "voiceAnalytics") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -125,4 +134,8 @@ confidenceSelector = mkSelector "confidence"
 -- | @Selector@ for @alternativeSubstrings@
 alternativeSubstringsSelector :: Selector
 alternativeSubstringsSelector = mkSelector "alternativeSubstrings"
+
+-- | @Selector@ for @voiceAnalytics@
+voiceAnalyticsSelector :: Selector
+voiceAnalyticsSelector = mkSelector "voiceAnalytics"
 

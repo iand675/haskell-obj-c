@@ -72,6 +72,8 @@ module ObjC.AppKit.NSBrowser
   , setDoubleAction
   , cellPrototype
   , setCellPrototype
+  , delegate
+  , setDelegate
   , reusesColumns
   , setReusesColumns
   , hasHorizontalScroller
@@ -103,6 +105,10 @@ module ObjC.AppKit.NSBrowser
   , selectedColumn
   , selectedCell
   , selectedCells
+  , selectionIndexPath
+  , setSelectionIndexPath
+  , selectionIndexPaths
+  , setSelectionIndexPaths
   , lastColumn
   , setLastColumn
   , numberOfVisibleColumns
@@ -119,6 +125,8 @@ module ObjC.AppKit.NSBrowser
   , setColumnsAutosaveName
   , allowsTypeSelect
   , setAllowsTypeSelect
+  , backgroundColor
+  , setBackgroundColor
   , loadColumnZeroSelector
   , setCellClassSelector
   , itemAtIndexPathSelector
@@ -184,6 +192,8 @@ module ObjC.AppKit.NSBrowser
   , setDoubleActionSelector
   , cellPrototypeSelector
   , setCellPrototypeSelector
+  , delegateSelector
+  , setDelegateSelector
   , reusesColumnsSelector
   , setReusesColumnsSelector
   , hasHorizontalScrollerSelector
@@ -215,6 +225,10 @@ module ObjC.AppKit.NSBrowser
   , selectedColumnSelector
   , selectedCellSelector
   , selectedCellsSelector
+  , selectionIndexPathSelector
+  , setSelectionIndexPathSelector
+  , selectionIndexPathsSelector
+  , setSelectionIndexPathsSelector
   , lastColumnSelector
   , setLastColumnSelector
   , numberOfVisibleColumnsSelector
@@ -231,6 +245,8 @@ module ObjC.AppKit.NSBrowser
   , setColumnsAutosaveNameSelector
   , allowsTypeSelectSelector
   , setAllowsTypeSelectSelector
+  , backgroundColorSelector
+  , setBackgroundColorSelector
 
   -- * Enum types
   , NSBrowserColumnResizingType(NSBrowserColumnResizingType)
@@ -612,6 +628,16 @@ setCellPrototype :: IsNSBrowser nsBrowser => nsBrowser -> RawId -> IO ()
 setCellPrototype nsBrowser  value =
     sendMsg nsBrowser (mkSelector "setCellPrototype:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsNSBrowser nsBrowser => nsBrowser -> IO RawId
+delegate nsBrowser  =
+    fmap (RawId . castPtr) $ sendMsg nsBrowser (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSBrowser nsBrowser => nsBrowser -> RawId -> IO ()
+setDelegate nsBrowser  value =
+    sendMsg nsBrowser (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- reusesColumns@
 reusesColumns :: IsNSBrowser nsBrowser => nsBrowser -> IO Bool
 reusesColumns nsBrowser  =
@@ -768,6 +794,28 @@ selectedCells :: IsNSBrowser nsBrowser => nsBrowser -> IO (Id NSArray)
 selectedCells nsBrowser  =
     sendMsg nsBrowser (mkSelector "selectedCells") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- selectionIndexPath@
+selectionIndexPath :: IsNSBrowser nsBrowser => nsBrowser -> IO (Id NSIndexPath)
+selectionIndexPath nsBrowser  =
+    sendMsg nsBrowser (mkSelector "selectionIndexPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setSelectionIndexPath:@
+setSelectionIndexPath :: (IsNSBrowser nsBrowser, IsNSIndexPath value) => nsBrowser -> value -> IO ()
+setSelectionIndexPath nsBrowser  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsBrowser (mkSelector "setSelectionIndexPath:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- selectionIndexPaths@
+selectionIndexPaths :: IsNSBrowser nsBrowser => nsBrowser -> IO (Id NSArray)
+selectionIndexPaths nsBrowser  =
+    sendMsg nsBrowser (mkSelector "selectionIndexPaths") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setSelectionIndexPaths:@
+setSelectionIndexPaths :: (IsNSBrowser nsBrowser, IsNSArray value) => nsBrowser -> value -> IO ()
+setSelectionIndexPaths nsBrowser  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsBrowser (mkSelector "setSelectionIndexPaths:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- lastColumn@
 lastColumn :: IsNSBrowser nsBrowser => nsBrowser -> IO CLong
 lastColumn nsBrowser  =
@@ -848,6 +896,17 @@ allowsTypeSelect nsBrowser  =
 setAllowsTypeSelect :: IsNSBrowser nsBrowser => nsBrowser -> Bool -> IO ()
 setAllowsTypeSelect nsBrowser  value =
     sendMsg nsBrowser (mkSelector "setAllowsTypeSelect:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | @- backgroundColor@
+backgroundColor :: IsNSBrowser nsBrowser => nsBrowser -> IO (Id NSColor)
+backgroundColor nsBrowser  =
+    sendMsg nsBrowser (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setBackgroundColor:@
+setBackgroundColor :: (IsNSBrowser nsBrowser, IsNSColor value) => nsBrowser -> value -> IO ()
+setBackgroundColor nsBrowser  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsBrowser (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -1113,6 +1172,14 @@ cellPrototypeSelector = mkSelector "cellPrototype"
 setCellPrototypeSelector :: Selector
 setCellPrototypeSelector = mkSelector "setCellPrototype:"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @reusesColumns@
 reusesColumnsSelector :: Selector
 reusesColumnsSelector = mkSelector "reusesColumns"
@@ -1237,6 +1304,22 @@ selectedCellSelector = mkSelector "selectedCell"
 selectedCellsSelector :: Selector
 selectedCellsSelector = mkSelector "selectedCells"
 
+-- | @Selector@ for @selectionIndexPath@
+selectionIndexPathSelector :: Selector
+selectionIndexPathSelector = mkSelector "selectionIndexPath"
+
+-- | @Selector@ for @setSelectionIndexPath:@
+setSelectionIndexPathSelector :: Selector
+setSelectionIndexPathSelector = mkSelector "setSelectionIndexPath:"
+
+-- | @Selector@ for @selectionIndexPaths@
+selectionIndexPathsSelector :: Selector
+selectionIndexPathsSelector = mkSelector "selectionIndexPaths"
+
+-- | @Selector@ for @setSelectionIndexPaths:@
+setSelectionIndexPathsSelector :: Selector
+setSelectionIndexPathsSelector = mkSelector "setSelectionIndexPaths:"
+
 -- | @Selector@ for @lastColumn@
 lastColumnSelector :: Selector
 lastColumnSelector = mkSelector "lastColumn"
@@ -1300,4 +1383,12 @@ allowsTypeSelectSelector = mkSelector "allowsTypeSelect"
 -- | @Selector@ for @setAllowsTypeSelect:@
 setAllowsTypeSelectSelector :: Selector
 setAllowsTypeSelectSelector = mkSelector "setAllowsTypeSelect:"
+
+-- | @Selector@ for @backgroundColor@
+backgroundColorSelector :: Selector
+backgroundColorSelector = mkSelector "backgroundColor"
+
+-- | @Selector@ for @setBackgroundColor:@
+setBackgroundColorSelector :: Selector
+setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 

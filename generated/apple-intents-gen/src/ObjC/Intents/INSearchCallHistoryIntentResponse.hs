@@ -10,9 +10,13 @@ module ObjC.Intents.INSearchCallHistoryIntentResponse
   , init_
   , initWithCode_userActivity
   , code
+  , callRecords
+  , setCallRecords
   , initSelector
   , initWithCode_userActivitySelector
   , codeSelector
+  , callRecordsSelector
+  , setCallRecordsSelector
 
   -- * Enum types
   , INSearchCallHistoryIntentResponseCode(INSearchCallHistoryIntentResponseCode)
@@ -59,6 +63,17 @@ code :: IsINSearchCallHistoryIntentResponse inSearchCallHistoryIntentResponse =>
 code inSearchCallHistoryIntentResponse  =
     fmap (coerce :: CLong -> INSearchCallHistoryIntentResponseCode) $ sendMsg inSearchCallHistoryIntentResponse (mkSelector "code") retCLong []
 
+-- | @- callRecords@
+callRecords :: IsINSearchCallHistoryIntentResponse inSearchCallHistoryIntentResponse => inSearchCallHistoryIntentResponse -> IO (Id NSArray)
+callRecords inSearchCallHistoryIntentResponse  =
+    sendMsg inSearchCallHistoryIntentResponse (mkSelector "callRecords") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setCallRecords:@
+setCallRecords :: (IsINSearchCallHistoryIntentResponse inSearchCallHistoryIntentResponse, IsNSArray value) => inSearchCallHistoryIntentResponse -> value -> IO ()
+setCallRecords inSearchCallHistoryIntentResponse  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg inSearchCallHistoryIntentResponse (mkSelector "setCallRecords:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -74,4 +89,12 @@ initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 -- | @Selector@ for @code@
 codeSelector :: Selector
 codeSelector = mkSelector "code"
+
+-- | @Selector@ for @callRecords@
+callRecordsSelector :: Selector
+callRecordsSelector = mkSelector "callRecords"
+
+-- | @Selector@ for @setCallRecords:@
+setCallRecordsSelector :: Selector
+setCallRecordsSelector = mkSelector "setCallRecords:"
 

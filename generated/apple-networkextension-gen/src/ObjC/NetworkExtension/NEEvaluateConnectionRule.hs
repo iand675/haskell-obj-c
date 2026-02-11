@@ -15,8 +15,18 @@ module ObjC.NetworkExtension.NEEvaluateConnectionRule
   , IsNEEvaluateConnectionRule(..)
   , initWithMatchDomains_andAction
   , action
+  , matchDomains
+  , useDNSServers
+  , setUseDNSServers
+  , probeURL
+  , setProbeURL
   , initWithMatchDomains_andActionSelector
   , actionSelector
+  , matchDomainsSelector
+  , useDNSServersSelector
+  , setUseDNSServersSelector
+  , probeURLSelector
+  , setProbeURLSelector
 
   -- * Enum types
   , NEEvaluateConnectionRuleAction(NEEvaluateConnectionRuleAction)
@@ -60,6 +70,53 @@ action :: IsNEEvaluateConnectionRule neEvaluateConnectionRule => neEvaluateConne
 action neEvaluateConnectionRule  =
     fmap (coerce :: CLong -> NEEvaluateConnectionRuleAction) $ sendMsg neEvaluateConnectionRule (mkSelector "action") retCLong []
 
+-- | matchDomains
+--
+-- An array of NSString objects. If the host name of the destination of the network connection being established shares a suffix with one of the strings in this array, then the rule matches.
+--
+-- ObjC selector: @- matchDomains@
+matchDomains :: IsNEEvaluateConnectionRule neEvaluateConnectionRule => neEvaluateConnectionRule -> IO (Id NSArray)
+matchDomains neEvaluateConnectionRule  =
+    sendMsg neEvaluateConnectionRule (mkSelector "matchDomains") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | useDNSServers
+--
+-- An array of NSString objects. If the rule matches the connection being established and the action is NEEvaluateConnectionRuleActionConnectIfNeeded, the DNS servers specified in this array are used to resolve the host name of the destination while evaluating connectivity to the destination. If the resolution fails for any reason, the VPN is started.
+--
+-- ObjC selector: @- useDNSServers@
+useDNSServers :: IsNEEvaluateConnectionRule neEvaluateConnectionRule => neEvaluateConnectionRule -> IO (Id NSArray)
+useDNSServers neEvaluateConnectionRule  =
+    sendMsg neEvaluateConnectionRule (mkSelector "useDNSServers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | useDNSServers
+--
+-- An array of NSString objects. If the rule matches the connection being established and the action is NEEvaluateConnectionRuleActionConnectIfNeeded, the DNS servers specified in this array are used to resolve the host name of the destination while evaluating connectivity to the destination. If the resolution fails for any reason, the VPN is started.
+--
+-- ObjC selector: @- setUseDNSServers:@
+setUseDNSServers :: (IsNEEvaluateConnectionRule neEvaluateConnectionRule, IsNSArray value) => neEvaluateConnectionRule -> value -> IO ()
+setUseDNSServers neEvaluateConnectionRule  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neEvaluateConnectionRule (mkSelector "setUseDNSServers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | probeURL
+--
+-- An HTTP or HTTPS URL. If the rule matches the connection being established and the action is NEEvaluateConnectionRuleActionConnectIfNeeded and a request sent to this URL results in a response with an HTTP response code other than 200, then the VPN is started.
+--
+-- ObjC selector: @- probeURL@
+probeURL :: IsNEEvaluateConnectionRule neEvaluateConnectionRule => neEvaluateConnectionRule -> IO (Id NSURL)
+probeURL neEvaluateConnectionRule  =
+    sendMsg neEvaluateConnectionRule (mkSelector "probeURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | probeURL
+--
+-- An HTTP or HTTPS URL. If the rule matches the connection being established and the action is NEEvaluateConnectionRuleActionConnectIfNeeded and a request sent to this URL results in a response with an HTTP response code other than 200, then the VPN is started.
+--
+-- ObjC selector: @- setProbeURL:@
+setProbeURL :: (IsNEEvaluateConnectionRule neEvaluateConnectionRule, IsNSURL value) => neEvaluateConnectionRule -> value -> IO ()
+setProbeURL neEvaluateConnectionRule  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neEvaluateConnectionRule (mkSelector "setProbeURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -71,4 +128,24 @@ initWithMatchDomains_andActionSelector = mkSelector "initWithMatchDomains:andAct
 -- | @Selector@ for @action@
 actionSelector :: Selector
 actionSelector = mkSelector "action"
+
+-- | @Selector@ for @matchDomains@
+matchDomainsSelector :: Selector
+matchDomainsSelector = mkSelector "matchDomains"
+
+-- | @Selector@ for @useDNSServers@
+useDNSServersSelector :: Selector
+useDNSServersSelector = mkSelector "useDNSServers"
+
+-- | @Selector@ for @setUseDNSServers:@
+setUseDNSServersSelector :: Selector
+setUseDNSServersSelector = mkSelector "setUseDNSServers:"
+
+-- | @Selector@ for @probeURL@
+probeURLSelector :: Selector
+probeURLSelector = mkSelector "probeURL"
+
+-- | @Selector@ for @setProbeURL:@
+setProbeURLSelector :: Selector
+setProbeURLSelector = mkSelector "setProbeURL:"
 

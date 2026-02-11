@@ -16,10 +16,12 @@ module ObjC.NetworkExtension.NEPacket
   ( NEPacket
   , IsNEPacket(..)
   , initWithData_protocolFamily
+  , data_
   , protocolFamily
   , direction
   , metadata
   , initWithData_protocolFamilySelector
+  , dataSelector
   , protocolFamilySelector
   , directionSelector
   , metadataSelector
@@ -62,6 +64,15 @@ initWithData_protocolFamily nePacket  data_ protocolFamily =
   withObjCPtr data_ $ \raw_data_ ->
       sendMsg nePacket (mkSelector "initWithData:protocolFamily:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argCUChar protocolFamily] >>= ownedObject . castPtr
 
+-- | data
+--
+-- The data content of the packet.
+--
+-- ObjC selector: @- data@
+data_ :: IsNEPacket nePacket => nePacket -> IO (Id NSData)
+data_ nePacket  =
+    sendMsg nePacket (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | protocolFamily
 --
 -- The protocol family of the packet (such as AF_INET or AF_INET6).
@@ -96,6 +107,10 @@ metadata nePacket  =
 -- | @Selector@ for @initWithData:protocolFamily:@
 initWithData_protocolFamilySelector :: Selector
 initWithData_protocolFamilySelector = mkSelector "initWithData:protocolFamily:"
+
+-- | @Selector@ for @data@
+dataSelector :: Selector
+dataSelector = mkSelector "data"
 
 -- | @Selector@ for @protocolFamily@
 protocolFamilySelector :: Selector

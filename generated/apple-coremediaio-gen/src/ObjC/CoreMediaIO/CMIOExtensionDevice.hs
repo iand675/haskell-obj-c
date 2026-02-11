@@ -22,6 +22,7 @@ module ObjC.CoreMediaIO.CMIOExtensionDevice
   , localizedName
   , deviceID
   , legacyDeviceID
+  , source
   , streams
   , initSelector
   , newSelector
@@ -35,6 +36,7 @@ module ObjC.CoreMediaIO.CMIOExtensionDevice
   , localizedNameSelector
   , deviceIDSelector
   , legacyDeviceIDSelector
+  , sourceSelector
   , streamsSelector
 
 
@@ -226,6 +228,15 @@ legacyDeviceID :: IsCMIOExtensionDevice cmioExtensionDevice => cmioExtensionDevi
 legacyDeviceID cmioExtensionDevice  =
     sendMsg cmioExtensionDevice (mkSelector "legacyDeviceID") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | source
+--
+-- The device source.
+--
+-- ObjC selector: @- source@
+source :: IsCMIOExtensionDevice cmioExtensionDevice => cmioExtensionDevice -> IO RawId
+source cmioExtensionDevice  =
+    fmap (RawId . castPtr) $ sendMsg cmioExtensionDevice (mkSelector "source") (retPtr retVoid) []
+
 -- | streams
 --
 -- The streams array of the device.
@@ -288,6 +299,10 @@ deviceIDSelector = mkSelector "deviceID"
 -- | @Selector@ for @legacyDeviceID@
 legacyDeviceIDSelector :: Selector
 legacyDeviceIDSelector = mkSelector "legacyDeviceID"
+
+-- | @Selector@ for @source@
+sourceSelector :: Selector
+sourceSelector = mkSelector "source"
 
 -- | @Selector@ for @streams@
 streamsSelector :: Selector

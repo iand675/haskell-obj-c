@@ -8,8 +8,12 @@ module ObjC.StoreKit.SKStoreProductViewController
   , IsSKStoreProductViewController(..)
   , loadProductWithParameters_completionBlock
   , loadProductWithParameters_impression_completionBlock
+  , delegate
+  , setDelegate
   , loadProductWithParameters_completionBlockSelector
   , loadProductWithParameters_impression_completionBlockSelector
+  , delegateSelector
+  , setDelegateSelector
 
 
   ) where
@@ -43,6 +47,16 @@ loadProductWithParameters_impression_completionBlock skStoreProductViewControlle
     withObjCPtr impression $ \raw_impression ->
         sendMsg skStoreProductViewController (mkSelector "loadProductWithParameters:impression:completionBlock:") retVoid [argPtr (castPtr raw_parameters :: Ptr ()), argPtr (castPtr raw_impression :: Ptr ()), argPtr (castPtr block :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsSKStoreProductViewController skStoreProductViewController => skStoreProductViewController -> IO RawId
+delegate skStoreProductViewController  =
+    fmap (RawId . castPtr) $ sendMsg skStoreProductViewController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsSKStoreProductViewController skStoreProductViewController => skStoreProductViewController -> RawId -> IO ()
+setDelegate skStoreProductViewController  value =
+    sendMsg skStoreProductViewController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -54,4 +68,12 @@ loadProductWithParameters_completionBlockSelector = mkSelector "loadProductWithP
 -- | @Selector@ for @loadProductWithParameters:impression:completionBlock:@
 loadProductWithParameters_impression_completionBlockSelector :: Selector
 loadProductWithParameters_impression_completionBlockSelector = mkSelector "loadProductWithParameters:impression:completionBlock:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

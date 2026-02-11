@@ -18,6 +18,7 @@ module ObjC.Vision.VNContour
   , childContourCount
   , childContours
   , pointCount
+  , normalizedPoints
   , normalizedPath
   , aspectRatio
   , newSelector
@@ -28,6 +29,7 @@ module ObjC.Vision.VNContour
   , childContourCountSelector
   , childContoursSelector
   , pointCountSelector
+  , normalizedPointsSelector
   , normalizedPathSelector
   , aspectRatioSelector
 
@@ -123,6 +125,15 @@ pointCount :: IsVNContour vnContour => vnContour -> IO CLong
 pointCount vnContour  =
     sendMsg vnContour (mkSelector "pointCount") retCLong []
 
+-- | The array of points in normalized coordinates that describe the contour.
+--
+-- Provides the address of a buffer containing the array of (x,y) points stored as a simd_float2 value.  This buffer is owned by the target object and is guaranteed to exist as long as this VNContour instance exists.
+--
+-- ObjC selector: @- normalizedPoints@
+normalizedPoints :: IsVNContour vnContour => vnContour -> IO RawId
+normalizedPoints vnContour  =
+    fmap (RawId . castPtr) $ sendMsg vnContour (mkSelector "normalizedPoints") (retPtr retVoid) []
+
 -- | The contour represented as a CGPath in normalized coordinates.
 --
 -- The path is owned by this object and therefore will be alive as long as the the observation is alive.
@@ -174,6 +185,10 @@ childContoursSelector = mkSelector "childContours"
 -- | @Selector@ for @pointCount@
 pointCountSelector :: Selector
 pointCountSelector = mkSelector "pointCount"
+
+-- | @Selector@ for @normalizedPoints@
+normalizedPointsSelector :: Selector
+normalizedPointsSelector = mkSelector "normalizedPoints"
 
 -- | @Selector@ for @normalizedPath@
 normalizedPathSelector :: Selector

@@ -47,6 +47,7 @@ module ObjC.AudioToolbox.AUAudioUnit
   , disableProfile_cable_onChannel_error
   , messageChannelFor
   , registerSubclass_asComponentDescription_name_version
+  , shouldChangeToFormat_forBus
   , setRenderResourcesAllocated
   , setDeviceID_error
   , startHardwareAndReturnError
@@ -117,6 +118,8 @@ module ObjC.AudioToolbox.AUAudioUnit
   , renderContextObserver
   , midiOutputBufferSizeHint
   , setMIDIOutputBufferSizeHint
+  , intendedSpatialExperience
+  , setIntendedSpatialExperience
   , canPerformInput
   , canPerformOutput
   , inputEnabled
@@ -150,6 +153,7 @@ module ObjC.AudioToolbox.AUAudioUnit
   , disableProfile_cable_onChannel_errorSelector
   , messageChannelForSelector
   , registerSubclass_asComponentDescription_name_versionSelector
+  , shouldChangeToFormat_forBusSelector
   , setRenderResourcesAllocatedSelector
   , setDeviceID_errorSelector
   , startHardwareAndReturnErrorSelector
@@ -220,6 +224,8 @@ module ObjC.AudioToolbox.AUAudioUnit
   , renderContextObserverSelector
   , midiOutputBufferSizeHintSelector
   , setMIDIOutputBufferSizeHintSelector
+  , intendedSpatialExperienceSelector
+  , setIntendedSpatialExperienceSelector
   , canPerformInputSelector
   , canPerformOutputSelector
   , inputEnabledSelector
@@ -564,6 +570,20 @@ registerSubclass_asComponentDescription_name_version cls componentDescription na
     cls' <- getRequiredClass "AUAudioUnit"
     withObjCPtr name $ \raw_name ->
       sendClassMsg cls' (mkSelector "registerSubclass:asComponentDescription:name:version:") retVoid [argPtr (unClass cls), argAudioComponentDescription componentDescription, argPtr (castPtr raw_name :: Ptr ()), argCUInt version]
+
+-- | shouldChangeToFormat:forBus:
+--
+-- @format@ — An AVAudioFormat which is proposed as the new format.
+--
+-- @bus@ — The AUAudioUnitBus on which the format will be changed.
+--
+-- This is called when setting the format on an AUAudioUnitBus.        The bus has already checked that the format meets the channel constraints of the bus.        The AU can override this method to check before allowing a new format to be set on the bus.        If this method returns NO, then the new format will not be set on the bus.        The default implementation returns NO if the unit has renderResourcesAllocated, otherwise it results YES.
+--
+-- ObjC selector: @- shouldChangeToFormat:forBus:@
+shouldChangeToFormat_forBus :: (IsAUAudioUnit auAudioUnit, IsAUAudioUnitBus bus) => auAudioUnit -> RawId -> bus -> IO Bool
+shouldChangeToFormat_forBus auAudioUnit  format bus =
+  withObjCPtr bus $ \raw_bus ->
+      fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "shouldChangeToFormat:forBus:") retCULong [argPtr (castPtr (unRawId format) :: Ptr ()), argPtr (castPtr raw_bus :: Ptr ())]
 
 -- | setRenderResourcesAllocated:
 --
@@ -1535,6 +1555,24 @@ setMIDIOutputBufferSizeHint :: IsAUAudioUnit auAudioUnit => auAudioUnit -> CLong
 setMIDIOutputBufferSizeHint auAudioUnit  value =
     sendMsg auAudioUnit (mkSelector "setMIDIOutputBufferSizeHint:") retVoid [argCLong value]
 
+-- | The AUAudioUnit's intended spatial experience.
+--
+-- Only useful for output AUAudioUnits - setting on a non-output AU is a no-op. The default value of CAAutomaticSpatialAudio means the output AUAudioUnit uses its AVAudioSession's spatial experience. See CASpatialAudioExperience for more details.
+--
+-- ObjC selector: @- intendedSpatialExperience@
+intendedSpatialExperience :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO RawId
+intendedSpatialExperience auAudioUnit  =
+    fmap (RawId . castPtr) $ sendMsg auAudioUnit (mkSelector "intendedSpatialExperience") (retPtr retVoid) []
+
+-- | The AUAudioUnit's intended spatial experience.
+--
+-- Only useful for output AUAudioUnits - setting on a non-output AU is a no-op. The default value of CAAutomaticSpatialAudio means the output AUAudioUnit uses its AVAudioSession's spatial experience. See CASpatialAudioExperience for more details.
+--
+-- ObjC selector: @- setIntendedSpatialExperience:@
+setIntendedSpatialExperience :: IsAUAudioUnit auAudioUnit => auAudioUnit -> RawId -> IO ()
+setIntendedSpatialExperience auAudioUnit  value =
+    sendMsg auAudioUnit (mkSelector "setIntendedSpatialExperience:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | canPerformInput
 --
 -- Whether the I/O device can perform input.
@@ -1769,6 +1807,10 @@ messageChannelForSelector = mkSelector "messageChannelFor:"
 -- | @Selector@ for @registerSubclass:asComponentDescription:name:version:@
 registerSubclass_asComponentDescription_name_versionSelector :: Selector
 registerSubclass_asComponentDescription_name_versionSelector = mkSelector "registerSubclass:asComponentDescription:name:version:"
+
+-- | @Selector@ for @shouldChangeToFormat:forBus:@
+shouldChangeToFormat_forBusSelector :: Selector
+shouldChangeToFormat_forBusSelector = mkSelector "shouldChangeToFormat:forBus:"
 
 -- | @Selector@ for @setRenderResourcesAllocated:@
 setRenderResourcesAllocatedSelector :: Selector
@@ -2049,6 +2091,14 @@ midiOutputBufferSizeHintSelector = mkSelector "MIDIOutputBufferSizeHint"
 -- | @Selector@ for @setMIDIOutputBufferSizeHint:@
 setMIDIOutputBufferSizeHintSelector :: Selector
 setMIDIOutputBufferSizeHintSelector = mkSelector "setMIDIOutputBufferSizeHint:"
+
+-- | @Selector@ for @intendedSpatialExperience@
+intendedSpatialExperienceSelector :: Selector
+intendedSpatialExperienceSelector = mkSelector "intendedSpatialExperience"
+
+-- | @Selector@ for @setIntendedSpatialExperience:@
+setIntendedSpatialExperienceSelector :: Selector
+setIntendedSpatialExperienceSelector = mkSelector "setIntendedSpatialExperience:"
 
 -- | @Selector@ for @canPerformInput@
 canPerformInputSelector :: Selector

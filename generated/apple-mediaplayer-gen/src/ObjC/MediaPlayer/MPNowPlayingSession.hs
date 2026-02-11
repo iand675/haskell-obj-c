@@ -13,6 +13,8 @@ module ObjC.MediaPlayer.MPNowPlayingSession
   , addPlayer
   , removePlayer
   , players
+  , delegate
+  , setDelegate
   , automaticallyPublishesNowPlayingInfo
   , setAutomaticallyPublishesNowPlayingInfo
   , nowPlayingInfoCenter
@@ -26,6 +28,8 @@ module ObjC.MediaPlayer.MPNowPlayingSession
   , addPlayerSelector
   , removePlayerSelector
   , playersSelector
+  , delegateSelector
+  , setDelegateSelector
   , automaticallyPublishesNowPlayingInfoSelector
   , setAutomaticallyPublishesNowPlayingInfoSelector
   , nowPlayingInfoCenterSelector
@@ -102,6 +106,16 @@ players :: IsMPNowPlayingSession mpNowPlayingSession => mpNowPlayingSession -> I
 players mpNowPlayingSession  =
     sendMsg mpNowPlayingSession (mkSelector "players") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- delegate@
+delegate :: IsMPNowPlayingSession mpNowPlayingSession => mpNowPlayingSession -> IO RawId
+delegate mpNowPlayingSession  =
+    fmap (RawId . castPtr) $ sendMsg mpNowPlayingSession (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsMPNowPlayingSession mpNowPlayingSession => mpNowPlayingSession -> RawId -> IO ()
+setDelegate mpNowPlayingSession  value =
+    sendMsg mpNowPlayingSession (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | When YES, now playing info will be automatically published, and nowPlayingInfoCenter must not be used.  Now playing info keys to be incorporated by automatic publishing can be set on the AVPlayerItem's nowPlayingInfo property.
 --
 -- ObjC selector: @- automaticallyPublishesNowPlayingInfo@
@@ -175,6 +189,14 @@ removePlayerSelector = mkSelector "removePlayer:"
 -- | @Selector@ for @players@
 playersSelector :: Selector
 playersSelector = mkSelector "players"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @automaticallyPublishesNowPlayingInfo@
 automaticallyPublishesNowPlayingInfoSelector :: Selector

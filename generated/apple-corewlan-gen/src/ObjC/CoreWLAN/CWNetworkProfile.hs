@@ -14,12 +14,16 @@ module ObjC.CoreWLAN.CWNetworkProfile
   , initWithNetworkProfile
   , networkProfileWithNetworkProfile
   , isEqualToNetworkProfile
+  , ssid
+  , ssidData
   , security
   , networkProfileSelector
   , initSelector
   , initWithNetworkProfileSelector
   , networkProfileWithNetworkProfileSelector
   , isEqualToNetworkProfileSelector
+  , ssidSelector
+  , ssidDataSelector
   , securitySelector
 
   -- * Enum types
@@ -116,6 +120,24 @@ isEqualToNetworkProfile cwNetworkProfile  networkProfile =
   withObjCPtr networkProfile $ \raw_networkProfile ->
       fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwNetworkProfile (mkSelector "isEqualToNetworkProfile:") retCULong [argPtr (castPtr raw_networkProfile :: Ptr ())]
 
+-- | Returns the service set identifier (SSID) for the Wi-Fi network profile, encoded as a string.
+--
+-- Returns nil if the SSID can not be encoded as a valid UTF-8 or WinLatin1 string.
+--
+-- ObjC selector: @- ssid@
+ssid :: IsCWNetworkProfile cwNetworkProfile => cwNetworkProfile -> IO RawId
+ssid cwNetworkProfile  =
+    fmap (RawId . castPtr) $ sendMsg cwNetworkProfile (mkSelector "ssid") (retPtr retVoid) []
+
+-- | Returns the service set identifier (SSID) for the Wi-Fi network profile, encapsulated in an NSData object.
+--
+-- The SSID is 1-32 octets.
+--
+-- ObjC selector: @- ssidData@
+ssidData :: IsCWNetworkProfile cwNetworkProfile => cwNetworkProfile -> IO RawId
+ssidData cwNetworkProfile  =
+    fmap (RawId . castPtr) $ sendMsg cwNetworkProfile (mkSelector "ssidData") (retPtr retVoid) []
+
 -- | Returns the security type of the Wi-Fi network profile.
 --
 -- ObjC selector: @- security@
@@ -146,6 +168,14 @@ networkProfileWithNetworkProfileSelector = mkSelector "networkProfileWithNetwork
 -- | @Selector@ for @isEqualToNetworkProfile:@
 isEqualToNetworkProfileSelector :: Selector
 isEqualToNetworkProfileSelector = mkSelector "isEqualToNetworkProfile:"
+
+-- | @Selector@ for @ssid@
+ssidSelector :: Selector
+ssidSelector = mkSelector "ssid"
+
+-- | @Selector@ for @ssidData@
+ssidDataSelector :: Selector
+ssidDataSelector = mkSelector "ssidData"
 
 -- | @Selector@ for @security@
 securitySelector :: Selector

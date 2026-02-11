@@ -23,6 +23,8 @@ module ObjC.GameKit.GKSession
   , disconnectPeerFromAllPeers
   , disconnectFromAllPeers
   , peersWithConnectionState
+  , delegate
+  , setDelegate
   , sessionID
   , displayName
   , sessionMode
@@ -43,6 +45,8 @@ module ObjC.GameKit.GKSession
   , disconnectPeerFromAllPeersSelector
   , disconnectFromAllPeersSelector
   , peersWithConnectionStateSelector
+  , delegateSelector
+  , setDelegateSelector
   , sessionIDSelector
   , displayNameSelector
   , sessionModeSelector
@@ -180,6 +184,16 @@ peersWithConnectionState :: IsGKSession gkSession => gkSession -> GKPeerConnecti
 peersWithConnectionState gkSession  state =
     sendMsg gkSession (mkSelector "peersWithConnectionState:") (retPtr retVoid) [argCInt (coerce state)] >>= retainedObject . castPtr
 
+-- | @- delegate@
+delegate :: IsGKSession gkSession => gkSession -> IO RawId
+delegate gkSession  =
+    fmap (RawId . castPtr) $ sendMsg gkSession (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsGKSession gkSession => gkSession -> RawId -> IO ()
+setDelegate gkSession  value =
+    sendMsg gkSession (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- sessionID@
 sessionID :: IsGKSession gkSession => gkSession -> IO (Id NSString)
 sessionID gkSession  =
@@ -279,6 +293,14 @@ disconnectFromAllPeersSelector = mkSelector "disconnectFromAllPeers"
 -- | @Selector@ for @peersWithConnectionState:@
 peersWithConnectionStateSelector :: Selector
 peersWithConnectionStateSelector = mkSelector "peersWithConnectionState:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @sessionID@
 sessionIDSelector :: Selector

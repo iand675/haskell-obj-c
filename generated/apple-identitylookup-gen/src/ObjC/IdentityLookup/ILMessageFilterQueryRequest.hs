@@ -12,10 +12,12 @@ module ObjC.IdentityLookup.ILMessageFilterQueryRequest
   , new
   , sender
   , messageBody
+  , receiverISOCountryCode
   , initSelector
   , newSelector
   , senderSelector
   , messageBodySelector
+  , receiverISOCountryCodeSelector
 
 
   ) where
@@ -61,6 +63,13 @@ messageBody :: IsILMessageFilterQueryRequest ilMessageFilterQueryRequest => ilMe
 messageBody ilMessageFilterQueryRequest  =
     sendMsg ilMessageFilterQueryRequest (mkSelector "messageBody") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The ISO Country Code of the receiving phone number, in format specified by the ISO 3166-2 standard
+--
+-- ObjC selector: @- receiverISOCountryCode@
+receiverISOCountryCode :: IsILMessageFilterQueryRequest ilMessageFilterQueryRequest => ilMessageFilterQueryRequest -> IO (Id NSString)
+receiverISOCountryCode ilMessageFilterQueryRequest  =
+    sendMsg ilMessageFilterQueryRequest (mkSelector "receiverISOCountryCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -80,4 +89,8 @@ senderSelector = mkSelector "sender"
 -- | @Selector@ for @messageBody@
 messageBodySelector :: Selector
 messageBodySelector = mkSelector "messageBody"
+
+-- | @Selector@ for @receiverISOCountryCode@
+receiverISOCountryCodeSelector :: Selector
+receiverISOCountryCodeSelector = mkSelector "receiverISOCountryCode"
 

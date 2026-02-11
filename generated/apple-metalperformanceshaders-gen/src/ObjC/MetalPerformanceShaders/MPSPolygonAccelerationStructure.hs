@@ -17,10 +17,16 @@ module ObjC.MetalPerformanceShaders.MPSPolygonAccelerationStructure
   , setVertexStride
   , indexType
   , setIndexType
+  , vertexBuffer
+  , setVertexBuffer
   , vertexBufferOffset
   , setVertexBufferOffset
+  , indexBuffer
+  , setIndexBuffer
   , indexBufferOffset
   , setIndexBufferOffset
+  , maskBuffer
+  , setMaskBuffer
   , maskBufferOffset
   , setMaskBufferOffset
   , polygonCount
@@ -33,10 +39,16 @@ module ObjC.MetalPerformanceShaders.MPSPolygonAccelerationStructure
   , setVertexStrideSelector
   , indexTypeSelector
   , setIndexTypeSelector
+  , vertexBufferSelector
+  , setVertexBufferSelector
   , vertexBufferOffsetSelector
   , setVertexBufferOffsetSelector
+  , indexBufferSelector
+  , setIndexBufferSelector
   , indexBufferOffsetSelector
   , setIndexBufferOffsetSelector
+  , maskBufferSelector
+  , setMaskBufferSelector
   , maskBufferOffsetSelector
   , setMaskBufferOffsetSelector
   , polygonCountSelector
@@ -141,6 +153,32 @@ setIndexType :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructur
 setIndexType mpsPolygonAccelerationStructure  value =
     sendMsg mpsPolygonAccelerationStructure (mkSelector "setIndexType:") retVoid [argCUInt (coerce value)]
 
+-- | Vertex buffer containing vertex data encoded as three 32 bit floats per vertex. Note that by default each vertex is aligned to the alignment of the vector_float3 type: 16 bytes. This can be changed using the vertexStride property. A vertex buffer must be provided before the acceleration structure is built.
+--
+-- When using triangle polygons, degenerate (zero or negative area) triangles are ignored during acceleration structure construction. This can be used to pad triangle indices if needed.
+--
+-- Quadrilateral polygons are internally treated as two triangles. If the quadrilateral has vertices v0, v1, v2, and v3, the two triangles will have vertices v0, v1, v2 and v0, v2, v3. A quadrilateral may be used to represent a triangle by repeating the last vertex. If the first triangle is degenerate (zero or negative area), the entire quadrilateral will be ignored. This can be used to pad quadrilateral indices if needed. All four vertices of a quadrilateral must be coplanar and the quadrilateral must be convex.
+--
+-- This is an alias for polygonBuffers[0].vertexBuffer. There must be exactly one polygon buffer to use this property, or the polygonBuffers property must be nil, in which case an MPSPolygonBuffer will be created automatically.
+--
+-- ObjC selector: @- vertexBuffer@
+vertexBuffer :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> IO RawId
+vertexBuffer mpsPolygonAccelerationStructure  =
+    fmap (RawId . castPtr) $ sendMsg mpsPolygonAccelerationStructure (mkSelector "vertexBuffer") (retPtr retVoid) []
+
+-- | Vertex buffer containing vertex data encoded as three 32 bit floats per vertex. Note that by default each vertex is aligned to the alignment of the vector_float3 type: 16 bytes. This can be changed using the vertexStride property. A vertex buffer must be provided before the acceleration structure is built.
+--
+-- When using triangle polygons, degenerate (zero or negative area) triangles are ignored during acceleration structure construction. This can be used to pad triangle indices if needed.
+--
+-- Quadrilateral polygons are internally treated as two triangles. If the quadrilateral has vertices v0, v1, v2, and v3, the two triangles will have vertices v0, v1, v2 and v0, v2, v3. A quadrilateral may be used to represent a triangle by repeating the last vertex. If the first triangle is degenerate (zero or negative area), the entire quadrilateral will be ignored. This can be used to pad quadrilateral indices if needed. All four vertices of a quadrilateral must be coplanar and the quadrilateral must be convex.
+--
+-- This is an alias for polygonBuffers[0].vertexBuffer. There must be exactly one polygon buffer to use this property, or the polygonBuffers property must be nil, in which case an MPSPolygonBuffer will be created automatically.
+--
+-- ObjC selector: @- setVertexBuffer:@
+setVertexBuffer :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> RawId -> IO ()
+setVertexBuffer mpsPolygonAccelerationStructure  value =
+    sendMsg mpsPolygonAccelerationStructure (mkSelector "setVertexBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Offset, in bytes, into the vertex buffer. Defaults to 0 bytes. Must be aligned to 4 bytes.
 --
 -- This is an alias for polygonBuffers[0].vertexBufferOffset. There must be exactly one polygon buffer to use this property, or the polygonBuffers property must be nil, in which case an MPSPolygonBuffer will be created automatically.
@@ -159,6 +197,24 @@ setVertexBufferOffset :: IsMPSPolygonAccelerationStructure mpsPolygonAcceleratio
 setVertexBufferOffset mpsPolygonAccelerationStructure  value =
     sendMsg mpsPolygonAccelerationStructure (mkSelector "setVertexBufferOffset:") retVoid [argCULong value]
 
+-- | Index buffer containing index data. Each index references a vertex in the vertex buffer. May be nil.
+--
+-- This is an alias for polygonBuffers[0].indexBuffer. There must be exactly one polygon buffer to use this property, or the polygonBuffers property must be nil, in which case an MPSPolygonBuffer will be created automatically.
+--
+-- ObjC selector: @- indexBuffer@
+indexBuffer :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> IO RawId
+indexBuffer mpsPolygonAccelerationStructure  =
+    fmap (RawId . castPtr) $ sendMsg mpsPolygonAccelerationStructure (mkSelector "indexBuffer") (retPtr retVoid) []
+
+-- | Index buffer containing index data. Each index references a vertex in the vertex buffer. May be nil.
+--
+-- This is an alias for polygonBuffers[0].indexBuffer. There must be exactly one polygon buffer to use this property, or the polygonBuffers property must be nil, in which case an MPSPolygonBuffer will be created automatically.
+--
+-- ObjC selector: @- setIndexBuffer:@
+setIndexBuffer :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> RawId -> IO ()
+setIndexBuffer mpsPolygonAccelerationStructure  value =
+    sendMsg mpsPolygonAccelerationStructure (mkSelector "setIndexBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Offset, in bytes, into the index buffer. Defaults to 0 bytes. Must be aligned to a multiple of the index type. Changes to this property require rebuilding the acceleration structure.
 --
 -- This is an alias for polygonBuffers[0].indexBufferOffset. There must be exactly one polygon buffer to use this property, or the polygonBuffers property must be nil, in which case an MPSPolygonBuffer will be created automatically.
@@ -176,6 +232,24 @@ indexBufferOffset mpsPolygonAccelerationStructure  =
 setIndexBufferOffset :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> CULong -> IO ()
 setIndexBufferOffset mpsPolygonAccelerationStructure  value =
     sendMsg mpsPolygonAccelerationStructure (mkSelector "setIndexBufferOffset:") retVoid [argCULong value]
+
+-- | Mask buffer containing one uint32_t mask per polygon. May be nil. Otherwise, the mask type must be specified on the MPSRayIntersector with which it is used.
+--
+-- This is an alias for polygonBuffers[0].maskBuffer. There must be exactly one polygon buffer to use this property, or the polygonBuffers property must be nil, in which case an MPSPolygonBuffer will be created automatically.
+--
+-- ObjC selector: @- maskBuffer@
+maskBuffer :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> IO RawId
+maskBuffer mpsPolygonAccelerationStructure  =
+    fmap (RawId . castPtr) $ sendMsg mpsPolygonAccelerationStructure (mkSelector "maskBuffer") (retPtr retVoid) []
+
+-- | Mask buffer containing one uint32_t mask per polygon. May be nil. Otherwise, the mask type must be specified on the MPSRayIntersector with which it is used.
+--
+-- This is an alias for polygonBuffers[0].maskBuffer. There must be exactly one polygon buffer to use this property, or the polygonBuffers property must be nil, in which case an MPSPolygonBuffer will be created automatically.
+--
+-- ObjC selector: @- setMaskBuffer:@
+setMaskBuffer :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> RawId -> IO ()
+setMaskBuffer mpsPolygonAccelerationStructure  value =
+    sendMsg mpsPolygonAccelerationStructure (mkSelector "setMaskBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | Offset, in bytes, into the mask buffer. Defaults to 0 bytes. Must be aligned to 4 bytes.
 --
@@ -264,6 +338,14 @@ indexTypeSelector = mkSelector "indexType"
 setIndexTypeSelector :: Selector
 setIndexTypeSelector = mkSelector "setIndexType:"
 
+-- | @Selector@ for @vertexBuffer@
+vertexBufferSelector :: Selector
+vertexBufferSelector = mkSelector "vertexBuffer"
+
+-- | @Selector@ for @setVertexBuffer:@
+setVertexBufferSelector :: Selector
+setVertexBufferSelector = mkSelector "setVertexBuffer:"
+
 -- | @Selector@ for @vertexBufferOffset@
 vertexBufferOffsetSelector :: Selector
 vertexBufferOffsetSelector = mkSelector "vertexBufferOffset"
@@ -272,6 +354,14 @@ vertexBufferOffsetSelector = mkSelector "vertexBufferOffset"
 setVertexBufferOffsetSelector :: Selector
 setVertexBufferOffsetSelector = mkSelector "setVertexBufferOffset:"
 
+-- | @Selector@ for @indexBuffer@
+indexBufferSelector :: Selector
+indexBufferSelector = mkSelector "indexBuffer"
+
+-- | @Selector@ for @setIndexBuffer:@
+setIndexBufferSelector :: Selector
+setIndexBufferSelector = mkSelector "setIndexBuffer:"
+
 -- | @Selector@ for @indexBufferOffset@
 indexBufferOffsetSelector :: Selector
 indexBufferOffsetSelector = mkSelector "indexBufferOffset"
@@ -279,6 +369,14 @@ indexBufferOffsetSelector = mkSelector "indexBufferOffset"
 -- | @Selector@ for @setIndexBufferOffset:@
 setIndexBufferOffsetSelector :: Selector
 setIndexBufferOffsetSelector = mkSelector "setIndexBufferOffset:"
+
+-- | @Selector@ for @maskBuffer@
+maskBufferSelector :: Selector
+maskBufferSelector = mkSelector "maskBuffer"
+
+-- | @Selector@ for @setMaskBuffer:@
+setMaskBufferSelector :: Selector
+setMaskBufferSelector = mkSelector "setMaskBuffer:"
 
 -- | @Selector@ for @maskBufferOffset@
 maskBufferOffsetSelector :: Selector

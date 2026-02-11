@@ -25,12 +25,22 @@ module ObjC.SceneKit.SCNGeometry
   , setMaterials
   , firstMaterial
   , setFirstMaterial
+  , geometrySources
+  , geometryElements
   , geometryElementCount
   , geometrySourceChannels
+  , levelsOfDetail
+  , setLevelsOfDetail
+  , tessellator
+  , setTessellator
   , subdivisionLevel
   , setSubdivisionLevel
   , wantsAdaptiveSubdivision
   , setWantsAdaptiveSubdivision
+  , edgeCreasesElement
+  , setEdgeCreasesElement
+  , edgeCreasesSource
+  , setEdgeCreasesSource
   , geometrySelector
   , insertMaterial_atIndexSelector
   , removeMaterialAtIndexSelector
@@ -46,12 +56,22 @@ module ObjC.SceneKit.SCNGeometry
   , setMaterialsSelector
   , firstMaterialSelector
   , setFirstMaterialSelector
+  , geometrySourcesSelector
+  , geometryElementsSelector
   , geometryElementCountSelector
   , geometrySourceChannelsSelector
+  , levelsOfDetailSelector
+  , setLevelsOfDetailSelector
+  , tessellatorSelector
+  , setTessellatorSelector
   , subdivisionLevelSelector
   , setSubdivisionLevelSelector
   , wantsAdaptiveSubdivisionSelector
   , setWantsAdaptiveSubdivisionSelector
+  , edgeCreasesElementSelector
+  , setEdgeCreasesElementSelector
+  , edgeCreasesSourceSelector
+  , setEdgeCreasesSourceSelector
 
 
   ) where
@@ -272,6 +292,24 @@ setFirstMaterial scnGeometry  value =
   withObjCPtr value $ \raw_value ->
       sendMsg scnGeometry (mkSelector "setFirstMaterial:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | geometrySources
+--
+-- The array of geometry sources of the receiver.
+--
+-- ObjC selector: @- geometrySources@
+geometrySources :: IsSCNGeometry scnGeometry => scnGeometry -> IO (Id NSArray)
+geometrySources scnGeometry  =
+    sendMsg scnGeometry (mkSelector "geometrySources") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | geometryElements
+--
+-- The array of geometry elements of the receiver.
+--
+-- ObjC selector: @- geometryElements@
+geometryElements :: IsSCNGeometry scnGeometry => scnGeometry -> IO (Id NSArray)
+geometryElements scnGeometry  =
+    sendMsg scnGeometry (mkSelector "geometryElements") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | geometryElementCount
 --
 -- Returns the number of geometry elements owned by the geometry.
@@ -289,6 +327,36 @@ geometryElementCount scnGeometry  =
 geometrySourceChannels :: IsSCNGeometry scnGeometry => scnGeometry -> IO (Id NSArray)
 geometrySourceChannels scnGeometry  =
     sendMsg scnGeometry (mkSelector "geometrySourceChannels") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | levelsOfDetail
+--
+-- Determines the receiver's levels of detail. Defaults to nil.
+--
+-- ObjC selector: @- levelsOfDetail@
+levelsOfDetail :: IsSCNGeometry scnGeometry => scnGeometry -> IO (Id NSArray)
+levelsOfDetail scnGeometry  =
+    sendMsg scnGeometry (mkSelector "levelsOfDetail") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | levelsOfDetail
+--
+-- Determines the receiver's levels of detail. Defaults to nil.
+--
+-- ObjC selector: @- setLevelsOfDetail:@
+setLevelsOfDetail :: (IsSCNGeometry scnGeometry, IsNSArray value) => scnGeometry -> value -> IO ()
+setLevelsOfDetail scnGeometry  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg scnGeometry (mkSelector "setLevelsOfDetail:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- tessellator@
+tessellator :: IsSCNGeometry scnGeometry => scnGeometry -> IO (Id SCNGeometryTessellator)
+tessellator scnGeometry  =
+    sendMsg scnGeometry (mkSelector "tessellator") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setTessellator:@
+setTessellator :: (IsSCNGeometry scnGeometry, IsSCNGeometryTessellator value) => scnGeometry -> value -> IO ()
+setTessellator scnGeometry  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg scnGeometry (mkSelector "setTessellator:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | subdivisionLevel
 --
@@ -333,6 +401,52 @@ wantsAdaptiveSubdivision scnGeometry  =
 setWantsAdaptiveSubdivision :: IsSCNGeometry scnGeometry => scnGeometry -> Bool -> IO ()
 setWantsAdaptiveSubdivision scnGeometry  value =
     sendMsg scnGeometry (mkSelector "setWantsAdaptiveSubdivision:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | edgeCreasesElement
+--
+-- Specifies the edges creases that control the subdivision. Defaults to nil.
+--
+-- The primitive type of this geometry element must be SCNGeometryPrimitiveTypeLine. See subdivisionLevel above to control the level of subdivision. See edgeCreasesSource below to specify sharpness of the creases.
+--
+-- ObjC selector: @- edgeCreasesElement@
+edgeCreasesElement :: IsSCNGeometry scnGeometry => scnGeometry -> IO (Id SCNGeometryElement)
+edgeCreasesElement scnGeometry  =
+    sendMsg scnGeometry (mkSelector "edgeCreasesElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | edgeCreasesElement
+--
+-- Specifies the edges creases that control the subdivision. Defaults to nil.
+--
+-- The primitive type of this geometry element must be SCNGeometryPrimitiveTypeLine. See subdivisionLevel above to control the level of subdivision. See edgeCreasesSource below to specify sharpness of the creases.
+--
+-- ObjC selector: @- setEdgeCreasesElement:@
+setEdgeCreasesElement :: (IsSCNGeometry scnGeometry, IsSCNGeometryElement value) => scnGeometry -> value -> IO ()
+setEdgeCreasesElement scnGeometry  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg scnGeometry (mkSelector "setEdgeCreasesElement:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | edgeCreasesSource
+--
+-- Specifies the crease value of the edges specified by edgeCreasesElement. Defaults to nil.
+--
+-- The semantic of this geometry source must be "SCNGeometrySourceSemanticEdgeCrease". The creases values are floating values between 0 and 10, where 0 means smooth and 10 means infinitely sharp. See subdivisionLevel above to control the level of subdivision. See edgeCreasesElement above to specify edges for edge creases.
+--
+-- ObjC selector: @- edgeCreasesSource@
+edgeCreasesSource :: IsSCNGeometry scnGeometry => scnGeometry -> IO (Id SCNGeometrySource)
+edgeCreasesSource scnGeometry  =
+    sendMsg scnGeometry (mkSelector "edgeCreasesSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | edgeCreasesSource
+--
+-- Specifies the crease value of the edges specified by edgeCreasesElement. Defaults to nil.
+--
+-- The semantic of this geometry source must be "SCNGeometrySourceSemanticEdgeCrease". The creases values are floating values between 0 and 10, where 0 means smooth and 10 means infinitely sharp. See subdivisionLevel above to control the level of subdivision. See edgeCreasesElement above to specify edges for edge creases.
+--
+-- ObjC selector: @- setEdgeCreasesSource:@
+setEdgeCreasesSource :: (IsSCNGeometry scnGeometry, IsSCNGeometrySource value) => scnGeometry -> value -> IO ()
+setEdgeCreasesSource scnGeometry  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg scnGeometry (mkSelector "setEdgeCreasesSource:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -398,6 +512,14 @@ firstMaterialSelector = mkSelector "firstMaterial"
 setFirstMaterialSelector :: Selector
 setFirstMaterialSelector = mkSelector "setFirstMaterial:"
 
+-- | @Selector@ for @geometrySources@
+geometrySourcesSelector :: Selector
+geometrySourcesSelector = mkSelector "geometrySources"
+
+-- | @Selector@ for @geometryElements@
+geometryElementsSelector :: Selector
+geometryElementsSelector = mkSelector "geometryElements"
+
 -- | @Selector@ for @geometryElementCount@
 geometryElementCountSelector :: Selector
 geometryElementCountSelector = mkSelector "geometryElementCount"
@@ -405,6 +527,22 @@ geometryElementCountSelector = mkSelector "geometryElementCount"
 -- | @Selector@ for @geometrySourceChannels@
 geometrySourceChannelsSelector :: Selector
 geometrySourceChannelsSelector = mkSelector "geometrySourceChannels"
+
+-- | @Selector@ for @levelsOfDetail@
+levelsOfDetailSelector :: Selector
+levelsOfDetailSelector = mkSelector "levelsOfDetail"
+
+-- | @Selector@ for @setLevelsOfDetail:@
+setLevelsOfDetailSelector :: Selector
+setLevelsOfDetailSelector = mkSelector "setLevelsOfDetail:"
+
+-- | @Selector@ for @tessellator@
+tessellatorSelector :: Selector
+tessellatorSelector = mkSelector "tessellator"
+
+-- | @Selector@ for @setTessellator:@
+setTessellatorSelector :: Selector
+setTessellatorSelector = mkSelector "setTessellator:"
 
 -- | @Selector@ for @subdivisionLevel@
 subdivisionLevelSelector :: Selector
@@ -421,4 +559,20 @@ wantsAdaptiveSubdivisionSelector = mkSelector "wantsAdaptiveSubdivision"
 -- | @Selector@ for @setWantsAdaptiveSubdivision:@
 setWantsAdaptiveSubdivisionSelector :: Selector
 setWantsAdaptiveSubdivisionSelector = mkSelector "setWantsAdaptiveSubdivision:"
+
+-- | @Selector@ for @edgeCreasesElement@
+edgeCreasesElementSelector :: Selector
+edgeCreasesElementSelector = mkSelector "edgeCreasesElement"
+
+-- | @Selector@ for @setEdgeCreasesElement:@
+setEdgeCreasesElementSelector :: Selector
+setEdgeCreasesElementSelector = mkSelector "setEdgeCreasesElement:"
+
+-- | @Selector@ for @edgeCreasesSource@
+edgeCreasesSourceSelector :: Selector
+edgeCreasesSourceSelector = mkSelector "edgeCreasesSource"
+
+-- | @Selector@ for @setEdgeCreasesSource:@
+setEdgeCreasesSourceSelector :: Selector
+setEdgeCreasesSourceSelector = mkSelector "setEdgeCreasesSource:"
 

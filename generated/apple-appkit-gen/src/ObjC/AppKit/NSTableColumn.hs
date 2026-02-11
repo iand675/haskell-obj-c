@@ -33,6 +33,8 @@ module ObjC.AppKit.NSTableColumn
   , setSortDescriptorPrototype
   , resizingMask
   , setResizingMask
+  , headerToolTip
+  , setHeaderToolTip
   , hidden
   , setHidden
   , dataCell
@@ -63,6 +65,8 @@ module ObjC.AppKit.NSTableColumn
   , setSortDescriptorPrototypeSelector
   , resizingMaskSelector
   , setResizingMaskSelector
+  , headerToolTipSelector
+  , setHeaderToolTipSelector
   , hiddenSelector
   , setHiddenSelector
   , dataCellSelector
@@ -229,6 +233,17 @@ setResizingMask :: IsNSTableColumn nsTableColumn => nsTableColumn -> NSTableColu
 setResizingMask nsTableColumn  value =
     sendMsg nsTableColumn (mkSelector "setResizingMask:") retVoid [argCULong (coerce value)]
 
+-- | @- headerToolTip@
+headerToolTip :: IsNSTableColumn nsTableColumn => nsTableColumn -> IO (Id NSString)
+headerToolTip nsTableColumn  =
+    sendMsg nsTableColumn (mkSelector "headerToolTip") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setHeaderToolTip:@
+setHeaderToolTip :: (IsNSTableColumn nsTableColumn, IsNSString value) => nsTableColumn -> value -> IO ()
+setHeaderToolTip nsTableColumn  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsTableColumn (mkSelector "setHeaderToolTip:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- hidden@
 hidden :: IsNSTableColumn nsTableColumn => nsTableColumn -> IO Bool
 hidden nsTableColumn  =
@@ -356,6 +371,14 @@ resizingMaskSelector = mkSelector "resizingMask"
 -- | @Selector@ for @setResizingMask:@
 setResizingMaskSelector :: Selector
 setResizingMaskSelector = mkSelector "setResizingMask:"
+
+-- | @Selector@ for @headerToolTip@
+headerToolTipSelector :: Selector
+headerToolTipSelector = mkSelector "headerToolTip"
+
+-- | @Selector@ for @setHeaderToolTip:@
+setHeaderToolTipSelector :: Selector
+setHeaderToolTipSelector = mkSelector "setHeaderToolTip:"
 
 -- | @Selector@ for @hidden@
 hiddenSelector :: Selector

@@ -16,6 +16,8 @@ module ObjC.Metal.MTLAccelerationStructureGeometryDescriptor
   , setAllowDuplicateIntersectionFunctionInvocation
   , label
   , setLabel
+  , primitiveDataBuffer
+  , setPrimitiveDataBuffer
   , primitiveDataBufferOffset
   , setPrimitiveDataBufferOffset
   , primitiveDataStride
@@ -30,6 +32,8 @@ module ObjC.Metal.MTLAccelerationStructureGeometryDescriptor
   , setAllowDuplicateIntersectionFunctionInvocationSelector
   , labelSelector
   , setLabelSelector
+  , primitiveDataBufferSelector
+  , setPrimitiveDataBufferSelector
   , primitiveDataBufferOffsetSelector
   , setPrimitiveDataBufferOffsetSelector
   , primitiveDataStrideSelector
@@ -108,6 +112,20 @@ setLabel mtlAccelerationStructureGeometryDescriptor  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mtlAccelerationStructureGeometryDescriptor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | Data buffer containing per-primitive data. May be nil.
+--
+-- ObjC selector: @- primitiveDataBuffer@
+primitiveDataBuffer :: IsMTLAccelerationStructureGeometryDescriptor mtlAccelerationStructureGeometryDescriptor => mtlAccelerationStructureGeometryDescriptor -> IO RawId
+primitiveDataBuffer mtlAccelerationStructureGeometryDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlAccelerationStructureGeometryDescriptor (mkSelector "primitiveDataBuffer") (retPtr retVoid) []
+
+-- | Data buffer containing per-primitive data. May be nil.
+--
+-- ObjC selector: @- setPrimitiveDataBuffer:@
+setPrimitiveDataBuffer :: IsMTLAccelerationStructureGeometryDescriptor mtlAccelerationStructureGeometryDescriptor => mtlAccelerationStructureGeometryDescriptor -> RawId -> IO ()
+setPrimitiveDataBuffer mtlAccelerationStructureGeometryDescriptor  value =
+    sendMsg mtlAccelerationStructureGeometryDescriptor (mkSelector "setPrimitiveDataBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Primitive data buffer offset in bytes. Must be aligned to the platform's buffer offset alignment. Defaults to 0 bytes.
 --
 -- ObjC selector: @- primitiveDataBufferOffset@
@@ -185,6 +203,14 @@ labelSelector = mkSelector "label"
 -- | @Selector@ for @setLabel:@
 setLabelSelector :: Selector
 setLabelSelector = mkSelector "setLabel:"
+
+-- | @Selector@ for @primitiveDataBuffer@
+primitiveDataBufferSelector :: Selector
+primitiveDataBufferSelector = mkSelector "primitiveDataBuffer"
+
+-- | @Selector@ for @setPrimitiveDataBuffer:@
+setPrimitiveDataBufferSelector :: Selector
+setPrimitiveDataBufferSelector = mkSelector "setPrimitiveDataBuffer:"
 
 -- | @Selector@ for @primitiveDataBufferOffset@
 primitiveDataBufferOffsetSelector :: Selector

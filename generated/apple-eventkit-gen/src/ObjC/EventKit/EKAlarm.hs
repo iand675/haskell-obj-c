@@ -24,6 +24,12 @@ module ObjC.EventKit.EKAlarm
   , proximity
   , setProximity
   , type_
+  , emailAddress
+  , setEmailAddress
+  , soundName
+  , setSoundName
+  , url
+  , setUrl
   , alarmWithAbsoluteDateSelector
   , alarmWithRelativeOffsetSelector
   , relativeOffsetSelector
@@ -35,6 +41,12 @@ module ObjC.EventKit.EKAlarm
   , proximitySelector
   , setProximitySelector
   , typeSelector
+  , emailAddressSelector
+  , setEmailAddressSelector
+  , soundNameSelector
+  , setSoundNameSelector
+  , urlSelector
+  , setUrlSelector
 
   -- * Enum types
   , EKAlarmProximity(EKAlarmProximity)
@@ -187,6 +199,72 @@ type_ :: IsEKAlarm ekAlarm => ekAlarm -> IO EKAlarmType
 type_ ekAlarm  =
     fmap (coerce :: CLong -> EKAlarmType) $ sendMsg ekAlarm (mkSelector "type") retCLong []
 
+-- | emailAddress
+--
+-- An email address that is the recipient of an email alarm, which is an alarm that triggers an email message.
+--
+-- When you set the emailAddress property, the action property is set to EKAlarmTypeEmail,             and the soundName and url properties are set to nil.
+--
+-- ObjC selector: @- emailAddress@
+emailAddress :: IsEKAlarm ekAlarm => ekAlarm -> IO RawId
+emailAddress ekAlarm  =
+    fmap (RawId . castPtr) $ sendMsg ekAlarm (mkSelector "emailAddress") (retPtr retVoid) []
+
+-- | emailAddress
+--
+-- An email address that is the recipient of an email alarm, which is an alarm that triggers an email message.
+--
+-- When you set the emailAddress property, the action property is set to EKAlarmTypeEmail,             and the soundName and url properties are set to nil.
+--
+-- ObjC selector: @- setEmailAddress:@
+setEmailAddress :: IsEKAlarm ekAlarm => ekAlarm -> RawId -> IO ()
+setEmailAddress ekAlarm  value =
+    sendMsg ekAlarm (mkSelector "setEmailAddress:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | soundName
+--
+-- The name of the sound to play when the alarm triggers.
+--
+-- The value of this property is the name of a system sound that can be used with             the soundNamed: class method to create an NSSound object. When you set the soundName property,             the action property is set to EKAlarmTypeAudio, and the emailAddress and url properties are set to nil.
+--
+-- ObjC selector: @- soundName@
+soundName :: IsEKAlarm ekAlarm => ekAlarm -> IO RawId
+soundName ekAlarm  =
+    fmap (RawId . castPtr) $ sendMsg ekAlarm (mkSelector "soundName") (retPtr retVoid) []
+
+-- | soundName
+--
+-- The name of the sound to play when the alarm triggers.
+--
+-- The value of this property is the name of a system sound that can be used with             the soundNamed: class method to create an NSSound object. When you set the soundName property,             the action property is set to EKAlarmTypeAudio, and the emailAddress and url properties are set to nil.
+--
+-- ObjC selector: @- setSoundName:@
+setSoundName :: IsEKAlarm ekAlarm => ekAlarm -> RawId -> IO ()
+setSoundName ekAlarm  value =
+    sendMsg ekAlarm (mkSelector "setSoundName:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | url
+--
+-- The URL to open when the alarm triggers.
+--
+-- When you set the url property, the action property is set to EKAlarmTypeProcedure,             and the emailAddress and soundName properties are set to nil.             Note: Starting with OS X 10.9, it is not possible to create new procedure alarms or view URLs for existing procedure alarms.             Trying to save or modify a procedure alarm will result in a save error.             Editing other aspects of events or reminders that have existing procedure alarms is allowed as long as the alarm isn't modified.
+--
+-- ObjC selector: @- url@
+url :: IsEKAlarm ekAlarm => ekAlarm -> IO RawId
+url ekAlarm  =
+    fmap (RawId . castPtr) $ sendMsg ekAlarm (mkSelector "url") (retPtr retVoid) []
+
+-- | url
+--
+-- The URL to open when the alarm triggers.
+--
+-- When you set the url property, the action property is set to EKAlarmTypeProcedure,             and the emailAddress and soundName properties are set to nil.             Note: Starting with OS X 10.9, it is not possible to create new procedure alarms or view URLs for existing procedure alarms.             Trying to save or modify a procedure alarm will result in a save error.             Editing other aspects of events or reminders that have existing procedure alarms is allowed as long as the alarm isn't modified.
+--
+-- ObjC selector: @- setUrl:@
+setUrl :: IsEKAlarm ekAlarm => ekAlarm -> RawId -> IO ()
+setUrl ekAlarm  value =
+    sendMsg ekAlarm (mkSelector "setUrl:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -234,4 +312,28 @@ setProximitySelector = mkSelector "setProximity:"
 -- | @Selector@ for @type@
 typeSelector :: Selector
 typeSelector = mkSelector "type"
+
+-- | @Selector@ for @emailAddress@
+emailAddressSelector :: Selector
+emailAddressSelector = mkSelector "emailAddress"
+
+-- | @Selector@ for @setEmailAddress:@
+setEmailAddressSelector :: Selector
+setEmailAddressSelector = mkSelector "setEmailAddress:"
+
+-- | @Selector@ for @soundName@
+soundNameSelector :: Selector
+soundNameSelector = mkSelector "soundName"
+
+-- | @Selector@ for @setSoundName:@
+setSoundNameSelector :: Selector
+setSoundNameSelector = mkSelector "setSoundName:"
+
+-- | @Selector@ for @url@
+urlSelector :: Selector
+urlSelector = mkSelector "url"
+
+-- | @Selector@ for @setUrl:@
+setUrlSelector :: Selector
+setUrlSelector = mkSelector "setUrl:"
 

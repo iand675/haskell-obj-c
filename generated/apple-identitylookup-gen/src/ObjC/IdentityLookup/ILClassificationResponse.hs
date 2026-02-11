@@ -12,11 +12,15 @@ module ObjC.IdentityLookup.ILClassificationResponse
   , initWithClassificationAction
   , init_
   , action
+  , userString
+  , setUserString
   , userInfo
   , setUserInfo
   , initWithClassificationActionSelector
   , initSelector
   , actionSelector
+  , userStringSelector
+  , setUserStringSelector
   , userInfoSelector
   , setUserInfoSelector
 
@@ -60,6 +64,17 @@ action :: IsILClassificationResponse ilClassificationResponse => ilClassificatio
 action ilClassificationResponse  =
     fmap (coerce :: CLong -> ILClassificationAction) $ sendMsg ilClassificationResponse (mkSelector "action") retCLong []
 
+-- | @- userString@
+userString :: IsILClassificationResponse ilClassificationResponse => ilClassificationResponse -> IO (Id NSString)
+userString ilClassificationResponse  =
+    sendMsg ilClassificationResponse (mkSelector "userString") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setUserString:@
+setUserString :: (IsILClassificationResponse ilClassificationResponse, IsNSString value) => ilClassificationResponse -> value -> IO ()
+setUserString ilClassificationResponse  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg ilClassificationResponse (mkSelector "setUserString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- userInfo@
 userInfo :: IsILClassificationResponse ilClassificationResponse => ilClassificationResponse -> IO (Id NSDictionary)
 userInfo ilClassificationResponse  =
@@ -86,6 +101,14 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @action@
 actionSelector :: Selector
 actionSelector = mkSelector "action"
+
+-- | @Selector@ for @userString@
+userStringSelector :: Selector
+userStringSelector = mkSelector "userString"
+
+-- | @Selector@ for @setUserString:@
+setUserStringSelector :: Selector
+setUserStringSelector = mkSelector "setUserString:"
 
 -- | @Selector@ for @userInfo@
 userInfoSelector :: Selector

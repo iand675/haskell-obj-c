@@ -8,6 +8,7 @@ module ObjC.MapKit.MKMapItem
   , IsMKMapItem(..)
   , mapItemForCurrentLocation
   , initWithPlacemark
+  , initWithLocation_address
   , openInMapsWithLaunchOptions
   , openMapsWithItems_launchOptions
   , openInMapsWithLaunchOptions_completionHandler
@@ -24,10 +25,13 @@ module ObjC.MapKit.MKMapItem
   , setPhoneNumber
   , url
   , setUrl
+  , timeZone
+  , setTimeZone
   , pointOfInterestCategory
   , setPointOfInterestCategory
   , mapItemForCurrentLocationSelector
   , initWithPlacemarkSelector
+  , initWithLocation_addressSelector
   , openInMapsWithLaunchOptionsSelector
   , openMapsWithItems_launchOptionsSelector
   , openInMapsWithLaunchOptions_completionHandlerSelector
@@ -44,6 +48,8 @@ module ObjC.MapKit.MKMapItem
   , setPhoneNumberSelector
   , urlSelector
   , setUrlSelector
+  , timeZoneSelector
+  , setTimeZoneSelector
   , pointOfInterestCategorySelector
   , setPointOfInterestCategorySelector
 
@@ -77,6 +83,12 @@ initWithPlacemark :: (IsMKMapItem mkMapItem, IsMKPlacemark placemark) => mkMapIt
 initWithPlacemark mkMapItem  placemark =
   withObjCPtr placemark $ \raw_placemark ->
       sendMsg mkMapItem (mkSelector "initWithPlacemark:") (retPtr retVoid) [argPtr (castPtr raw_placemark :: Ptr ())] >>= ownedObject . castPtr
+
+-- | @- initWithLocation:address:@
+initWithLocation_address :: (IsMKMapItem mkMapItem, IsMKAddress address) => mkMapItem -> RawId -> address -> IO (Id MKMapItem)
+initWithLocation_address mkMapItem  location address =
+  withObjCPtr address $ \raw_address ->
+      sendMsg mkMapItem (mkSelector "initWithLocation:address:") (retPtr retVoid) [argPtr (castPtr (unRawId location) :: Ptr ()), argPtr (castPtr raw_address :: Ptr ())] >>= ownedObject . castPtr
 
 -- | @- openInMapsWithLaunchOptions:@
 openInMapsWithLaunchOptions :: (IsMKMapItem mkMapItem, IsNSDictionary launchOptions) => mkMapItem -> launchOptions -> IO Bool
@@ -171,6 +183,16 @@ setUrl mkMapItem  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mkMapItem (mkSelector "setUrl:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- timeZone@
+timeZone :: IsMKMapItem mkMapItem => mkMapItem -> IO RawId
+timeZone mkMapItem  =
+    fmap (RawId . castPtr) $ sendMsg mkMapItem (mkSelector "timeZone") (retPtr retVoid) []
+
+-- | @- setTimeZone:@
+setTimeZone :: IsMKMapItem mkMapItem => mkMapItem -> RawId -> IO ()
+setTimeZone mkMapItem  value =
+    sendMsg mkMapItem (mkSelector "setTimeZone:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- pointOfInterestCategory@
 pointOfInterestCategory :: IsMKMapItem mkMapItem => mkMapItem -> IO (Id NSString)
 pointOfInterestCategory mkMapItem  =
@@ -193,6 +215,10 @@ mapItemForCurrentLocationSelector = mkSelector "mapItemForCurrentLocation"
 -- | @Selector@ for @initWithPlacemark:@
 initWithPlacemarkSelector :: Selector
 initWithPlacemarkSelector = mkSelector "initWithPlacemark:"
+
+-- | @Selector@ for @initWithLocation:address:@
+initWithLocation_addressSelector :: Selector
+initWithLocation_addressSelector = mkSelector "initWithLocation:address:"
 
 -- | @Selector@ for @openInMapsWithLaunchOptions:@
 openInMapsWithLaunchOptionsSelector :: Selector
@@ -257,6 +283,14 @@ urlSelector = mkSelector "url"
 -- | @Selector@ for @setUrl:@
 setUrlSelector :: Selector
 setUrlSelector = mkSelector "setUrl:"
+
+-- | @Selector@ for @timeZone@
+timeZoneSelector :: Selector
+timeZoneSelector = mkSelector "timeZone"
+
+-- | @Selector@ for @setTimeZone:@
+setTimeZoneSelector :: Selector
+setTimeZoneSelector = mkSelector "setTimeZone:"
 
 -- | @Selector@ for @pointOfInterestCategory@
 pointOfInterestCategorySelector :: Selector

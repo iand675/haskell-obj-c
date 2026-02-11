@@ -15,6 +15,8 @@ module ObjC.Intents.INRideOption
   , setEstimatedPickupDate
   , priceRange
   , setPriceRange
+  , usesMeteredFare
+  , setUsesMeteredFare
   , disclaimerMessage
   , setDisclaimerMessage
   , availablePartySizeOptions
@@ -40,6 +42,8 @@ module ObjC.Intents.INRideOption
   , setEstimatedPickupDateSelector
   , priceRangeSelector
   , setPriceRangeSelector
+  , usesMeteredFareSelector
+  , setUsesMeteredFareSelector
   , disclaimerMessageSelector
   , setDisclaimerMessageSelector
   , availablePartySizeOptionsSelector
@@ -125,6 +129,17 @@ setPriceRange :: (IsINRideOption inRideOption, IsINPriceRange value) => inRideOp
 setPriceRange inRideOption  value =
   withObjCPtr value $ \raw_value ->
       sendMsg inRideOption (mkSelector "setPriceRange:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- usesMeteredFare@
+usesMeteredFare :: IsINRideOption inRideOption => inRideOption -> IO (Id NSNumber)
+usesMeteredFare inRideOption  =
+    sendMsg inRideOption (mkSelector "usesMeteredFare") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setUsesMeteredFare:@
+setUsesMeteredFare :: (IsINRideOption inRideOption, IsNSNumber value) => inRideOption -> value -> IO ()
+setUsesMeteredFare inRideOption  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg inRideOption (mkSelector "setUsesMeteredFare:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- disclaimerMessage@
 disclaimerMessage :: IsINRideOption inRideOption => inRideOption -> IO (Id NSString)
@@ -253,6 +268,14 @@ priceRangeSelector = mkSelector "priceRange"
 -- | @Selector@ for @setPriceRange:@
 setPriceRangeSelector :: Selector
 setPriceRangeSelector = mkSelector "setPriceRange:"
+
+-- | @Selector@ for @usesMeteredFare@
+usesMeteredFareSelector :: Selector
+usesMeteredFareSelector = mkSelector "usesMeteredFare"
+
+-- | @Selector@ for @setUsesMeteredFare:@
+setUsesMeteredFareSelector :: Selector
+setUsesMeteredFareSelector = mkSelector "setUsesMeteredFare:"
 
 -- | @Selector@ for @disclaimerMessage@
 disclaimerMessageSelector :: Selector

@@ -13,12 +13,26 @@ module ObjC.AVFoundation.AVMutableVideoComposition
   , videoCompositionWithPropertiesOfAsset_prototypeInstruction_completionHandler
   , videoCompositionWithAsset_applyingCIFiltersWithHandler
   , videoCompositionWithAsset_applyingCIFiltersWithHandler_completionHandler
+  , customVideoCompositorClass
+  , setCustomVideoCompositorClass
   , sourceTrackIDForFrameTiming
   , setSourceTrackIDForFrameTiming
   , renderScale
   , setRenderScale
+  , instructions
+  , setInstructions
   , animationTool
   , setAnimationTool
+  , sourceSampleDataTrackIDs
+  , setSourceSampleDataTrackIDs
+  , outputBufferDescription
+  , setOutputBufferDescription
+  , colorPrimaries
+  , setColorPrimaries
+  , colorYCbCrMatrix
+  , setColorYCbCrMatrix
+  , colorTransferFunction
+  , setColorTransferFunction
   , perFrameHDRDisplayMetadataPolicy
   , setPerFrameHDRDisplayMetadataPolicy
   , videoCompositionSelector
@@ -28,12 +42,26 @@ module ObjC.AVFoundation.AVMutableVideoComposition
   , videoCompositionWithPropertiesOfAsset_prototypeInstruction_completionHandlerSelector
   , videoCompositionWithAsset_applyingCIFiltersWithHandlerSelector
   , videoCompositionWithAsset_applyingCIFiltersWithHandler_completionHandlerSelector
+  , customVideoCompositorClassSelector
+  , setCustomVideoCompositorClassSelector
   , sourceTrackIDForFrameTimingSelector
   , setSourceTrackIDForFrameTimingSelector
   , renderScaleSelector
   , setRenderScaleSelector
+  , instructionsSelector
+  , setInstructionsSelector
   , animationToolSelector
   , setAnimationToolSelector
+  , sourceSampleDataTrackIDsSelector
+  , setSourceSampleDataTrackIDsSelector
+  , outputBufferDescriptionSelector
+  , setOutputBufferDescriptionSelector
+  , colorPrimariesSelector
+  , setColorPrimariesSelector
+  , colorYCbCrMatrixSelector
+  , setColorYCbCrMatrixSelector
+  , colorTransferFunctionSelector
+  , setColorTransferFunctionSelector
   , perFrameHDRDisplayMetadataPolicySelector
   , setPerFrameHDRDisplayMetadataPolicySelector
 
@@ -178,6 +206,20 @@ videoCompositionWithAsset_applyingCIFiltersWithHandler_completionHandler asset a
     withObjCPtr asset $ \raw_asset ->
       sendClassMsg cls' (mkSelector "videoCompositionWithAsset:applyingCIFiltersWithHandler:completionHandler:") retVoid [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr applier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
 
+-- | Indicates the custom compositor class to use. If nil, the default, internal video compositor is used
+--
+-- ObjC selector: @- customVideoCompositorClass@
+customVideoCompositorClass :: IsAVMutableVideoComposition avMutableVideoComposition => avMutableVideoComposition -> IO Class
+customVideoCompositorClass avMutableVideoComposition  =
+    fmap (Class . castPtr) $ sendMsg avMutableVideoComposition (mkSelector "customVideoCompositorClass") (retPtr retVoid) []
+
+-- | Indicates the custom compositor class to use. If nil, the default, internal video compositor is used
+--
+-- ObjC selector: @- setCustomVideoCompositorClass:@
+setCustomVideoCompositorClass :: IsAVMutableVideoComposition avMutableVideoComposition => avMutableVideoComposition -> Class -> IO ()
+setCustomVideoCompositorClass avMutableVideoComposition  value =
+    sendMsg avMutableVideoComposition (mkSelector "setCustomVideoCompositorClass:") retVoid [argPtr (unClass value)]
+
 -- | If sourceTrackIDForFrameTiming is not kCMPersistentTrackID_Invalid, frame timing for the video composition is derived from the source asset's track with the corresponding ID. This may be used to preserve a source asset's variable frame timing. If an empty edit is encountered in the source asset’s track, the compositor composes frames as needed up to the frequency specified in frameDuration property.
 --
 -- ObjC selector: @- sourceTrackIDForFrameTiming@
@@ -206,6 +248,25 @@ setRenderScale :: IsAVMutableVideoComposition avMutableVideoComposition => avMut
 setRenderScale avMutableVideoComposition  value =
     sendMsg avMutableVideoComposition (mkSelector "setRenderScale:") retVoid [argCFloat value]
 
+-- | Indicates instructions for video composition via an NSArray of instances of classes implementing the AVVideoCompositionInstruction protocol.
+--
+-- For the first instruction in the array, timeRange.start must be less than or equal to the earliest time for which playback or other processing will be attempted (note that this will typically be kCMTimeZero). For subsequent instructions, timeRange.start must be equal to the prior instruction's end time. The end time of the last instruction must be greater than or equal to the latest time for which playback or other processing will be attempted (note that this will often be the duration of the asset with which the instance of AVVideoComposition is associated).
+--
+-- ObjC selector: @- instructions@
+instructions :: IsAVMutableVideoComposition avMutableVideoComposition => avMutableVideoComposition -> IO (Id NSArray)
+instructions avMutableVideoComposition  =
+    sendMsg avMutableVideoComposition (mkSelector "instructions") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Indicates instructions for video composition via an NSArray of instances of classes implementing the AVVideoCompositionInstruction protocol.
+--
+-- For the first instruction in the array, timeRange.start must be less than or equal to the earliest time for which playback or other processing will be attempted (note that this will typically be kCMTimeZero). For subsequent instructions, timeRange.start must be equal to the prior instruction's end time. The end time of the last instruction must be greater than or equal to the latest time for which playback or other processing will be attempted (note that this will often be the duration of the asset with which the instance of AVVideoComposition is associated).
+--
+-- ObjC selector: @- setInstructions:@
+setInstructions :: (IsAVMutableVideoComposition avMutableVideoComposition, IsNSArray value) => avMutableVideoComposition -> value -> IO ()
+setInstructions avMutableVideoComposition  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avMutableVideoComposition (mkSelector "setInstructions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | Indicates a special video composition tool for use of Core Animation; may be nil
 --
 -- ObjC selector: @- animationTool@
@@ -220,6 +281,97 @@ setAnimationTool :: (IsAVMutableVideoComposition avMutableVideoComposition, IsAV
 setAnimationTool avMutableVideoComposition  value =
   withObjCPtr value $ \raw_value ->
       sendMsg avMutableVideoComposition (mkSelector "setAnimationTool:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | List of all track IDs for tracks from which sample data should be presented to the compositor at any point in the overall composition.  Currently only tracks of type kCMMediaType_Metadata are allowed to be specified.
+--
+-- ObjC selector: @- sourceSampleDataTrackIDs@
+sourceSampleDataTrackIDs :: IsAVMutableVideoComposition avMutableVideoComposition => avMutableVideoComposition -> IO (Id NSArray)
+sourceSampleDataTrackIDs avMutableVideoComposition  =
+    sendMsg avMutableVideoComposition (mkSelector "sourceSampleDataTrackIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | List of all track IDs for tracks from which sample data should be presented to the compositor at any point in the overall composition.  Currently only tracks of type kCMMediaType_Metadata are allowed to be specified.
+--
+-- ObjC selector: @- setSourceSampleDataTrackIDs:@
+setSourceSampleDataTrackIDs :: (IsAVMutableVideoComposition avMutableVideoComposition, IsNSArray value) => avMutableVideoComposition -> value -> IO ()
+setSourceSampleDataTrackIDs avMutableVideoComposition  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avMutableVideoComposition (mkSelector "setSourceSampleDataTrackIDs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The output buffers of the video composition can be specified with the outputBufferDescription. The value is an array of CMTagCollectionRef objects that describes the output buffers.
+--
+-- If the video composition will output tagged buffers, the details of those buffers should be specified with CMTags. Specifically, the StereoView (eyes) and ProjectionKind must be specified. The behavior is undefined if the output tagged buffers do not match the outputBufferDescription. The default is nil, which means monoscopic output. Note that an empty array is not valid. An exception will be thrown if the objects in the array are not of type CMTagCollectionRef. Note that tagged buffers are only supported for custom compositors.
+--
+-- ObjC selector: @- outputBufferDescription@
+outputBufferDescription :: IsAVMutableVideoComposition avMutableVideoComposition => avMutableVideoComposition -> IO (Id NSArray)
+outputBufferDescription avMutableVideoComposition  =
+    sendMsg avMutableVideoComposition (mkSelector "outputBufferDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The output buffers of the video composition can be specified with the outputBufferDescription. The value is an array of CMTagCollectionRef objects that describes the output buffers.
+--
+-- If the video composition will output tagged buffers, the details of those buffers should be specified with CMTags. Specifically, the StereoView (eyes) and ProjectionKind must be specified. The behavior is undefined if the output tagged buffers do not match the outputBufferDescription. The default is nil, which means monoscopic output. Note that an empty array is not valid. An exception will be thrown if the objects in the array are not of type CMTagCollectionRef. Note that tagged buffers are only supported for custom compositors.
+--
+-- ObjC selector: @- setOutputBufferDescription:@
+setOutputBufferDescription :: (IsAVMutableVideoComposition avMutableVideoComposition, IsNSArray value) => avMutableVideoComposition -> value -> IO ()
+setOutputBufferDescription avMutableVideoComposition  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avMutableVideoComposition (mkSelector "setOutputBufferDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | Rendering will use these primaries and frames will be tagged as such. If the value of this property is nil then the source's primaries will be propagated and used.
+--
+-- Default is nil. Valid values are those suitable for AVVideoColorPrimariesKey. Generally set as a triple along with colorYCbCrMatrix and colorTransferFunction.
+--
+-- ObjC selector: @- colorPrimaries@
+colorPrimaries :: IsAVMutableVideoComposition avMutableVideoComposition => avMutableVideoComposition -> IO (Id NSString)
+colorPrimaries avMutableVideoComposition  =
+    sendMsg avMutableVideoComposition (mkSelector "colorPrimaries") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Rendering will use these primaries and frames will be tagged as such. If the value of this property is nil then the source's primaries will be propagated and used.
+--
+-- Default is nil. Valid values are those suitable for AVVideoColorPrimariesKey. Generally set as a triple along with colorYCbCrMatrix and colorTransferFunction.
+--
+-- ObjC selector: @- setColorPrimaries:@
+setColorPrimaries :: (IsAVMutableVideoComposition avMutableVideoComposition, IsNSString value) => avMutableVideoComposition -> value -> IO ()
+setColorPrimaries avMutableVideoComposition  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avMutableVideoComposition (mkSelector "setColorPrimaries:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | Rendering will use this matrix and frames will be tagged as such. If the value of this property is nil then the source's matrix will be propagated and used.
+--
+-- Default is nil. Valid values are those suitable for AVVideoYCbCrMatrixKey. Generally set as a triple along with colorPrimaries and colorTransferFunction.
+--
+-- ObjC selector: @- colorYCbCrMatrix@
+colorYCbCrMatrix :: IsAVMutableVideoComposition avMutableVideoComposition => avMutableVideoComposition -> IO (Id NSString)
+colorYCbCrMatrix avMutableVideoComposition  =
+    sendMsg avMutableVideoComposition (mkSelector "colorYCbCrMatrix") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Rendering will use this matrix and frames will be tagged as such. If the value of this property is nil then the source's matrix will be propagated and used.
+--
+-- Default is nil. Valid values are those suitable for AVVideoYCbCrMatrixKey. Generally set as a triple along with colorPrimaries and colorTransferFunction.
+--
+-- ObjC selector: @- setColorYCbCrMatrix:@
+setColorYCbCrMatrix :: (IsAVMutableVideoComposition avMutableVideoComposition, IsNSString value) => avMutableVideoComposition -> value -> IO ()
+setColorYCbCrMatrix avMutableVideoComposition  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avMutableVideoComposition (mkSelector "setColorYCbCrMatrix:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | Rendering will use this transfer function and frames will be tagged as such. If the value of this property is nil then the source's transfer function will be propagated and used.
+--
+-- Default is nil. Valid values are those suitable for AVVideoTransferFunctionKey. Generally set as a triple along with colorYCbCrMatrix and colorYCbCrMatrix.
+--
+-- ObjC selector: @- colorTransferFunction@
+colorTransferFunction :: IsAVMutableVideoComposition avMutableVideoComposition => avMutableVideoComposition -> IO (Id NSString)
+colorTransferFunction avMutableVideoComposition  =
+    sendMsg avMutableVideoComposition (mkSelector "colorTransferFunction") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Rendering will use this transfer function and frames will be tagged as such. If the value of this property is nil then the source's transfer function will be propagated and used.
+--
+-- Default is nil. Valid values are those suitable for AVVideoTransferFunctionKey. Generally set as a triple along with colorYCbCrMatrix and colorYCbCrMatrix.
+--
+-- ObjC selector: @- setColorTransferFunction:@
+setColorTransferFunction :: (IsAVMutableVideoComposition avMutableVideoComposition, IsNSString value) => avMutableVideoComposition -> value -> IO ()
+setColorTransferFunction avMutableVideoComposition  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avMutableVideoComposition (mkSelector "setColorTransferFunction:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | Configures policy for per frame HDR display metadata on the rendered frame
 --
@@ -272,6 +424,14 @@ videoCompositionWithAsset_applyingCIFiltersWithHandlerSelector = mkSelector "vid
 videoCompositionWithAsset_applyingCIFiltersWithHandler_completionHandlerSelector :: Selector
 videoCompositionWithAsset_applyingCIFiltersWithHandler_completionHandlerSelector = mkSelector "videoCompositionWithAsset:applyingCIFiltersWithHandler:completionHandler:"
 
+-- | @Selector@ for @customVideoCompositorClass@
+customVideoCompositorClassSelector :: Selector
+customVideoCompositorClassSelector = mkSelector "customVideoCompositorClass"
+
+-- | @Selector@ for @setCustomVideoCompositorClass:@
+setCustomVideoCompositorClassSelector :: Selector
+setCustomVideoCompositorClassSelector = mkSelector "setCustomVideoCompositorClass:"
+
 -- | @Selector@ for @sourceTrackIDForFrameTiming@
 sourceTrackIDForFrameTimingSelector :: Selector
 sourceTrackIDForFrameTimingSelector = mkSelector "sourceTrackIDForFrameTiming"
@@ -288,6 +448,14 @@ renderScaleSelector = mkSelector "renderScale"
 setRenderScaleSelector :: Selector
 setRenderScaleSelector = mkSelector "setRenderScale:"
 
+-- | @Selector@ for @instructions@
+instructionsSelector :: Selector
+instructionsSelector = mkSelector "instructions"
+
+-- | @Selector@ for @setInstructions:@
+setInstructionsSelector :: Selector
+setInstructionsSelector = mkSelector "setInstructions:"
+
 -- | @Selector@ for @animationTool@
 animationToolSelector :: Selector
 animationToolSelector = mkSelector "animationTool"
@@ -295,6 +463,46 @@ animationToolSelector = mkSelector "animationTool"
 -- | @Selector@ for @setAnimationTool:@
 setAnimationToolSelector :: Selector
 setAnimationToolSelector = mkSelector "setAnimationTool:"
+
+-- | @Selector@ for @sourceSampleDataTrackIDs@
+sourceSampleDataTrackIDsSelector :: Selector
+sourceSampleDataTrackIDsSelector = mkSelector "sourceSampleDataTrackIDs"
+
+-- | @Selector@ for @setSourceSampleDataTrackIDs:@
+setSourceSampleDataTrackIDsSelector :: Selector
+setSourceSampleDataTrackIDsSelector = mkSelector "setSourceSampleDataTrackIDs:"
+
+-- | @Selector@ for @outputBufferDescription@
+outputBufferDescriptionSelector :: Selector
+outputBufferDescriptionSelector = mkSelector "outputBufferDescription"
+
+-- | @Selector@ for @setOutputBufferDescription:@
+setOutputBufferDescriptionSelector :: Selector
+setOutputBufferDescriptionSelector = mkSelector "setOutputBufferDescription:"
+
+-- | @Selector@ for @colorPrimaries@
+colorPrimariesSelector :: Selector
+colorPrimariesSelector = mkSelector "colorPrimaries"
+
+-- | @Selector@ for @setColorPrimaries:@
+setColorPrimariesSelector :: Selector
+setColorPrimariesSelector = mkSelector "setColorPrimaries:"
+
+-- | @Selector@ for @colorYCbCrMatrix@
+colorYCbCrMatrixSelector :: Selector
+colorYCbCrMatrixSelector = mkSelector "colorYCbCrMatrix"
+
+-- | @Selector@ for @setColorYCbCrMatrix:@
+setColorYCbCrMatrixSelector :: Selector
+setColorYCbCrMatrixSelector = mkSelector "setColorYCbCrMatrix:"
+
+-- | @Selector@ for @colorTransferFunction@
+colorTransferFunctionSelector :: Selector
+colorTransferFunctionSelector = mkSelector "colorTransferFunction"
+
+-- | @Selector@ for @setColorTransferFunction:@
+setColorTransferFunctionSelector :: Selector
+setColorTransferFunctionSelector = mkSelector "setColorTransferFunction:"
 
 -- | @Selector@ for @perFrameHDRDisplayMetadataPolicy@
 perFrameHDRDisplayMetadataPolicySelector :: Selector

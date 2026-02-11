@@ -22,6 +22,8 @@ module ObjC.AppKit.NSTextLayoutManager
   , enumerateTextSegmentsInRange_type_options_usingBlock
   , replaceContentsInRange_withTextElements
   , replaceContentsInRange_withAttributedString
+  , delegate
+  , setDelegate
   , usesFontLeading
   , setUsesFontLeading
   , limitsLayoutForSuspiciousContents
@@ -58,6 +60,8 @@ module ObjC.AppKit.NSTextLayoutManager
   , enumerateTextSegmentsInRange_type_options_usingBlockSelector
   , replaceContentsInRange_withTextElementsSelector
   , replaceContentsInRange_withAttributedStringSelector
+  , delegateSelector
+  , setDelegateSelector
   , usesFontLeadingSelector
   , setUsesFontLeadingSelector
   , limitsLayoutForSuspiciousContentsSelector
@@ -207,6 +211,16 @@ replaceContentsInRange_withAttributedString nsTextLayoutManager  range attribute
   withObjCPtr range $ \raw_range ->
     withObjCPtr attributedString $ \raw_attributedString ->
         sendMsg nsTextLayoutManager (mkSelector "replaceContentsInRange:withAttributedString:") retVoid [argPtr (castPtr raw_range :: Ptr ()), argPtr (castPtr raw_attributedString :: Ptr ())]
+
+-- | @- delegate@
+delegate :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> IO RawId
+delegate nsTextLayoutManager  =
+    fmap (RawId . castPtr) $ sendMsg nsTextLayoutManager (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> RawId -> IO ()
+setDelegate nsTextLayoutManager  value =
+    sendMsg nsTextLayoutManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- usesFontLeading@
 usesFontLeading :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> IO Bool
@@ -390,6 +404,14 @@ replaceContentsInRange_withTextElementsSelector = mkSelector "replaceContentsInR
 -- | @Selector@ for @replaceContentsInRange:withAttributedString:@
 replaceContentsInRange_withAttributedStringSelector :: Selector
 replaceContentsInRange_withAttributedStringSelector = mkSelector "replaceContentsInRange:withAttributedString:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @usesFontLeading@
 usesFontLeadingSelector :: Selector

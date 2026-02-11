@@ -14,8 +14,24 @@ module ObjC.NetworkExtension.NEIPv4Settings
   , IsNEIPv4Settings(..)
   , initWithAddresses_subnetMasks
   , settingsWithAutomaticAddressing
+  , addresses
+  , subnetMasks
+  , router
+  , setRouter
+  , includedRoutes
+  , setIncludedRoutes
+  , excludedRoutes
+  , setExcludedRoutes
   , initWithAddresses_subnetMasksSelector
   , settingsWithAutomaticAddressingSelector
+  , addressesSelector
+  , subnetMasksSelector
+  , routerSelector
+  , setRouterSelector
+  , includedRoutesSelector
+  , setIncludedRoutesSelector
+  , excludedRoutesSelector
+  , setExcludedRoutesSelector
 
 
   ) where
@@ -65,6 +81,81 @@ settingsWithAutomaticAddressing  =
     cls' <- getRequiredClass "NEIPv4Settings"
     sendClassMsg cls' (mkSelector "settingsWithAutomaticAddressing") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | addresses
+--
+-- An array of IPv4 addresses represented as dotted decimal strings. These addresses will be set on the virtual interface used by the VPN tunnel.
+--
+-- ObjC selector: @- addresses@
+addresses :: IsNEIPv4Settings neiPv4Settings => neiPv4Settings -> IO (Id NSArray)
+addresses neiPv4Settings  =
+    sendMsg neiPv4Settings (mkSelector "addresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | subnetMasks
+--
+-- An array of IPv4 subnet masks represented as dotted decimal strings. These subnet masks will be set along with their corresponding addresses from the addresses array on the virtual interface used by the VPN tunnel.
+--
+-- ObjC selector: @- subnetMasks@
+subnetMasks :: IsNEIPv4Settings neiPv4Settings => neiPv4Settings -> IO (Id NSArray)
+subnetMasks neiPv4Settings  =
+    sendMsg neiPv4Settings (mkSelector "subnetMasks") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | router
+--
+-- The address of the next-hop gateway router represented as a dotted decimal string. This property is ignored for TUN interfaces.
+--
+-- ObjC selector: @- router@
+router :: IsNEIPv4Settings neiPv4Settings => neiPv4Settings -> IO (Id NSString)
+router neiPv4Settings  =
+    sendMsg neiPv4Settings (mkSelector "router") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | router
+--
+-- The address of the next-hop gateway router represented as a dotted decimal string. This property is ignored for TUN interfaces.
+--
+-- ObjC selector: @- setRouter:@
+setRouter :: (IsNEIPv4Settings neiPv4Settings, IsNSString value) => neiPv4Settings -> value -> IO ()
+setRouter neiPv4Settings  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neiPv4Settings (mkSelector "setRouter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | includedRoutes
+--
+-- An array of NEIPv4Route objects. Traffic matching these routes will be routed through the virtual interface used by the VPN tunnel.
+--
+-- ObjC selector: @- includedRoutes@
+includedRoutes :: IsNEIPv4Settings neiPv4Settings => neiPv4Settings -> IO (Id NSArray)
+includedRoutes neiPv4Settings  =
+    sendMsg neiPv4Settings (mkSelector "includedRoutes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | includedRoutes
+--
+-- An array of NEIPv4Route objects. Traffic matching these routes will be routed through the virtual interface used by the VPN tunnel.
+--
+-- ObjC selector: @- setIncludedRoutes:@
+setIncludedRoutes :: (IsNEIPv4Settings neiPv4Settings, IsNSArray value) => neiPv4Settings -> value -> IO ()
+setIncludedRoutes neiPv4Settings  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neiPv4Settings (mkSelector "setIncludedRoutes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | excludedRoutes
+--
+-- An array of NEIPv4Route objects. Traffic matching these routes will be routed through the current primary physical interface of the device.
+--
+-- ObjC selector: @- excludedRoutes@
+excludedRoutes :: IsNEIPv4Settings neiPv4Settings => neiPv4Settings -> IO (Id NSArray)
+excludedRoutes neiPv4Settings  =
+    sendMsg neiPv4Settings (mkSelector "excludedRoutes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | excludedRoutes
+--
+-- An array of NEIPv4Route objects. Traffic matching these routes will be routed through the current primary physical interface of the device.
+--
+-- ObjC selector: @- setExcludedRoutes:@
+setExcludedRoutes :: (IsNEIPv4Settings neiPv4Settings, IsNSArray value) => neiPv4Settings -> value -> IO ()
+setExcludedRoutes neiPv4Settings  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neiPv4Settings (mkSelector "setExcludedRoutes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -76,4 +167,36 @@ initWithAddresses_subnetMasksSelector = mkSelector "initWithAddresses:subnetMask
 -- | @Selector@ for @settingsWithAutomaticAddressing@
 settingsWithAutomaticAddressingSelector :: Selector
 settingsWithAutomaticAddressingSelector = mkSelector "settingsWithAutomaticAddressing"
+
+-- | @Selector@ for @addresses@
+addressesSelector :: Selector
+addressesSelector = mkSelector "addresses"
+
+-- | @Selector@ for @subnetMasks@
+subnetMasksSelector :: Selector
+subnetMasksSelector = mkSelector "subnetMasks"
+
+-- | @Selector@ for @router@
+routerSelector :: Selector
+routerSelector = mkSelector "router"
+
+-- | @Selector@ for @setRouter:@
+setRouterSelector :: Selector
+setRouterSelector = mkSelector "setRouter:"
+
+-- | @Selector@ for @includedRoutes@
+includedRoutesSelector :: Selector
+includedRoutesSelector = mkSelector "includedRoutes"
+
+-- | @Selector@ for @setIncludedRoutes:@
+setIncludedRoutesSelector :: Selector
+setIncludedRoutesSelector = mkSelector "setIncludedRoutes:"
+
+-- | @Selector@ for @excludedRoutes@
+excludedRoutesSelector :: Selector
+excludedRoutesSelector = mkSelector "excludedRoutes"
+
+-- | @Selector@ for @setExcludedRoutes:@
+setExcludedRoutesSelector :: Selector
+setExcludedRoutesSelector = mkSelector "setExcludedRoutes:"
 

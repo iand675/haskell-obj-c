@@ -19,6 +19,7 @@ module ObjC.Accessibility.AXBrailleTable
   , localizedName
   , providerIdentifier
   , localizedProviderName
+  , language
   , locales
   , isEightDot
   , supportedLocalesSelector
@@ -32,6 +33,7 @@ module ObjC.Accessibility.AXBrailleTable
   , localizedNameSelector
   , providerIdentifierSelector
   , localizedProviderNameSelector
+  , languageSelector
   , localesSelector
   , isEightDotSelector
 
@@ -139,6 +141,13 @@ localizedProviderName :: IsAXBrailleTable axBrailleTable => axBrailleTable -> IO
 localizedProviderName axBrailleTable  =
     sendMsg axBrailleTable (mkSelector "localizedProviderName") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The 3-character code from ISO 639-2 for the language this Braille table pertains to.
+--
+-- ObjC selector: @- language@
+language :: IsAXBrailleTable axBrailleTable => axBrailleTable -> IO (Id NSString)
+language axBrailleTable  =
+    sendMsg axBrailleTable (mkSelector "language") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | All locales this table supports.
 --
 -- ObjC selector: @- locales@
@@ -200,6 +209,10 @@ providerIdentifierSelector = mkSelector "providerIdentifier"
 -- | @Selector@ for @localizedProviderName@
 localizedProviderNameSelector :: Selector
 localizedProviderNameSelector = mkSelector "localizedProviderName"
+
+-- | @Selector@ for @language@
+languageSelector :: Selector
+languageSelector = mkSelector "language"
 
 -- | @Selector@ for @locales@
 localesSelector :: Selector

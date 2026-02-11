@@ -14,6 +14,8 @@ module ObjC.Foundation.NSXPCListener
   , activate
   , invalidate
   , setConnectionCodeSigningRequirement
+  , delegate
+  , setDelegate
   , endpoint
   , serviceListenerSelector
   , anonymousListenerSelector
@@ -23,6 +25,8 @@ module ObjC.Foundation.NSXPCListener
   , activateSelector
   , invalidateSelector
   , setConnectionCodeSigningRequirementSelector
+  , delegateSelector
+  , setDelegateSelector
   , endpointSelector
 
 
@@ -90,6 +94,16 @@ setConnectionCodeSigningRequirement nsxpcListener  requirement =
   withObjCPtr requirement $ \raw_requirement ->
       sendMsg nsxpcListener (mkSelector "setConnectionCodeSigningRequirement:") retVoid [argPtr (castPtr raw_requirement :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsNSXPCListener nsxpcListener => nsxpcListener -> IO RawId
+delegate nsxpcListener  =
+    fmap (RawId . castPtr) $ sendMsg nsxpcListener (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSXPCListener nsxpcListener => nsxpcListener -> RawId -> IO ()
+setDelegate nsxpcListener  value =
+    sendMsg nsxpcListener (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- endpoint@
 endpoint :: IsNSXPCListener nsxpcListener => nsxpcListener -> IO (Id NSXPCListenerEndpoint)
 endpoint nsxpcListener  =
@@ -130,6 +144,14 @@ invalidateSelector = mkSelector "invalidate"
 -- | @Selector@ for @setConnectionCodeSigningRequirement:@
 setConnectionCodeSigningRequirementSelector :: Selector
 setConnectionCodeSigningRequirementSelector = mkSelector "setConnectionCodeSigningRequirement:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @endpoint@
 endpointSelector :: Selector

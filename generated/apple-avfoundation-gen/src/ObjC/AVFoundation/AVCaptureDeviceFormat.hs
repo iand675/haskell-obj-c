@@ -25,6 +25,8 @@ module ObjC.AVFoundation.AVCaptureDeviceFormat
   , videoStabilizationSupported
   , videoMaxZoomFactor
   , videoZoomFactorUpscaleThreshold
+  , systemRecommendedVideoZoomRange
+  , systemRecommendedExposureBiasRange
   , minISO
   , maxISO
   , globalToneMappingSupported
@@ -32,11 +34,16 @@ module ObjC.AVFoundation.AVCaptureDeviceFormat
   , highPhotoQualitySupported
   , highestPhotoQualitySupported
   , autoFocusSystem
+  , supportedColorSpaces
   , videoMinZoomFactorForDepthDataDelivery
   , videoMaxZoomFactorForDepthDataDelivery
+  , supportedVideoZoomFactorsForDepthDataDelivery
+  , supportedVideoZoomRangesForDepthDataDelivery
   , zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupported
   , supportedDepthDataFormats
   , unsupportedCaptureOutputClasses
+  , supportedMaxPhotoDimensions
+  , secondaryNativeResolutionZoomFactors
   , autoVideoFrameRateSupported
   , cameraLensSmudgeDetectionSupported
   , smartFramingSupported
@@ -47,14 +54,20 @@ module ObjC.AVFoundation.AVCaptureDeviceFormat
   , maxSimulatedAperture
   , videoMinZoomFactorForCinematicVideo
   , videoMaxZoomFactorForCinematicVideo
+  , videoFrameRateRangeForCinematicVideo
   , edgeLightSupported
   , backgroundReplacementSupported
+  , videoFrameRateRangeForBackgroundReplacement
   , reactionEffectsSupported
+  , videoFrameRateRangeForReactionEffectsInProgress
   , studioLightSupported
+  , videoFrameRateRangeForStudioLight
   , portraitEffectSupported
+  , videoFrameRateRangeForPortraitEffect
   , centerStageSupported
   , videoMinZoomFactorForCenterStage
   , videoMaxZoomFactorForCenterStage
+  , videoFrameRateRangeForCenterStage
   , geometricDistortionCorrectedVideoFieldOfView
   , spatialVideoCaptureSupported
   , multiCamSupported
@@ -71,6 +84,8 @@ module ObjC.AVFoundation.AVCaptureDeviceFormat
   , videoStabilizationSupportedSelector
   , videoMaxZoomFactorSelector
   , videoZoomFactorUpscaleThresholdSelector
+  , systemRecommendedVideoZoomRangeSelector
+  , systemRecommendedExposureBiasRangeSelector
   , minISOSelector
   , maxISOSelector
   , globalToneMappingSupportedSelector
@@ -78,11 +93,16 @@ module ObjC.AVFoundation.AVCaptureDeviceFormat
   , highPhotoQualitySupportedSelector
   , highestPhotoQualitySupportedSelector
   , autoFocusSystemSelector
+  , supportedColorSpacesSelector
   , videoMinZoomFactorForDepthDataDeliverySelector
   , videoMaxZoomFactorForDepthDataDeliverySelector
+  , supportedVideoZoomFactorsForDepthDataDeliverySelector
+  , supportedVideoZoomRangesForDepthDataDeliverySelector
   , zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupportedSelector
   , supportedDepthDataFormatsSelector
   , unsupportedCaptureOutputClassesSelector
+  , supportedMaxPhotoDimensionsSelector
+  , secondaryNativeResolutionZoomFactorsSelector
   , autoVideoFrameRateSupportedSelector
   , cameraLensSmudgeDetectionSupportedSelector
   , smartFramingSupportedSelector
@@ -93,14 +113,20 @@ module ObjC.AVFoundation.AVCaptureDeviceFormat
   , maxSimulatedApertureSelector
   , videoMinZoomFactorForCinematicVideoSelector
   , videoMaxZoomFactorForCinematicVideoSelector
+  , videoFrameRateRangeForCinematicVideoSelector
   , edgeLightSupportedSelector
   , backgroundReplacementSupportedSelector
+  , videoFrameRateRangeForBackgroundReplacementSelector
   , reactionEffectsSupportedSelector
+  , videoFrameRateRangeForReactionEffectsInProgressSelector
   , studioLightSupportedSelector
+  , videoFrameRateRangeForStudioLightSelector
   , portraitEffectSupportedSelector
+  , videoFrameRateRangeForPortraitEffectSelector
   , centerStageSupportedSelector
   , videoMinZoomFactorForCenterStageSelector
   , videoMaxZoomFactorForCenterStageSelector
+  , videoFrameRateRangeForCenterStageSelector
   , geometricDistortionCorrectedVideoFieldOfViewSelector
   , spatialVideoCaptureSupportedSelector
   , multiCamSupportedSelector
@@ -262,6 +288,32 @@ videoZoomFactorUpscaleThreshold :: IsAVCaptureDeviceFormat avCaptureDeviceFormat
 videoZoomFactorUpscaleThreshold avCaptureDeviceFormat  =
     sendMsg avCaptureDeviceFormat (mkSelector "videoZoomFactorUpscaleThreshold") retCDouble []
 
+-- | systemRecommendedVideoZoomRange
+--
+-- Indicates the system's recommended zoom range for this device format.
+--
+-- This property can be used to create a slider in your app's user interface to control the device's zoom with a system-recommended video zoom range. When a recommendation is not available, this property returns nil. Clients can key value observe AVCaptureDevice's minAvailableVideoZoomFactor and maxAvailableVideoZoomFactor properties to know when a device's supported zoom is restricted within the recommended zoom range.
+--
+-- The value of this property is also used for the AVCaptureSystemZoomSlider's range.
+--
+-- ObjC selector: @- systemRecommendedVideoZoomRange@
+systemRecommendedVideoZoomRange :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id AVZoomRange)
+systemRecommendedVideoZoomRange avCaptureDeviceFormat  =
+    sendMsg avCaptureDeviceFormat (mkSelector "systemRecommendedVideoZoomRange") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | systemRecommendedExposureBiasRange
+--
+-- Indicates the system's recommended exposure bias range for this device format.
+--
+-- This property can be used to create a slider in your app's user interface to control the device's exposure bias with a system-recommended exposure bias range. When a recommendation is not available, this property returns nil.
+--
+-- The value of this property is also used for the AVCaptureSystemExposureBiasSlider's range.
+--
+-- ObjC selector: @- systemRecommendedExposureBiasRange@
+systemRecommendedExposureBiasRange :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id AVExposureBiasRange)
+systemRecommendedExposureBiasRange avCaptureDeviceFormat  =
+    sendMsg avCaptureDeviceFormat (mkSelector "systemRecommendedExposureBiasRange") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | minISO
 --
 -- A float indicating the minimum supported exposure ISO value.
@@ -339,6 +391,17 @@ autoFocusSystem :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDev
 autoFocusSystem avCaptureDeviceFormat  =
     fmap (coerce :: CLong -> AVCaptureAutoFocusSystem) $ sendMsg avCaptureDeviceFormat (mkSelector "autoFocusSystem") retCLong []
 
+-- | supportedColorSpaces
+--
+-- A property indicating the receiver's supported color spaces.
+--
+-- This read-only property indicates the receiver's supported color spaces as an array of AVCaptureColorSpace constants sorted from narrow to wide color.
+--
+-- ObjC selector: @- supportedColorSpaces@
+supportedColorSpaces :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id NSArray)
+supportedColorSpaces avCaptureDeviceFormat  =
+    sendMsg avCaptureDeviceFormat (mkSelector "supportedColorSpaces") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | videoMinZoomFactorForDepthDataDelivery
 --
 -- A deprecated property. Please use supportedVideoZoomFactorsForDepthDataDelivery instead
@@ -356,6 +419,28 @@ videoMinZoomFactorForDepthDataDelivery avCaptureDeviceFormat  =
 videoMaxZoomFactorForDepthDataDelivery :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO CDouble
 videoMaxZoomFactorForDepthDataDelivery avCaptureDeviceFormat  =
     sendMsg avCaptureDeviceFormat (mkSelector "videoMaxZoomFactorForDepthDataDelivery") retCDouble []
+
+-- | supportedVideoZoomFactorsForDepthDataDelivery
+--
+-- A deprecated property. Please use supportedVideoZoomRangesForDepthDataDelivery
+--
+-- ObjC selector: @- supportedVideoZoomFactorsForDepthDataDelivery@
+supportedVideoZoomFactorsForDepthDataDelivery :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id NSArray)
+supportedVideoZoomFactorsForDepthDataDelivery avCaptureDeviceFormat  =
+    sendMsg avCaptureDeviceFormat (mkSelector "supportedVideoZoomFactorsForDepthDataDelivery") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | supportedVideoZoomRangesForDepthDataDelivery
+--
+-- This property returns the zoom ranges within which depth data can be delivered.
+--
+-- Virtual devices support limited zoom ranges when delivering depth data to any output. If this device format has no -supportedDepthDataFormats, this property returns an empty array.    The presence of one or more ranges where the min and max zoom factors are not equal means that "continuous zoom" with depth is supported.    For example:    a) ranges: \@[ [2..2], [4..4] ]        only zoom factors 2 and 4 are allowed to be set when depthDataDelivery is enabled. Any other zoom factor results in an exception.    b) ranges: \@[ [2..5] ]        depthDataDelivery is supported with zoom factors [2..5]. Zoom factors outside of this range may be set, but will result in loss of depthDataDeliery. Whenever zoom is set back to a value within the range of [2..5], depthDataDelivery will resume.
+--
+-- When depth data delivery is enabled, the effective videoZoomFactorUpscaleThreshold will be 1.0, meaning that all zoom factors that are not native zoom factors (see AVCaptureDevice.virtualDeviceSwitchOverVideoZoomFactors and AVCaptureDevice.secondaryNativeResolutionZoomFactors) result in digital upscaling.
+--
+-- ObjC selector: @- supportedVideoZoomRangesForDepthDataDelivery@
+supportedVideoZoomRangesForDepthDataDelivery :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id NSArray)
+supportedVideoZoomRangesForDepthDataDelivery avCaptureDeviceFormat  =
+    sendMsg avCaptureDeviceFormat (mkSelector "supportedVideoZoomRangesForDepthDataDelivery") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupported
 --
@@ -389,6 +474,28 @@ supportedDepthDataFormats avCaptureDeviceFormat  =
 unsupportedCaptureOutputClasses :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id NSArray)
 unsupportedCaptureOutputClasses avCaptureDeviceFormat  =
     sendMsg avCaptureDeviceFormat (mkSelector "unsupportedCaptureOutputClasses") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | supportedMaxPhotoDimensions
+--
+-- This property lists all of the supported maximum photo dimensions for this format. The array contains CMVideoDimensions structs encoded as NSValues.
+--
+-- Enumerate all supported resolution settings for which this format may be configured to capture photos. Use these values to set AVCapturePhotoOutput.maxPhotoDimensions and AVCapturePhotoSettings.maxPhotoDimensions.
+--
+-- ObjC selector: @- supportedMaxPhotoDimensions@
+supportedMaxPhotoDimensions :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id NSArray)
+supportedMaxPhotoDimensions avCaptureDeviceFormat  =
+    sendMsg avCaptureDeviceFormat (mkSelector "supportedMaxPhotoDimensions") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | secondaryNativeResolutionZoomFactors
+--
+-- Indicates zoom factors at which this device transitions to secondary native resolution modes.
+--
+-- Devices with this property have the means to switch their pixel sampling mode on the fly to produce a high-fidelity, non-upsampled images at a fixed zoom factor beyond 1.0x.
+--
+-- ObjC selector: @- secondaryNativeResolutionZoomFactors@
+secondaryNativeResolutionZoomFactors :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id NSArray)
+secondaryNativeResolutionZoomFactors avCaptureDeviceFormat  =
+    sendMsg avCaptureDeviceFormat (mkSelector "secondaryNativeResolutionZoomFactors") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | autoVideoFrameRateSupported
 --
@@ -482,6 +589,15 @@ videoMaxZoomFactorForCinematicVideo :: IsAVCaptureDeviceFormat avCaptureDeviceFo
 videoMaxZoomFactorForCinematicVideo avCaptureDeviceFormat  =
     sendMsg avCaptureDeviceFormat (mkSelector "videoMaxZoomFactorForCinematicVideo") retCDouble []
 
+-- | Indicates the minimum / maximum frame rates available when Cinematic Video capture is enabled on the device input.
+--
+-- Devices may support a limited frame rate range when Cinematic Video capture is active. If this device format does not support Cinematic Video capture, this property returns @nil@.
+--
+-- ObjC selector: @- videoFrameRateRangeForCinematicVideo@
+videoFrameRateRangeForCinematicVideo :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id AVFrameRateRange)
+videoFrameRateRangeForCinematicVideo avCaptureDeviceFormat  =
+    sendMsg avCaptureDeviceFormat (mkSelector "videoFrameRateRangeForCinematicVideo") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Indicates whether the format supports the Edge Light feature.
 --
 -- This property returns YES if the device supports the Edge Light feature. See +AVCaptureDevice.edgeLightEnabled.
@@ -502,6 +618,17 @@ backgroundReplacementSupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat 
 backgroundReplacementSupported avCaptureDeviceFormat  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "backgroundReplacementSupported") retCULong []
 
+-- | videoFrameRateRangeForBackgroundReplacement
+--
+-- Indicates the minimum / maximum frame rates available when background replacement is active.
+--
+-- Devices may support a limited frame rate range when Background Replacement is active. If this device format does not support Background Replacement, this property returns nil.
+--
+-- ObjC selector: @- videoFrameRateRangeForBackgroundReplacement@
+videoFrameRateRangeForBackgroundReplacement :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id AVFrameRateRange)
+videoFrameRateRangeForBackgroundReplacement avCaptureDeviceFormat  =
+    sendMsg avCaptureDeviceFormat (mkSelector "videoFrameRateRangeForBackgroundReplacement") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | reactionEffectsSupported
 --
 -- Indicates whether the format supports the Reaction Effects feature.
@@ -512,6 +639,17 @@ backgroundReplacementSupported avCaptureDeviceFormat  =
 reactionEffectsSupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
 reactionEffectsSupported avCaptureDeviceFormat  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "reactionEffectsSupported") retCULong []
+
+-- | videoFrameRateRangeForReactionEffectsInProgress
+--
+-- Indicates the minimum / maximum frame rates available when a reaction effect is running.
+--
+-- Unlike the other video effects, enabling reaction effects does not limit the stream's frame rate because most of the time no rendering is being performed. The frame rate will only ramp down when a reaction is actually being rendered on the stream (see AVCaptureDevice.reactionEffectsInProgress)
+--
+-- ObjC selector: @- videoFrameRateRangeForReactionEffectsInProgress@
+videoFrameRateRangeForReactionEffectsInProgress :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id AVFrameRateRange)
+videoFrameRateRangeForReactionEffectsInProgress avCaptureDeviceFormat  =
+    sendMsg avCaptureDeviceFormat (mkSelector "videoFrameRateRangeForReactionEffectsInProgress") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | studioLightSupported
 --
@@ -524,6 +662,17 @@ studioLightSupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptu
 studioLightSupported avCaptureDeviceFormat  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "studioLightSupported") retCULong []
 
+-- | videoFrameRateRangeForStudioLight
+--
+-- Indicates the minimum / maximum frame rates available when studioLight is YES.
+--
+-- Devices may support a limited frame rate range when Studio Light is active. If this device format does not support Studio Light, this property returns nil.
+--
+-- ObjC selector: @- videoFrameRateRangeForStudioLight@
+videoFrameRateRangeForStudioLight :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id AVFrameRateRange)
+videoFrameRateRangeForStudioLight avCaptureDeviceFormat  =
+    sendMsg avCaptureDeviceFormat (mkSelector "videoFrameRateRangeForStudioLight") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | portraitEffectSupported
 --
 -- Indicates whether the format supports the Portrait Effect feature.
@@ -534,6 +683,17 @@ studioLightSupported avCaptureDeviceFormat  =
 portraitEffectSupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
 portraitEffectSupported avCaptureDeviceFormat  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "portraitEffectSupported") retCULong []
+
+-- | videoFrameRateRangeForPortraitEffect
+--
+-- Indicates the minimum / maximum frame rates available when portraitEffectActive is YES.
+--
+-- Devices may support a limited frame rate range when Portrait Effect is active. If this device format does not support Portrait Effect, this property returns nil.
+--
+-- ObjC selector: @- videoFrameRateRangeForPortraitEffect@
+videoFrameRateRangeForPortraitEffect :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id AVFrameRateRange)
+videoFrameRateRangeForPortraitEffect avCaptureDeviceFormat  =
+    sendMsg avCaptureDeviceFormat (mkSelector "videoFrameRateRangeForPortraitEffect") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | centerStageSupported
 --
@@ -567,6 +727,17 @@ videoMinZoomFactorForCenterStage avCaptureDeviceFormat  =
 videoMaxZoomFactorForCenterStage :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO CDouble
 videoMaxZoomFactorForCenterStage avCaptureDeviceFormat  =
     sendMsg avCaptureDeviceFormat (mkSelector "videoMaxZoomFactorForCenterStage") retCDouble []
+
+-- | videoFrameRateRangeForCenterStage
+--
+-- Indicates the minimum / maximum frame rates available when centerStageActive is YES.
+--
+-- Devices may support a limited frame rate range when Center Stage is active. If this device format does not support Center Stage, this property returns nil.
+--
+-- ObjC selector: @- videoFrameRateRangeForCenterStage@
+videoFrameRateRangeForCenterStage :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id AVFrameRateRange)
+videoFrameRateRangeForCenterStage avCaptureDeviceFormat  =
+    sendMsg avCaptureDeviceFormat (mkSelector "videoFrameRateRangeForCenterStage") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | geometricDistortionCorrectedVideoFieldOfView
 --
@@ -656,6 +827,14 @@ videoMaxZoomFactorSelector = mkSelector "videoMaxZoomFactor"
 videoZoomFactorUpscaleThresholdSelector :: Selector
 videoZoomFactorUpscaleThresholdSelector = mkSelector "videoZoomFactorUpscaleThreshold"
 
+-- | @Selector@ for @systemRecommendedVideoZoomRange@
+systemRecommendedVideoZoomRangeSelector :: Selector
+systemRecommendedVideoZoomRangeSelector = mkSelector "systemRecommendedVideoZoomRange"
+
+-- | @Selector@ for @systemRecommendedExposureBiasRange@
+systemRecommendedExposureBiasRangeSelector :: Selector
+systemRecommendedExposureBiasRangeSelector = mkSelector "systemRecommendedExposureBiasRange"
+
 -- | @Selector@ for @minISO@
 minISOSelector :: Selector
 minISOSelector = mkSelector "minISO"
@@ -684,6 +863,10 @@ highestPhotoQualitySupportedSelector = mkSelector "highestPhotoQualitySupported"
 autoFocusSystemSelector :: Selector
 autoFocusSystemSelector = mkSelector "autoFocusSystem"
 
+-- | @Selector@ for @supportedColorSpaces@
+supportedColorSpacesSelector :: Selector
+supportedColorSpacesSelector = mkSelector "supportedColorSpaces"
+
 -- | @Selector@ for @videoMinZoomFactorForDepthDataDelivery@
 videoMinZoomFactorForDepthDataDeliverySelector :: Selector
 videoMinZoomFactorForDepthDataDeliverySelector = mkSelector "videoMinZoomFactorForDepthDataDelivery"
@@ -691,6 +874,14 @@ videoMinZoomFactorForDepthDataDeliverySelector = mkSelector "videoMinZoomFactorF
 -- | @Selector@ for @videoMaxZoomFactorForDepthDataDelivery@
 videoMaxZoomFactorForDepthDataDeliverySelector :: Selector
 videoMaxZoomFactorForDepthDataDeliverySelector = mkSelector "videoMaxZoomFactorForDepthDataDelivery"
+
+-- | @Selector@ for @supportedVideoZoomFactorsForDepthDataDelivery@
+supportedVideoZoomFactorsForDepthDataDeliverySelector :: Selector
+supportedVideoZoomFactorsForDepthDataDeliverySelector = mkSelector "supportedVideoZoomFactorsForDepthDataDelivery"
+
+-- | @Selector@ for @supportedVideoZoomRangesForDepthDataDelivery@
+supportedVideoZoomRangesForDepthDataDeliverySelector :: Selector
+supportedVideoZoomRangesForDepthDataDeliverySelector = mkSelector "supportedVideoZoomRangesForDepthDataDelivery"
 
 -- | @Selector@ for @zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupported@
 zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupportedSelector :: Selector
@@ -703,6 +894,14 @@ supportedDepthDataFormatsSelector = mkSelector "supportedDepthDataFormats"
 -- | @Selector@ for @unsupportedCaptureOutputClasses@
 unsupportedCaptureOutputClassesSelector :: Selector
 unsupportedCaptureOutputClassesSelector = mkSelector "unsupportedCaptureOutputClasses"
+
+-- | @Selector@ for @supportedMaxPhotoDimensions@
+supportedMaxPhotoDimensionsSelector :: Selector
+supportedMaxPhotoDimensionsSelector = mkSelector "supportedMaxPhotoDimensions"
+
+-- | @Selector@ for @secondaryNativeResolutionZoomFactors@
+secondaryNativeResolutionZoomFactorsSelector :: Selector
+secondaryNativeResolutionZoomFactorsSelector = mkSelector "secondaryNativeResolutionZoomFactors"
 
 -- | @Selector@ for @autoVideoFrameRateSupported@
 autoVideoFrameRateSupportedSelector :: Selector
@@ -744,6 +943,10 @@ videoMinZoomFactorForCinematicVideoSelector = mkSelector "videoMinZoomFactorForC
 videoMaxZoomFactorForCinematicVideoSelector :: Selector
 videoMaxZoomFactorForCinematicVideoSelector = mkSelector "videoMaxZoomFactorForCinematicVideo"
 
+-- | @Selector@ for @videoFrameRateRangeForCinematicVideo@
+videoFrameRateRangeForCinematicVideoSelector :: Selector
+videoFrameRateRangeForCinematicVideoSelector = mkSelector "videoFrameRateRangeForCinematicVideo"
+
 -- | @Selector@ for @edgeLightSupported@
 edgeLightSupportedSelector :: Selector
 edgeLightSupportedSelector = mkSelector "edgeLightSupported"
@@ -752,17 +955,33 @@ edgeLightSupportedSelector = mkSelector "edgeLightSupported"
 backgroundReplacementSupportedSelector :: Selector
 backgroundReplacementSupportedSelector = mkSelector "backgroundReplacementSupported"
 
+-- | @Selector@ for @videoFrameRateRangeForBackgroundReplacement@
+videoFrameRateRangeForBackgroundReplacementSelector :: Selector
+videoFrameRateRangeForBackgroundReplacementSelector = mkSelector "videoFrameRateRangeForBackgroundReplacement"
+
 -- | @Selector@ for @reactionEffectsSupported@
 reactionEffectsSupportedSelector :: Selector
 reactionEffectsSupportedSelector = mkSelector "reactionEffectsSupported"
+
+-- | @Selector@ for @videoFrameRateRangeForReactionEffectsInProgress@
+videoFrameRateRangeForReactionEffectsInProgressSelector :: Selector
+videoFrameRateRangeForReactionEffectsInProgressSelector = mkSelector "videoFrameRateRangeForReactionEffectsInProgress"
 
 -- | @Selector@ for @studioLightSupported@
 studioLightSupportedSelector :: Selector
 studioLightSupportedSelector = mkSelector "studioLightSupported"
 
+-- | @Selector@ for @videoFrameRateRangeForStudioLight@
+videoFrameRateRangeForStudioLightSelector :: Selector
+videoFrameRateRangeForStudioLightSelector = mkSelector "videoFrameRateRangeForStudioLight"
+
 -- | @Selector@ for @portraitEffectSupported@
 portraitEffectSupportedSelector :: Selector
 portraitEffectSupportedSelector = mkSelector "portraitEffectSupported"
+
+-- | @Selector@ for @videoFrameRateRangeForPortraitEffect@
+videoFrameRateRangeForPortraitEffectSelector :: Selector
+videoFrameRateRangeForPortraitEffectSelector = mkSelector "videoFrameRateRangeForPortraitEffect"
 
 -- | @Selector@ for @centerStageSupported@
 centerStageSupportedSelector :: Selector
@@ -775,6 +994,10 @@ videoMinZoomFactorForCenterStageSelector = mkSelector "videoMinZoomFactorForCent
 -- | @Selector@ for @videoMaxZoomFactorForCenterStage@
 videoMaxZoomFactorForCenterStageSelector :: Selector
 videoMaxZoomFactorForCenterStageSelector = mkSelector "videoMaxZoomFactorForCenterStage"
+
+-- | @Selector@ for @videoFrameRateRangeForCenterStage@
+videoFrameRateRangeForCenterStageSelector :: Selector
+videoFrameRateRangeForCenterStageSelector = mkSelector "videoFrameRateRangeForCenterStage"
 
 -- | @Selector@ for @geometricDistortionCorrectedVideoFieldOfView@
 geometricDistortionCorrectedVideoFieldOfViewSelector :: Selector

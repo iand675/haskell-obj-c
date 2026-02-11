@@ -20,9 +20,11 @@ module ObjC.GameKit.GKAchievementDescription
   , maximumPoints
   , hidden
   , replayable
+  , rarityPercent
   , releaseState
   , activityIdentifier
   , activityProperties
+  , image
   , loadImageWithCompletionHandlerSelector
   , incompleteAchievementImageSelector
   , placeholderCompletedAchievementImageSelector
@@ -34,9 +36,11 @@ module ObjC.GameKit.GKAchievementDescription
   , maximumPointsSelector
   , hiddenSelector
   , replayableSelector
+  , rarityPercentSelector
   , releaseStateSelector
   , activityIdentifierSelector
   , activityPropertiesSelector
+  , imageSelector
 
   -- * Enum types
   , GKReleaseState(GKReleaseState)
@@ -136,6 +140,13 @@ replayable :: IsGKAchievementDescription gkAchievementDescription => gkAchieveme
 replayable gkAchievementDescription  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkAchievementDescription (mkSelector "replayable") retCULong []
 
+-- | If present, the rarity of the achievement expressed as a percentage of players that earned it. Null if not enough data is available to compute it.
+--
+-- ObjC selector: @- rarityPercent@
+rarityPercent :: IsGKAchievementDescription gkAchievementDescription => gkAchievementDescription -> IO (Id NSNumber)
+rarityPercent gkAchievementDescription  =
+    sendMsg gkAchievementDescription (mkSelector "rarityPercent") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | The release state of the achievement in App Store Connect.
 --
 -- ObjC selector: @- releaseState@
@@ -156,6 +167,11 @@ activityIdentifier gkAchievementDescription  =
 activityProperties :: IsGKAchievementDescription gkAchievementDescription => gkAchievementDescription -> IO (Id NSDictionary)
 activityProperties gkAchievementDescription  =
     sendMsg gkAchievementDescription (mkSelector "activityProperties") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- image@
+image :: IsGKAchievementDescription gkAchievementDescription => gkAchievementDescription -> IO (Id NSImage)
+image gkAchievementDescription  =
+    sendMsg gkAchievementDescription (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -205,6 +221,10 @@ hiddenSelector = mkSelector "hidden"
 replayableSelector :: Selector
 replayableSelector = mkSelector "replayable"
 
+-- | @Selector@ for @rarityPercent@
+rarityPercentSelector :: Selector
+rarityPercentSelector = mkSelector "rarityPercent"
+
 -- | @Selector@ for @releaseState@
 releaseStateSelector :: Selector
 releaseStateSelector = mkSelector "releaseState"
@@ -216,4 +236,8 @@ activityIdentifierSelector = mkSelector "activityIdentifier"
 -- | @Selector@ for @activityProperties@
 activityPropertiesSelector :: Selector
 activityPropertiesSelector = mkSelector "activityProperties"
+
+-- | @Selector@ for @image@
+imageSelector :: Selector
+imageSelector = mkSelector "image"
 

@@ -34,6 +34,8 @@ module ObjC.CoreBluetooth.CBPeripheralManager
   , updateValue_forCharacteristic_onSubscribedCentrals
   , publishL2CAPChannelWithEncryption
   , unpublishL2CAPChannel
+  , delegate
+  , setDelegate
   , isAdvertising
   , authorizationStatusSelector
   , initSelector
@@ -49,6 +51,8 @@ module ObjC.CoreBluetooth.CBPeripheralManager
   , updateValue_forCharacteristic_onSubscribedCentralsSelector
   , publishL2CAPChannelWithEncryptionSelector
   , unpublishL2CAPChannelSelector
+  , delegateSelector
+  , setDelegateSelector
   , isAdvertisingSelector
 
   -- * Enum types
@@ -317,6 +321,24 @@ unpublishL2CAPChannel :: IsCBPeripheralManager cbPeripheralManager => cbPeripher
 unpublishL2CAPChannel cbPeripheralManager  psm =
     sendMsg cbPeripheralManager (mkSelector "unpublishL2CAPChannel:") retVoid [argCUInt (fromIntegral psm)]
 
+-- | delegate
+--
+-- The delegate object that will receive peripheral events.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsCBPeripheralManager cbPeripheralManager => cbPeripheralManager -> IO RawId
+delegate cbPeripheralManager  =
+    fmap (RawId . castPtr) $ sendMsg cbPeripheralManager (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- The delegate object that will receive peripheral events.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsCBPeripheralManager cbPeripheralManager => cbPeripheralManager -> RawId -> IO ()
+setDelegate cbPeripheralManager  value =
+    sendMsg cbPeripheralManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | isAdvertising
 --
 -- Whether or not the peripheral is currently advertising data.
@@ -385,6 +407,14 @@ publishL2CAPChannelWithEncryptionSelector = mkSelector "publishL2CAPChannelWithE
 -- | @Selector@ for @unpublishL2CAPChannel:@
 unpublishL2CAPChannelSelector :: Selector
 unpublishL2CAPChannelSelector = mkSelector "unpublishL2CAPChannel:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @isAdvertising@
 isAdvertisingSelector :: Selector

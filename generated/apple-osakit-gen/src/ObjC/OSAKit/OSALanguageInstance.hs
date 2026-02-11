@@ -11,11 +11,15 @@ module ObjC.OSAKit.OSALanguageInstance
   , richTextFromDescriptor
   , language
   , componentInstance
+  , defaultTarget
+  , setDefaultTarget
   , languageInstanceWithLanguageSelector
   , initWithLanguageSelector
   , richTextFromDescriptorSelector
   , languageSelector
   , componentInstanceSelector
+  , defaultTargetSelector
+  , setDefaultTargetSelector
 
 
   ) where
@@ -65,6 +69,16 @@ componentInstance :: IsOSALanguageInstance osaLanguageInstance => osaLanguageIns
 componentInstance osaLanguageInstance  =
     fmap (RawId . castPtr) $ sendMsg osaLanguageInstance (mkSelector "componentInstance") (retPtr retVoid) []
 
+-- | @- defaultTarget@
+defaultTarget :: IsOSALanguageInstance osaLanguageInstance => osaLanguageInstance -> IO RawId
+defaultTarget osaLanguageInstance  =
+    fmap (RawId . castPtr) $ sendMsg osaLanguageInstance (mkSelector "defaultTarget") (retPtr retVoid) []
+
+-- | @- setDefaultTarget:@
+setDefaultTarget :: IsOSALanguageInstance osaLanguageInstance => osaLanguageInstance -> RawId -> IO ()
+setDefaultTarget osaLanguageInstance  value =
+    sendMsg osaLanguageInstance (mkSelector "setDefaultTarget:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -88,4 +102,12 @@ languageSelector = mkSelector "language"
 -- | @Selector@ for @componentInstance@
 componentInstanceSelector :: Selector
 componentInstanceSelector = mkSelector "componentInstance"
+
+-- | @Selector@ for @defaultTarget@
+defaultTargetSelector :: Selector
+defaultTargetSelector = mkSelector "defaultTarget"
+
+-- | @Selector@ for @setDefaultTarget:@
+setDefaultTargetSelector :: Selector
+setDefaultTargetSelector = mkSelector "setDefaultTarget:"
 

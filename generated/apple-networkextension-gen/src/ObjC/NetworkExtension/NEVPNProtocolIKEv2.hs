@@ -15,10 +15,16 @@ module ObjC.NetworkExtension.NEVPNProtocolIKEv2
   , IsNEVPNProtocolIKEv2(..)
   , deadPeerDetectionRate
   , setDeadPeerDetectionRate
+  , serverCertificateIssuerCommonName
+  , setServerCertificateIssuerCommonName
+  , serverCertificateCommonName
+  , setServerCertificateCommonName
   , certificateType
   , setCertificateType
   , useConfigurationAttributeInternalIPSubnet
   , setUseConfigurationAttributeInternalIPSubnet
+  , ikeSecurityAssociationParameters
+  , childSecurityAssociationParameters
   , disableMOBIKE
   , setDisableMOBIKE
   , disableRedirect
@@ -39,12 +45,20 @@ module ObjC.NetworkExtension.NEVPNProtocolIKEv2
   , setEnableFallback
   , mtu
   , setMtu
+  , ppkConfiguration
+  , setPpkConfiguration
   , deadPeerDetectionRateSelector
   , setDeadPeerDetectionRateSelector
+  , serverCertificateIssuerCommonNameSelector
+  , setServerCertificateIssuerCommonNameSelector
+  , serverCertificateCommonNameSelector
+  , setServerCertificateCommonNameSelector
   , certificateTypeSelector
   , setCertificateTypeSelector
   , useConfigurationAttributeInternalIPSubnetSelector
   , setUseConfigurationAttributeInternalIPSubnetSelector
+  , ikeSecurityAssociationParametersSelector
+  , childSecurityAssociationParametersSelector
   , disableMOBIKESelector
   , setDisableMOBIKESelector
   , disableRedirectSelector
@@ -65,6 +79,8 @@ module ObjC.NetworkExtension.NEVPNProtocolIKEv2
   , setEnableFallbackSelector
   , mtuSelector
   , setMtuSelector
+  , ppkConfigurationSelector
+  , setPpkConfigurationSelector
 
   -- * Enum types
   , NEVPNIKEv2CertificateType(NEVPNIKEv2CertificateType)
@@ -121,6 +137,44 @@ setDeadPeerDetectionRate :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProt
 setDeadPeerDetectionRate nevpnProtocolIKEv2  value =
     sendMsg nevpnProtocolIKEv2 (mkSelector "setDeadPeerDetectionRate:") retVoid [argCLong (coerce value)]
 
+-- | serverCertificateIssuerCommonName
+--
+-- A string containing the Subject Common Name field of the Certificate Authority certificate that issued the IKEv2 server's certificate.
+--
+-- ObjC selector: @- serverCertificateIssuerCommonName@
+serverCertificateIssuerCommonName :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO (Id NSString)
+serverCertificateIssuerCommonName nevpnProtocolIKEv2  =
+    sendMsg nevpnProtocolIKEv2 (mkSelector "serverCertificateIssuerCommonName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | serverCertificateIssuerCommonName
+--
+-- A string containing the Subject Common Name field of the Certificate Authority certificate that issued the IKEv2 server's certificate.
+--
+-- ObjC selector: @- setServerCertificateIssuerCommonName:@
+setServerCertificateIssuerCommonName :: (IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2, IsNSString value) => nevpnProtocolIKEv2 -> value -> IO ()
+setServerCertificateIssuerCommonName nevpnProtocolIKEv2  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nevpnProtocolIKEv2 (mkSelector "setServerCertificateIssuerCommonName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | serverCertificateCommonName
+--
+-- A string containing the value to verify in the IKEv2 server certificate's Subject Common Name field.
+--
+-- ObjC selector: @- serverCertificateCommonName@
+serverCertificateCommonName :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO (Id NSString)
+serverCertificateCommonName nevpnProtocolIKEv2  =
+    sendMsg nevpnProtocolIKEv2 (mkSelector "serverCertificateCommonName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | serverCertificateCommonName
+--
+-- A string containing the value to verify in the IKEv2 server certificate's Subject Common Name field.
+--
+-- ObjC selector: @- setServerCertificateCommonName:@
+setServerCertificateCommonName :: (IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2, IsNSString value) => nevpnProtocolIKEv2 -> value -> IO ()
+setServerCertificateCommonName nevpnProtocolIKEv2  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nevpnProtocolIKEv2 (mkSelector "setServerCertificateCommonName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | certificateType
 --
 -- contains the type of certificate if an certificate is configured.  Default is RSA.
@@ -156,6 +210,24 @@ useConfigurationAttributeInternalIPSubnet nevpnProtocolIKEv2  =
 setUseConfigurationAttributeInternalIPSubnet :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> Bool -> IO ()
 setUseConfigurationAttributeInternalIPSubnet nevpnProtocolIKEv2  value =
     sendMsg nevpnProtocolIKEv2 (mkSelector "setUseConfigurationAttributeInternalIPSubnet:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | IKESecurityAssociationParameters
+--
+-- Parameters for the IKE SA
+--
+-- ObjC selector: @- IKESecurityAssociationParameters@
+ikeSecurityAssociationParameters :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO (Id NEVPNIKEv2SecurityAssociationParameters)
+ikeSecurityAssociationParameters nevpnProtocolIKEv2  =
+    sendMsg nevpnProtocolIKEv2 (mkSelector "IKESecurityAssociationParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | childSecurityAssociationParameters
+--
+-- Parameters for the child SA
+--
+-- ObjC selector: @- childSecurityAssociationParameters@
+childSecurityAssociationParameters :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO (Id NEVPNIKEv2SecurityAssociationParameters)
+childSecurityAssociationParameters nevpnProtocolIKEv2  =
+    sendMsg nevpnProtocolIKEv2 (mkSelector "childSecurityAssociationParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | disableMOBIKE
 --
@@ -337,6 +409,25 @@ setMtu :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> CULon
 setMtu nevpnProtocolIKEv2  value =
     sendMsg nevpnProtocolIKEv2 (mkSelector "setMtu:") retVoid [argCULong value]
 
+-- | ppkConfiguration
+--
+-- Configuration for the use of a Post-quantum Pre-shared Key (PPK).
+--
+-- ObjC selector: @- ppkConfiguration@
+ppkConfiguration :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO (Id NEVPNIKEv2PPKConfiguration)
+ppkConfiguration nevpnProtocolIKEv2  =
+    sendMsg nevpnProtocolIKEv2 (mkSelector "ppkConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | ppkConfiguration
+--
+-- Configuration for the use of a Post-quantum Pre-shared Key (PPK).
+--
+-- ObjC selector: @- setPpkConfiguration:@
+setPpkConfiguration :: (IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2, IsNEVPNIKEv2PPKConfiguration value) => nevpnProtocolIKEv2 -> value -> IO ()
+setPpkConfiguration nevpnProtocolIKEv2  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nevpnProtocolIKEv2 (mkSelector "setPpkConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -348,6 +439,22 @@ deadPeerDetectionRateSelector = mkSelector "deadPeerDetectionRate"
 -- | @Selector@ for @setDeadPeerDetectionRate:@
 setDeadPeerDetectionRateSelector :: Selector
 setDeadPeerDetectionRateSelector = mkSelector "setDeadPeerDetectionRate:"
+
+-- | @Selector@ for @serverCertificateIssuerCommonName@
+serverCertificateIssuerCommonNameSelector :: Selector
+serverCertificateIssuerCommonNameSelector = mkSelector "serverCertificateIssuerCommonName"
+
+-- | @Selector@ for @setServerCertificateIssuerCommonName:@
+setServerCertificateIssuerCommonNameSelector :: Selector
+setServerCertificateIssuerCommonNameSelector = mkSelector "setServerCertificateIssuerCommonName:"
+
+-- | @Selector@ for @serverCertificateCommonName@
+serverCertificateCommonNameSelector :: Selector
+serverCertificateCommonNameSelector = mkSelector "serverCertificateCommonName"
+
+-- | @Selector@ for @setServerCertificateCommonName:@
+setServerCertificateCommonNameSelector :: Selector
+setServerCertificateCommonNameSelector = mkSelector "setServerCertificateCommonName:"
 
 -- | @Selector@ for @certificateType@
 certificateTypeSelector :: Selector
@@ -364,6 +471,14 @@ useConfigurationAttributeInternalIPSubnetSelector = mkSelector "useConfiguration
 -- | @Selector@ for @setUseConfigurationAttributeInternalIPSubnet:@
 setUseConfigurationAttributeInternalIPSubnetSelector :: Selector
 setUseConfigurationAttributeInternalIPSubnetSelector = mkSelector "setUseConfigurationAttributeInternalIPSubnet:"
+
+-- | @Selector@ for @IKESecurityAssociationParameters@
+ikeSecurityAssociationParametersSelector :: Selector
+ikeSecurityAssociationParametersSelector = mkSelector "IKESecurityAssociationParameters"
+
+-- | @Selector@ for @childSecurityAssociationParameters@
+childSecurityAssociationParametersSelector :: Selector
+childSecurityAssociationParametersSelector = mkSelector "childSecurityAssociationParameters"
 
 -- | @Selector@ for @disableMOBIKE@
 disableMOBIKESelector :: Selector
@@ -444,4 +559,12 @@ mtuSelector = mkSelector "mtu"
 -- | @Selector@ for @setMtu:@
 setMtuSelector :: Selector
 setMtuSelector = mkSelector "setMtu:"
+
+-- | @Selector@ for @ppkConfiguration@
+ppkConfigurationSelector :: Selector
+ppkConfigurationSelector = mkSelector "ppkConfiguration"
+
+-- | @Selector@ for @setPpkConfiguration:@
+setPpkConfigurationSelector :: Selector
+setPpkConfigurationSelector = mkSelector "setPpkConfiguration:"
 

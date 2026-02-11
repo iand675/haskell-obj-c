@@ -14,6 +14,7 @@ module ObjC.AVFoundation.AVMetricPlayerItemVariantSwitchStartEvent
   , new
   , fromVariant
   , toVariant
+  , loadedTimeRanges
   , videoRendition
   , audioRendition
   , subtitleRendition
@@ -21,6 +22,7 @@ module ObjC.AVFoundation.AVMetricPlayerItemVariantSwitchStartEvent
   , newSelector
   , fromVariantSelector
   , toVariantSelector
+  , loadedTimeRangesSelector
   , videoRenditionSelector
   , audioRenditionSelector
   , subtitleRenditionSelector
@@ -69,6 +71,15 @@ toVariant :: IsAVMetricPlayerItemVariantSwitchStartEvent avMetricPlayerItemVaria
 toVariant avMetricPlayerItemVariantSwitchStartEvent  =
     sendMsg avMetricPlayerItemVariantSwitchStartEvent (mkSelector "toVariant") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | This property provides a collection of time ranges for which the player has the media data readily available. The ranges provided might be discontinuous.
+--
+-- Returns an NSArray of NSValues containing CMTimeRanges.
+--
+-- ObjC selector: @- loadedTimeRanges@
+loadedTimeRanges :: IsAVMetricPlayerItemVariantSwitchStartEvent avMetricPlayerItemVariantSwitchStartEvent => avMetricPlayerItemVariantSwitchStartEvent -> IO (Id NSArray)
+loadedTimeRanges avMetricPlayerItemVariantSwitchStartEvent  =
+    sendMsg avMetricPlayerItemVariantSwitchStartEvent (mkSelector "loadedTimeRanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | videoRendition
 --
 -- Contains information corresponding to the currently selected video rendition.
@@ -115,6 +126,10 @@ fromVariantSelector = mkSelector "fromVariant"
 -- | @Selector@ for @toVariant@
 toVariantSelector :: Selector
 toVariantSelector = mkSelector "toVariant"
+
+-- | @Selector@ for @loadedTimeRanges@
+loadedTimeRangesSelector :: Selector
+loadedTimeRangesSelector = mkSelector "loadedTimeRanges"
 
 -- | @Selector@ for @videoRendition@
 videoRenditionSelector :: Selector

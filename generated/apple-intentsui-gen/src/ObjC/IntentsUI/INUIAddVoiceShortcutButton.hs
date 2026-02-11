@@ -11,6 +11,8 @@ module ObjC.IntentsUI.INUIAddVoiceShortcutButton
   , init_
   , style
   , setStyle
+  , delegate
+  , setDelegate
   , shortcut
   , setShortcut
   , cornerRadius
@@ -19,6 +21,8 @@ module ObjC.IntentsUI.INUIAddVoiceShortcutButton
   , initSelector
   , styleSelector
   , setStyleSelector
+  , delegateSelector
+  , setDelegateSelector
   , shortcutSelector
   , setShortcutSelector
   , cornerRadiusSelector
@@ -73,6 +77,16 @@ setStyle :: IsINUIAddVoiceShortcutButton inuiAddVoiceShortcutButton => inuiAddVo
 setStyle inuiAddVoiceShortcutButton  value =
     sendMsg inuiAddVoiceShortcutButton (mkSelector "setStyle:") retVoid [argCULong (coerce value)]
 
+-- | @- delegate@
+delegate :: IsINUIAddVoiceShortcutButton inuiAddVoiceShortcutButton => inuiAddVoiceShortcutButton -> IO RawId
+delegate inuiAddVoiceShortcutButton  =
+    fmap (RawId . castPtr) $ sendMsg inuiAddVoiceShortcutButton (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsINUIAddVoiceShortcutButton inuiAddVoiceShortcutButton => inuiAddVoiceShortcutButton -> RawId -> IO ()
+setDelegate inuiAddVoiceShortcutButton  value =
+    sendMsg inuiAddVoiceShortcutButton (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- shortcut@
 shortcut :: IsINUIAddVoiceShortcutButton inuiAddVoiceShortcutButton => inuiAddVoiceShortcutButton -> IO (Id INShortcut)
 shortcut inuiAddVoiceShortcutButton  =
@@ -121,6 +135,14 @@ styleSelector = mkSelector "style"
 -- | @Selector@ for @setStyle:@
 setStyleSelector :: Selector
 setStyleSelector = mkSelector "setStyle:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @shortcut@
 shortcutSelector :: Selector

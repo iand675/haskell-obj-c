@@ -27,6 +27,8 @@ module ObjC.Foundation.NSKeyedArchiver
   , encodeFloat_forKey
   , encodeDouble_forKey
   , encodeBytes_length_forKey
+  , delegate
+  , setDelegate
   , outputFormat
   , setOutputFormat
   , encodedData
@@ -50,6 +52,8 @@ module ObjC.Foundation.NSKeyedArchiver
   , encodeFloat_forKeySelector
   , encodeDouble_forKeySelector
   , encodeBytes_length_forKeySelector
+  , delegateSelector
+  , setDelegateSelector
   , outputFormatSelector
   , setOutputFormatSelector
   , encodedDataSelector
@@ -217,6 +221,16 @@ encodeBytes_length_forKey nsKeyedArchiver  bytes length_ key =
   withObjCPtr key $ \raw_key ->
       sendMsg nsKeyedArchiver (mkSelector "encodeBytes:length:forKey:") retVoid [argPtr (unConst bytes), argCULong length_, argPtr (castPtr raw_key :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsNSKeyedArchiver nsKeyedArchiver => nsKeyedArchiver -> IO RawId
+delegate nsKeyedArchiver  =
+    fmap (RawId . castPtr) $ sendMsg nsKeyedArchiver (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSKeyedArchiver nsKeyedArchiver => nsKeyedArchiver -> RawId -> IO ()
+setDelegate nsKeyedArchiver  value =
+    sendMsg nsKeyedArchiver (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- outputFormat@
 outputFormat :: IsNSKeyedArchiver nsKeyedArchiver => nsKeyedArchiver -> IO NSPropertyListFormat
 outputFormat nsKeyedArchiver  =
@@ -319,6 +333,14 @@ encodeDouble_forKeySelector = mkSelector "encodeDouble:forKey:"
 -- | @Selector@ for @encodeBytes:length:forKey:@
 encodeBytes_length_forKeySelector :: Selector
 encodeBytes_length_forKeySelector = mkSelector "encodeBytes:length:forKey:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @outputFormat@
 outputFormatSelector :: Selector

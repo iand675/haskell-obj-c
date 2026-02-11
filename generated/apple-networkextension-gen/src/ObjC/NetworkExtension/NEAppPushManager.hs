@@ -17,16 +17,40 @@ module ObjC.NetworkExtension.NEAppPushManager
   , loadFromPreferencesWithCompletionHandler
   , removeFromPreferencesWithCompletionHandler
   , saveToPreferencesWithCompletionHandler
+  , matchSSIDs
+  , setMatchSSIDs
+  , matchPrivateLTENetworks
+  , setMatchPrivateLTENetworks
   , matchEthernet
   , setMatchEthernet
+  , providerConfiguration
+  , setProviderConfiguration
+  , providerBundleIdentifier
+  , setProviderBundleIdentifier
+  , delegate
+  , setDelegate
+  , localizedDescription
+  , setLocalizedDescription
   , enabled
   , setEnabled
   , active
   , loadFromPreferencesWithCompletionHandlerSelector
   , removeFromPreferencesWithCompletionHandlerSelector
   , saveToPreferencesWithCompletionHandlerSelector
+  , matchSSIDsSelector
+  , setMatchSSIDsSelector
+  , matchPrivateLTENetworksSelector
+  , setMatchPrivateLTENetworksSelector
   , matchEthernetSelector
   , setMatchEthernetSelector
+  , providerConfigurationSelector
+  , setProviderConfigurationSelector
+  , providerBundleIdentifierSelector
+  , setProviderBundleIdentifierSelector
+  , delegateSelector
+  , setDelegateSelector
+  , localizedDescriptionSelector
+  , setLocalizedDescriptionSelector
   , enabledSelector
   , setEnabledSelector
   , activeSelector
@@ -82,6 +106,44 @@ saveToPreferencesWithCompletionHandler :: IsNEAppPushManager neAppPushManager =>
 saveToPreferencesWithCompletionHandler neAppPushManager  completionHandler =
     sendMsg neAppPushManager (mkSelector "saveToPreferencesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
 
+-- | matchSSIDs
+--
+-- An array of Wi-Fi SSID strings. If the SSID string of current Wi-Fi network matches with one of these strings and the Wi-Fi network is the primary route  on the device then the NEAppPushProvider is started. The upper limit of number of SSIDs is 10.
+--
+-- ObjC selector: @- matchSSIDs@
+matchSSIDs :: IsNEAppPushManager neAppPushManager => neAppPushManager -> IO (Id NSArray)
+matchSSIDs neAppPushManager  =
+    sendMsg neAppPushManager (mkSelector "matchSSIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | matchSSIDs
+--
+-- An array of Wi-Fi SSID strings. If the SSID string of current Wi-Fi network matches with one of these strings and the Wi-Fi network is the primary route  on the device then the NEAppPushProvider is started. The upper limit of number of SSIDs is 10.
+--
+-- ObjC selector: @- setMatchSSIDs:@
+setMatchSSIDs :: (IsNEAppPushManager neAppPushManager, IsNSArray value) => neAppPushManager -> value -> IO ()
+setMatchSSIDs neAppPushManager  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neAppPushManager (mkSelector "setMatchSSIDs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | matchPrivateLTENetworks
+--
+-- An array of NEPrivateLTENetwork objects. If the properties of current private LTE network match with properties of one of these NEPrivateLTENetwork  objects and the private LTE network is the primary route on the device then the NEAppPushProvider is started. The upper limit of number of private LTE networks is 10.  For private LTE networks that are not band 48, the device must be supervised in order to perform the match
+--
+-- ObjC selector: @- matchPrivateLTENetworks@
+matchPrivateLTENetworks :: IsNEAppPushManager neAppPushManager => neAppPushManager -> IO (Id NSArray)
+matchPrivateLTENetworks neAppPushManager  =
+    sendMsg neAppPushManager (mkSelector "matchPrivateLTENetworks") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | matchPrivateLTENetworks
+--
+-- An array of NEPrivateLTENetwork objects. If the properties of current private LTE network match with properties of one of these NEPrivateLTENetwork  objects and the private LTE network is the primary route on the device then the NEAppPushProvider is started. The upper limit of number of private LTE networks is 10.  For private LTE networks that are not band 48, the device must be supervised in order to perform the match
+--
+-- ObjC selector: @- setMatchPrivateLTENetworks:@
+setMatchPrivateLTENetworks :: (IsNEAppPushManager neAppPushManager, IsNSArray value) => neAppPushManager -> value -> IO ()
+setMatchPrivateLTENetworks neAppPushManager  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neAppPushManager (mkSelector "setMatchPrivateLTENetworks:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | matchEthernet
 --
 -- If set to YES NEAppPushProvider is started when iOS device is connected to an Ethernet network and the ethernet network is the primary route  on the device. NEAppPushProvider must determine viability of its functionality on the network. If the network does not support its operation it must call  [NEAppPushProvider unmatchEthernet:] method to stop itself.
@@ -99,6 +161,81 @@ matchEthernet neAppPushManager  =
 setMatchEthernet :: IsNEAppPushManager neAppPushManager => neAppPushManager -> Bool -> IO ()
 setMatchEthernet neAppPushManager  value =
     sendMsg neAppPushManager (mkSelector "setMatchEthernet:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | providerConfiguration
+--
+-- A dictionary containing vendor-specific key-value pairs, where the data type of values must be one of the data types supported by property list. Values of user defined data 	type are not supported. This dictionary is passed as-is to NEAppPushProvider when is it is started or notified for other specified reasons.
+--
+-- ObjC selector: @- providerConfiguration@
+providerConfiguration :: IsNEAppPushManager neAppPushManager => neAppPushManager -> IO (Id NSDictionary)
+providerConfiguration neAppPushManager  =
+    sendMsg neAppPushManager (mkSelector "providerConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | providerConfiguration
+--
+-- A dictionary containing vendor-specific key-value pairs, where the data type of values must be one of the data types supported by property list. Values of user defined data 	type are not supported. This dictionary is passed as-is to NEAppPushProvider when is it is started or notified for other specified reasons.
+--
+-- ObjC selector: @- setProviderConfiguration:@
+setProviderConfiguration :: (IsNEAppPushManager neAppPushManager, IsNSDictionary value) => neAppPushManager -> value -> IO ()
+setProviderConfiguration neAppPushManager  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neAppPushManager (mkSelector "setProviderConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | providerBundleIdentifier
+--
+-- A string containing the bundle identifier of the NEAppPushProvider.
+--
+-- ObjC selector: @- providerBundleIdentifier@
+providerBundleIdentifier :: IsNEAppPushManager neAppPushManager => neAppPushManager -> IO (Id NSString)
+providerBundleIdentifier neAppPushManager  =
+    sendMsg neAppPushManager (mkSelector "providerBundleIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | providerBundleIdentifier
+--
+-- A string containing the bundle identifier of the NEAppPushProvider.
+--
+-- ObjC selector: @- setProviderBundleIdentifier:@
+setProviderBundleIdentifier :: (IsNEAppPushManager neAppPushManager, IsNSString value) => neAppPushManager -> value -> IO ()
+setProviderBundleIdentifier neAppPushManager  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neAppPushManager (mkSelector "setProviderBundleIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | delegate
+--
+-- An instance of type NEAppPushDelegate that is required to receive incoming call informarion from the provider.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsNEAppPushManager neAppPushManager => neAppPushManager -> IO RawId
+delegate neAppPushManager  =
+    fmap (RawId . castPtr) $ sendMsg neAppPushManager (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- An instance of type NEAppPushDelegate that is required to receive incoming call informarion from the provider.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsNEAppPushManager neAppPushManager => neAppPushManager -> RawId -> IO ()
+setDelegate neAppPushManager  value =
+    sendMsg neAppPushManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | localizedDescription
+--
+-- A string containing a description of the app push manager.
+--
+-- ObjC selector: @- localizedDescription@
+localizedDescription :: IsNEAppPushManager neAppPushManager => neAppPushManager -> IO (Id NSString)
+localizedDescription neAppPushManager  =
+    sendMsg neAppPushManager (mkSelector "localizedDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | localizedDescription
+--
+-- A string containing a description of the app push manager.
+--
+-- ObjC selector: @- setLocalizedDescription:@
+setLocalizedDescription :: (IsNEAppPushManager neAppPushManager, IsNSString value) => neAppPushManager -> value -> IO ()
+setLocalizedDescription neAppPushManager  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neAppPushManager (mkSelector "setLocalizedDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | enabled
 --
@@ -143,6 +280,22 @@ removeFromPreferencesWithCompletionHandlerSelector = mkSelector "removeFromPrefe
 saveToPreferencesWithCompletionHandlerSelector :: Selector
 saveToPreferencesWithCompletionHandlerSelector = mkSelector "saveToPreferencesWithCompletionHandler:"
 
+-- | @Selector@ for @matchSSIDs@
+matchSSIDsSelector :: Selector
+matchSSIDsSelector = mkSelector "matchSSIDs"
+
+-- | @Selector@ for @setMatchSSIDs:@
+setMatchSSIDsSelector :: Selector
+setMatchSSIDsSelector = mkSelector "setMatchSSIDs:"
+
+-- | @Selector@ for @matchPrivateLTENetworks@
+matchPrivateLTENetworksSelector :: Selector
+matchPrivateLTENetworksSelector = mkSelector "matchPrivateLTENetworks"
+
+-- | @Selector@ for @setMatchPrivateLTENetworks:@
+setMatchPrivateLTENetworksSelector :: Selector
+setMatchPrivateLTENetworksSelector = mkSelector "setMatchPrivateLTENetworks:"
+
 -- | @Selector@ for @matchEthernet@
 matchEthernetSelector :: Selector
 matchEthernetSelector = mkSelector "matchEthernet"
@@ -150,6 +303,38 @@ matchEthernetSelector = mkSelector "matchEthernet"
 -- | @Selector@ for @setMatchEthernet:@
 setMatchEthernetSelector :: Selector
 setMatchEthernetSelector = mkSelector "setMatchEthernet:"
+
+-- | @Selector@ for @providerConfiguration@
+providerConfigurationSelector :: Selector
+providerConfigurationSelector = mkSelector "providerConfiguration"
+
+-- | @Selector@ for @setProviderConfiguration:@
+setProviderConfigurationSelector :: Selector
+setProviderConfigurationSelector = mkSelector "setProviderConfiguration:"
+
+-- | @Selector@ for @providerBundleIdentifier@
+providerBundleIdentifierSelector :: Selector
+providerBundleIdentifierSelector = mkSelector "providerBundleIdentifier"
+
+-- | @Selector@ for @setProviderBundleIdentifier:@
+setProviderBundleIdentifierSelector :: Selector
+setProviderBundleIdentifierSelector = mkSelector "setProviderBundleIdentifier:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @localizedDescription@
+localizedDescriptionSelector :: Selector
+localizedDescriptionSelector = mkSelector "localizedDescription"
+
+-- | @Selector@ for @setLocalizedDescription:@
+setLocalizedDescriptionSelector :: Selector
+setLocalizedDescriptionSelector = mkSelector "setLocalizedDescription:"
 
 -- | @Selector@ for @enabled@
 enabledSelector :: Selector

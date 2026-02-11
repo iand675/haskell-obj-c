@@ -10,28 +10,42 @@ module ObjC.SharedWithYou.SWCollaborationView
   , initWithItemProvider
   , dismissPopover
   , setShowManageButton
+  , cloudSharingDelegate
+  , setCloudSharingDelegate
   , activeParticipantCount
   , setActiveParticipantCount
+  , delegate
+  , setDelegate
   , headerTitle
   , setHeaderTitle
   , headerSubtitle
   , setHeaderSubtitle
   , headerImage
   , setHeaderImage
+  , menuFormRepresentation
+  , cloudSharingServiceDelegate
+  , setCloudSharingServiceDelegate
   , manageButtonTitle
   , setManageButtonTitle
   , setContentViewSelector
   , initWithItemProviderSelector
   , dismissPopoverSelector
   , setShowManageButtonSelector
+  , cloudSharingDelegateSelector
+  , setCloudSharingDelegateSelector
   , activeParticipantCountSelector
   , setActiveParticipantCountSelector
+  , delegateSelector
+  , setDelegateSelector
   , headerTitleSelector
   , setHeaderTitleSelector
   , headerSubtitleSelector
   , setHeaderSubtitleSelector
   , headerImageSelector
   , setHeaderImageSelector
+  , menuFormRepresentationSelector
+  , cloudSharingServiceDelegateSelector
+  , setCloudSharingServiceDelegateSelector
   , manageButtonTitleSelector
   , setManageButtonTitleSelector
 
@@ -84,6 +98,16 @@ setShowManageButton :: IsSWCollaborationView swCollaborationView => swCollaborat
 setShowManageButton swCollaborationView  showManageButton =
     sendMsg swCollaborationView (mkSelector "setShowManageButton:") retVoid [argCULong (if showManageButton then 1 else 0)]
 
+-- | @- cloudSharingDelegate@
+cloudSharingDelegate :: IsSWCollaborationView swCollaborationView => swCollaborationView -> IO RawId
+cloudSharingDelegate swCollaborationView  =
+    fmap (RawId . castPtr) $ sendMsg swCollaborationView (mkSelector "cloudSharingDelegate") (retPtr retVoid) []
+
+-- | @- setCloudSharingDelegate:@
+setCloudSharingDelegate :: IsSWCollaborationView swCollaborationView => swCollaborationView -> RawId -> IO ()
+setCloudSharingDelegate swCollaborationView  value =
+    sendMsg swCollaborationView (mkSelector "setCloudSharingDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- activeParticipantCount@
 activeParticipantCount :: IsSWCollaborationView swCollaborationView => swCollaborationView -> IO CULong
 activeParticipantCount swCollaborationView  =
@@ -93,6 +117,16 @@ activeParticipantCount swCollaborationView  =
 setActiveParticipantCount :: IsSWCollaborationView swCollaborationView => swCollaborationView -> CULong -> IO ()
 setActiveParticipantCount swCollaborationView  value =
     sendMsg swCollaborationView (mkSelector "setActiveParticipantCount:") retVoid [argCULong value]
+
+-- | @- delegate@
+delegate :: IsSWCollaborationView swCollaborationView => swCollaborationView -> IO RawId
+delegate swCollaborationView  =
+    fmap (RawId . castPtr) $ sendMsg swCollaborationView (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsSWCollaborationView swCollaborationView => swCollaborationView -> RawId -> IO ()
+setDelegate swCollaborationView  value =
+    sendMsg swCollaborationView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- headerTitle@
 headerTitle :: IsSWCollaborationView swCollaborationView => swCollaborationView -> IO (Id NSString)
@@ -126,6 +160,25 @@ setHeaderImage :: (IsSWCollaborationView swCollaborationView, IsNSImage value) =
 setHeaderImage swCollaborationView  value =
   withObjCPtr value $ \raw_value ->
       sendMsg swCollaborationView (mkSelector "setHeaderImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- menuFormRepresentation@
+menuFormRepresentation :: IsSWCollaborationView swCollaborationView => swCollaborationView -> IO (Id NSMenuItem)
+menuFormRepresentation swCollaborationView  =
+    sendMsg swCollaborationView (mkSelector "menuFormRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | If you are using the built in manage share button, this delegate property will be forwarded along to the NSCloudSharingService that button presents. If you have your own and suppress the provided one via setShowManageButton, this does nothing.
+--
+-- ObjC selector: @- cloudSharingServiceDelegate@
+cloudSharingServiceDelegate :: IsSWCollaborationView swCollaborationView => swCollaborationView -> IO RawId
+cloudSharingServiceDelegate swCollaborationView  =
+    fmap (RawId . castPtr) $ sendMsg swCollaborationView (mkSelector "cloudSharingServiceDelegate") (retPtr retVoid) []
+
+-- | If you are using the built in manage share button, this delegate property will be forwarded along to the NSCloudSharingService that button presents. If you have your own and suppress the provided one via setShowManageButton, this does nothing.
+--
+-- ObjC selector: @- setCloudSharingServiceDelegate:@
+setCloudSharingServiceDelegate :: IsSWCollaborationView swCollaborationView => swCollaborationView -> RawId -> IO ()
+setCloudSharingServiceDelegate swCollaborationView  value =
+    sendMsg swCollaborationView (mkSelector "setCloudSharingServiceDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | sets the title of the manage participants button in the collaboration popover to the given string, defaults to "Manage Share"
 --
@@ -162,6 +215,14 @@ dismissPopoverSelector = mkSelector "dismissPopover:"
 setShowManageButtonSelector :: Selector
 setShowManageButtonSelector = mkSelector "setShowManageButton:"
 
+-- | @Selector@ for @cloudSharingDelegate@
+cloudSharingDelegateSelector :: Selector
+cloudSharingDelegateSelector = mkSelector "cloudSharingDelegate"
+
+-- | @Selector@ for @setCloudSharingDelegate:@
+setCloudSharingDelegateSelector :: Selector
+setCloudSharingDelegateSelector = mkSelector "setCloudSharingDelegate:"
+
 -- | @Selector@ for @activeParticipantCount@
 activeParticipantCountSelector :: Selector
 activeParticipantCountSelector = mkSelector "activeParticipantCount"
@@ -169,6 +230,14 @@ activeParticipantCountSelector = mkSelector "activeParticipantCount"
 -- | @Selector@ for @setActiveParticipantCount:@
 setActiveParticipantCountSelector :: Selector
 setActiveParticipantCountSelector = mkSelector "setActiveParticipantCount:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @headerTitle@
 headerTitleSelector :: Selector
@@ -193,6 +262,18 @@ headerImageSelector = mkSelector "headerImage"
 -- | @Selector@ for @setHeaderImage:@
 setHeaderImageSelector :: Selector
 setHeaderImageSelector = mkSelector "setHeaderImage:"
+
+-- | @Selector@ for @menuFormRepresentation@
+menuFormRepresentationSelector :: Selector
+menuFormRepresentationSelector = mkSelector "menuFormRepresentation"
+
+-- | @Selector@ for @cloudSharingServiceDelegate@
+cloudSharingServiceDelegateSelector :: Selector
+cloudSharingServiceDelegateSelector = mkSelector "cloudSharingServiceDelegate"
+
+-- | @Selector@ for @setCloudSharingServiceDelegate:@
+setCloudSharingServiceDelegateSelector :: Selector
+setCloudSharingServiceDelegateSelector = mkSelector "setCloudSharingServiceDelegate:"
 
 -- | @Selector@ for @manageButtonTitle@
 manageButtonTitleSelector :: Selector

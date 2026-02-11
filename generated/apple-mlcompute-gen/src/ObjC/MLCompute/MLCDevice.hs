@@ -19,6 +19,7 @@ module ObjC.MLCompute.MLCDevice
   , deviceWithGPUDevices
   , type_
   , actualDeviceType
+  , gpuDevices
   , cpuDeviceSelector
   , gpuDeviceSelector
   , aneDeviceSelector
@@ -27,6 +28,7 @@ module ObjC.MLCompute.MLCDevice
   , deviceWithGPUDevicesSelector
   , typeSelector
   , actualDeviceTypeSelector
+  , gpuDevicesSelector
 
   -- * Enum types
   , MLCDeviceType(MLCDeviceType)
@@ -153,6 +155,11 @@ actualDeviceType :: IsMLCDevice mlcDevice => mlcDevice -> IO MLCDeviceType
 actualDeviceType mlcDevice  =
     fmap (coerce :: CInt -> MLCDeviceType) $ sendMsg mlcDevice (mkSelector "actualDeviceType") retCInt []
 
+-- | @- gpuDevices@
+gpuDevices :: IsMLCDevice mlcDevice => mlcDevice -> IO (Id NSArray)
+gpuDevices mlcDevice  =
+    sendMsg mlcDevice (mkSelector "gpuDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -188,4 +195,8 @@ typeSelector = mkSelector "type"
 -- | @Selector@ for @actualDeviceType@
 actualDeviceTypeSelector :: Selector
 actualDeviceTypeSelector = mkSelector "actualDeviceType"
+
+-- | @Selector@ for @gpuDevices@
+gpuDevicesSelector :: Selector
+gpuDevicesSelector = mkSelector "gpuDevices"
 

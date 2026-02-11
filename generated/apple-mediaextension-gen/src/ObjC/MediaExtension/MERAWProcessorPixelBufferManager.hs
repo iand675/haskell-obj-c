@@ -13,7 +13,11 @@ module ObjC.MediaExtension.MERAWProcessorPixelBufferManager
   ( MERAWProcessorPixelBufferManager
   , IsMERAWProcessorPixelBufferManager(..)
   , createPixelBufferAndReturnError
+  , pixelBufferAttributes
+  , setPixelBufferAttributes
   , createPixelBufferAndReturnErrorSelector
+  , pixelBufferAttributesSelector
+  , setPixelBufferAttributesSelector
 
 
   ) where
@@ -49,6 +53,29 @@ createPixelBufferAndReturnError merawProcessorPixelBufferManager  error_ =
   withObjCPtr error_ $ \raw_error_ ->
       fmap castPtr $ sendMsg merawProcessorPixelBufferManager (mkSelector "createPixelBufferAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())]
 
+-- | pixelBufferAttributes
+--
+-- VideoToolbox will use these attributes when creating a pixelBuffer for the RAW Processor.
+--
+-- This can be updated by the processor before requesting a new pixelBuffer.
+--
+-- ObjC selector: @- pixelBufferAttributes@
+pixelBufferAttributes :: IsMERAWProcessorPixelBufferManager merawProcessorPixelBufferManager => merawProcessorPixelBufferManager -> IO (Id NSDictionary)
+pixelBufferAttributes merawProcessorPixelBufferManager  =
+    sendMsg merawProcessorPixelBufferManager (mkSelector "pixelBufferAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | pixelBufferAttributes
+--
+-- VideoToolbox will use these attributes when creating a pixelBuffer for the RAW Processor.
+--
+-- This can be updated by the processor before requesting a new pixelBuffer.
+--
+-- ObjC selector: @- setPixelBufferAttributes:@
+setPixelBufferAttributes :: (IsMERAWProcessorPixelBufferManager merawProcessorPixelBufferManager, IsNSDictionary value) => merawProcessorPixelBufferManager -> value -> IO ()
+setPixelBufferAttributes merawProcessorPixelBufferManager  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg merawProcessorPixelBufferManager (mkSelector "setPixelBufferAttributes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -56,4 +83,12 @@ createPixelBufferAndReturnError merawProcessorPixelBufferManager  error_ =
 -- | @Selector@ for @createPixelBufferAndReturnError:@
 createPixelBufferAndReturnErrorSelector :: Selector
 createPixelBufferAndReturnErrorSelector = mkSelector "createPixelBufferAndReturnError:"
+
+-- | @Selector@ for @pixelBufferAttributes@
+pixelBufferAttributesSelector :: Selector
+pixelBufferAttributesSelector = mkSelector "pixelBufferAttributes"
+
+-- | @Selector@ for @setPixelBufferAttributes:@
+setPixelBufferAttributesSelector :: Selector
+setPixelBufferAttributesSelector = mkSelector "setPixelBufferAttributes:"
 

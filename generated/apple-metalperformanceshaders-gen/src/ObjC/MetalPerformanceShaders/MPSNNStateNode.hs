@@ -13,11 +13,15 @@ module ObjC.MetalPerformanceShaders.MPSNNStateNode
   ( MPSNNStateNode
   , IsMPSNNStateNode(..)
   , init_
+  , handle
+  , setHandle
   , exportFromGraph
   , setExportFromGraph
   , synchronizeResource
   , setSynchronizeResource
   , initSelector
+  , handleSelector
+  , setHandleSelector
   , exportFromGraphSelector
   , setExportFromGraphSelector
   , synchronizeResourceSelector
@@ -45,6 +49,24 @@ import ObjC.Foundation.Internal.Classes
 init_ :: IsMPSNNStateNode mpsnnStateNode => mpsnnStateNode -> IO (Id MPSNNStateNode)
 init_ mpsnnStateNode  =
     sendMsg mpsnnStateNode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+
+-- | MPS resource identification
+--
+-- See MPSHandle protocol reference.  Default: nil
+--
+-- ObjC selector: @- handle@
+handle :: IsMPSNNStateNode mpsnnStateNode => mpsnnStateNode -> IO RawId
+handle mpsnnStateNode  =
+    fmap (RawId . castPtr) $ sendMsg mpsnnStateNode (mkSelector "handle") (retPtr retVoid) []
+
+-- | MPS resource identification
+--
+-- See MPSHandle protocol reference.  Default: nil
+--
+-- ObjC selector: @- setHandle:@
+setHandle :: IsMPSNNStateNode mpsnnStateNode => mpsnnStateNode -> RawId -> IO ()
+setHandle mpsnnStateNode  value =
+    sendMsg mpsnnStateNode (mkSelector "setHandle:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | Tag a state node for view later
 --
@@ -97,6 +119,14 @@ setSynchronizeResource mpsnnStateNode  value =
 -- | @Selector@ for @init@
 initSelector :: Selector
 initSelector = mkSelector "init"
+
+-- | @Selector@ for @handle@
+handleSelector :: Selector
+handleSelector = mkSelector "handle"
+
+-- | @Selector@ for @setHandle:@
+setHandleSelector :: Selector
+setHandleSelector = mkSelector "setHandle:"
 
 -- | @Selector@ for @exportFromGraph@
 exportFromGraphSelector :: Selector

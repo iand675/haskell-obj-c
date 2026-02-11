@@ -75,7 +75,11 @@ module ObjC.Foundation.NSFileManager
   , containerURLForSecurityApplicationGroupIdentifier
   , homeDirectoryForUser
   , defaultManager
+  , delegate
+  , setDelegate
   , currentDirectoryPath
+  , ubiquityIdentityToken
+  , homeDirectoryForCurrentUser
   , temporaryDirectory
   , mountedVolumeURLsIncludingResourceValuesForKeys_optionsSelector
   , unmountVolumeAtURL_options_completionHandlerSelector
@@ -145,7 +149,11 @@ module ObjC.Foundation.NSFileManager
   , containerURLForSecurityApplicationGroupIdentifierSelector
   , homeDirectoryForUserSelector
   , defaultManagerSelector
+  , delegateSelector
+  , setDelegateSelector
   , currentDirectoryPathSelector
+  , ubiquityIdentityTokenSelector
+  , homeDirectoryForCurrentUserSelector
   , temporaryDirectorySelector
 
   -- * Enum types
@@ -729,10 +737,30 @@ defaultManager  =
     cls' <- getRequiredClass "NSFileManager"
     sendClassMsg cls' (mkSelector "defaultManager") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- delegate@
+delegate :: IsNSFileManager nsFileManager => nsFileManager -> IO RawId
+delegate nsFileManager  =
+    fmap (RawId . castPtr) $ sendMsg nsFileManager (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSFileManager nsFileManager => nsFileManager -> RawId -> IO ()
+setDelegate nsFileManager  value =
+    sendMsg nsFileManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- currentDirectoryPath@
 currentDirectoryPath :: IsNSFileManager nsFileManager => nsFileManager -> IO (Id NSString)
 currentDirectoryPath nsFileManager  =
     sendMsg nsFileManager (mkSelector "currentDirectoryPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- ubiquityIdentityToken@
+ubiquityIdentityToken :: IsNSFileManager nsFileManager => nsFileManager -> IO RawId
+ubiquityIdentityToken nsFileManager  =
+    fmap (RawId . castPtr) $ sendMsg nsFileManager (mkSelector "ubiquityIdentityToken") (retPtr retVoid) []
+
+-- | @- homeDirectoryForCurrentUser@
+homeDirectoryForCurrentUser :: IsNSFileManager nsFileManager => nsFileManager -> IO (Id NSURL)
+homeDirectoryForCurrentUser nsFileManager  =
+    sendMsg nsFileManager (mkSelector "homeDirectoryForCurrentUser") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- temporaryDirectory@
 temporaryDirectory :: IsNSFileManager nsFileManager => nsFileManager -> IO (Id NSURL)
@@ -1015,9 +1043,25 @@ homeDirectoryForUserSelector = mkSelector "homeDirectoryForUser:"
 defaultManagerSelector :: Selector
 defaultManagerSelector = mkSelector "defaultManager"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @currentDirectoryPath@
 currentDirectoryPathSelector :: Selector
 currentDirectoryPathSelector = mkSelector "currentDirectoryPath"
+
+-- | @Selector@ for @ubiquityIdentityToken@
+ubiquityIdentityTokenSelector :: Selector
+ubiquityIdentityTokenSelector = mkSelector "ubiquityIdentityToken"
+
+-- | @Selector@ for @homeDirectoryForCurrentUser@
+homeDirectoryForCurrentUserSelector :: Selector
+homeDirectoryForCurrentUserSelector = mkSelector "homeDirectoryForCurrentUser"
 
 -- | @Selector@ for @temporaryDirectory@
 temporaryDirectorySelector :: Selector

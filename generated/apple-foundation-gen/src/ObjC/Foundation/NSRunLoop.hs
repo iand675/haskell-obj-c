@@ -21,6 +21,7 @@ module ObjC.Foundation.NSRunLoop
   , configureAsServer
   , performInModes_block
   , performBlock
+  , currentRunLoop
   , mainRunLoop
   , currentMode
   , getCFRunLoopSelector
@@ -38,6 +39,7 @@ module ObjC.Foundation.NSRunLoop
   , configureAsServerSelector
   , performInModes_blockSelector
   , performBlockSelector
+  , currentRunLoopSelector
   , mainRunLoopSelector
   , currentModeSelector
 
@@ -151,6 +153,13 @@ performBlock :: IsNSRunLoop nsRunLoop => nsRunLoop -> Ptr () -> IO ()
 performBlock nsRunLoop  block =
     sendMsg nsRunLoop (mkSelector "performBlock:") retVoid [argPtr (castPtr block :: Ptr ())]
 
+-- | @+ currentRunLoop@
+currentRunLoop :: IO (Id NSRunLoop)
+currentRunLoop  =
+  do
+    cls' <- getRequiredClass "NSRunLoop"
+    sendClassMsg cls' (mkSelector "currentRunLoop") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @+ mainRunLoop@
 mainRunLoop :: IO (Id NSRunLoop)
 mainRunLoop  =
@@ -226,6 +235,10 @@ performInModes_blockSelector = mkSelector "performInModes:block:"
 -- | @Selector@ for @performBlock:@
 performBlockSelector :: Selector
 performBlockSelector = mkSelector "performBlock:"
+
+-- | @Selector@ for @currentRunLoop@
+currentRunLoopSelector :: Selector
+currentRunLoopSelector = mkSelector "currentRunLoop"
 
 -- | @Selector@ for @mainRunLoop@
 mainRunLoopSelector :: Selector

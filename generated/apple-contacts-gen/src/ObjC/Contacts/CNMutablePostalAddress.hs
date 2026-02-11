@@ -14,8 +14,12 @@ module ObjC.Contacts.CNMutablePostalAddress
   , IsCNMutablePostalAddress(..)
   , street
   , setStreet
+  , subLocality
+  , setSubLocality
   , city
   , setCity
+  , subAdministrativeArea
+  , setSubAdministrativeArea
   , state
   , setState
   , postalCode
@@ -26,8 +30,12 @@ module ObjC.Contacts.CNMutablePostalAddress
   , setISOCountryCode
   , streetSelector
   , setStreetSelector
+  , subLocalitySelector
+  , setSubLocalitySelector
   , citySelector
   , setCitySelector
+  , subAdministrativeAreaSelector
+  , setSubAdministrativeAreaSelector
   , stateSelector
   , setStateSelector
   , postalCodeSelector
@@ -70,6 +78,16 @@ setStreet cnMutablePostalAddress  value =
   withObjCPtr value $ \raw_value ->
       sendMsg cnMutablePostalAddress (mkSelector "setStreet:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- subLocality@
+subLocality :: IsCNMutablePostalAddress cnMutablePostalAddress => cnMutablePostalAddress -> IO RawId
+subLocality cnMutablePostalAddress  =
+    fmap (RawId . castPtr) $ sendMsg cnMutablePostalAddress (mkSelector "subLocality") (retPtr retVoid) []
+
+-- | @- setSubLocality:@
+setSubLocality :: IsCNMutablePostalAddress cnMutablePostalAddress => cnMutablePostalAddress -> RawId -> IO ()
+setSubLocality cnMutablePostalAddress  value =
+    sendMsg cnMutablePostalAddress (mkSelector "setSubLocality:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- city@
 city :: IsCNMutablePostalAddress cnMutablePostalAddress => cnMutablePostalAddress -> IO (Id NSString)
 city cnMutablePostalAddress  =
@@ -80,6 +98,16 @@ setCity :: (IsCNMutablePostalAddress cnMutablePostalAddress, IsNSString value) =
 setCity cnMutablePostalAddress  value =
   withObjCPtr value $ \raw_value ->
       sendMsg cnMutablePostalAddress (mkSelector "setCity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- subAdministrativeArea@
+subAdministrativeArea :: IsCNMutablePostalAddress cnMutablePostalAddress => cnMutablePostalAddress -> IO RawId
+subAdministrativeArea cnMutablePostalAddress  =
+    fmap (RawId . castPtr) $ sendMsg cnMutablePostalAddress (mkSelector "subAdministrativeArea") (retPtr retVoid) []
+
+-- | @- setSubAdministrativeArea:@
+setSubAdministrativeArea :: IsCNMutablePostalAddress cnMutablePostalAddress => cnMutablePostalAddress -> RawId -> IO ()
+setSubAdministrativeArea cnMutablePostalAddress  value =
+    sendMsg cnMutablePostalAddress (mkSelector "setSubAdministrativeArea:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- state@
 state :: IsCNMutablePostalAddress cnMutablePostalAddress => cnMutablePostalAddress -> IO (Id NSString)
@@ -137,6 +165,14 @@ streetSelector = mkSelector "street"
 setStreetSelector :: Selector
 setStreetSelector = mkSelector "setStreet:"
 
+-- | @Selector@ for @subLocality@
+subLocalitySelector :: Selector
+subLocalitySelector = mkSelector "subLocality"
+
+-- | @Selector@ for @setSubLocality:@
+setSubLocalitySelector :: Selector
+setSubLocalitySelector = mkSelector "setSubLocality:"
+
 -- | @Selector@ for @city@
 citySelector :: Selector
 citySelector = mkSelector "city"
@@ -144,6 +180,14 @@ citySelector = mkSelector "city"
 -- | @Selector@ for @setCity:@
 setCitySelector :: Selector
 setCitySelector = mkSelector "setCity:"
+
+-- | @Selector@ for @subAdministrativeArea@
+subAdministrativeAreaSelector :: Selector
+subAdministrativeAreaSelector = mkSelector "subAdministrativeArea"
+
+-- | @Selector@ for @setSubAdministrativeArea:@
+setSubAdministrativeAreaSelector :: Selector
+setSubAdministrativeAreaSelector = mkSelector "setSubAdministrativeArea:"
 
 -- | @Selector@ for @state@
 stateSelector :: Selector

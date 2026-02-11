@@ -6,6 +6,8 @@
 module ObjC.QuartzCore.CAOpenGLLayer
   ( CAOpenGLLayer
   , IsCAOpenGLLayer(..)
+  , canDrawInCGLContext_pixelFormat_forLayerTime_displayTime
+  , drawInCGLContext_pixelFormat_forLayerTime_displayTime
   , copyCGLPixelFormatForDisplayMask
   , releaseCGLPixelFormat
   , copyCGLContextForPixelFormat
@@ -16,6 +18,8 @@ module ObjC.QuartzCore.CAOpenGLLayer
   , setColorspace
   , wantsExtendedDynamicRangeContent
   , setWantsExtendedDynamicRangeContent
+  , canDrawInCGLContext_pixelFormat_forLayerTime_displayTimeSelector
+  , drawInCGLContext_pixelFormat_forLayerTime_displayTimeSelector
   , copyCGLPixelFormatForDisplayMaskSelector
   , releaseCGLPixelFormatSelector
   , copyCGLContextForPixelFormatSelector
@@ -44,6 +48,16 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.QuartzCore.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | @- canDrawInCGLContext:pixelFormat:forLayerTime:displayTime:@
+canDrawInCGLContext_pixelFormat_forLayerTime_displayTime :: IsCAOpenGLLayer caOpenGLLayer => caOpenGLLayer -> Ptr () -> Ptr () -> CDouble -> Const RawId -> IO Bool
+canDrawInCGLContext_pixelFormat_forLayerTime_displayTime caOpenGLLayer  ctx pf t ts =
+    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caOpenGLLayer (mkSelector "canDrawInCGLContext:pixelFormat:forLayerTime:displayTime:") retCULong [argPtr ctx, argPtr pf, argCDouble t, argPtr (castPtr (unRawId (unConst ts)) :: Ptr ())]
+
+-- | @- drawInCGLContext:pixelFormat:forLayerTime:displayTime:@
+drawInCGLContext_pixelFormat_forLayerTime_displayTime :: IsCAOpenGLLayer caOpenGLLayer => caOpenGLLayer -> Ptr () -> Ptr () -> CDouble -> Const RawId -> IO ()
+drawInCGLContext_pixelFormat_forLayerTime_displayTime caOpenGLLayer  ctx pf t ts =
+    sendMsg caOpenGLLayer (mkSelector "drawInCGLContext:pixelFormat:forLayerTime:displayTime:") retVoid [argPtr ctx, argPtr pf, argCDouble t, argPtr (castPtr (unRawId (unConst ts)) :: Ptr ())]
 
 -- | @- copyCGLPixelFormatForDisplayMask:@
 copyCGLPixelFormatForDisplayMask :: IsCAOpenGLLayer caOpenGLLayer => caOpenGLLayer -> CUInt -> IO (Ptr ())
@@ -98,6 +112,14 @@ setWantsExtendedDynamicRangeContent caOpenGLLayer  value =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @canDrawInCGLContext:pixelFormat:forLayerTime:displayTime:@
+canDrawInCGLContext_pixelFormat_forLayerTime_displayTimeSelector :: Selector
+canDrawInCGLContext_pixelFormat_forLayerTime_displayTimeSelector = mkSelector "canDrawInCGLContext:pixelFormat:forLayerTime:displayTime:"
+
+-- | @Selector@ for @drawInCGLContext:pixelFormat:forLayerTime:displayTime:@
+drawInCGLContext_pixelFormat_forLayerTime_displayTimeSelector :: Selector
+drawInCGLContext_pixelFormat_forLayerTime_displayTimeSelector = mkSelector "drawInCGLContext:pixelFormat:forLayerTime:displayTime:"
 
 -- | @Selector@ for @copyCGLPixelFormatForDisplayMask:@
 copyCGLPixelFormatForDisplayMaskSelector :: Selector

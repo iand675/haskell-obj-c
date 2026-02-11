@@ -62,6 +62,8 @@ module ObjC.AppKit.NSButtonCell
   , setBackgroundColor
   , gradientType
   , setGradientType
+  , keyEquivalentFont
+  , setKeyEquivalentFont
   , initTextCellSelector
   , initImageCellSelector
   , initWithCoderSelector
@@ -117,6 +119,8 @@ module ObjC.AppKit.NSButtonCell
   , setBackgroundColorSelector
   , gradientTypeSelector
   , setGradientTypeSelector
+  , keyEquivalentFontSelector
+  , setKeyEquivalentFontSelector
 
   -- * Enum types
   , NSBezelStyle(NSBezelStyle)
@@ -509,6 +513,17 @@ setGradientType :: IsNSButtonCell nsButtonCell => nsButtonCell -> NSGradientType
 setGradientType nsButtonCell  value =
     sendMsg nsButtonCell (mkSelector "setGradientType:") retVoid [argCULong (coerce value)]
 
+-- | @- keyEquivalentFont@
+keyEquivalentFont :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO (Id NSFont)
+keyEquivalentFont nsButtonCell  =
+    sendMsg nsButtonCell (mkSelector "keyEquivalentFont") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setKeyEquivalentFont:@
+setKeyEquivalentFont :: (IsNSButtonCell nsButtonCell, IsNSFont value) => nsButtonCell -> value -> IO ()
+setKeyEquivalentFont nsButtonCell  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsButtonCell (mkSelector "setKeyEquivalentFont:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -732,4 +747,12 @@ gradientTypeSelector = mkSelector "gradientType"
 -- | @Selector@ for @setGradientType:@
 setGradientTypeSelector :: Selector
 setGradientTypeSelector = mkSelector "setGradientType:"
+
+-- | @Selector@ for @keyEquivalentFont@
+keyEquivalentFontSelector :: Selector
+keyEquivalentFontSelector = mkSelector "keyEquivalentFont"
+
+-- | @Selector@ for @setKeyEquivalentFont:@
+setKeyEquivalentFontSelector :: Selector
+setKeyEquivalentFontSelector = mkSelector "setKeyEquivalentFont:"
 

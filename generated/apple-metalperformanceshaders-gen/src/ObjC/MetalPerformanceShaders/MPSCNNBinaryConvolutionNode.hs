@@ -13,10 +13,12 @@ module ObjC.MetalPerformanceShaders.MPSCNNBinaryConvolutionNode
   , initWithSource_weights_scaleValue_type_flags
   , nodeWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flags
   , initWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flags
+  , convolutionGradientState
   , nodeWithSource_weights_scaleValue_type_flagsSelector
   , initWithSource_weights_scaleValue_type_flagsSelector
   , nodeWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector
   , initWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector
+  , convolutionGradientStateSelector
 
   -- * Enum types
   , MPSCNNBinaryConvolutionFlags(MPSCNNBinaryConvolutionFlags)
@@ -141,6 +143,13 @@ initWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScal
   withObjCPtr sourceNode $ \raw_sourceNode ->
       sendMsg mpscnnBinaryConvolutionNode (mkSelector "initWithSource:weights:outputBiasTerms:outputScaleTerms:inputBiasTerms:inputScaleTerms:type:flags:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ()), argPtr (unConst outputBiasTerms), argPtr (unConst outputScaleTerms), argPtr (unConst inputBiasTerms), argPtr (unConst inputScaleTerms), argCULong (coerce type_), argCULong (coerce flags)] >>= ownedObject . castPtr
 
+-- | unavailable
+--
+-- ObjC selector: @- convolutionGradientState@
+convolutionGradientState :: IsMPSCNNBinaryConvolutionNode mpscnnBinaryConvolutionNode => mpscnnBinaryConvolutionNode -> IO RawId
+convolutionGradientState mpscnnBinaryConvolutionNode  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnBinaryConvolutionNode (mkSelector "convolutionGradientState") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -160,4 +169,8 @@ nodeWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScal
 -- | @Selector@ for @initWithSource:weights:outputBiasTerms:outputScaleTerms:inputBiasTerms:inputScaleTerms:type:flags:@
 initWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector :: Selector
 initWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector = mkSelector "initWithSource:weights:outputBiasTerms:outputScaleTerms:inputBiasTerms:inputScaleTerms:type:flags:"
+
+-- | @Selector@ for @convolutionGradientState@
+convolutionGradientStateSelector :: Selector
+convolutionGradientStateSelector = mkSelector "convolutionGradientState"
 

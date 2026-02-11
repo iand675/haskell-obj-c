@@ -9,7 +9,9 @@
 module ObjC.MetalPerformanceShadersGraph.MPSGraphVariableOp
   ( MPSGraphVariableOp
   , IsMPSGraphVariableOp(..)
+  , shape
   , dataType
+  , shapeSelector
   , dataTypeSelector
 
   -- * Enum types
@@ -60,6 +62,13 @@ import ObjC.MetalPerformanceShadersGraph.Internal.Classes
 import ObjC.MetalPerformanceShaders.Internal.Enums
 import ObjC.Foundation.Internal.Classes
 
+-- | The shape of the variable.
+--
+-- ObjC selector: @- shape@
+shape :: IsMPSGraphVariableOp mpsGraphVariableOp => mpsGraphVariableOp -> IO RawId
+shape mpsGraphVariableOp  =
+    fmap (RawId . castPtr) $ sendMsg mpsGraphVariableOp (mkSelector "shape") (retPtr retVoid) []
+
 -- | The data type of the variable.
 --
 -- ObjC selector: @- dataType@
@@ -70,6 +79,10 @@ dataType mpsGraphVariableOp  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @shape@
+shapeSelector :: Selector
+shapeSelector = mkSelector "shape"
 
 -- | @Selector@ for @dataType@
 dataTypeSelector :: Selector

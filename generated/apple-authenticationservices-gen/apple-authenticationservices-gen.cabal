@@ -90,6 +90,28 @@ library
       ObjC.AuthenticationServices.ASWebAuthenticationSessionCallback
       ObjC.AuthenticationServices.ASWebAuthenticationSessionRequest
       ObjC.AuthenticationServices.ASWebAuthenticationSessionWebBrowserSessionManager
+      ObjC.AuthenticationServices.Delegate.ASAccountAuthenticationModificationControllerDelegate
+      ObjC.AuthenticationServices.Delegate.ASAccountAuthenticationModificationControllerPresentationContextProviding
+      ObjC.AuthenticationServices.Delegate.ASAuthorizationControllerDelegate
+      ObjC.AuthenticationServices.Delegate.ASAuthorizationControllerPresentationContextProviding
+      ObjC.AuthenticationServices.Delegate.ASAuthorizationProviderExtensionAuthorizationRequestHandler
+      ObjC.AuthenticationServices.Delegate.ASAuthorizationProviderExtensionRegistrationHandler
+      ObjC.AuthenticationServices.Delegate.ASAuthorizationPublicKeyCredentialAssertion
+      ObjC.AuthenticationServices.Delegate.ASAuthorizationPublicKeyCredentialAssertionRequest
+      ObjC.AuthenticationServices.Delegate.ASAuthorizationPublicKeyCredentialRegistration
+      ObjC.AuthenticationServices.Delegate.ASAuthorizationPublicKeyCredentialRegistrationRequest
+      ObjC.AuthenticationServices.Delegate.ASAuthorizationWebBrowserExternallyAuthenticatableRequest
+      ObjC.AuthenticationServices.Delegate.ASAuthorizationWebBrowserPlatformPublicKeyCredentialAssertionRequest
+      ObjC.AuthenticationServices.Delegate.ASAuthorizationWebBrowserPlatformPublicKeyCredentialProvider
+      ObjC.AuthenticationServices.Delegate.ASAuthorizationWebBrowserPlatformPublicKeyCredentialRegistrationRequest
+      ObjC.AuthenticationServices.Delegate.ASAuthorizationWebBrowserSecurityKeyPublicKeyCredentialAssertionRequest
+      ObjC.AuthenticationServices.Delegate.ASAuthorizationWebBrowserSecurityKeyPublicKeyCredentialProvider
+      ObjC.AuthenticationServices.Delegate.ASAuthorizationWebBrowserSecurityKeyPublicKeyCredentialRegistrationRequest
+      ObjC.AuthenticationServices.Delegate.ASCredentialRequest
+      ObjC.AuthenticationServices.Delegate.ASPublicKeyCredential
+      ObjC.AuthenticationServices.Delegate.ASWebAuthenticationPresentationContextProviding
+      ObjC.AuthenticationServices.Delegate.ASWebAuthenticationSessionRequestDelegate
+      ObjC.AuthenticationServices.Delegate.ASWebAuthenticationSessionWebBrowserSessionHandling
       ObjC.AuthenticationServices.Enums
       ObjC.AuthenticationServices.Internal.Classes
       ObjC.AuthenticationServices.Internal.Enums

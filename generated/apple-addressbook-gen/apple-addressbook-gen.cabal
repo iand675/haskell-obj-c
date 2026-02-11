@@ -19,6 +19,7 @@ library
       ObjC.AddressBook.ABPerson
       ObjC.AddressBook.ABRecord
       ObjC.AddressBook.ABSearchElement
+      ObjC.AddressBook.Delegate.ABImageClient
       ObjC.AddressBook.Internal.Classes
   other-modules:
       Paths_apple_addressbook_gen

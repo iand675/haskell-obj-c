@@ -6,12 +6,14 @@
 module ObjC.SystemExtensions.OSSystemExtensionProperties
   ( OSSystemExtensionProperties
   , IsOSSystemExtensionProperties(..)
+  , url
   , bundleIdentifier
   , bundleVersion
   , bundleShortVersion
   , isEnabled
   , isAwaitingUserApproval
   , isUninstalling
+  , urlSelector
   , bundleIdentifierSelector
   , bundleVersionSelector
   , bundleShortVersionSelector
@@ -36,6 +38,13 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.SystemExtensions.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | The file URL locating an indicating the extension bundle these properties were retreived from.
+--
+-- ObjC selector: @- URL@
+url :: IsOSSystemExtensionProperties osSystemExtensionProperties => osSystemExtensionProperties -> IO (Id NSURL)
+url osSystemExtensionProperties  =
+    sendMsg osSystemExtensionProperties (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | The bundle identifier of the extension (CFBundleIdentifier)
 --
@@ -82,6 +91,10 @@ isUninstalling osSystemExtensionProperties  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @URL@
+urlSelector :: Selector
+urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @bundleIdentifier@
 bundleIdentifierSelector :: Selector

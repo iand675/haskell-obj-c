@@ -14,6 +14,9 @@ module ObjC.BackgroundAssets.BADownloadManager
   , performWithExclusiveControlBeforeDate_performHandler
   , startForegroundDownload_error
   , cancelDownload_error
+  , sharedManager
+  , delegate
+  , setDelegate
   , initSelector
   , newSelector
   , fetchCurrentDownloadsSelector
@@ -22,6 +25,9 @@ module ObjC.BackgroundAssets.BADownloadManager
   , performWithExclusiveControlBeforeDate_performHandlerSelector
   , startForegroundDownload_errorSelector
   , cancelDownload_errorSelector
+  , sharedManagerSelector
+  , delegateSelector
+  , setDelegateSelector
 
 
   ) where
@@ -137,6 +143,29 @@ cancelDownload_error baDownloadManager  download error_ =
     withObjCPtr error_ $ \raw_error_ ->
         fmap ((/= 0) :: CULong -> Bool) $ sendMsg baDownloadManager (mkSelector "cancelDownload:error:") retCULong [argPtr (castPtr raw_download :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
 
+-- | Gets the singleton downloader object.
+--
+-- ObjC selector: @+ sharedManager@
+sharedManager :: IO (Id BADownloadManager)
+sharedManager  =
+  do
+    cls' <- getRequiredClass "BADownloadManager"
+    sendClassMsg cls' (mkSelector "sharedManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | A object confroming to BADownloadManagerDelegate to get notified when actions occur.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsBADownloadManager baDownloadManager => baDownloadManager -> IO RawId
+delegate baDownloadManager  =
+    fmap (RawId . castPtr) $ sendMsg baDownloadManager (mkSelector "delegate") (retPtr retVoid) []
+
+-- | A object confroming to BADownloadManagerDelegate to get notified when actions occur.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsBADownloadManager baDownloadManager => baDownloadManager -> RawId -> IO ()
+setDelegate baDownloadManager  value =
+    sendMsg baDownloadManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -172,4 +201,16 @@ startForegroundDownload_errorSelector = mkSelector "startForegroundDownload:erro
 -- | @Selector@ for @cancelDownload:error:@
 cancelDownload_errorSelector :: Selector
 cancelDownload_errorSelector = mkSelector "cancelDownload:error:"
+
+-- | @Selector@ for @sharedManager@
+sharedManagerSelector :: Selector
+sharedManagerSelector = mkSelector "sharedManager"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

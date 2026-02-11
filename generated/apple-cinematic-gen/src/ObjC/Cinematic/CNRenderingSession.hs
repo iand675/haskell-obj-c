@@ -12,6 +12,7 @@ module ObjC.Cinematic.CNRenderingSession
   , encodeRenderToCommandBuffer_frameAttributes_sourceImage_sourceDisparity_destinationLuma_destinationChroma
   , init_
   , new
+  , commandQueue
   , sessionAttributes
   , quality
   , sourcePixelFormatTypes
@@ -21,6 +22,7 @@ module ObjC.Cinematic.CNRenderingSession
   , encodeRenderToCommandBuffer_frameAttributes_sourceImage_sourceDisparity_destinationLuma_destinationChromaSelector
   , initSelector
   , newSelector
+  , commandQueueSelector
   , sessionAttributesSelector
   , qualitySelector
   , sourcePixelFormatTypesSelector
@@ -87,6 +89,11 @@ new  =
     cls' <- getRequiredClass "CNRenderingSession"
     sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | @- commandQueue@
+commandQueue :: IsCNRenderingSession cnRenderingSession => cnRenderingSession -> IO RawId
+commandQueue cnRenderingSession  =
+    fmap (RawId . castPtr) $ sendMsg cnRenderingSession (mkSelector "commandQueue") (retPtr retVoid) []
+
 -- | @- sessionAttributes@
 sessionAttributes :: IsCNRenderingSession cnRenderingSession => cnRenderingSession -> IO (Id CNRenderingSessionAttributes)
 sessionAttributes cnRenderingSession  =
@@ -142,6 +149,10 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @new@
 newSelector :: Selector
 newSelector = mkSelector "new"
+
+-- | @Selector@ for @commandQueue@
+commandQueueSelector :: Selector
+commandQueueSelector = mkSelector "commandQueue"
 
 -- | @Selector@ for @sessionAttributes@
 sessionAttributesSelector :: Selector

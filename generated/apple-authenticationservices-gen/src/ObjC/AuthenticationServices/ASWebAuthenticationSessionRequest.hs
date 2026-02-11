@@ -14,6 +14,8 @@ module ObjC.AuthenticationServices.ASWebAuthenticationSessionRequest
   , url
   , callbackURLScheme
   , shouldUseEphemeralSession
+  , delegate
+  , setDelegate
   , additionalHeaderFields
   , callback
   , newSelector
@@ -24,6 +26,8 @@ module ObjC.AuthenticationServices.ASWebAuthenticationSessionRequest
   , urlSelector
   , callbackURLSchemeSelector
   , shouldUseEphemeralSessionSelector
+  , delegateSelector
+  , setDelegateSelector
   , additionalHeaderFieldsSelector
   , callbackSelector
 
@@ -89,6 +93,16 @@ shouldUseEphemeralSession :: IsASWebAuthenticationSessionRequest asWebAuthentica
 shouldUseEphemeralSession asWebAuthenticationSessionRequest  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg asWebAuthenticationSessionRequest (mkSelector "shouldUseEphemeralSession") retCULong []
 
+-- | @- delegate@
+delegate :: IsASWebAuthenticationSessionRequest asWebAuthenticationSessionRequest => asWebAuthenticationSessionRequest -> IO RawId
+delegate asWebAuthenticationSessionRequest  =
+    fmap (RawId . castPtr) $ sendMsg asWebAuthenticationSessionRequest (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsASWebAuthenticationSessionRequest asWebAuthenticationSessionRequest => asWebAuthenticationSessionRequest -> RawId -> IO ()
+setDelegate asWebAuthenticationSessionRequest  value =
+    sendMsg asWebAuthenticationSessionRequest (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Additional headers to be sent when loading the initial URL. These should _only_ apply to the initial page, and should not overwrite any headers normally sent by the browser. Add @AdditionalHeaderFieldsAreSupported: true@ to @ASWebAuthenticationSessionWebBrowserSupportCapabilities@ in your browser's Info.plist file to indicate support for this.
 --
 -- ObjC selector: @- additionalHeaderFields@
@@ -138,6 +152,14 @@ callbackURLSchemeSelector = mkSelector "callbackURLScheme"
 -- | @Selector@ for @shouldUseEphemeralSession@
 shouldUseEphemeralSessionSelector :: Selector
 shouldUseEphemeralSessionSelector = mkSelector "shouldUseEphemeralSession"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @additionalHeaderFields@
 additionalHeaderFieldsSelector :: Selector

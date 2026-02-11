@@ -16,6 +16,7 @@ module ObjC.WebKit.WKWebExtensionWindowConfiguration
   , windowType
   , windowState
   , tabURLs
+  , tabs
   , shouldBeFocused
   , shouldBePrivate
   , newSelector
@@ -23,6 +24,7 @@ module ObjC.WebKit.WKWebExtensionWindowConfiguration
   , windowTypeSelector
   , windowStateSelector
   , tabURLsSelector
+  , tabsSelector
   , shouldBeFocusedSelector
   , shouldBePrivateSelector
 
@@ -91,6 +93,17 @@ tabURLs :: IsWKWebExtensionWindowConfiguration wkWebExtensionWindowConfiguration
 tabURLs wkWebExtensionWindowConfiguration  =
     sendMsg wkWebExtensionWindowConfiguration (mkSelector "tabURLs") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | Indicates the existing tabs that should be moved to the window.
+--
+-- If ``tabs`` and ``tabURLs`` are both empty, the app's default "start page" should appear in a tab.
+--
+-- tabURLs
+--
+-- ObjC selector: @- tabs@
+tabs :: IsWKWebExtensionWindowConfiguration wkWebExtensionWindowConfiguration => wkWebExtensionWindowConfiguration -> IO (Id NSArray)
+tabs wkWebExtensionWindowConfiguration  =
+    sendMsg wkWebExtensionWindowConfiguration (mkSelector "tabs") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Indicates whether the window should be focused.
 --
 -- ObjC selector: @- shouldBeFocused@
@@ -130,6 +143,10 @@ windowStateSelector = mkSelector "windowState"
 -- | @Selector@ for @tabURLs@
 tabURLsSelector :: Selector
 tabURLsSelector = mkSelector "tabURLs"
+
+-- | @Selector@ for @tabs@
+tabsSelector :: Selector
+tabsSelector = mkSelector "tabs"
 
 -- | @Selector@ for @shouldBeFocused@
 shouldBeFocusedSelector :: Selector

@@ -12,6 +12,18 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.SceneKit.Delegate.SCNActionable
+      ObjC.SceneKit.Delegate.SCNAnimatable
+      ObjC.SceneKit.Delegate.SCNAvoidOccluderConstraintDelegate
+      ObjC.SceneKit.Delegate.SCNBoundingVolume
+      ObjC.SceneKit.Delegate.SCNCameraControlConfiguration
+      ObjC.SceneKit.Delegate.SCNCameraControllerDelegate
+      ObjC.SceneKit.Delegate.SCNNodeRendererDelegate
+      ObjC.SceneKit.Delegate.SCNPhysicsContactDelegate
+      ObjC.SceneKit.Delegate.SCNSceneExportDelegate
+      ObjC.SceneKit.Delegate.SCNSceneRenderer
+      ObjC.SceneKit.Delegate.SCNSceneRendererDelegate
+      ObjC.SceneKit.Delegate.SCNTechniqueSupport
       ObjC.SceneKit.Enums
       ObjC.SceneKit.Internal.Classes
       ObjC.SceneKit.Internal.Enums

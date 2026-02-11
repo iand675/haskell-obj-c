@@ -26,11 +26,13 @@ module ObjC.VideoToolbox.VTSuperResolutionScalerConfiguration
   , revision
   , supportedRevisions
   , defaultRevision
+  , frameSupportedPixelFormats
   , sourcePixelBufferAttributes
   , destinationPixelBufferAttributes
   , configurationModelStatus
   , configurationModelPercentageAvailable
   , supported
+  , supportedScaleFactors
   , initWithFrameWidth_frameHeight_scaleFactor_inputType_usePrecomputedFlow_qualityPrioritization_revisionSelector
   , initSelector
   , newSelector
@@ -44,11 +46,13 @@ module ObjC.VideoToolbox.VTSuperResolutionScalerConfiguration
   , revisionSelector
   , supportedRevisionsSelector
   , defaultRevisionSelector
+  , frameSupportedPixelFormatsSelector
   , sourcePixelBufferAttributesSelector
   , destinationPixelBufferAttributesSelector
   , configurationModelStatusSelector
   , configurationModelPercentageAvailableSelector
   , supportedSelector
+  , supportedScaleFactorsSelector
 
   -- * Enum types
   , VTSuperResolutionScalerConfigurationInputType(VTSuperResolutionScalerConfigurationInputType)
@@ -184,6 +188,13 @@ defaultRevision  =
     cls' <- getRequiredClass "VTSuperResolutionScalerConfiguration"
     fmap (coerce :: CLong -> VTSuperResolutionScalerConfigurationRevision) $ sendClassMsg cls' (mkSelector "defaultRevision") retCLong []
 
+-- | Available supported pixel formats for source frames for current configuration.
+--
+-- ObjC selector: @- frameSupportedPixelFormats@
+frameSupportedPixelFormats :: IsVTSuperResolutionScalerConfiguration vtSuperResolutionScalerConfiguration => vtSuperResolutionScalerConfiguration -> IO (Id NSArray)
+frameSupportedPixelFormats vtSuperResolutionScalerConfiguration  =
+    sendMsg vtSuperResolutionScalerConfiguration (mkSelector "frameSupportedPixelFormats") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Pixel buffer attributes dictionary that describes requirements for pixel buffers which represent source frames and reference frames.
 --
 -- Use ``CVPixelBufferCreateResolvedAttributesDictionary`` to combine this dictionary with your pixel buffer attributes dictionary.
@@ -224,6 +235,15 @@ supported  =
   do
     cls' <- getRequiredClass "VTSuperResolutionScalerConfiguration"
     fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supported") retCULong []
+
+-- | Reports the set of supported scale factors to use when initializing a super-resolution scaler configuration.
+--
+-- ObjC selector: @+ supportedScaleFactors@
+supportedScaleFactors :: IO (Id NSArray)
+supportedScaleFactors  =
+  do
+    cls' <- getRequiredClass "VTSuperResolutionScalerConfiguration"
+    sendClassMsg cls' (mkSelector "supportedScaleFactors") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -281,6 +301,10 @@ supportedRevisionsSelector = mkSelector "supportedRevisions"
 defaultRevisionSelector :: Selector
 defaultRevisionSelector = mkSelector "defaultRevision"
 
+-- | @Selector@ for @frameSupportedPixelFormats@
+frameSupportedPixelFormatsSelector :: Selector
+frameSupportedPixelFormatsSelector = mkSelector "frameSupportedPixelFormats"
+
 -- | @Selector@ for @sourcePixelBufferAttributes@
 sourcePixelBufferAttributesSelector :: Selector
 sourcePixelBufferAttributesSelector = mkSelector "sourcePixelBufferAttributes"
@@ -300,4 +324,8 @@ configurationModelPercentageAvailableSelector = mkSelector "configurationModelPe
 -- | @Selector@ for @supported@
 supportedSelector :: Selector
 supportedSelector = mkSelector "supported"
+
+-- | @Selector@ for @supportedScaleFactors@
+supportedScaleFactorsSelector :: Selector
+supportedScaleFactorsSelector = mkSelector "supportedScaleFactors"
 

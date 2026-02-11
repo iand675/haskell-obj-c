@@ -13,7 +13,11 @@ module ObjC.SafetyKit.SAEmergencyResponseManager
   ( SAEmergencyResponseManager
   , IsSAEmergencyResponseManager(..)
   , dialVoiceCallToPhoneNumber_completionHandler
+  , delegate
+  , setDelegate
   , dialVoiceCallToPhoneNumber_completionHandlerSelector
+  , delegateSelector
+  , setDelegateSelector
 
 
   ) where
@@ -47,6 +51,24 @@ dialVoiceCallToPhoneNumber_completionHandler saEmergencyResponseManager  phoneNu
   withObjCPtr phoneNumber $ \raw_phoneNumber ->
       sendMsg saEmergencyResponseManager (mkSelector "dialVoiceCallToPhoneNumber:completionHandler:") retVoid [argPtr (castPtr raw_phoneNumber :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
 
+-- | delegate
+--
+-- The delegate object to receive updates about requested emergency response action.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsSAEmergencyResponseManager saEmergencyResponseManager => saEmergencyResponseManager -> IO RawId
+delegate saEmergencyResponseManager  =
+    fmap (RawId . castPtr) $ sendMsg saEmergencyResponseManager (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- The delegate object to receive updates about requested emergency response action.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsSAEmergencyResponseManager saEmergencyResponseManager => saEmergencyResponseManager -> RawId -> IO ()
+setDelegate saEmergencyResponseManager  value =
+    sendMsg saEmergencyResponseManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -54,4 +76,12 @@ dialVoiceCallToPhoneNumber_completionHandler saEmergencyResponseManager  phoneNu
 -- | @Selector@ for @dialVoiceCallToPhoneNumber:completionHandler:@
 dialVoiceCallToPhoneNumber_completionHandlerSelector :: Selector
 dialVoiceCallToPhoneNumber_completionHandlerSelector = mkSelector "dialVoiceCallToPhoneNumber:completionHandler:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

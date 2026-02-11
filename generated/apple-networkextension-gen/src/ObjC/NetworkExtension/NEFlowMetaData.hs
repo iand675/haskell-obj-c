@@ -12,8 +12,12 @@ module ObjC.NetworkExtension.NEFlowMetaData
   , IsNEFlowMetaData(..)
   , sourceAppUniqueIdentifier
   , sourceAppSigningIdentifier
+  , sourceAppAuditToken
+  , filterFlowIdentifier
   , sourceAppUniqueIdentifierSelector
   , sourceAppSigningIdentifierSelector
+  , sourceAppAuditTokenSelector
+  , filterFlowIdentifierSelector
 
 
   ) where
@@ -51,6 +55,24 @@ sourceAppSigningIdentifier :: IsNEFlowMetaData neFlowMetaData => neFlowMetaData 
 sourceAppSigningIdentifier neFlowMetaData  =
     sendMsg neFlowMetaData (mkSelector "sourceAppSigningIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | sourceAppAuditToken
+--
+-- Audit token of the source application of the flow.
+--
+-- ObjC selector: @- sourceAppAuditToken@
+sourceAppAuditToken :: IsNEFlowMetaData neFlowMetaData => neFlowMetaData -> IO (Id NSData)
+sourceAppAuditToken neFlowMetaData  =
+    sendMsg neFlowMetaData (mkSelector "sourceAppAuditToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | filterFlowIdentifier
+--
+-- The identifier of the content filter flow corresponding to this flow.
+--
+-- ObjC selector: @- filterFlowIdentifier@
+filterFlowIdentifier :: IsNEFlowMetaData neFlowMetaData => neFlowMetaData -> IO (Id NSUUID)
+filterFlowIdentifier neFlowMetaData  =
+    sendMsg neFlowMetaData (mkSelector "filterFlowIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -62,4 +84,12 @@ sourceAppUniqueIdentifierSelector = mkSelector "sourceAppUniqueIdentifier"
 -- | @Selector@ for @sourceAppSigningIdentifier@
 sourceAppSigningIdentifierSelector :: Selector
 sourceAppSigningIdentifierSelector = mkSelector "sourceAppSigningIdentifier"
+
+-- | @Selector@ for @sourceAppAuditToken@
+sourceAppAuditTokenSelector :: Selector
+sourceAppAuditTokenSelector = mkSelector "sourceAppAuditToken"
+
+-- | @Selector@ for @filterFlowIdentifier@
+filterFlowIdentifierSelector :: Selector
+filterFlowIdentifierSelector = mkSelector "filterFlowIdentifier"
 

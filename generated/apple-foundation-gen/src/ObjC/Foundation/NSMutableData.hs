@@ -22,6 +22,7 @@ module ObjC.Foundation.NSMutableData
   , resetBytesInRange
   , setData
   , replaceBytesInRange_withBytes_length
+  , mutableBytes
   , length_
   , setLength
   , decompressUsingAlgorithm_errorSelector
@@ -37,6 +38,7 @@ module ObjC.Foundation.NSMutableData
   , resetBytesInRangeSelector
   , setDataSelector
   , replaceBytesInRange_withBytes_lengthSelector
+  , mutableBytesSelector
   , lengthSelector
   , setLengthSelector
 
@@ -138,6 +140,11 @@ replaceBytesInRange_withBytes_length :: IsNSMutableData nsMutableData => nsMutab
 replaceBytesInRange_withBytes_length nsMutableData  range replacementBytes replacementLength =
     sendMsg nsMutableData (mkSelector "replaceBytesInRange:withBytes:length:") retVoid [argNSRange range, argPtr (unConst replacementBytes), argCULong replacementLength]
 
+-- | @- mutableBytes@
+mutableBytes :: IsNSMutableData nsMutableData => nsMutableData -> IO (Ptr ())
+mutableBytes nsMutableData  =
+    fmap castPtr $ sendMsg nsMutableData (mkSelector "mutableBytes") (retPtr retVoid) []
+
 -- | @- length@
 length_ :: IsNSMutableData nsMutableData => nsMutableData -> IO CULong
 length_ nsMutableData  =
@@ -203,6 +210,10 @@ setDataSelector = mkSelector "setData:"
 -- | @Selector@ for @replaceBytesInRange:withBytes:length:@
 replaceBytesInRange_withBytes_lengthSelector :: Selector
 replaceBytesInRange_withBytes_lengthSelector = mkSelector "replaceBytesInRange:withBytes:length:"
+
+-- | @Selector@ for @mutableBytes@
+mutableBytesSelector :: Selector
+mutableBytesSelector = mkSelector "mutableBytes"
 
 -- | @Selector@ for @length@
 lengthSelector :: Selector

@@ -15,6 +15,8 @@
 module ObjC.AVFAudio.AVAudioFormat
   ( AVAudioFormat
   , IsAVAudioFormat(..)
+  , initWithStreamDescription
+  , initWithStreamDescription_channelLayout
   , initStandardFormatWithSampleRate_channels
   , initStandardFormatWithSampleRate_channelLayout
   , initWithCommonFormat_sampleRate_channels_interleaved
@@ -27,11 +29,14 @@ module ObjC.AVFAudio.AVAudioFormat
   , channelCount
   , sampleRate
   , interleaved
+  , streamDescription
   , channelLayout
   , magicCookie
   , setMagicCookie
   , settings
   , formatDescription
+  , initWithStreamDescriptionSelector
+  , initWithStreamDescription_channelLayoutSelector
   , initStandardFormatWithSampleRate_channelsSelector
   , initStandardFormatWithSampleRate_channelLayoutSelector
   , initWithCommonFormat_sampleRate_channels_interleavedSelector
@@ -44,6 +49,7 @@ module ObjC.AVFAudio.AVAudioFormat
   , channelCountSelector
   , sampleRateSelector
   , interleavedSelector
+  , streamDescriptionSelector
   , channelLayoutSelector
   , magicCookieSelector
   , setMagicCookieSelector
@@ -75,6 +81,35 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.AVFAudio.Internal.Classes
 import ObjC.AVFAudio.Internal.Enums
 import ObjC.Foundation.Internal.Classes
+
+-- | initWithStreamDescription:
+--
+-- Initialize from an AudioStreamBasicDescription.
+--
+-- @asbd@ — the AudioStreamBasicDescription
+--
+-- If the format specifies more than 2 channels, this method fails (returns nil).
+--
+-- ObjC selector: @- initWithStreamDescription:@
+initWithStreamDescription :: IsAVAudioFormat avAudioFormat => avAudioFormat -> Const RawId -> IO (Id AVAudioFormat)
+initWithStreamDescription avAudioFormat  asbd =
+    sendMsg avAudioFormat (mkSelector "initWithStreamDescription:") (retPtr retVoid) [argPtr (castPtr (unRawId (unConst asbd)) :: Ptr ())] >>= ownedObject . castPtr
+
+-- | initWithStreamDescription:channelLayout:
+--
+-- Initialize from an AudioStreamBasicDescription and optional channel layout.
+--
+-- @asbd@ — the AudioStreamBasicDescription
+--
+-- @layout@ — the channel layout. Can be nil only if asbd specifies 1 or 2 channels.
+--
+-- If the format specifies more than 2 channels, this method fails (returns nil) unless layout		is non-nil.
+--
+-- ObjC selector: @- initWithStreamDescription:channelLayout:@
+initWithStreamDescription_channelLayout :: (IsAVAudioFormat avAudioFormat, IsAVAudioChannelLayout layout) => avAudioFormat -> Const RawId -> layout -> IO (Id AVAudioFormat)
+initWithStreamDescription_channelLayout avAudioFormat  asbd layout =
+  withObjCPtr layout $ \raw_layout ->
+      sendMsg avAudioFormat (mkSelector "initWithStreamDescription:channelLayout:") (retPtr retVoid) [argPtr (castPtr (unRawId (unConst asbd)) :: Ptr ()), argPtr (castPtr raw_layout :: Ptr ())] >>= ownedObject . castPtr
 
 -- | initStandardFormatWithSampleRate:channels:
 --
@@ -229,6 +264,15 @@ interleaved :: IsAVAudioFormat avAudioFormat => avAudioFormat -> IO Bool
 interleaved avAudioFormat  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioFormat (mkSelector "interleaved") retCULong []
 
+-- | streamDescription
+--
+-- Returns the AudioStreamBasicDescription, for use with lower-level audio API's.
+--
+-- ObjC selector: @- streamDescription@
+streamDescription :: IsAVAudioFormat avAudioFormat => avAudioFormat -> IO (Const RawId)
+streamDescription avAudioFormat  =
+    fmap Const $ fmap (RawId . castPtr) $ sendMsg avAudioFormat (mkSelector "streamDescription") (retPtr retVoid) []
+
 -- | channelLayout
 --
 -- The underlying AVAudioChannelLayout, if any.
@@ -285,6 +329,14 @@ formatDescription avAudioFormat  =
 -- Selectors
 -- ---------------------------------------------------------------------------
 
+-- | @Selector@ for @initWithStreamDescription:@
+initWithStreamDescriptionSelector :: Selector
+initWithStreamDescriptionSelector = mkSelector "initWithStreamDescription:"
+
+-- | @Selector@ for @initWithStreamDescription:channelLayout:@
+initWithStreamDescription_channelLayoutSelector :: Selector
+initWithStreamDescription_channelLayoutSelector = mkSelector "initWithStreamDescription:channelLayout:"
+
 -- | @Selector@ for @initStandardFormatWithSampleRate:channels:@
 initStandardFormatWithSampleRate_channelsSelector :: Selector
 initStandardFormatWithSampleRate_channelsSelector = mkSelector "initStandardFormatWithSampleRate:channels:"
@@ -332,6 +384,10 @@ sampleRateSelector = mkSelector "sampleRate"
 -- | @Selector@ for @interleaved@
 interleavedSelector :: Selector
 interleavedSelector = mkSelector "interleaved"
+
+-- | @Selector@ for @streamDescription@
+streamDescriptionSelector :: Selector
+streamDescriptionSelector = mkSelector "streamDescription"
 
 -- | @Selector@ for @channelLayout@
 channelLayoutSelector :: Selector

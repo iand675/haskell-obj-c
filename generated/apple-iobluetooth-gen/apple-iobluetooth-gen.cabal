@@ -13,6 +13,14 @@ build-type:     Simple
 library
   exposed-modules:
       ObjC.IOBluetooth.BluetoothFileReference
+      ObjC.IOBluetooth.Delegate.IOBluetoothDeviceAsyncCallbacks
+      ObjC.IOBluetooth.Delegate.IOBluetoothDeviceInquiryDelegate
+      ObjC.IOBluetooth.Delegate.IOBluetoothDevicePairDelegate
+      ObjC.IOBluetooth.Delegate.IOBluetoothHandsFreeAudioGatewayDelegate
+      ObjC.IOBluetooth.Delegate.IOBluetoothHandsFreeDelegate
+      ObjC.IOBluetooth.Delegate.IOBluetoothHandsFreeDeviceDelegate
+      ObjC.IOBluetooth.Delegate.IOBluetoothL2CAPChannelDelegate
+      ObjC.IOBluetooth.Delegate.IOBluetoothRFCOMMChannelDelegate
       ObjC.IOBluetooth.Enums
       ObjC.IOBluetooth.IOBluetoothDevice
       ObjC.IOBluetooth.IOBluetoothDeviceInquiry

@@ -15,12 +15,14 @@ module ObjC.NetworkExtension.NETunnelProvider
   , IsNETunnelProvider(..)
   , handleAppMessage_completionHandler
   , setTunnelNetworkSettings_completionHandler
+  , protocolConfiguration
   , appRules
   , routingMethod
   , reasserting
   , setReasserting
   , handleAppMessage_completionHandlerSelector
   , setTunnelNetworkSettings_completionHandlerSelector
+  , protocolConfigurationSelector
   , appRulesSelector
   , routingMethodSelector
   , reassertingSelector
@@ -78,6 +80,15 @@ setTunnelNetworkSettings_completionHandler neTunnelProvider  tunnelNetworkSettin
   withObjCPtr tunnelNetworkSettings $ \raw_tunnelNetworkSettings ->
       sendMsg neTunnelProvider (mkSelector "setTunnelNetworkSettings:completionHandler:") retVoid [argPtr (castPtr raw_tunnelNetworkSettings :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
 
+-- | protocolConfiguration
+--
+-- An NEVPNProtocol object containing the provider's current configuration. The value of this property may change during the lifetime of the tunnel provided by this NETunnelProvider, KVO can be used to detect when changes occur.  For different protocol types, this property will contain the corresponding subclass.   For NEVPNProtocolTypePlugin protocol type, this property will contain the NETunnelProviderProtocol subclass.  For NEVPNProtocolTypeIKEv2 protocol type, this property will contain the NEVPNProtocolIKEv2 subclass.
+--
+-- ObjC selector: @- protocolConfiguration@
+protocolConfiguration :: IsNETunnelProvider neTunnelProvider => neTunnelProvider -> IO (Id NEVPNProtocol)
+protocolConfiguration neTunnelProvider  =
+    sendMsg neTunnelProvider (mkSelector "protocolConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | appRules
 --
 -- An array of NEAppRule objects specifying which applications are currently being routed through the tunnel provided by this NETunnelProvider. If application-based routing is not enabled for the tunnel, then this property is set to nil.
@@ -125,6 +136,10 @@ handleAppMessage_completionHandlerSelector = mkSelector "handleAppMessage:comple
 -- | @Selector@ for @setTunnelNetworkSettings:completionHandler:@
 setTunnelNetworkSettings_completionHandlerSelector :: Selector
 setTunnelNetworkSettings_completionHandlerSelector = mkSelector "setTunnelNetworkSettings:completionHandler:"
+
+-- | @Selector@ for @protocolConfiguration@
+protocolConfigurationSelector :: Selector
+protocolConfigurationSelector = mkSelector "protocolConfiguration"
 
 -- | @Selector@ for @appRules@
 appRulesSelector :: Selector

@@ -16,6 +16,7 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.VideoSubscriberAccount.Delegate.VSAccountManagerDelegate
   - ObjC.VideoSubscriberAccount.Enums
   - ObjC.VideoSubscriberAccount.Internal.Classes
   - ObjC.VideoSubscriberAccount.Internal.Enums

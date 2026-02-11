@@ -8,9 +8,13 @@ module ObjC.Foundation.NSXPCCoder
   , IsNSXPCCoder(..)
   , encodeXPCObject_forKey
   , decodeXPCObjectOfType_forKey
+  , userInfo
+  , setUserInfo
   , connection
   , encodeXPCObject_forKeySelector
   , decodeXPCObjectOfType_forKeySelector
+  , userInfoSelector
+  , setUserInfoSelector
   , connectionSelector
 
 
@@ -43,6 +47,16 @@ decodeXPCObjectOfType_forKey nsxpcCoder  type_ key =
   withObjCPtr key $ \raw_key ->
       sendMsg nsxpcCoder (mkSelector "decodeXPCObjectOfType:forKey:") (retPtr retVoid) [argPtr (castPtr (unRawId type_) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
 
+-- | @- userInfo@
+userInfo :: IsNSXPCCoder nsxpcCoder => nsxpcCoder -> IO RawId
+userInfo nsxpcCoder  =
+    fmap (RawId . castPtr) $ sendMsg nsxpcCoder (mkSelector "userInfo") (retPtr retVoid) []
+
+-- | @- setUserInfo:@
+setUserInfo :: IsNSXPCCoder nsxpcCoder => nsxpcCoder -> RawId -> IO ()
+setUserInfo nsxpcCoder  value =
+    sendMsg nsxpcCoder (mkSelector "setUserInfo:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- connection@
 connection :: IsNSXPCCoder nsxpcCoder => nsxpcCoder -> IO (Id NSXPCConnection)
 connection nsxpcCoder  =
@@ -59,6 +73,14 @@ encodeXPCObject_forKeySelector = mkSelector "encodeXPCObject:forKey:"
 -- | @Selector@ for @decodeXPCObjectOfType:forKey:@
 decodeXPCObjectOfType_forKeySelector :: Selector
 decodeXPCObjectOfType_forKeySelector = mkSelector "decodeXPCObjectOfType:forKey:"
+
+-- | @Selector@ for @userInfo@
+userInfoSelector :: Selector
+userInfoSelector = mkSelector "userInfo"
+
+-- | @Selector@ for @setUserInfo:@
+setUserInfoSelector :: Selector
+setUserInfoSelector = mkSelector "setUserInfo:"
 
 -- | @Selector@ for @connection@
 connectionSelector :: Selector

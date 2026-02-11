@@ -14,10 +14,12 @@ module ObjC.ImageCaptureCore.ICScannerBandData
   , numComponents
   , bigEndian
   , pixelDataType
+  , colorSyncProfilePath
   , bytesPerRow
   , dataStartRow
   , dataNumRows
   , dataSize
+  , dataBuffer
   , fullImageWidthSelector
   , fullImageHeightSelector
   , bitsPerPixelSelector
@@ -25,10 +27,12 @@ module ObjC.ImageCaptureCore.ICScannerBandData
   , numComponentsSelector
   , bigEndianSelector
   , pixelDataTypeSelector
+  , colorSyncProfilePathSelector
   , bytesPerRowSelector
   , dataStartRowSelector
   , dataNumRowsSelector
   , dataSizeSelector
+  , dataBufferSelector
 
   -- * Enum types
   , ICScannerPixelDataType(ICScannerPixelDataType)
@@ -123,6 +127,15 @@ pixelDataType :: IsICScannerBandData icScannerBandData => icScannerBandData -> I
 pixelDataType icScannerBandData  =
     fmap (coerce :: CULong -> ICScannerPixelDataType) $ sendMsg icScannerBandData (mkSelector "pixelDataType") retCULong []
 
+-- | colorSyncProfilePath
+--
+-- Returns the path to the color profile matching the banded data.
+--
+-- ObjC selector: @- colorSyncProfilePath@
+colorSyncProfilePath :: IsICScannerBandData icScannerBandData => icScannerBandData -> IO RawId
+colorSyncProfilePath icScannerBandData  =
+    fmap (RawId . castPtr) $ sendMsg icScannerBandData (mkSelector "colorSyncProfilePath") (retPtr retVoid) []
+
 -- | bytesPerRow
 --
 -- Descries how many bytes are in each image band row.
@@ -159,6 +172,15 @@ dataSize :: IsICScannerBandData icScannerBandData => icScannerBandData -> IO CUL
 dataSize icScannerBandData  =
     sendMsg icScannerBandData (mkSelector "dataSize") retCULong []
 
+-- | dataBuffer
+--
+-- The pointer to the data buffer object.
+--
+-- ObjC selector: @- dataBuffer@
+dataBuffer :: IsICScannerBandData icScannerBandData => icScannerBandData -> IO RawId
+dataBuffer icScannerBandData  =
+    fmap (RawId . castPtr) $ sendMsg icScannerBandData (mkSelector "dataBuffer") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -191,6 +213,10 @@ bigEndianSelector = mkSelector "bigEndian"
 pixelDataTypeSelector :: Selector
 pixelDataTypeSelector = mkSelector "pixelDataType"
 
+-- | @Selector@ for @colorSyncProfilePath@
+colorSyncProfilePathSelector :: Selector
+colorSyncProfilePathSelector = mkSelector "colorSyncProfilePath"
+
 -- | @Selector@ for @bytesPerRow@
 bytesPerRowSelector :: Selector
 bytesPerRowSelector = mkSelector "bytesPerRow"
@@ -206,4 +232,8 @@ dataNumRowsSelector = mkSelector "dataNumRows"
 -- | @Selector@ for @dataSize@
 dataSizeSelector :: Selector
 dataSizeSelector = mkSelector "dataSize"
+
+-- | @Selector@ for @dataBuffer@
+dataBufferSelector :: Selector
+dataBufferSelector = mkSelector "dataBuffer"
 

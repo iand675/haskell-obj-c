@@ -16,10 +16,12 @@ module ObjC.Virtualization.VZUSBController
   , init_
   , attachDevice_completionHandler
   , detachDevice_completionHandler
+  , usbDevices
   , newSelector
   , initSelector
   , attachDevice_completionHandlerSelector
   , detachDevice_completionHandlerSelector
+  , usbDevicesSelector
 
 
   ) where
@@ -81,6 +83,23 @@ detachDevice_completionHandler :: IsVZUSBController vzusbController => vzusbCont
 detachDevice_completionHandler vzusbController  device completionHandler =
     sendMsg vzusbController (mkSelector "detachDevice:completionHandler:") retVoid [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
 
+-- | Return a list of USB devices attached to controller.
+--
+-- If corresponding USB controller configuration included in VZVirtualMachineConfiguration contained  any USB devices,    those devices will appear here when virtual machine is started.
+--
+-- See: VZUSBDevice
+--
+-- See: VZUSBDeviceConfiguration
+--
+-- See: VZUSBControllerConfiguration
+--
+-- See: VZVirtualMachineConfiguration
+--
+-- ObjC selector: @- usbDevices@
+usbDevices :: IsVZUSBController vzusbController => vzusbController -> IO (Id NSArray)
+usbDevices vzusbController  =
+    sendMsg vzusbController (mkSelector "usbDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -100,4 +119,8 @@ attachDevice_completionHandlerSelector = mkSelector "attachDevice:completionHand
 -- | @Selector@ for @detachDevice:completionHandler:@
 detachDevice_completionHandlerSelector :: Selector
 detachDevice_completionHandlerSelector = mkSelector "detachDevice:completionHandler:"
+
+-- | @Selector@ for @usbDevices@
+usbDevicesSelector :: Selector
+usbDevicesSelector = mkSelector "usbDevices"
 

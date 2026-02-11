@@ -19,6 +19,10 @@ library
       ObjC.BackgroundAssets.BADownload
       ObjC.BackgroundAssets.BADownloadManager
       ObjC.BackgroundAssets.BAURLDownload
+      ObjC.BackgroundAssets.Delegate.BADownloadManagerDelegate
+      ObjC.BackgroundAssets.Delegate.BADownloaderExtension
+      ObjC.BackgroundAssets.Delegate.BAManagedAssetPackDownloadDelegate
+      ObjC.BackgroundAssets.Delegate.BAManagedDownloaderExtension
       ObjC.BackgroundAssets.Enums
       ObjC.BackgroundAssets.Internal.Classes
       ObjC.BackgroundAssets.Internal.Enums

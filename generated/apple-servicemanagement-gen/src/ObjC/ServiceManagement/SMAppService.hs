@@ -29,6 +29,7 @@ module ObjC.ServiceManagement.SMAppService
   , unregisterWithCompletionHandler
   , statusForLegacyURL
   , openSystemSettingsLoginItems
+  , mainAppService
   , status
   , loginItemServiceWithIdentifierSelector
   , agentServiceWithPlistNameSelector
@@ -38,6 +39,7 @@ module ObjC.ServiceManagement.SMAppService
   , unregisterWithCompletionHandlerSelector
   , statusForLegacyURLSelector
   , openSystemSettingsLoginItemsSelector
+  , mainAppServiceSelector
   , statusSelector
 
   -- * Enum types
@@ -219,6 +221,19 @@ openSystemSettingsLoginItems  =
     cls' <- getRequiredClass "SMAppService"
     sendClassMsg cls' (mkSelector "openSystemSettingsLoginItems") retVoid []
 
+-- | mainAppService
+--
+-- A SMAppService corresponding to the main application as a LoginItem
+--
+-- This SMAppService can be used to configure the main app to be launched at login
+--
+-- ObjC selector: @+ mainAppService@
+mainAppService :: IO (Id SMAppService)
+mainAppService  =
+  do
+    cls' <- getRequiredClass "SMAppService"
+    sendClassMsg cls' (mkSelector "mainAppService") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | status
 --
 -- Returns the status for the service
@@ -269,6 +284,10 @@ statusForLegacyURLSelector = mkSelector "statusForLegacyURL:"
 -- | @Selector@ for @openSystemSettingsLoginItems@
 openSystemSettingsLoginItemsSelector :: Selector
 openSystemSettingsLoginItemsSelector = mkSelector "openSystemSettingsLoginItems"
+
+-- | @Selector@ for @mainAppService@
+mainAppServiceSelector :: Selector
+mainAppServiceSelector = mkSelector "mainAppService"
 
 -- | @Selector@ for @status@
 statusSelector :: Selector

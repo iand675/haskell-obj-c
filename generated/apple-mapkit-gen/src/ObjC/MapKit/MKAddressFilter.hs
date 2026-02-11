@@ -11,10 +11,14 @@ module ObjC.MapKit.MKAddressFilter
   , initExcludingOptions
   , includesOptions
   , excludesOptions
+  , filterIncludingAll
+  , filterExcludingAll
   , initIncludingOptionsSelector
   , initExcludingOptionsSelector
   , includesOptionsSelector
   , excludesOptionsSelector
+  , filterIncludingAllSelector
+  , filterExcludingAllSelector
 
   -- * Enum types
   , MKAddressFilterOption(MKAddressFilterOption)
@@ -63,6 +67,20 @@ excludesOptions :: IsMKAddressFilter mkAddressFilter => mkAddressFilter -> MKAdd
 excludesOptions mkAddressFilter  options =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkAddressFilter (mkSelector "excludesOptions:") retCULong [argCULong (coerce options)]
 
+-- | @+ filterIncludingAll@
+filterIncludingAll :: IO (Id MKAddressFilter)
+filterIncludingAll  =
+  do
+    cls' <- getRequiredClass "MKAddressFilter"
+    sendClassMsg cls' (mkSelector "filterIncludingAll") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ filterExcludingAll@
+filterExcludingAll :: IO (Id MKAddressFilter)
+filterExcludingAll  =
+  do
+    cls' <- getRequiredClass "MKAddressFilter"
+    sendClassMsg cls' (mkSelector "filterExcludingAll") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -82,4 +100,12 @@ includesOptionsSelector = mkSelector "includesOptions:"
 -- | @Selector@ for @excludesOptions:@
 excludesOptionsSelector :: Selector
 excludesOptionsSelector = mkSelector "excludesOptions:"
+
+-- | @Selector@ for @filterIncludingAll@
+filterIncludingAllSelector :: Selector
+filterIncludingAllSelector = mkSelector "filterIncludingAll"
+
+-- | @Selector@ for @filterExcludingAll@
+filterExcludingAllSelector :: Selector
+filterExcludingAllSelector = mkSelector "filterExcludingAll"
 

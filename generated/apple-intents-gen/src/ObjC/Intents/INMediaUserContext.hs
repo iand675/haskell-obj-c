@@ -10,9 +10,13 @@ module ObjC.Intents.INMediaUserContext
   , init_
   , subscriptionStatus
   , setSubscriptionStatus
+  , numberOfLibraryItems
+  , setNumberOfLibraryItems
   , initSelector
   , subscriptionStatusSelector
   , setSubscriptionStatusSelector
+  , numberOfLibraryItemsSelector
+  , setNumberOfLibraryItemsSelector
 
   -- * Enum types
   , INMediaUserContextSubscriptionStatus(INMediaUserContextSubscriptionStatus)
@@ -57,6 +61,21 @@ setSubscriptionStatus :: IsINMediaUserContext inMediaUserContext => inMediaUserC
 setSubscriptionStatus inMediaUserContext  value =
     sendMsg inMediaUserContext (mkSelector "setSubscriptionStatus:") retVoid [argCLong (coerce value)]
 
+-- | Approximate number of relevant items available in the user's library (playlists, songs, podcasts, albums, etc.) - used as a signal of user affinity for the app
+--
+-- ObjC selector: @- numberOfLibraryItems@
+numberOfLibraryItems :: IsINMediaUserContext inMediaUserContext => inMediaUserContext -> IO (Id NSNumber)
+numberOfLibraryItems inMediaUserContext  =
+    sendMsg inMediaUserContext (mkSelector "numberOfLibraryItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Approximate number of relevant items available in the user's library (playlists, songs, podcasts, albums, etc.) - used as a signal of user affinity for the app
+--
+-- ObjC selector: @- setNumberOfLibraryItems:@
+setNumberOfLibraryItems :: (IsINMediaUserContext inMediaUserContext, IsNSNumber value) => inMediaUserContext -> value -> IO ()
+setNumberOfLibraryItems inMediaUserContext  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg inMediaUserContext (mkSelector "setNumberOfLibraryItems:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -72,4 +91,12 @@ subscriptionStatusSelector = mkSelector "subscriptionStatus"
 -- | @Selector@ for @setSubscriptionStatus:@
 setSubscriptionStatusSelector :: Selector
 setSubscriptionStatusSelector = mkSelector "setSubscriptionStatus:"
+
+-- | @Selector@ for @numberOfLibraryItems@
+numberOfLibraryItemsSelector :: Selector
+numberOfLibraryItemsSelector = mkSelector "numberOfLibraryItems"
+
+-- | @Selector@ for @setNumberOfLibraryItems:@
+setNumberOfLibraryItemsSelector :: Selector
+setNumberOfLibraryItemsSelector = mkSelector "setNumberOfLibraryItems:"
 

@@ -12,6 +12,8 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.NearbyInteraction.Delegate.NIDeviceCapability
+      ObjC.NearbyInteraction.Delegate.NISessionDelegate
       ObjC.NearbyInteraction.Enums
       ObjC.NearbyInteraction.Internal.Classes
       ObjC.NearbyInteraction.Internal.Enums

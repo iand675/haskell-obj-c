@@ -12,6 +12,7 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.SoundAnalysis.Delegate.SNResultsObserving
       ObjC.SoundAnalysis.Enums
       ObjC.SoundAnalysis.Internal.Classes
       ObjC.SoundAnalysis.Internal.Enums

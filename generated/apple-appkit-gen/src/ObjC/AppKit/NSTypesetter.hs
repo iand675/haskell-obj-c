@@ -26,6 +26,8 @@ module ObjC.AppKit.NSTypesetter
   , baselineOffsetInLayoutManager_glyphIndex
   , sharedSystemTypesetterForBehavior
   , actionForControlCharacterAtIndex
+  , getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevels
+  , substituteGlyphsInRange_withGlyphs
   , insertGlyph_atGlyphIndex_characterIndex
   , deleteGlyphsInRange
   , characterRangeForGlyphRange_actualGlyphRange
@@ -85,6 +87,8 @@ module ObjC.AppKit.NSTypesetter
   , baselineOffsetInLayoutManager_glyphIndexSelector
   , sharedSystemTypesetterForBehaviorSelector
   , actionForControlCharacterAtIndexSelector
+  , getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevelsSelector
+  , substituteGlyphsInRange_withGlyphsSelector
   , insertGlyph_atGlyphIndex_characterIndexSelector
   , deleteGlyphsInRangeSelector
   , characterRangeForGlyphRange_actualGlyphRangeSelector
@@ -268,6 +272,16 @@ sharedSystemTypesetterForBehavior behavior =
 actionForControlCharacterAtIndex :: IsNSTypesetter nsTypesetter => nsTypesetter -> CULong -> IO NSTypesetterControlCharacterAction
 actionForControlCharacterAtIndex nsTypesetter  charIndex =
     fmap (coerce :: CULong -> NSTypesetterControlCharacterAction) $ sendMsg nsTypesetter (mkSelector "actionForControlCharacterAtIndex:") retCULong [argCULong charIndex]
+
+-- | @- getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:bidiLevels:@
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevels :: IsNSTypesetter nsTypesetter => nsTypesetter -> NSRange -> RawId -> Ptr CULong -> Ptr NSGlyphInscription -> Ptr Bool -> Ptr CUChar -> IO CULong
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevels nsTypesetter  glyphsRange glyphBuffer charIndexBuffer inscribeBuffer elasticBuffer bidiLevelBuffer =
+    sendMsg nsTypesetter (mkSelector "getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:bidiLevels:") retCULong [argNSRange glyphsRange, argPtr (castPtr (unRawId glyphBuffer) :: Ptr ()), argPtr charIndexBuffer, argPtr inscribeBuffer, argPtr elasticBuffer, argPtr bidiLevelBuffer]
+
+-- | @- substituteGlyphsInRange:withGlyphs:@
+substituteGlyphsInRange_withGlyphs :: IsNSTypesetter nsTypesetter => nsTypesetter -> NSRange -> RawId -> IO ()
+substituteGlyphsInRange_withGlyphs nsTypesetter  glyphRange glyphs =
+    sendMsg nsTypesetter (mkSelector "substituteGlyphsInRange:withGlyphs:") retVoid [argNSRange glyphRange, argPtr (castPtr (unRawId glyphs) :: Ptr ())]
 
 -- | @- insertGlyph:atGlyphIndex:characterIndex:@
 insertGlyph_atGlyphIndex_characterIndex :: IsNSTypesetter nsTypesetter => nsTypesetter -> CUInt -> CULong -> CULong -> IO ()
@@ -554,6 +568,14 @@ sharedSystemTypesetterForBehaviorSelector = mkSelector "sharedSystemTypesetterFo
 -- | @Selector@ for @actionForControlCharacterAtIndex:@
 actionForControlCharacterAtIndexSelector :: Selector
 actionForControlCharacterAtIndexSelector = mkSelector "actionForControlCharacterAtIndex:"
+
+-- | @Selector@ for @getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:bidiLevels:@
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevelsSelector :: Selector
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevelsSelector = mkSelector "getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:bidiLevels:"
+
+-- | @Selector@ for @substituteGlyphsInRange:withGlyphs:@
+substituteGlyphsInRange_withGlyphsSelector :: Selector
+substituteGlyphsInRange_withGlyphsSelector = mkSelector "substituteGlyphsInRange:withGlyphs:"
 
 -- | @Selector@ for @insertGlyph:atGlyphIndex:characterIndex:@
 insertGlyph_atGlyphIndex_characterIndexSelector :: Selector

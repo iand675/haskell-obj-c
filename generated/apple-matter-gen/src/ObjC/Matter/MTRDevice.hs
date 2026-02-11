@@ -31,6 +31,7 @@ module ObjC.Matter.MTRDevice
   , deviceCachePrimed
   , estimatedStartTime
   , deviceController
+  , nodeID
   , estimatedSubscriptionLatency
   , vendorID
   , productID
@@ -59,6 +60,7 @@ module ObjC.Matter.MTRDevice
   , deviceCachePrimedSelector
   , estimatedStartTimeSelector
   , deviceControllerSelector
+  , nodeIDSelector
   , estimatedSubscriptionLatencySelector
   , vendorIDSelector
   , productIDSelector
@@ -420,6 +422,13 @@ deviceController :: IsMTRDevice mtrDevice => mtrDevice -> IO (Id MTRDeviceContro
 deviceController mtrDevice  =
     sendMsg mtrDevice (mkSelector "deviceController") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The node ID of the node this device corresponds to.
+--
+-- ObjC selector: @- nodeID@
+nodeID :: IsMTRDevice mtrDevice => mtrDevice -> IO (Id NSNumber)
+nodeID mtrDevice  =
+    sendMsg mtrDevice (mkSelector "nodeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | An estimate of how much time is likely to elapse between setDelegate being called and the current device state (attributes, stored events) being known.
 --
 -- nil if no such estimate is available.  Otherwise, the NSNumber stores an NSTimeInterval.
@@ -553,6 +562,10 @@ estimatedStartTimeSelector = mkSelector "estimatedStartTime"
 -- | @Selector@ for @deviceController@
 deviceControllerSelector :: Selector
 deviceControllerSelector = mkSelector "deviceController"
+
+-- | @Selector@ for @nodeID@
+nodeIDSelector :: Selector
+nodeIDSelector = mkSelector "nodeID"
 
 -- | @Selector@ for @estimatedSubscriptionLatency@
 estimatedSubscriptionLatencySelector :: Selector

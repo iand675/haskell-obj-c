@@ -25,6 +25,8 @@ module ObjC.MetalPerformanceShaders.MPSNNLossGradientNode
   , epsilon
   , delta
   , isLabelsGradientFilter
+  , propertyCallBack
+  , setPropertyCallBack
   , nodeWithSourceGradient_sourceImage_labels_weights_gradientState_lossDescriptor_isLabelsGradientFilterSelector
   , nodeWithSourceGradient_sourceImage_labels_gradientState_lossDescriptor_isLabelsGradientFilterSelector
   , nodeWithSources_gradientState_lossDescriptor_isLabelsGradientFilterSelector
@@ -41,6 +43,8 @@ module ObjC.MetalPerformanceShaders.MPSNNLossGradientNode
   , epsilonSelector
   , deltaSelector
   , isLabelsGradientFilterSelector
+  , propertyCallBackSelector
+  , setPropertyCallBackSelector
 
   -- * Enum types
   , MPSCNNLossType(MPSCNNLossType)
@@ -209,6 +213,24 @@ isLabelsGradientFilter :: IsMPSNNLossGradientNode mpsnnLossGradientNode => mpsnn
 isLabelsGradientFilter mpsnnLossGradientNode  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsnnLossGradientNode (mkSelector "isLabelsGradientFilter") retCULong []
 
+-- | propertyCallBack
+--
+-- Optional callback option - setting this allows the scalar weight value to be changed dynamically at encode time.              Default value: nil.
+--
+-- ObjC selector: @- propertyCallBack@
+propertyCallBack :: IsMPSNNLossGradientNode mpsnnLossGradientNode => mpsnnLossGradientNode -> IO RawId
+propertyCallBack mpsnnLossGradientNode  =
+    fmap (RawId . castPtr) $ sendMsg mpsnnLossGradientNode (mkSelector "propertyCallBack") (retPtr retVoid) []
+
+-- | propertyCallBack
+--
+-- Optional callback option - setting this allows the scalar weight value to be changed dynamically at encode time.              Default value: nil.
+--
+-- ObjC selector: @- setPropertyCallBack:@
+setPropertyCallBack :: IsMPSNNLossGradientNode mpsnnLossGradientNode => mpsnnLossGradientNode -> RawId -> IO ()
+setPropertyCallBack mpsnnLossGradientNode  value =
+    sendMsg mpsnnLossGradientNode (mkSelector "setPropertyCallBack:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -276,4 +298,12 @@ deltaSelector = mkSelector "delta"
 -- | @Selector@ for @isLabelsGradientFilter@
 isLabelsGradientFilterSelector :: Selector
 isLabelsGradientFilterSelector = mkSelector "isLabelsGradientFilter"
+
+-- | @Selector@ for @propertyCallBack@
+propertyCallBackSelector :: Selector
+propertyCallBackSelector = mkSelector "propertyCallBack"
+
+-- | @Selector@ for @setPropertyCallBack:@
+setPropertyCallBackSelector :: Selector
+setPropertyCallBackSelector = mkSelector "setPropertyCallBack:"
 

@@ -19,22 +19,26 @@ module ObjC.MetalPerformanceShaders.MPSVector
   , init_
   , synchronizeOnCommandBuffer
   , resourceSize
+  , device
   , length_
   , vectors
   , dataType
   , vectorBytes
   , offset
+  , data_
   , initWithBuffer_descriptorSelector
   , initWithBuffer_offset_descriptorSelector
   , initWithDevice_descriptorSelector
   , initSelector
   , synchronizeOnCommandBufferSelector
   , resourceSizeSelector
+  , deviceSelector
   , lengthSelector
   , vectorsSelector
   , dataTypeSelector
   , vectorBytesSelector
   , offsetSelector
+  , dataSelector
 
   -- * Enum types
   , MPSDataType(MPSDataType)
@@ -163,6 +167,15 @@ resourceSize :: IsMPSVector mpsVector => mpsVector -> IO CULong
 resourceSize mpsVector  =
     sendMsg mpsVector (mkSelector "resourceSize") retCULong []
 
+-- | device
+--
+-- The device on which the MPSVector will be used.
+--
+-- ObjC selector: @- device@
+device :: IsMPSVector mpsVector => mpsVector -> IO RawId
+device mpsVector  =
+    fmap (RawId . castPtr) $ sendMsg mpsVector (mkSelector "device") (retPtr retVoid) []
+
 -- | length
 --
 -- The number of elements in the vector.
@@ -208,6 +221,15 @@ offset :: IsMPSVector mpsVector => mpsVector -> IO CULong
 offset mpsVector  =
     sendMsg mpsVector (mkSelector "offset") retCULong []
 
+-- | data
+--
+-- An MTLBuffer to store the data.
+--
+-- ObjC selector: @- data@
+data_ :: IsMPSVector mpsVector => mpsVector -> IO RawId
+data_ mpsVector  =
+    fmap (RawId . castPtr) $ sendMsg mpsVector (mkSelector "data") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -236,6 +258,10 @@ synchronizeOnCommandBufferSelector = mkSelector "synchronizeOnCommandBuffer:"
 resourceSizeSelector :: Selector
 resourceSizeSelector = mkSelector "resourceSize"
 
+-- | @Selector@ for @device@
+deviceSelector :: Selector
+deviceSelector = mkSelector "device"
+
 -- | @Selector@ for @length@
 lengthSelector :: Selector
 lengthSelector = mkSelector "length"
@@ -255,4 +281,8 @@ vectorBytesSelector = mkSelector "vectorBytes"
 -- | @Selector@ for @offset@
 offsetSelector :: Selector
 offsetSelector = mkSelector "offset"
+
+-- | @Selector@ for @data@
+dataSelector :: Selector
+dataSelector = mkSelector "data"
 

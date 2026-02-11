@@ -126,7 +126,7 @@ reservedNames = Set.fromList
   -- GHC extension keywords
   , "pattern", "role", "family", "stock", "anyclass", "via"
   -- Common Prelude identifiers
-  , "init", "error", "id", "map", "filter", "length", "head", "tail"
+  , "init", "error", "fail", "id", "map", "filter", "length", "head", "tail"
   , "last", "null", "read", "show", "print", "return", "sequence"
   , "compare", "min", "max", "minimum", "maximum"
   , "not", "and", "or", "any", "all"

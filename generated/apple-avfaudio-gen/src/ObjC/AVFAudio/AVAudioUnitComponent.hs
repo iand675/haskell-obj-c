@@ -17,12 +17,18 @@ module ObjC.AVFAudio.AVAudioUnitComponent
   , manufacturerName
   , version
   , versionString
+  , componentURL
+  , availableArchitectures
   , sandboxSafe
   , hasMIDIInput
   , hasMIDIOutput
   , audioComponent
+  , userTagNames
+  , setUserTagNames
   , allTagNames
   , audioComponentDescription
+  , iconURL
+  , icon
   , passesAUVal
   , hasCustomView
   , configurationDictionary
@@ -33,12 +39,18 @@ module ObjC.AVFAudio.AVAudioUnitComponent
   , manufacturerNameSelector
   , versionSelector
   , versionStringSelector
+  , componentURLSelector
+  , availableArchitecturesSelector
   , sandboxSafeSelector
   , hasMIDIInputSelector
   , hasMIDIOutputSelector
   , audioComponentSelector
+  , userTagNamesSelector
+  , setUserTagNamesSelector
   , allTagNamesSelector
   , audioComponentDescriptionSelector
+  , iconURLSelector
+  , iconSelector
   , passesAUValSelector
   , hasCustomViewSelector
   , configurationDictionarySelector
@@ -125,6 +137,24 @@ versionString :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitCompo
 versionString avAudioUnitComponent  =
     sendMsg avAudioUnitComponent (mkSelector "versionString") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | componentURL
+--
+-- URL representing location of component
+--
+-- ObjC selector: @- componentURL@
+componentURL :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO RawId
+componentURL avAudioUnitComponent  =
+    fmap (RawId . castPtr) $ sendMsg avAudioUnitComponent (mkSelector "componentURL") (retPtr retVoid) []
+
+-- | availableArchitectures
+--
+-- NSArray of NSNumbers each of which corresponds to one of the constants in Mach-O Architecture in NSBundle Class Reference
+--
+-- ObjC selector: @- availableArchitectures@
+availableArchitectures :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO (Id NSArray)
+availableArchitectures avAudioUnitComponent  =
+    sendMsg avAudioUnitComponent (mkSelector "availableArchitectures") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | sandboxSafe
 --
 -- On OSX, YES if the AudioComponent can be loaded into a sandboxed process otherwise NO.			  On iOS, this is always YES.
@@ -161,6 +191,25 @@ audioComponent :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComp
 audioComponent avAudioUnitComponent  =
     fmap castPtr $ sendMsg avAudioUnitComponent (mkSelector "audioComponent") (retPtr retVoid) []
 
+-- | userTagNames
+--
+-- User tags represent the tags from the current user.
+--
+-- ObjC selector: @- userTagNames@
+userTagNames :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO (Id NSArray)
+userTagNames avAudioUnitComponent  =
+    sendMsg avAudioUnitComponent (mkSelector "userTagNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | userTagNames
+--
+-- User tags represent the tags from the current user.
+--
+-- ObjC selector: @- setUserTagNames:@
+setUserTagNames :: (IsAVAudioUnitComponent avAudioUnitComponent, IsNSArray value) => avAudioUnitComponent -> value -> IO ()
+setUserTagNames avAudioUnitComponent  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avAudioUnitComponent (mkSelector "setUserTagNames:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | allTagNames
 --
 -- represent the tags from the current user and the system tags defined by AudioComponent.
@@ -178,6 +227,20 @@ allTagNames avAudioUnitComponent  =
 audioComponentDescription :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO AudioComponentDescription
 audioComponentDescription avAudioUnitComponent  =
     sendMsgStret avAudioUnitComponent (mkSelector "audioComponentDescription") retAudioComponentDescription []
+
+-- | iconURL
+--
+-- A URL that will specify the location of an icon file that can be used when presenting UI for this audio component.
+--
+-- ObjC selector: @- iconURL@
+iconURL :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO (Id NSURL)
+iconURL avAudioUnitComponent  =
+    sendMsg avAudioUnitComponent (mkSelector "iconURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- icon@
+icon :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO RawId
+icon avAudioUnitComponent  =
+    fmap (RawId . castPtr) $ sendMsg avAudioUnitComponent (mkSelector "icon") (retPtr retVoid) []
 
 -- | passesAUVal
 --
@@ -238,6 +301,14 @@ versionSelector = mkSelector "version"
 versionStringSelector :: Selector
 versionStringSelector = mkSelector "versionString"
 
+-- | @Selector@ for @componentURL@
+componentURLSelector :: Selector
+componentURLSelector = mkSelector "componentURL"
+
+-- | @Selector@ for @availableArchitectures@
+availableArchitecturesSelector :: Selector
+availableArchitecturesSelector = mkSelector "availableArchitectures"
+
 -- | @Selector@ for @sandboxSafe@
 sandboxSafeSelector :: Selector
 sandboxSafeSelector = mkSelector "sandboxSafe"
@@ -254,6 +325,14 @@ hasMIDIOutputSelector = mkSelector "hasMIDIOutput"
 audioComponentSelector :: Selector
 audioComponentSelector = mkSelector "audioComponent"
 
+-- | @Selector@ for @userTagNames@
+userTagNamesSelector :: Selector
+userTagNamesSelector = mkSelector "userTagNames"
+
+-- | @Selector@ for @setUserTagNames:@
+setUserTagNamesSelector :: Selector
+setUserTagNamesSelector = mkSelector "setUserTagNames:"
+
 -- | @Selector@ for @allTagNames@
 allTagNamesSelector :: Selector
 allTagNamesSelector = mkSelector "allTagNames"
@@ -261,6 +340,14 @@ allTagNamesSelector = mkSelector "allTagNames"
 -- | @Selector@ for @audioComponentDescription@
 audioComponentDescriptionSelector :: Selector
 audioComponentDescriptionSelector = mkSelector "audioComponentDescription"
+
+-- | @Selector@ for @iconURL@
+iconURLSelector :: Selector
+iconURLSelector = mkSelector "iconURL"
+
+-- | @Selector@ for @icon@
+iconSelector :: Selector
+iconSelector = mkSelector "icon"
 
 -- | @Selector@ for @passesAUVal@
 passesAUValSelector :: Selector

@@ -15,11 +15,15 @@ module ObjC.NetworkExtension.NEHotspotHelperCommand
   , createTCPConnection
   , createUDPSession
   , commandType
+  , network
+  , networkList
   , interface
   , createResponseSelector
   , createTCPConnectionSelector
   , createUDPSessionSelector
   , commandTypeSelector
+  , networkSelector
+  , networkListSelector
   , interfaceSelector
 
   -- * Enum types
@@ -108,6 +112,24 @@ commandType :: IsNEHotspotHelperCommand neHotspotHelperCommand => neHotspotHelpe
 commandType neHotspotHelperCommand  =
     fmap (coerce :: CLong -> NEHotspotHelperCommandType) $ sendMsg neHotspotHelperCommand (mkSelector "commandType") retCLong []
 
+-- | network
+--
+-- The network associated with the command. May be nil.
+--
+-- ObjC selector: @- network@
+network :: IsNEHotspotHelperCommand neHotspotHelperCommand => neHotspotHelperCommand -> IO (Id NEHotspotNetwork)
+network neHotspotHelperCommand  =
+    sendMsg neHotspotHelperCommand (mkSelector "network") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | networkList
+--
+-- The list of networks associated with a command. Will be nil unless   the command type is kNEHotspotHelperCommandTypeFilterScanList.   This property returns an NSArray of NEHotspotNetwork.
+--
+-- ObjC selector: @- networkList@
+networkList :: IsNEHotspotHelperCommand neHotspotHelperCommand => neHotspotHelperCommand -> IO (Id NSArray)
+networkList neHotspotHelperCommand  =
+    sendMsg neHotspotHelperCommand (mkSelector "networkList") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | interface
 --
 -- Network interface associated with the command.
@@ -138,6 +160,14 @@ createUDPSessionSelector = mkSelector "createUDPSession:"
 -- | @Selector@ for @commandType@
 commandTypeSelector :: Selector
 commandTypeSelector = mkSelector "commandType"
+
+-- | @Selector@ for @network@
+networkSelector :: Selector
+networkSelector = mkSelector "network"
+
+-- | @Selector@ for @networkList@
+networkListSelector :: Selector
+networkListSelector = mkSelector "networkList"
 
 -- | @Selector@ for @interface@
 interfaceSelector :: Selector

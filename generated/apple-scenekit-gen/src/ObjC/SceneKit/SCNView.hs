@@ -24,13 +24,18 @@ module ObjC.SceneKit.SCNView
   , setBackgroundColor
   , allowsCameraControl
   , setAllowsCameraControl
+  , cameraControlConfiguration
   , defaultCameraController
   , preferredFramesPerSecond
   , setPreferredFramesPerSecond
   , drawableResizesAsynchronously
   , setDrawableResizesAsynchronously
+  , openGLContext
+  , setOpenGLContext
   , antialiasingMode
   , setAntialiasingMode
+  , pixelFormat
+  , setPixelFormat
   , initWithFrame_optionsSelector
   , snapshotSelector
   , playSelector
@@ -44,13 +49,18 @@ module ObjC.SceneKit.SCNView
   , setBackgroundColorSelector
   , allowsCameraControlSelector
   , setAllowsCameraControlSelector
+  , cameraControlConfigurationSelector
   , defaultCameraControllerSelector
   , preferredFramesPerSecondSelector
   , setPreferredFramesPerSecondSelector
   , drawableResizesAsynchronouslySelector
   , setDrawableResizesAsynchronouslySelector
+  , openGLContextSelector
+  , setOpenGLContextSelector
   , antialiasingModeSelector
   , setAntialiasingModeSelector
+  , pixelFormatSelector
+  , setPixelFormatSelector
 
   -- * Enum types
   , SCNAntialiasingMode(SCNAntialiasingMode)
@@ -220,6 +230,17 @@ setAllowsCameraControl :: IsSCNView scnView => scnView -> Bool -> IO ()
 setAllowsCameraControl scnView  value =
     sendMsg scnView (mkSelector "setAllowsCameraControl:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | cameraControlConfiguration
+--
+-- An object describing the current configuration of the event handler which pilot the default camera controller.
+--
+-- This object will be used to configure the event handler when allowCameraControl is set to YES.
+--
+-- ObjC selector: @- cameraControlConfiguration@
+cameraControlConfiguration :: IsSCNView scnView => scnView -> IO RawId
+cameraControlConfiguration scnView  =
+    fmap (RawId . castPtr) $ sendMsg scnView (mkSelector "cameraControlConfiguration") (retPtr retVoid) []
+
 -- | defaultCameraController
 --
 -- Returns the default SCNCameraController used to drive the current point of view when allowCameraController is set to YES.
@@ -273,6 +294,28 @@ setDrawableResizesAsynchronously :: IsSCNView scnView => scnView -> Bool -> IO (
 setDrawableResizesAsynchronously scnView  value =
     sendMsg scnView (mkSelector "setDrawableResizesAsynchronously:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | openGLContext
+--
+-- Specifies the OpenGL context associated with the receiver.
+--
+-- This property returns nil and has no effect if the current API is Metal.
+--
+-- ObjC selector: @- openGLContext@
+openGLContext :: IsSCNView scnView => scnView -> IO RawId
+openGLContext scnView  =
+    fmap (RawId . castPtr) $ sendMsg scnView (mkSelector "openGLContext") (retPtr retVoid) []
+
+-- | openGLContext
+--
+-- Specifies the OpenGL context associated with the receiver.
+--
+-- This property returns nil and has no effect if the current API is Metal.
+--
+-- ObjC selector: @- setOpenGLContext:@
+setOpenGLContext :: IsSCNView scnView => scnView -> RawId -> IO ()
+setOpenGLContext scnView  value =
+    sendMsg scnView (mkSelector "setOpenGLContext:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | antialiasingMode
 --
 -- Defaults to SCNAntialiasingModeMultisampling4X on macOS and SCNAntialiasingModeNone on iOS.
@@ -290,6 +333,28 @@ antialiasingMode scnView  =
 setAntialiasingMode :: IsSCNView scnView => scnView -> SCNAntialiasingMode -> IO ()
 setAntialiasingMode scnView  value =
     sendMsg scnView (mkSelector "setAntialiasingMode:") retVoid [argCULong (coerce value)]
+
+-- | pixelFormat
+--
+-- Specifies the pixel format of the receiver.
+--
+-- This property returns nil and has no effect if the current API is Metal.
+--
+-- ObjC selector: @- pixelFormat@
+pixelFormat :: IsSCNView scnView => scnView -> IO RawId
+pixelFormat scnView  =
+    fmap (RawId . castPtr) $ sendMsg scnView (mkSelector "pixelFormat") (retPtr retVoid) []
+
+-- | pixelFormat
+--
+-- Specifies the pixel format of the receiver.
+--
+-- This property returns nil and has no effect if the current API is Metal.
+--
+-- ObjC selector: @- setPixelFormat:@
+setPixelFormat :: IsSCNView scnView => scnView -> RawId -> IO ()
+setPixelFormat scnView  value =
+    sendMsg scnView (mkSelector "setPixelFormat:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -347,6 +412,10 @@ allowsCameraControlSelector = mkSelector "allowsCameraControl"
 setAllowsCameraControlSelector :: Selector
 setAllowsCameraControlSelector = mkSelector "setAllowsCameraControl:"
 
+-- | @Selector@ for @cameraControlConfiguration@
+cameraControlConfigurationSelector :: Selector
+cameraControlConfigurationSelector = mkSelector "cameraControlConfiguration"
+
 -- | @Selector@ for @defaultCameraController@
 defaultCameraControllerSelector :: Selector
 defaultCameraControllerSelector = mkSelector "defaultCameraController"
@@ -367,6 +436,14 @@ drawableResizesAsynchronouslySelector = mkSelector "drawableResizesAsynchronousl
 setDrawableResizesAsynchronouslySelector :: Selector
 setDrawableResizesAsynchronouslySelector = mkSelector "setDrawableResizesAsynchronously:"
 
+-- | @Selector@ for @openGLContext@
+openGLContextSelector :: Selector
+openGLContextSelector = mkSelector "openGLContext"
+
+-- | @Selector@ for @setOpenGLContext:@
+setOpenGLContextSelector :: Selector
+setOpenGLContextSelector = mkSelector "setOpenGLContext:"
+
 -- | @Selector@ for @antialiasingMode@
 antialiasingModeSelector :: Selector
 antialiasingModeSelector = mkSelector "antialiasingMode"
@@ -374,4 +451,12 @@ antialiasingModeSelector = mkSelector "antialiasingMode"
 -- | @Selector@ for @setAntialiasingMode:@
 setAntialiasingModeSelector :: Selector
 setAntialiasingModeSelector = mkSelector "setAntialiasingMode:"
+
+-- | @Selector@ for @pixelFormat@
+pixelFormatSelector :: Selector
+pixelFormatSelector = mkSelector "pixelFormat"
+
+-- | @Selector@ for @setPixelFormat:@
+setPixelFormatSelector :: Selector
+setPixelFormatSelector = mkSelector "setPixelFormat:"
 

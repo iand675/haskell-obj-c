@@ -16,6 +16,8 @@ module ObjC.Foundation.NSStream
   , getBoundStreamsWithBufferSize_inputStream_outputStream
   , getStreamsToHostWithName_port_inputStream_outputStream
   , getStreamsToHost_port_inputStream_outputStream
+  , delegate
+  , setDelegate
   , streamStatus
   , streamError
   , openSelector
@@ -27,6 +29,8 @@ module ObjC.Foundation.NSStream
   , getBoundStreamsWithBufferSize_inputStream_outputStreamSelector
   , getStreamsToHostWithName_port_inputStream_outputStreamSelector
   , getStreamsToHost_port_inputStream_outputStreamSelector
+  , delegateSelector
+  , setDelegateSelector
   , streamStatusSelector
   , streamErrorSelector
 
@@ -123,6 +127,16 @@ getStreamsToHost_port_inputStream_outputStream host port inputStream outputStrea
         withObjCPtr outputStream $ \raw_outputStream ->
           sendClassMsg cls' (mkSelector "getStreamsToHost:port:inputStream:outputStream:") retVoid [argPtr (castPtr raw_host :: Ptr ()), argCLong port, argPtr (castPtr raw_inputStream :: Ptr ()), argPtr (castPtr raw_outputStream :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsNSStream nsStream => nsStream -> IO RawId
+delegate nsStream  =
+    fmap (RawId . castPtr) $ sendMsg nsStream (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSStream nsStream => nsStream -> RawId -> IO ()
+setDelegate nsStream  value =
+    sendMsg nsStream (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- streamStatus@
 streamStatus :: IsNSStream nsStream => nsStream -> IO NSStreamStatus
 streamStatus nsStream  =
@@ -172,6 +186,14 @@ getStreamsToHostWithName_port_inputStream_outputStreamSelector = mkSelector "get
 -- | @Selector@ for @getStreamsToHost:port:inputStream:outputStream:@
 getStreamsToHost_port_inputStream_outputStreamSelector :: Selector
 getStreamsToHost_port_inputStream_outputStreamSelector = mkSelector "getStreamsToHost:port:inputStream:outputStream:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @streamStatus@
 streamStatusSelector :: Selector

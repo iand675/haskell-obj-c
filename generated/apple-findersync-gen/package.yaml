@@ -17,6 +17,7 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.FinderSync.Delegate.FIFinderSync
   - ObjC.FinderSync.Enums
   - ObjC.FinderSync.FIFinderSync
   - ObjC.FinderSync.FIFinderSyncController

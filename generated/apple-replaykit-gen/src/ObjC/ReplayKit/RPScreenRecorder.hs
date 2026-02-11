@@ -23,6 +23,8 @@ module ObjC.ReplayKit.RPScreenRecorder
   , startClipBufferingWithCompletionHandler
   , stopClipBufferingWithCompletionHandler
   , exportClipToURL_duration_completionHandler
+  , delegate
+  , setDelegate
   , available
   , recording
   , microphoneEnabled
@@ -31,6 +33,7 @@ module ObjC.ReplayKit.RPScreenRecorder
   , setCameraEnabled
   , cameraPosition
   , setCameraPosition
+  , cameraPreviewView
   , sharedRecorderSelector
   , initSelector
   , startRecordingWithMicrophoneEnabled_handlerSelector
@@ -43,6 +46,8 @@ module ObjC.ReplayKit.RPScreenRecorder
   , startClipBufferingWithCompletionHandlerSelector
   , stopClipBufferingWithCompletionHandlerSelector
   , exportClipToURL_duration_completionHandlerSelector
+  , delegateSelector
+  , setDelegateSelector
   , availableSelector
   , recordingSelector
   , microphoneEnabledSelector
@@ -51,6 +56,7 @@ module ObjC.ReplayKit.RPScreenRecorder
   , setCameraEnabledSelector
   , cameraPositionSelector
   , setCameraPositionSelector
+  , cameraPreviewViewSelector
 
   -- * Enum types
   , RPCameraPosition(RPCameraPosition)
@@ -187,6 +193,16 @@ exportClipToURL_duration_completionHandler rpScreenRecorder  url duration comple
   withObjCPtr url $ \raw_url ->
       sendMsg rpScreenRecorder (mkSelector "exportClipToURL:duration:completionHandler:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argCDouble duration, argPtr (castPtr completionHandler :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> IO RawId
+delegate rpScreenRecorder  =
+    fmap (RawId . castPtr) $ sendMsg rpScreenRecorder (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> RawId -> IO ()
+setDelegate rpScreenRecorder  value =
+    sendMsg rpScreenRecorder (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- available@
 available :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> IO Bool
 available rpScreenRecorder  =
@@ -226,6 +242,11 @@ cameraPosition rpScreenRecorder  =
 setCameraPosition :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> RPCameraPosition -> IO ()
 setCameraPosition rpScreenRecorder  value =
     sendMsg rpScreenRecorder (mkSelector "setCameraPosition:") retVoid [argCLong (coerce value)]
+
+-- | @- cameraPreviewView@
+cameraPreviewView :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> IO (Id NSView)
+cameraPreviewView rpScreenRecorder  =
+    sendMsg rpScreenRecorder (mkSelector "cameraPreviewView") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -279,6 +300,14 @@ stopClipBufferingWithCompletionHandlerSelector = mkSelector "stopClipBufferingWi
 exportClipToURL_duration_completionHandlerSelector :: Selector
 exportClipToURL_duration_completionHandlerSelector = mkSelector "exportClipToURL:duration:completionHandler:"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @available@
 availableSelector :: Selector
 availableSelector = mkSelector "available"
@@ -310,4 +339,8 @@ cameraPositionSelector = mkSelector "cameraPosition"
 -- | @Selector@ for @setCameraPosition:@
 setCameraPositionSelector :: Selector
 setCameraPositionSelector = mkSelector "setCameraPosition:"
+
+-- | @Selector@ for @cameraPreviewView@
+cameraPreviewViewSelector :: Selector
+cameraPreviewViewSelector = mkSelector "cameraPreviewView"
 

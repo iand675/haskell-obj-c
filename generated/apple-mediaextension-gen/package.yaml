@@ -16,6 +16,14 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.MediaExtension.Delegate.MEFormatReader
+  - ObjC.MediaExtension.Delegate.MEFormatReaderExtension
+  - ObjC.MediaExtension.Delegate.MERAWProcessor
+  - ObjC.MediaExtension.Delegate.MERAWProcessorExtension
+  - ObjC.MediaExtension.Delegate.MESampleCursor
+  - ObjC.MediaExtension.Delegate.METrackReader
+  - ObjC.MediaExtension.Delegate.MEVideoDecoder
+  - ObjC.MediaExtension.Delegate.MEVideoDecoderExtension
   - ObjC.MediaExtension.Enums
   - ObjC.MediaExtension.Internal.Classes
   - ObjC.MediaExtension.Internal.Enums

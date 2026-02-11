@@ -29,6 +29,8 @@ module ObjC.AppKit.NSAnimation
   , animationCurve
   , setAnimationCurve
   , currentValue
+  , delegate
+  , setDelegate
   , progressMarks
   , setProgressMarks
   , runLoopModesForAnimating
@@ -54,6 +56,8 @@ module ObjC.AppKit.NSAnimation
   , animationCurveSelector
   , setAnimationCurveSelector
   , currentValueSelector
+  , delegateSelector
+  , setDelegateSelector
   , progressMarksSelector
   , setProgressMarksSelector
   , runLoopModesForAnimatingSelector
@@ -200,6 +204,16 @@ currentValue :: IsNSAnimation nsAnimation => nsAnimation -> IO CFloat
 currentValue nsAnimation  =
     sendMsg nsAnimation (mkSelector "currentValue") retCFloat []
 
+-- | @- delegate@
+delegate :: IsNSAnimation nsAnimation => nsAnimation -> IO RawId
+delegate nsAnimation  =
+    fmap (RawId . castPtr) $ sendMsg nsAnimation (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSAnimation nsAnimation => nsAnimation -> RawId -> IO ()
+setDelegate nsAnimation  value =
+    sendMsg nsAnimation (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- progressMarks@
 progressMarks :: IsNSAnimation nsAnimation => nsAnimation -> IO (Id NSArray)
 progressMarks nsAnimation  =
@@ -307,6 +321,14 @@ setAnimationCurveSelector = mkSelector "setAnimationCurve:"
 -- | @Selector@ for @currentValue@
 currentValueSelector :: Selector
 currentValueSelector = mkSelector "currentValue"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @progressMarks@
 progressMarksSelector :: Selector

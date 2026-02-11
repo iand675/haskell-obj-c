@@ -18,7 +18,9 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolution
   , initWithCoder_device
   , initWithDevice
   , resultStateForSourceImage_sourceStates_destinationImage
+  , resultStateBatchForSourceImage_sourceStates_destinationImage
   , temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImage
+  , temporaryResultStateBatchForCommandBuffer_sourceImage_sourceStates_destinationImage
   , reloadWeightsAndBiasesFromDataSource
   , reloadWeightsAndBiasesWithDataSource
   , reloadWeightsAndBiasesWithCommandBuffer_state
@@ -26,7 +28,9 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolution
   , inputFeatureChannels
   , outputFeatureChannels
   , groups
+  , dataSource
   , subPixelScaleFactor
+  , neuron
   , neuronType
   , neuronParameterA
   , neuronParameterB
@@ -40,7 +44,9 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolution
   , initWithCoder_deviceSelector
   , initWithDeviceSelector
   , resultStateForSourceImage_sourceStates_destinationImageSelector
+  , resultStateBatchForSourceImage_sourceStates_destinationImageSelector
   , temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImageSelector
+  , temporaryResultStateBatchForCommandBuffer_sourceImage_sourceStates_destinationImageSelector
   , reloadWeightsAndBiasesFromDataSourceSelector
   , reloadWeightsAndBiasesWithDataSourceSelector
   , reloadWeightsAndBiasesWithCommandBuffer_stateSelector
@@ -48,7 +54,9 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolution
   , inputFeatureChannelsSelector
   , outputFeatureChannelsSelector
   , groupsSelector
+  , dataSourceSelector
   , subPixelScaleFactorSelector
+  , neuronSelector
   , neuronTypeSelector
   , neuronParameterASelector
   , neuronParameterBSelector
@@ -171,6 +179,12 @@ resultStateForSourceImage_sourceStates_destinationImage mpscnnConvolution  sourc
       withObjCPtr destinationImage $ \raw_destinationImage ->
           sendMsg mpscnnConvolution (mkSelector "resultStateForSourceImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())] >>= retainedObject . castPtr
 
+-- | @- resultStateBatchForSourceImage:sourceStates:destinationImage:@
+resultStateBatchForSourceImage_sourceStates_destinationImage :: (IsMPSCNNConvolution mpscnnConvolution, IsNSArray sourceStates) => mpscnnConvolution -> RawId -> sourceStates -> RawId -> IO RawId
+resultStateBatchForSourceImage_sourceStates_destinationImage mpscnnConvolution  sourceImage sourceStates destinationImage =
+  withObjCPtr sourceStates $ \raw_sourceStates ->
+      fmap (RawId . castPtr) $ sendMsg mpscnnConvolution (mkSelector "resultStateBatchForSourceImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr (unRawId sourceImage) :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr (unRawId destinationImage) :: Ptr ())]
+
 -- | @- temporaryResultStateForCommandBuffer:sourceImage:sourceStates:destinationImage:@
 temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImage :: (IsMPSCNNConvolution mpscnnConvolution, IsMPSImage sourceImage, IsNSArray sourceStates, IsMPSImage destinationImage) => mpscnnConvolution -> RawId -> sourceImage -> sourceStates -> destinationImage -> IO (Id MPSCNNConvolutionGradientState)
 temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImage mpscnnConvolution  commandBuffer sourceImage sourceStates destinationImage =
@@ -178,6 +192,12 @@ temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImage m
     withObjCPtr sourceStates $ \raw_sourceStates ->
       withObjCPtr destinationImage $ \raw_destinationImage ->
           sendMsg mpscnnConvolution (mkSelector "temporaryResultStateForCommandBuffer:sourceImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())] >>= retainedObject . castPtr
+
+-- | @- temporaryResultStateBatchForCommandBuffer:sourceImage:sourceStates:destinationImage:@
+temporaryResultStateBatchForCommandBuffer_sourceImage_sourceStates_destinationImage :: (IsMPSCNNConvolution mpscnnConvolution, IsNSArray sourceStates) => mpscnnConvolution -> RawId -> RawId -> sourceStates -> RawId -> IO RawId
+temporaryResultStateBatchForCommandBuffer_sourceImage_sourceStates_destinationImage mpscnnConvolution  commandBuffer sourceImage sourceStates destinationImage =
+  withObjCPtr sourceStates $ \raw_sourceStates ->
+      fmap (RawId . castPtr) $ sendMsg mpscnnConvolution (mkSelector "temporaryResultStateBatchForCommandBuffer:sourceImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImage) :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr (unRawId destinationImage) :: Ptr ())]
 
 -- | CPU side reload. Reload the updated weights and biases from data provider into internal weights and bias buffers. Weights and biases              gradients needed for update are obtained from MPSCNNConvolutionGradientState object. Data provider passed in init call is used for this purpose.
 --
@@ -245,6 +265,15 @@ groups :: IsMPSCNNConvolution mpscnnConvolution => mpscnnConvolution -> IO CULon
 groups mpscnnConvolution  =
     sendMsg mpscnnConvolution (mkSelector "groups") retCULong []
 
+-- | dataSource
+--
+-- dataSource with which convolution object was created
+--
+-- ObjC selector: @- dataSource@
+dataSource :: IsMPSCNNConvolution mpscnnConvolution => mpscnnConvolution -> IO RawId
+dataSource mpscnnConvolution  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnConvolution (mkSelector "dataSource") (retPtr retVoid) []
+
 -- | subPixelScaleFactor
 --
 -- Sub pixel scale factor which was passed in as part of MPSCNNConvolutionDescriptor when creating this MPSCNNConvolution object.
@@ -253,6 +282,15 @@ groups mpscnnConvolution  =
 subPixelScaleFactor :: IsMPSCNNConvolution mpscnnConvolution => mpscnnConvolution -> IO CULong
 subPixelScaleFactor mpscnnConvolution  =
     sendMsg mpscnnConvolution (mkSelector "subPixelScaleFactor") retCULong []
+
+-- | neuron
+--
+-- MPSCNNNeuron filter to be applied as part of convolution.              Can be nil in wich case no neuron activation fuction is applied.
+--
+-- ObjC selector: @- neuron@
+neuron :: IsMPSCNNConvolution mpscnnConvolution => mpscnnConvolution -> IO RawId
+neuron mpscnnConvolution  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnConvolution (mkSelector "neuron") (retPtr retVoid) []
 
 -- | The type of neuron to append to the convolution
 --
@@ -350,9 +388,17 @@ initWithDeviceSelector = mkSelector "initWithDevice:"
 resultStateForSourceImage_sourceStates_destinationImageSelector :: Selector
 resultStateForSourceImage_sourceStates_destinationImageSelector = mkSelector "resultStateForSourceImage:sourceStates:destinationImage:"
 
+-- | @Selector@ for @resultStateBatchForSourceImage:sourceStates:destinationImage:@
+resultStateBatchForSourceImage_sourceStates_destinationImageSelector :: Selector
+resultStateBatchForSourceImage_sourceStates_destinationImageSelector = mkSelector "resultStateBatchForSourceImage:sourceStates:destinationImage:"
+
 -- | @Selector@ for @temporaryResultStateForCommandBuffer:sourceImage:sourceStates:destinationImage:@
 temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImageSelector :: Selector
 temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImageSelector = mkSelector "temporaryResultStateForCommandBuffer:sourceImage:sourceStates:destinationImage:"
+
+-- | @Selector@ for @temporaryResultStateBatchForCommandBuffer:sourceImage:sourceStates:destinationImage:@
+temporaryResultStateBatchForCommandBuffer_sourceImage_sourceStates_destinationImageSelector :: Selector
+temporaryResultStateBatchForCommandBuffer_sourceImage_sourceStates_destinationImageSelector = mkSelector "temporaryResultStateBatchForCommandBuffer:sourceImage:sourceStates:destinationImage:"
 
 -- | @Selector@ for @reloadWeightsAndBiasesFromDataSource@
 reloadWeightsAndBiasesFromDataSourceSelector :: Selector
@@ -382,9 +428,17 @@ outputFeatureChannelsSelector = mkSelector "outputFeatureChannels"
 groupsSelector :: Selector
 groupsSelector = mkSelector "groups"
 
+-- | @Selector@ for @dataSource@
+dataSourceSelector :: Selector
+dataSourceSelector = mkSelector "dataSource"
+
 -- | @Selector@ for @subPixelScaleFactor@
 subPixelScaleFactorSelector :: Selector
 subPixelScaleFactorSelector = mkSelector "subPixelScaleFactor"
+
+-- | @Selector@ for @neuron@
+neuronSelector :: Selector
+neuronSelector = mkSelector "neuron"
 
 -- | @Selector@ for @neuronType@
 neuronTypeSelector :: Selector

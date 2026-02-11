@@ -15,8 +15,12 @@ module ObjC.MediaExtension.MEFileInfo
   , IsMEFileInfo(..)
   , fragmentsStatus
   , setFragmentsStatus
+  , sidecarFileName
+  , setSidecarFileName
   , fragmentsStatusSelector
   , setFragmentsStatusSelector
+  , sidecarFileNameSelector
+  , setSidecarFileNameSelector
 
   -- * Enum types
   , MEFileInfoFragmentsStatus(MEFileInfoFragmentsStatus)
@@ -64,6 +68,29 @@ setFragmentsStatus :: IsMEFileInfo meFileInfo => meFileInfo -> MEFileInfoFragmen
 setFragmentsStatus meFileInfo  value =
     sendMsg meFileInfo (mkSelector "setFragmentsStatus:") retVoid [argCLong (coerce value)]
 
+-- | sidecarFileName
+--
+-- The sidecar filename used by the MediaExtension.
+--
+-- Represents a new or existing sidecar file located in the same directory as the primary media file. The filename should include the file extension, and should not contain the file path, or contain any slashes. The file extension should be supported by the format reader, and present in the EXAppExtensionAttributes and UTExportedTypeDeclarations dictionaries in the MediaExtension format reader Info.plist.
+--
+-- ObjC selector: @- sidecarFileName@
+sidecarFileName :: IsMEFileInfo meFileInfo => meFileInfo -> IO (Id NSString)
+sidecarFileName meFileInfo  =
+    sendMsg meFileInfo (mkSelector "sidecarFileName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | sidecarFileName
+--
+-- The sidecar filename used by the MediaExtension.
+--
+-- Represents a new or existing sidecar file located in the same directory as the primary media file. The filename should include the file extension, and should not contain the file path, or contain any slashes. The file extension should be supported by the format reader, and present in the EXAppExtensionAttributes and UTExportedTypeDeclarations dictionaries in the MediaExtension format reader Info.plist.
+--
+-- ObjC selector: @- setSidecarFileName:@
+setSidecarFileName :: (IsMEFileInfo meFileInfo, IsNSString value) => meFileInfo -> value -> IO ()
+setSidecarFileName meFileInfo  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg meFileInfo (mkSelector "setSidecarFileName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -75,4 +102,12 @@ fragmentsStatusSelector = mkSelector "fragmentsStatus"
 -- | @Selector@ for @setFragmentsStatus:@
 setFragmentsStatusSelector :: Selector
 setFragmentsStatusSelector = mkSelector "setFragmentsStatus:"
+
+-- | @Selector@ for @sidecarFileName@
+sidecarFileNameSelector :: Selector
+sidecarFileNameSelector = mkSelector "sidecarFileName"
+
+-- | @Selector@ for @setSidecarFileName:@
+setSidecarFileNameSelector :: Selector
+setSidecarFileNameSelector = mkSelector "setSidecarFileName:"
 

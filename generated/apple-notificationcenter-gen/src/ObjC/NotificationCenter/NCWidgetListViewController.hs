@@ -8,6 +8,8 @@ module ObjC.NotificationCenter.NCWidgetListViewController
   , IsNCWidgetListViewController(..)
   , viewControllerAtRow_makeIfNecessary
   , rowForViewController
+  , delegate
+  , setDelegate
   , contents
   , setContents
   , minimumVisibleRowCount
@@ -20,6 +22,8 @@ module ObjC.NotificationCenter.NCWidgetListViewController
   , setShowsAddButtonWhenEditing
   , viewControllerAtRow_makeIfNecessarySelector
   , rowForViewControllerSelector
+  , delegateSelector
+  , setDelegateSelector
   , contentsSelector
   , setContentsSelector
   , minimumVisibleRowCountSelector
@@ -60,6 +64,16 @@ rowForViewController :: (IsNCWidgetListViewController ncWidgetListViewController
 rowForViewController ncWidgetListViewController  viewController =
   withObjCPtr viewController $ \raw_viewController ->
       sendMsg ncWidgetListViewController (mkSelector "rowForViewController:") retCULong [argPtr (castPtr raw_viewController :: Ptr ())]
+
+-- | @- delegate@
+delegate :: IsNCWidgetListViewController ncWidgetListViewController => ncWidgetListViewController -> IO RawId
+delegate ncWidgetListViewController  =
+    fmap (RawId . castPtr) $ sendMsg ncWidgetListViewController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNCWidgetListViewController ncWidgetListViewController => ncWidgetListViewController -> RawId -> IO ()
+setDelegate ncWidgetListViewController  value =
+    sendMsg ncWidgetListViewController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- contents@
 contents :: IsNCWidgetListViewController ncWidgetListViewController => ncWidgetListViewController -> IO (Id NSArray)
@@ -123,6 +137,14 @@ viewControllerAtRow_makeIfNecessarySelector = mkSelector "viewControllerAtRow:ma
 -- | @Selector@ for @rowForViewController:@
 rowForViewControllerSelector :: Selector
 rowForViewControllerSelector = mkSelector "rowForViewController:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @contents@
 contentsSelector :: Selector

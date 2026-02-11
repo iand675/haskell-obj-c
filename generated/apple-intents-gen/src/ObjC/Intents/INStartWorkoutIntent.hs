@@ -9,12 +9,16 @@ module ObjC.Intents.INStartWorkoutIntent
   , IsINStartWorkoutIntent(..)
   , initWithWorkoutName_goalValue_workoutGoalUnitType_workoutLocationType_isOpenEnded
   , workoutName
+  , goalValue
   , workoutGoalUnitType
   , workoutLocationType
+  , isOpenEnded
   , initWithWorkoutName_goalValue_workoutGoalUnitType_workoutLocationType_isOpenEndedSelector
   , workoutNameSelector
+  , goalValueSelector
   , workoutGoalUnitTypeSelector
   , workoutLocationTypeSelector
+  , isOpenEndedSelector
 
   -- * Enum types
   , INWorkoutGoalUnitType(INWorkoutGoalUnitType)
@@ -65,6 +69,11 @@ workoutName :: IsINStartWorkoutIntent inStartWorkoutIntent => inStartWorkoutInte
 workoutName inStartWorkoutIntent  =
     sendMsg inStartWorkoutIntent (mkSelector "workoutName") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- goalValue@
+goalValue :: IsINStartWorkoutIntent inStartWorkoutIntent => inStartWorkoutIntent -> IO (Id NSNumber)
+goalValue inStartWorkoutIntent  =
+    sendMsg inStartWorkoutIntent (mkSelector "goalValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- workoutGoalUnitType@
 workoutGoalUnitType :: IsINStartWorkoutIntent inStartWorkoutIntent => inStartWorkoutIntent -> IO INWorkoutGoalUnitType
 workoutGoalUnitType inStartWorkoutIntent  =
@@ -74,6 +83,11 @@ workoutGoalUnitType inStartWorkoutIntent  =
 workoutLocationType :: IsINStartWorkoutIntent inStartWorkoutIntent => inStartWorkoutIntent -> IO INWorkoutLocationType
 workoutLocationType inStartWorkoutIntent  =
     fmap (coerce :: CLong -> INWorkoutLocationType) $ sendMsg inStartWorkoutIntent (mkSelector "workoutLocationType") retCLong []
+
+-- | @- isOpenEnded@
+isOpenEnded :: IsINStartWorkoutIntent inStartWorkoutIntent => inStartWorkoutIntent -> IO (Id NSNumber)
+isOpenEnded inStartWorkoutIntent  =
+    sendMsg inStartWorkoutIntent (mkSelector "isOpenEnded") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -87,6 +101,10 @@ initWithWorkoutName_goalValue_workoutGoalUnitType_workoutLocationType_isOpenEnde
 workoutNameSelector :: Selector
 workoutNameSelector = mkSelector "workoutName"
 
+-- | @Selector@ for @goalValue@
+goalValueSelector :: Selector
+goalValueSelector = mkSelector "goalValue"
+
 -- | @Selector@ for @workoutGoalUnitType@
 workoutGoalUnitTypeSelector :: Selector
 workoutGoalUnitTypeSelector = mkSelector "workoutGoalUnitType"
@@ -94,4 +112,8 @@ workoutGoalUnitTypeSelector = mkSelector "workoutGoalUnitType"
 -- | @Selector@ for @workoutLocationType@
 workoutLocationTypeSelector :: Selector
 workoutLocationTypeSelector = mkSelector "workoutLocationType"
+
+-- | @Selector@ for @isOpenEnded@
+isOpenEndedSelector :: Selector
+isOpenEndedSelector = mkSelector "isOpenEnded"
 

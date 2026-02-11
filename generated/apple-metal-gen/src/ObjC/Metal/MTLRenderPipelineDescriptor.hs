@@ -10,6 +10,10 @@ module ObjC.Metal.MTLRenderPipelineDescriptor
   , reset
   , label
   , setLabel
+  , vertexFunction
+  , setVertexFunction
+  , fragmentFunction
+  , setFragmentFunction
   , vertexDescriptor
   , setVertexDescriptor
   , sampleCount
@@ -49,6 +53,12 @@ module ObjC.Metal.MTLRenderPipelineDescriptor
   , fragmentBuffers
   , supportIndirectCommandBuffers
   , setSupportIndirectCommandBuffers
+  , binaryArchives
+  , setBinaryArchives
+  , vertexPreloadedLibraries
+  , setVertexPreloadedLibraries
+  , fragmentPreloadedLibraries
+  , setFragmentPreloadedLibraries
   , vertexLinkedFunctions
   , setVertexLinkedFunctions
   , fragmentLinkedFunctions
@@ -66,6 +76,10 @@ module ObjC.Metal.MTLRenderPipelineDescriptor
   , resetSelector
   , labelSelector
   , setLabelSelector
+  , vertexFunctionSelector
+  , setVertexFunctionSelector
+  , fragmentFunctionSelector
+  , setFragmentFunctionSelector
   , vertexDescriptorSelector
   , setVertexDescriptorSelector
   , sampleCountSelector
@@ -105,6 +119,12 @@ module ObjC.Metal.MTLRenderPipelineDescriptor
   , fragmentBuffersSelector
   , supportIndirectCommandBuffersSelector
   , setSupportIndirectCommandBuffersSelector
+  , binaryArchivesSelector
+  , setBinaryArchivesSelector
+  , vertexPreloadedLibrariesSelector
+  , setVertexPreloadedLibrariesSelector
+  , fragmentPreloadedLibrariesSelector
+  , setFragmentPreloadedLibrariesSelector
   , vertexLinkedFunctionsSelector
   , setVertexLinkedFunctionsSelector
   , fragmentLinkedFunctionsSelector
@@ -329,6 +349,26 @@ setLabel mtlRenderPipelineDescriptor  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mtlRenderPipelineDescriptor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- vertexFunction@
+vertexFunction :: IsMTLRenderPipelineDescriptor mtlRenderPipelineDescriptor => mtlRenderPipelineDescriptor -> IO RawId
+vertexFunction mtlRenderPipelineDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlRenderPipelineDescriptor (mkSelector "vertexFunction") (retPtr retVoid) []
+
+-- | @- setVertexFunction:@
+setVertexFunction :: IsMTLRenderPipelineDescriptor mtlRenderPipelineDescriptor => mtlRenderPipelineDescriptor -> RawId -> IO ()
+setVertexFunction mtlRenderPipelineDescriptor  value =
+    sendMsg mtlRenderPipelineDescriptor (mkSelector "setVertexFunction:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- fragmentFunction@
+fragmentFunction :: IsMTLRenderPipelineDescriptor mtlRenderPipelineDescriptor => mtlRenderPipelineDescriptor -> IO RawId
+fragmentFunction mtlRenderPipelineDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlRenderPipelineDescriptor (mkSelector "fragmentFunction") (retPtr retVoid) []
+
+-- | @- setFragmentFunction:@
+setFragmentFunction :: IsMTLRenderPipelineDescriptor mtlRenderPipelineDescriptor => mtlRenderPipelineDescriptor -> RawId -> IO ()
+setFragmentFunction mtlRenderPipelineDescriptor  value =
+    sendMsg mtlRenderPipelineDescriptor (mkSelector "setFragmentFunction:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- vertexDescriptor@
 vertexDescriptor :: IsMTLRenderPipelineDescriptor mtlRenderPipelineDescriptor => mtlRenderPipelineDescriptor -> IO (Id MTLVertexDescriptor)
 vertexDescriptor mtlRenderPipelineDescriptor  =
@@ -525,6 +565,87 @@ setSupportIndirectCommandBuffers :: IsMTLRenderPipelineDescriptor mtlRenderPipel
 setSupportIndirectCommandBuffers mtlRenderPipelineDescriptor  value =
     sendMsg mtlRenderPipelineDescriptor (mkSelector "setSupportIndirectCommandBuffers:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | binaryArchives
+--
+-- The set of MTLBinaryArchive to search for compiled code when creating the pipeline state.
+--
+-- Accelerate pipeline state creation by providing archives of compiled code such that no compilation needs to happen on the fast path.
+--
+-- See: MTLBinaryArchive
+--
+-- ObjC selector: @- binaryArchives@
+binaryArchives :: IsMTLRenderPipelineDescriptor mtlRenderPipelineDescriptor => mtlRenderPipelineDescriptor -> IO (Id NSArray)
+binaryArchives mtlRenderPipelineDescriptor  =
+    sendMsg mtlRenderPipelineDescriptor (mkSelector "binaryArchives") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | binaryArchives
+--
+-- The set of MTLBinaryArchive to search for compiled code when creating the pipeline state.
+--
+-- Accelerate pipeline state creation by providing archives of compiled code such that no compilation needs to happen on the fast path.
+--
+-- See: MTLBinaryArchive
+--
+-- ObjC selector: @- setBinaryArchives:@
+setBinaryArchives :: (IsMTLRenderPipelineDescriptor mtlRenderPipelineDescriptor, IsNSArray value) => mtlRenderPipelineDescriptor -> value -> IO ()
+setBinaryArchives mtlRenderPipelineDescriptor  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mtlRenderPipelineDescriptor (mkSelector "setBinaryArchives:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | vertexPreloadedLibraries
+--
+-- The set of MTLDynamicLibrary to use to resolve external symbols for the vertexFunction before considering symbols from dependent MTLDynamicLibrary.
+--
+-- Typical workflows use the libraries property of MTLCompileOptions to record dependent libraries at compile time without having to use vertexPreloadedLibraries. This property can be used to override symbols from dependent libraries for experimentation or evaluating alternative implementations. It can also be used to provide dynamic libraries that are dynamically created (for example, from source) that have no stable installName that can be used to automatically load from the file system.
+--
+-- See: MTLDynamicLibrary
+--
+-- ObjC selector: @- vertexPreloadedLibraries@
+vertexPreloadedLibraries :: IsMTLRenderPipelineDescriptor mtlRenderPipelineDescriptor => mtlRenderPipelineDescriptor -> IO (Id NSArray)
+vertexPreloadedLibraries mtlRenderPipelineDescriptor  =
+    sendMsg mtlRenderPipelineDescriptor (mkSelector "vertexPreloadedLibraries") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | vertexPreloadedLibraries
+--
+-- The set of MTLDynamicLibrary to use to resolve external symbols for the vertexFunction before considering symbols from dependent MTLDynamicLibrary.
+--
+-- Typical workflows use the libraries property of MTLCompileOptions to record dependent libraries at compile time without having to use vertexPreloadedLibraries. This property can be used to override symbols from dependent libraries for experimentation or evaluating alternative implementations. It can also be used to provide dynamic libraries that are dynamically created (for example, from source) that have no stable installName that can be used to automatically load from the file system.
+--
+-- See: MTLDynamicLibrary
+--
+-- ObjC selector: @- setVertexPreloadedLibraries:@
+setVertexPreloadedLibraries :: (IsMTLRenderPipelineDescriptor mtlRenderPipelineDescriptor, IsNSArray value) => mtlRenderPipelineDescriptor -> value -> IO ()
+setVertexPreloadedLibraries mtlRenderPipelineDescriptor  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mtlRenderPipelineDescriptor (mkSelector "setVertexPreloadedLibraries:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | fragmentPreloadedLibraries
+--
+-- The set of MTLDynamicLibrary to use to resolve external symbols for the fragmentFunction before considering symbols from dependent MTLDynamicLibrary.
+--
+-- Typical workflows use the libraries property of MTLCompileOptions to record dependent libraries at compile time without having to use fragmentPreloadedLibraries. This property can be used to override symbols from dependent libraries for experimentation or evaluating alternative implementations. It can also be used to provide dynamic libraries that are dynamically created (for example, from source) that have no stable installName that can be used to automatically load from the file system.
+--
+-- See: MTLDynamicLibrary
+--
+-- ObjC selector: @- fragmentPreloadedLibraries@
+fragmentPreloadedLibraries :: IsMTLRenderPipelineDescriptor mtlRenderPipelineDescriptor => mtlRenderPipelineDescriptor -> IO (Id NSArray)
+fragmentPreloadedLibraries mtlRenderPipelineDescriptor  =
+    sendMsg mtlRenderPipelineDescriptor (mkSelector "fragmentPreloadedLibraries") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | fragmentPreloadedLibraries
+--
+-- The set of MTLDynamicLibrary to use to resolve external symbols for the fragmentFunction before considering symbols from dependent MTLDynamicLibrary.
+--
+-- Typical workflows use the libraries property of MTLCompileOptions to record dependent libraries at compile time without having to use fragmentPreloadedLibraries. This property can be used to override symbols from dependent libraries for experimentation or evaluating alternative implementations. It can also be used to provide dynamic libraries that are dynamically created (for example, from source) that have no stable installName that can be used to automatically load from the file system.
+--
+-- See: MTLDynamicLibrary
+--
+-- ObjC selector: @- setFragmentPreloadedLibraries:@
+setFragmentPreloadedLibraries :: (IsMTLRenderPipelineDescriptor mtlRenderPipelineDescriptor, IsNSArray value) => mtlRenderPipelineDescriptor -> value -> IO ()
+setFragmentPreloadedLibraries mtlRenderPipelineDescriptor  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mtlRenderPipelineDescriptor (mkSelector "setFragmentPreloadedLibraries:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | vertexLinkedFunctions
 --
 -- The set of functions to be linked with the pipeline state and accessed from the vertex function.
@@ -681,6 +802,22 @@ labelSelector = mkSelector "label"
 setLabelSelector :: Selector
 setLabelSelector = mkSelector "setLabel:"
 
+-- | @Selector@ for @vertexFunction@
+vertexFunctionSelector :: Selector
+vertexFunctionSelector = mkSelector "vertexFunction"
+
+-- | @Selector@ for @setVertexFunction:@
+setVertexFunctionSelector :: Selector
+setVertexFunctionSelector = mkSelector "setVertexFunction:"
+
+-- | @Selector@ for @fragmentFunction@
+fragmentFunctionSelector :: Selector
+fragmentFunctionSelector = mkSelector "fragmentFunction"
+
+-- | @Selector@ for @setFragmentFunction:@
+setFragmentFunctionSelector :: Selector
+setFragmentFunctionSelector = mkSelector "setFragmentFunction:"
+
 -- | @Selector@ for @vertexDescriptor@
 vertexDescriptorSelector :: Selector
 vertexDescriptorSelector = mkSelector "vertexDescriptor"
@@ -836,6 +973,30 @@ supportIndirectCommandBuffersSelector = mkSelector "supportIndirectCommandBuffer
 -- | @Selector@ for @setSupportIndirectCommandBuffers:@
 setSupportIndirectCommandBuffersSelector :: Selector
 setSupportIndirectCommandBuffersSelector = mkSelector "setSupportIndirectCommandBuffers:"
+
+-- | @Selector@ for @binaryArchives@
+binaryArchivesSelector :: Selector
+binaryArchivesSelector = mkSelector "binaryArchives"
+
+-- | @Selector@ for @setBinaryArchives:@
+setBinaryArchivesSelector :: Selector
+setBinaryArchivesSelector = mkSelector "setBinaryArchives:"
+
+-- | @Selector@ for @vertexPreloadedLibraries@
+vertexPreloadedLibrariesSelector :: Selector
+vertexPreloadedLibrariesSelector = mkSelector "vertexPreloadedLibraries"
+
+-- | @Selector@ for @setVertexPreloadedLibraries:@
+setVertexPreloadedLibrariesSelector :: Selector
+setVertexPreloadedLibrariesSelector = mkSelector "setVertexPreloadedLibraries:"
+
+-- | @Selector@ for @fragmentPreloadedLibraries@
+fragmentPreloadedLibrariesSelector :: Selector
+fragmentPreloadedLibrariesSelector = mkSelector "fragmentPreloadedLibraries"
+
+-- | @Selector@ for @setFragmentPreloadedLibraries:@
+setFragmentPreloadedLibrariesSelector :: Selector
+setFragmentPreloadedLibrariesSelector = mkSelector "setFragmentPreloadedLibraries:"
 
 -- | @Selector@ for @vertexLinkedFunctions@
 vertexLinkedFunctionsSelector :: Selector

@@ -13,6 +13,8 @@ module ObjC.SceneKit.SCNAvoidOccluderConstraint
   ( SCNAvoidOccluderConstraint
   , IsSCNAvoidOccluderConstraint(..)
   , avoidOccluderConstraintWithTarget
+  , delegate
+  , setDelegate
   , target
   , setTarget
   , occluderCategoryBitMask
@@ -20,6 +22,8 @@ module ObjC.SceneKit.SCNAvoidOccluderConstraint
   , bias
   , setBias
   , avoidOccluderConstraintWithTargetSelector
+  , delegateSelector
+  , setDelegateSelector
   , targetSelector
   , setTargetSelector
   , occluderCategoryBitMaskSelector
@@ -56,6 +60,24 @@ avoidOccluderConstraintWithTarget target =
     cls' <- getRequiredClass "SCNAvoidOccluderConstraint"
     withObjCPtr target $ \raw_target ->
       sendClassMsg cls' (mkSelector "avoidOccluderConstraintWithTarget:") (retPtr retVoid) [argPtr (castPtr raw_target :: Ptr ())] >>= retainedObject . castPtr
+
+-- | delegate
+--
+-- The receiver's delegate
+--
+-- ObjC selector: @- delegate@
+delegate :: IsSCNAvoidOccluderConstraint scnAvoidOccluderConstraint => scnAvoidOccluderConstraint -> IO RawId
+delegate scnAvoidOccluderConstraint  =
+    fmap (RawId . castPtr) $ sendMsg scnAvoidOccluderConstraint (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- The receiver's delegate
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsSCNAvoidOccluderConstraint scnAvoidOccluderConstraint => scnAvoidOccluderConstraint -> RawId -> IO ()
+setDelegate scnAvoidOccluderConstraint  value =
+    sendMsg scnAvoidOccluderConstraint (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | target
 --
@@ -123,6 +145,14 @@ setBias scnAvoidOccluderConstraint  value =
 -- | @Selector@ for @avoidOccluderConstraintWithTarget:@
 avoidOccluderConstraintWithTargetSelector :: Selector
 avoidOccluderConstraintWithTargetSelector = mkSelector "avoidOccluderConstraintWithTarget:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @target@
 targetSelector :: Selector

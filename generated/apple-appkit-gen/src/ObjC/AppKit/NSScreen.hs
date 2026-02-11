@@ -21,7 +21,10 @@ module ObjC.AppKit.NSScreen
   , frame
   , visibleFrame
   , deviceDescription
+  , colorSpace
+  , supportedWindowDepths
   , backingScaleFactor
+  , localizedName
   , safeAreaInsets
   , auxiliaryTopLeftArea
   , auxiliaryTopRightArea
@@ -48,7 +51,10 @@ module ObjC.AppKit.NSScreen
   , frameSelector
   , visibleFrameSelector
   , deviceDescriptionSelector
+  , colorSpaceSelector
+  , supportedWindowDepthsSelector
   , backingScaleFactorSelector
+  , localizedNameSelector
   , safeAreaInsetsSelector
   , auxiliaryTopLeftAreaSelector
   , auxiliaryTopRightAreaSelector
@@ -193,10 +199,25 @@ deviceDescription :: IsNSScreen nsScreen => nsScreen -> IO (Id NSDictionary)
 deviceDescription nsScreen  =
     sendMsg nsScreen (mkSelector "deviceDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- colorSpace@
+colorSpace :: IsNSScreen nsScreen => nsScreen -> IO (Id NSColorSpace)
+colorSpace nsScreen  =
+    sendMsg nsScreen (mkSelector "colorSpace") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- supportedWindowDepths@
+supportedWindowDepths :: IsNSScreen nsScreen => nsScreen -> IO RawId
+supportedWindowDepths nsScreen  =
+    fmap (RawId . castPtr) $ sendMsg nsScreen (mkSelector "supportedWindowDepths") (retPtr retVoid) []
+
 -- | @- backingScaleFactor@
 backingScaleFactor :: IsNSScreen nsScreen => nsScreen -> IO CDouble
 backingScaleFactor nsScreen  =
     sendMsg nsScreen (mkSelector "backingScaleFactor") retCDouble []
+
+-- | @- localizedName@
+localizedName :: IsNSScreen nsScreen => nsScreen -> IO (Id NSString)
+localizedName nsScreen  =
+    sendMsg nsScreen (mkSelector "localizedName") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- safeAreaInsets@
 safeAreaInsets :: IsNSScreen nsScreen => nsScreen -> IO NSEdgeInsets
@@ -336,9 +357,21 @@ visibleFrameSelector = mkSelector "visibleFrame"
 deviceDescriptionSelector :: Selector
 deviceDescriptionSelector = mkSelector "deviceDescription"
 
+-- | @Selector@ for @colorSpace@
+colorSpaceSelector :: Selector
+colorSpaceSelector = mkSelector "colorSpace"
+
+-- | @Selector@ for @supportedWindowDepths@
+supportedWindowDepthsSelector :: Selector
+supportedWindowDepthsSelector = mkSelector "supportedWindowDepths"
+
 -- | @Selector@ for @backingScaleFactor@
 backingScaleFactorSelector :: Selector
 backingScaleFactorSelector = mkSelector "backingScaleFactor"
+
+-- | @Selector@ for @localizedName@
+localizedNameSelector :: Selector
+localizedNameSelector = mkSelector "localizedName"
 
 -- | @Selector@ for @safeAreaInsets@
 safeAreaInsetsSelector :: Selector

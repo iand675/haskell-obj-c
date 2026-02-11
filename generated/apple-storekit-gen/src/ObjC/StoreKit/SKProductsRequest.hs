@@ -7,7 +7,11 @@ module ObjC.StoreKit.SKProductsRequest
   ( SKProductsRequest
   , IsSKProductsRequest(..)
   , initWithProductIdentifiers
+  , delegate
+  , setDelegate
   , initWithProductIdentifiersSelector
+  , delegateSelector
+  , setDelegateSelector
 
 
   ) where
@@ -33,6 +37,16 @@ initWithProductIdentifiers skProductsRequest  productIdentifiers =
   withObjCPtr productIdentifiers $ \raw_productIdentifiers ->
       sendMsg skProductsRequest (mkSelector "initWithProductIdentifiers:") (retPtr retVoid) [argPtr (castPtr raw_productIdentifiers :: Ptr ())] >>= ownedObject . castPtr
 
+-- | @- delegate@
+delegate :: IsSKProductsRequest skProductsRequest => skProductsRequest -> IO RawId
+delegate skProductsRequest  =
+    fmap (RawId . castPtr) $ sendMsg skProductsRequest (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsSKProductsRequest skProductsRequest => skProductsRequest -> RawId -> IO ()
+setDelegate skProductsRequest  value =
+    sendMsg skProductsRequest (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -40,4 +54,12 @@ initWithProductIdentifiers skProductsRequest  productIdentifiers =
 -- | @Selector@ for @initWithProductIdentifiers:@
 initWithProductIdentifiersSelector :: Selector
 initWithProductIdentifiersSelector = mkSelector "initWithProductIdentifiers:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

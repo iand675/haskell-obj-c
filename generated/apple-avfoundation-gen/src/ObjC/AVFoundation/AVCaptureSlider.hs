@@ -20,6 +20,8 @@ module ObjC.AVFoundation.AVCaptureSlider
   , setValue
   , localizedValueFormat
   , setLocalizedValueFormat
+  , prominentValues
+  , setProminentValues
   , localizedTitle
   , symbolName
   , accessibilityIdentifier
@@ -32,6 +34,8 @@ module ObjC.AVFoundation.AVCaptureSlider
   , setValueSelector
   , localizedValueFormatSelector
   , setLocalizedValueFormatSelector
+  , prominentValuesSelector
+  , setProminentValuesSelector
   , localizedTitleSelector
   , symbolNameSelector
   , accessibilityIdentifierSelector
@@ -196,6 +200,25 @@ setLocalizedValueFormat avCaptureSlider  value =
   withObjCPtr value $ \raw_value ->
       sendMsg avCaptureSlider (mkSelector "setLocalizedValueFormat:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | prominentValues
+--
+-- Values in this array may receive unique visual representations or behaviors.
+--
+-- ObjC selector: @- prominentValues@
+prominentValues :: IsAVCaptureSlider avCaptureSlider => avCaptureSlider -> IO (Id NSArray)
+prominentValues avCaptureSlider  =
+    sendMsg avCaptureSlider (mkSelector "prominentValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | prominentValues
+--
+-- Values in this array may receive unique visual representations or behaviors.
+--
+-- ObjC selector: @- setProminentValues:@
+setProminentValues :: (IsAVCaptureSlider avCaptureSlider, IsNSArray value) => avCaptureSlider -> value -> IO ()
+setProminentValues avCaptureSlider  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avCaptureSlider (mkSelector "setProminentValues:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | localizedTitle
 --
 -- A localized string that describes the slider's @action@.
@@ -268,6 +291,14 @@ localizedValueFormatSelector = mkSelector "localizedValueFormat"
 -- | @Selector@ for @setLocalizedValueFormat:@
 setLocalizedValueFormatSelector :: Selector
 setLocalizedValueFormatSelector = mkSelector "setLocalizedValueFormat:"
+
+-- | @Selector@ for @prominentValues@
+prominentValuesSelector :: Selector
+prominentValuesSelector = mkSelector "prominentValues"
+
+-- | @Selector@ for @setProminentValues:@
+setProminentValuesSelector :: Selector
+setProminentValuesSelector = mkSelector "setProminentValues:"
 
 -- | @Selector@ for @localizedTitle@
 localizedTitleSelector :: Selector

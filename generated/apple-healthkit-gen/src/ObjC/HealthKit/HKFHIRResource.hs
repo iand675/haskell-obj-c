@@ -11,11 +11,13 @@ module ObjC.HealthKit.HKFHIRResource
   ( HKFHIRResource
   , IsHKFHIRResource(..)
   , init_
+  , fhirVersion
   , resourceType
   , identifier
   , data_
   , sourceURL
   , initSelector
+  , fhirVersionSelector
   , resourceTypeSelector
   , identifierSelector
   , dataSelector
@@ -43,6 +45,15 @@ import ObjC.Foundation.Internal.Classes
 init_ :: IsHKFHIRResource hkfhirResource => hkfhirResource -> IO (Id HKFHIRResource)
 init_ hkfhirResource  =
     sendMsg hkfhirResource (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+
+-- | FHIRVersion
+--
+-- The FHIR version of the resource data.
+--
+-- ObjC selector: @- FHIRVersion@
+fhirVersion :: IsHKFHIRResource hkfhirResource => hkfhirResource -> IO (Id HKFHIRVersion)
+fhirVersion hkfhirResource  =
+    sendMsg hkfhirResource (mkSelector "FHIRVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | resourceType
 --
@@ -95,6 +106,10 @@ sourceURL hkfhirResource  =
 -- | @Selector@ for @init@
 initSelector :: Selector
 initSelector = mkSelector "init"
+
+-- | @Selector@ for @FHIRVersion@
+fhirVersionSelector :: Selector
+fhirVersionSelector = mkSelector "FHIRVersion"
 
 -- | @Selector@ for @resourceType@
 resourceTypeSelector :: Selector

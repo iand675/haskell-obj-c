@@ -13,11 +13,15 @@ module ObjC.Metal.MTLFunctionStitchingFunctionNode
   , initWithName_arguments_controlDependencies
   , name
   , setName
+  , arguments
+  , setArguments
   , controlDependencies
   , setControlDependencies
   , initWithName_arguments_controlDependenciesSelector
   , nameSelector
   , setNameSelector
+  , argumentsSelector
+  , setArgumentsSelector
   , controlDependenciesSelector
   , setControlDependenciesSelector
 
@@ -58,6 +62,17 @@ setName mtlFunctionStitchingFunctionNode  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mtlFunctionStitchingFunctionNode (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- arguments@
+arguments :: IsMTLFunctionStitchingFunctionNode mtlFunctionStitchingFunctionNode => mtlFunctionStitchingFunctionNode -> IO (Id NSArray)
+arguments mtlFunctionStitchingFunctionNode  =
+    sendMsg mtlFunctionStitchingFunctionNode (mkSelector "arguments") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setArguments:@
+setArguments :: (IsMTLFunctionStitchingFunctionNode mtlFunctionStitchingFunctionNode, IsNSArray value) => mtlFunctionStitchingFunctionNode -> value -> IO ()
+setArguments mtlFunctionStitchingFunctionNode  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mtlFunctionStitchingFunctionNode (mkSelector "setArguments:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- controlDependencies@
 controlDependencies :: IsMTLFunctionStitchingFunctionNode mtlFunctionStitchingFunctionNode => mtlFunctionStitchingFunctionNode -> IO (Id NSArray)
 controlDependencies mtlFunctionStitchingFunctionNode  =
@@ -84,6 +99,14 @@ nameSelector = mkSelector "name"
 -- | @Selector@ for @setName:@
 setNameSelector :: Selector
 setNameSelector = mkSelector "setName:"
+
+-- | @Selector@ for @arguments@
+argumentsSelector :: Selector
+argumentsSelector = mkSelector "arguments"
+
+-- | @Selector@ for @setArguments:@
+setArgumentsSelector :: Selector
+setArgumentsSelector = mkSelector "setArguments:"
 
 -- | @Selector@ for @controlDependencies@
 controlDependenciesSelector :: Selector

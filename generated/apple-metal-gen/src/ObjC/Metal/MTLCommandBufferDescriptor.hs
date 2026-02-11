@@ -15,10 +15,14 @@ module ObjC.Metal.MTLCommandBufferDescriptor
   , setRetainedReferences
   , errorOptions
   , setErrorOptions
+  , logState
+  , setLogState
   , retainedReferencesSelector
   , setRetainedReferencesSelector
   , errorOptionsSelector
   , setErrorOptionsSelector
+  , logStateSelector
+  , setLogStateSelector
 
   -- * Enum types
   , MTLCommandBufferErrorOption(MTLCommandBufferErrorOption)
@@ -79,6 +83,24 @@ setErrorOptions :: IsMTLCommandBufferDescriptor mtlCommandBufferDescriptor => mt
 setErrorOptions mtlCommandBufferDescriptor  value =
     sendMsg mtlCommandBufferDescriptor (mkSelector "setErrorOptions:") retVoid [argCULong (coerce value)]
 
+-- | logState
+--
+-- Contains information related to shader logging.
+--
+-- ObjC selector: @- logState@
+logState :: IsMTLCommandBufferDescriptor mtlCommandBufferDescriptor => mtlCommandBufferDescriptor -> IO RawId
+logState mtlCommandBufferDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlCommandBufferDescriptor (mkSelector "logState") (retPtr retVoid) []
+
+-- | logState
+--
+-- Contains information related to shader logging.
+--
+-- ObjC selector: @- setLogState:@
+setLogState :: IsMTLCommandBufferDescriptor mtlCommandBufferDescriptor => mtlCommandBufferDescriptor -> RawId -> IO ()
+setLogState mtlCommandBufferDescriptor  value =
+    sendMsg mtlCommandBufferDescriptor (mkSelector "setLogState:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -98,4 +120,12 @@ errorOptionsSelector = mkSelector "errorOptions"
 -- | @Selector@ for @setErrorOptions:@
 setErrorOptionsSelector :: Selector
 setErrorOptionsSelector = mkSelector "setErrorOptions:"
+
+-- | @Selector@ for @logState@
+logStateSelector :: Selector
+logStateSelector = mkSelector "logState"
+
+-- | @Selector@ for @setLogState:@
+setLogStateSelector :: Selector
+setLogStateSelector = mkSelector "setLogState:"
 

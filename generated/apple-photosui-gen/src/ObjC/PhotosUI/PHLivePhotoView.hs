@@ -10,6 +10,8 @@ module ObjC.PhotosUI.PHLivePhotoView
   , startPlaybackWithStyle
   , stopPlayback
   , stopPlaybackAnimated
+  , delegate
+  , setDelegate
   , livePhoto
   , setLivePhoto
   , contentMode
@@ -22,6 +24,8 @@ module ObjC.PhotosUI.PHLivePhotoView
   , startPlaybackWithStyleSelector
   , stopPlaybackSelector
   , stopPlaybackAnimatedSelector
+  , delegateSelector
+  , setDelegateSelector
   , livePhotoSelector
   , setLivePhotoSelector
   , contentModeSelector
@@ -79,6 +83,16 @@ stopPlayback phLivePhotoView  =
 stopPlaybackAnimated :: IsPHLivePhotoView phLivePhotoView => phLivePhotoView -> Bool -> IO ()
 stopPlaybackAnimated phLivePhotoView  animated =
     sendMsg phLivePhotoView (mkSelector "stopPlaybackAnimated:") retVoid [argCULong (if animated then 1 else 0)]
+
+-- | @- delegate@
+delegate :: IsPHLivePhotoView phLivePhotoView => phLivePhotoView -> IO RawId
+delegate phLivePhotoView  =
+    fmap (RawId . castPtr) $ sendMsg phLivePhotoView (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsPHLivePhotoView phLivePhotoView => phLivePhotoView -> RawId -> IO ()
+setDelegate phLivePhotoView  value =
+    sendMsg phLivePhotoView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | Live photo displayed in the receiver.
 --
@@ -159,6 +173,14 @@ stopPlaybackSelector = mkSelector "stopPlayback"
 -- | @Selector@ for @stopPlaybackAnimated:@
 stopPlaybackAnimatedSelector :: Selector
 stopPlaybackAnimatedSelector = mkSelector "stopPlaybackAnimated:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @livePhoto@
 livePhotoSelector :: Selector

@@ -9,18 +9,32 @@ module ObjC.Intents.INSetClimateSettingsInCarIntent
   , IsINSetClimateSettingsInCarIntent(..)
   , initWithEnableFan_enableAirConditioner_enableClimateControl_enableAutoMode_airCirculationMode_fanSpeedIndex_fanSpeedPercentage_relativeFanSpeedSetting_temperature_relativeTemperatureSetting_climateZone_carName
   , initWithEnableFan_enableAirConditioner_enableClimateControl_enableAutoMode_airCirculationMode_fanSpeedIndex_fanSpeedPercentage_relativeFanSpeedSetting_temperature_relativeTemperatureSetting_climateZone
+  , enableFan
+  , enableAirConditioner
+  , enableClimateControl
+  , enableAutoMode
   , airCirculationMode
+  , fanSpeedIndex
+  , fanSpeedPercentage
   , relativeFanSpeedSetting
   , temperature
   , relativeTemperatureSetting
   , climateZone
+  , carName
   , initWithEnableFan_enableAirConditioner_enableClimateControl_enableAutoMode_airCirculationMode_fanSpeedIndex_fanSpeedPercentage_relativeFanSpeedSetting_temperature_relativeTemperatureSetting_climateZone_carNameSelector
   , initWithEnableFan_enableAirConditioner_enableClimateControl_enableAutoMode_airCirculationMode_fanSpeedIndex_fanSpeedPercentage_relativeFanSpeedSetting_temperature_relativeTemperatureSetting_climateZoneSelector
+  , enableFanSelector
+  , enableAirConditionerSelector
+  , enableClimateControlSelector
+  , enableAutoModeSelector
   , airCirculationModeSelector
+  , fanSpeedIndexSelector
+  , fanSpeedPercentageSelector
   , relativeFanSpeedSettingSelector
   , temperatureSelector
   , relativeTemperatureSettingSelector
   , climateZoneSelector
+  , carNameSelector
 
   -- * Enum types
   , INCarAirCirculationMode(INCarAirCirculationMode)
@@ -91,10 +105,40 @@ initWithEnableFan_enableAirConditioner_enableClimateControl_enableAutoMode_airCi
               withObjCPtr temperature $ \raw_temperature ->
                   sendMsg inSetClimateSettingsInCarIntent (mkSelector "initWithEnableFan:enableAirConditioner:enableClimateControl:enableAutoMode:airCirculationMode:fanSpeedIndex:fanSpeedPercentage:relativeFanSpeedSetting:temperature:relativeTemperatureSetting:climateZone:") (retPtr retVoid) [argPtr (castPtr raw_enableFan :: Ptr ()), argPtr (castPtr raw_enableAirConditioner :: Ptr ()), argPtr (castPtr raw_enableClimateControl :: Ptr ()), argPtr (castPtr raw_enableAutoMode :: Ptr ()), argCLong (coerce airCirculationMode), argPtr (castPtr raw_fanSpeedIndex :: Ptr ()), argPtr (castPtr raw_fanSpeedPercentage :: Ptr ()), argCLong (coerce relativeFanSpeedSetting), argPtr (castPtr raw_temperature :: Ptr ()), argCLong (coerce relativeTemperatureSetting), argCLong (coerce climateZone)] >>= ownedObject . castPtr
 
+-- | @- enableFan@
+enableFan :: IsINSetClimateSettingsInCarIntent inSetClimateSettingsInCarIntent => inSetClimateSettingsInCarIntent -> IO (Id NSNumber)
+enableFan inSetClimateSettingsInCarIntent  =
+    sendMsg inSetClimateSettingsInCarIntent (mkSelector "enableFan") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- enableAirConditioner@
+enableAirConditioner :: IsINSetClimateSettingsInCarIntent inSetClimateSettingsInCarIntent => inSetClimateSettingsInCarIntent -> IO (Id NSNumber)
+enableAirConditioner inSetClimateSettingsInCarIntent  =
+    sendMsg inSetClimateSettingsInCarIntent (mkSelector "enableAirConditioner") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- enableClimateControl@
+enableClimateControl :: IsINSetClimateSettingsInCarIntent inSetClimateSettingsInCarIntent => inSetClimateSettingsInCarIntent -> IO (Id NSNumber)
+enableClimateControl inSetClimateSettingsInCarIntent  =
+    sendMsg inSetClimateSettingsInCarIntent (mkSelector "enableClimateControl") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- enableAutoMode@
+enableAutoMode :: IsINSetClimateSettingsInCarIntent inSetClimateSettingsInCarIntent => inSetClimateSettingsInCarIntent -> IO (Id NSNumber)
+enableAutoMode inSetClimateSettingsInCarIntent  =
+    sendMsg inSetClimateSettingsInCarIntent (mkSelector "enableAutoMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- airCirculationMode@
 airCirculationMode :: IsINSetClimateSettingsInCarIntent inSetClimateSettingsInCarIntent => inSetClimateSettingsInCarIntent -> IO INCarAirCirculationMode
 airCirculationMode inSetClimateSettingsInCarIntent  =
     fmap (coerce :: CLong -> INCarAirCirculationMode) $ sendMsg inSetClimateSettingsInCarIntent (mkSelector "airCirculationMode") retCLong []
+
+-- | @- fanSpeedIndex@
+fanSpeedIndex :: IsINSetClimateSettingsInCarIntent inSetClimateSettingsInCarIntent => inSetClimateSettingsInCarIntent -> IO (Id NSNumber)
+fanSpeedIndex inSetClimateSettingsInCarIntent  =
+    sendMsg inSetClimateSettingsInCarIntent (mkSelector "fanSpeedIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- fanSpeedPercentage@
+fanSpeedPercentage :: IsINSetClimateSettingsInCarIntent inSetClimateSettingsInCarIntent => inSetClimateSettingsInCarIntent -> IO (Id NSNumber)
+fanSpeedPercentage inSetClimateSettingsInCarIntent  =
+    sendMsg inSetClimateSettingsInCarIntent (mkSelector "fanSpeedPercentage") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- relativeFanSpeedSetting@
 relativeFanSpeedSetting :: IsINSetClimateSettingsInCarIntent inSetClimateSettingsInCarIntent => inSetClimateSettingsInCarIntent -> IO INRelativeSetting
@@ -116,6 +160,11 @@ climateZone :: IsINSetClimateSettingsInCarIntent inSetClimateSettingsInCarIntent
 climateZone inSetClimateSettingsInCarIntent  =
     fmap (coerce :: CLong -> INCarSeat) $ sendMsg inSetClimateSettingsInCarIntent (mkSelector "climateZone") retCLong []
 
+-- | @- carName@
+carName :: IsINSetClimateSettingsInCarIntent inSetClimateSettingsInCarIntent => inSetClimateSettingsInCarIntent -> IO (Id INSpeakableString)
+carName inSetClimateSettingsInCarIntent  =
+    sendMsg inSetClimateSettingsInCarIntent (mkSelector "carName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -128,9 +177,33 @@ initWithEnableFan_enableAirConditioner_enableClimateControl_enableAutoMode_airCi
 initWithEnableFan_enableAirConditioner_enableClimateControl_enableAutoMode_airCirculationMode_fanSpeedIndex_fanSpeedPercentage_relativeFanSpeedSetting_temperature_relativeTemperatureSetting_climateZoneSelector :: Selector
 initWithEnableFan_enableAirConditioner_enableClimateControl_enableAutoMode_airCirculationMode_fanSpeedIndex_fanSpeedPercentage_relativeFanSpeedSetting_temperature_relativeTemperatureSetting_climateZoneSelector = mkSelector "initWithEnableFan:enableAirConditioner:enableClimateControl:enableAutoMode:airCirculationMode:fanSpeedIndex:fanSpeedPercentage:relativeFanSpeedSetting:temperature:relativeTemperatureSetting:climateZone:"
 
+-- | @Selector@ for @enableFan@
+enableFanSelector :: Selector
+enableFanSelector = mkSelector "enableFan"
+
+-- | @Selector@ for @enableAirConditioner@
+enableAirConditionerSelector :: Selector
+enableAirConditionerSelector = mkSelector "enableAirConditioner"
+
+-- | @Selector@ for @enableClimateControl@
+enableClimateControlSelector :: Selector
+enableClimateControlSelector = mkSelector "enableClimateControl"
+
+-- | @Selector@ for @enableAutoMode@
+enableAutoModeSelector :: Selector
+enableAutoModeSelector = mkSelector "enableAutoMode"
+
 -- | @Selector@ for @airCirculationMode@
 airCirculationModeSelector :: Selector
 airCirculationModeSelector = mkSelector "airCirculationMode"
+
+-- | @Selector@ for @fanSpeedIndex@
+fanSpeedIndexSelector :: Selector
+fanSpeedIndexSelector = mkSelector "fanSpeedIndex"
+
+-- | @Selector@ for @fanSpeedPercentage@
+fanSpeedPercentageSelector :: Selector
+fanSpeedPercentageSelector = mkSelector "fanSpeedPercentage"
 
 -- | @Selector@ for @relativeFanSpeedSetting@
 relativeFanSpeedSettingSelector :: Selector
@@ -147,4 +220,8 @@ relativeTemperatureSettingSelector = mkSelector "relativeTemperatureSetting"
 -- | @Selector@ for @climateZone@
 climateZoneSelector :: Selector
 climateZoneSelector = mkSelector "climateZone"
+
+-- | @Selector@ for @carName@
+carNameSelector :: Selector
+carNameSelector = mkSelector "carName"
 

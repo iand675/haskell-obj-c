@@ -7,7 +7,11 @@ module ObjC.GameKit.GKTurnBasedEventHandler
   ( GKTurnBasedEventHandler
   , IsGKTurnBasedEventHandler(..)
   , sharedTurnBasedEventHandler
+  , delegate
+  , setDelegate
   , sharedTurnBasedEventHandlerSelector
+  , delegateSelector
+  , setDelegateSelector
 
 
   ) where
@@ -34,6 +38,17 @@ sharedTurnBasedEventHandler  =
     cls' <- getRequiredClass "GKTurnBasedEventHandler"
     sendClassMsg cls' (mkSelector "sharedTurnBasedEventHandler") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- delegate@
+delegate :: IsGKTurnBasedEventHandler gkTurnBasedEventHandler => gkTurnBasedEventHandler -> IO (Id NSObject)
+delegate gkTurnBasedEventHandler  =
+    sendMsg gkTurnBasedEventHandler (mkSelector "delegate") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setDelegate:@
+setDelegate :: (IsGKTurnBasedEventHandler gkTurnBasedEventHandler, IsNSObject value) => gkTurnBasedEventHandler -> value -> IO ()
+setDelegate gkTurnBasedEventHandler  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg gkTurnBasedEventHandler (mkSelector "setDelegate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -41,4 +56,12 @@ sharedTurnBasedEventHandler  =
 -- | @Selector@ for @sharedTurnBasedEventHandler@
 sharedTurnBasedEventHandlerSelector :: Selector
 sharedTurnBasedEventHandlerSelector = mkSelector "sharedTurnBasedEventHandler"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

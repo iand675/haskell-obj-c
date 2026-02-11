@@ -10,12 +10,16 @@ module ObjC.AuthenticationServices.ASAuthorizationPlatformPublicKeyCredentialAss
   , init_
   , allowedCredentials
   , setAllowedCredentials
+  , largeBlob
+  , setLargeBlob
   , prf
   , setPrf
   , newSelector
   , initSelector
   , allowedCredentialsSelector
   , setAllowedCredentialsSelector
+  , largeBlobSelector
+  , setLargeBlobSelector
   , prfSelector
   , setPrfSelector
 
@@ -64,6 +68,17 @@ setAllowedCredentials asAuthorizationPlatformPublicKeyCredentialAssertionRequest
   withObjCPtr value $ \raw_value ->
       sendMsg asAuthorizationPlatformPublicKeyCredentialAssertionRequest (mkSelector "setAllowedCredentials:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- largeBlob@
+largeBlob :: IsASAuthorizationPlatformPublicKeyCredentialAssertionRequest asAuthorizationPlatformPublicKeyCredentialAssertionRequest => asAuthorizationPlatformPublicKeyCredentialAssertionRequest -> IO (Id ASAuthorizationPublicKeyCredentialLargeBlobAssertionInput)
+largeBlob asAuthorizationPlatformPublicKeyCredentialAssertionRequest  =
+    sendMsg asAuthorizationPlatformPublicKeyCredentialAssertionRequest (mkSelector "largeBlob") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setLargeBlob:@
+setLargeBlob :: (IsASAuthorizationPlatformPublicKeyCredentialAssertionRequest asAuthorizationPlatformPublicKeyCredentialAssertionRequest, IsASAuthorizationPublicKeyCredentialLargeBlobAssertionInput value) => asAuthorizationPlatformPublicKeyCredentialAssertionRequest -> value -> IO ()
+setLargeBlob asAuthorizationPlatformPublicKeyCredentialAssertionRequest  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationPlatformPublicKeyCredentialAssertionRequest (mkSelector "setLargeBlob:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- prf@
 prf :: IsASAuthorizationPlatformPublicKeyCredentialAssertionRequest asAuthorizationPlatformPublicKeyCredentialAssertionRequest => asAuthorizationPlatformPublicKeyCredentialAssertionRequest -> IO (Id ASAuthorizationPublicKeyCredentialPRFAssertionInput)
 prf asAuthorizationPlatformPublicKeyCredentialAssertionRequest  =
@@ -94,6 +109,14 @@ allowedCredentialsSelector = mkSelector "allowedCredentials"
 -- | @Selector@ for @setAllowedCredentials:@
 setAllowedCredentialsSelector :: Selector
 setAllowedCredentialsSelector = mkSelector "setAllowedCredentials:"
+
+-- | @Selector@ for @largeBlob@
+largeBlobSelector :: Selector
+largeBlobSelector = mkSelector "largeBlob"
+
+-- | @Selector@ for @setLargeBlob:@
+setLargeBlobSelector :: Selector
+setLargeBlobSelector = mkSelector "setLargeBlob:"
 
 -- | @Selector@ for @prf@
 prfSelector :: Selector

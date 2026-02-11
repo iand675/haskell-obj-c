@@ -7,18 +7,22 @@ module ObjC.CoreMIDI.MIDICIResponder
   ( MIDICIResponder
   , IsMIDICIResponder(..)
   , init_
+  , initWithDeviceInfo_profileDelegate_profileStates_supportProperties
   , notifyProfile_onChannel_isEnabled
   , sendProfile_onChannel_profileData
   , start
   , stop
   , initiators
+  , profileDelegate
   , deviceInfo
   , initSelector
+  , initWithDeviceInfo_profileDelegate_profileStates_supportPropertiesSelector
   , notifyProfile_onChannel_isEnabledSelector
   , sendProfile_onChannel_profileDataSelector
   , startSelector
   , stopSelector
   , initiatorsSelector
+  , profileDelegateSelector
   , deviceInfoSelector
 
 
@@ -43,6 +47,12 @@ import ObjC.Foundation.Internal.Classes
 init_ :: IsMIDICIResponder midiciResponder => midiciResponder -> IO (Id MIDICIResponder)
 init_ midiciResponder  =
     sendMsg midiciResponder (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+
+-- | @- initWithDeviceInfo:profileDelegate:profileStates:supportProperties:@
+initWithDeviceInfo_profileDelegate_profileStates_supportProperties :: (IsMIDICIResponder midiciResponder, IsMIDICIDeviceInfo deviceInfo) => midiciResponder -> deviceInfo -> RawId -> RawId -> Bool -> IO (Id MIDICIResponder)
+initWithDeviceInfo_profileDelegate_profileStates_supportProperties midiciResponder  deviceInfo delegate profileList propertiesSupported =
+  withObjCPtr deviceInfo $ \raw_deviceInfo ->
+      sendMsg midiciResponder (mkSelector "initWithDeviceInfo:profileDelegate:profileStates:supportProperties:") (retPtr retVoid) [argPtr (castPtr raw_deviceInfo :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr (unRawId profileList) :: Ptr ()), argCULong (if propertiesSupported then 1 else 0)] >>= ownedObject . castPtr
 
 -- | @- notifyProfile:onChannel:isEnabled:@
 notifyProfile_onChannel_isEnabled :: (IsMIDICIResponder midiciResponder, IsMIDICIProfile aProfile) => midiciResponder -> aProfile -> CUChar -> Bool -> IO Bool
@@ -72,6 +82,11 @@ initiators :: IsMIDICIResponder midiciResponder => midiciResponder -> IO (Id NSA
 initiators midiciResponder  =
     sendMsg midiciResponder (mkSelector "initiators") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | @- profileDelegate@
+profileDelegate :: IsMIDICIResponder midiciResponder => midiciResponder -> IO RawId
+profileDelegate midiciResponder  =
+    fmap (RawId . castPtr) $ sendMsg midiciResponder (mkSelector "profileDelegate") (retPtr retVoid) []
+
 -- | @- deviceInfo@
 deviceInfo :: IsMIDICIResponder midiciResponder => midiciResponder -> IO (Id MIDICIDeviceInfo)
 deviceInfo midiciResponder  =
@@ -84,6 +99,10 @@ deviceInfo midiciResponder  =
 -- | @Selector@ for @init@
 initSelector :: Selector
 initSelector = mkSelector "init"
+
+-- | @Selector@ for @initWithDeviceInfo:profileDelegate:profileStates:supportProperties:@
+initWithDeviceInfo_profileDelegate_profileStates_supportPropertiesSelector :: Selector
+initWithDeviceInfo_profileDelegate_profileStates_supportPropertiesSelector = mkSelector "initWithDeviceInfo:profileDelegate:profileStates:supportProperties:"
 
 -- | @Selector@ for @notifyProfile:onChannel:isEnabled:@
 notifyProfile_onChannel_isEnabledSelector :: Selector
@@ -104,6 +123,10 @@ stopSelector = mkSelector "stop"
 -- | @Selector@ for @initiators@
 initiatorsSelector :: Selector
 initiatorsSelector = mkSelector "initiators"
+
+-- | @Selector@ for @profileDelegate@
+profileDelegateSelector :: Selector
+profileDelegateSelector = mkSelector "profileDelegate"
 
 -- | @Selector@ for @deviceInfo@
 deviceInfoSelector :: Selector

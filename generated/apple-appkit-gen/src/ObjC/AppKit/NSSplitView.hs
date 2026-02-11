@@ -26,9 +26,13 @@ module ObjC.AppKit.NSSplitView
   , setDividerStyle
   , autosaveName
   , setAutosaveName
+  , delegate
+  , setDelegate
+  , dividerColor
   , dividerThickness
   , arrangesAllSubviews
   , setArrangesAllSubviews
+  , arrangedSubviews
   , drawDividerInRectSelector
   , adjustSubviewsSelector
   , isSubviewCollapsedSelector
@@ -48,9 +52,13 @@ module ObjC.AppKit.NSSplitView
   , setDividerStyleSelector
   , autosaveNameSelector
   , setAutosaveNameSelector
+  , delegateSelector
+  , setDelegateSelector
+  , dividerColorSelector
   , dividerThicknessSelector
   , arrangesAllSubviewsSelector
   , setArrangesAllSubviewsSelector
+  , arrangedSubviewsSelector
 
   -- * Enum types
   , NSSplitViewDividerStyle(NSSplitViewDividerStyle)
@@ -183,6 +191,21 @@ setAutosaveName nsSplitView  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsSplitView (mkSelector "setAutosaveName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsNSSplitView nsSplitView => nsSplitView -> IO RawId
+delegate nsSplitView  =
+    fmap (RawId . castPtr) $ sendMsg nsSplitView (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSSplitView nsSplitView => nsSplitView -> RawId -> IO ()
+setDelegate nsSplitView  value =
+    sendMsg nsSplitView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- dividerColor@
+dividerColor :: IsNSSplitView nsSplitView => nsSplitView -> IO (Id NSColor)
+dividerColor nsSplitView  =
+    sendMsg nsSplitView (mkSelector "dividerColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- dividerThickness@
 dividerThickness :: IsNSSplitView nsSplitView => nsSplitView -> IO CDouble
 dividerThickness nsSplitView  =
@@ -201,6 +224,13 @@ arrangesAllSubviews nsSplitView  =
 setArrangesAllSubviews :: IsNSSplitView nsSplitView => nsSplitView -> Bool -> IO ()
 setArrangesAllSubviews nsSplitView  value =
     sendMsg nsSplitView (mkSelector "setArrangesAllSubviews:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | The list of views that are arranged as split panes in the receiver. They are a subset of @-subviews,@ with potential difference in ordering. If @-arrangesAllSubviews@ is YES, then @-arrangedSubviews@ is identical to @-subviews.@
+--
+-- ObjC selector: @- arrangedSubviews@
+arrangedSubviews :: IsNSSplitView nsSplitView => nsSplitView -> IO (Id NSArray)
+arrangedSubviews nsSplitView  =
+    sendMsg nsSplitView (mkSelector "arrangedSubviews") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -282,6 +312,18 @@ autosaveNameSelector = mkSelector "autosaveName"
 setAutosaveNameSelector :: Selector
 setAutosaveNameSelector = mkSelector "setAutosaveName:"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @dividerColor@
+dividerColorSelector :: Selector
+dividerColorSelector = mkSelector "dividerColor"
+
 -- | @Selector@ for @dividerThickness@
 dividerThicknessSelector :: Selector
 dividerThicknessSelector = mkSelector "dividerThickness"
@@ -293,4 +335,8 @@ arrangesAllSubviewsSelector = mkSelector "arrangesAllSubviews"
 -- | @Selector@ for @setArrangesAllSubviews:@
 setArrangesAllSubviewsSelector :: Selector
 setArrangesAllSubviewsSelector = mkSelector "setArrangesAllSubviews:"
+
+-- | @Selector@ for @arrangedSubviews@
+arrangedSubviewsSelector :: Selector
+arrangedSubviewsSelector = mkSelector "arrangedSubviews"
 

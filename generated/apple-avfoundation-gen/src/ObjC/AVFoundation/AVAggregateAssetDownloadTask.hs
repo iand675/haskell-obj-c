@@ -15,9 +15,15 @@ module ObjC.AVFoundation.AVAggregateAssetDownloadTask
   , init_
   , new
   , urlAsset
+  , originalRequest
+  , currentRequest
+  , response
   , initSelector
   , newSelector
   , urlAssetSelector
+  , originalRequestSelector
+  , currentRequestSelector
+  , responseSelector
 
 
   ) where
@@ -56,6 +62,21 @@ urlAsset :: IsAVAggregateAssetDownloadTask avAggregateAssetDownloadTask => avAgg
 urlAsset avAggregateAssetDownloadTask  =
     sendMsg avAggregateAssetDownloadTask (mkSelector "URLAsset") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- originalRequest@
+originalRequest :: IsAVAggregateAssetDownloadTask avAggregateAssetDownloadTask => avAggregateAssetDownloadTask -> IO RawId
+originalRequest avAggregateAssetDownloadTask  =
+    fmap (RawId . castPtr) $ sendMsg avAggregateAssetDownloadTask (mkSelector "originalRequest") (retPtr retVoid) []
+
+-- | @- currentRequest@
+currentRequest :: IsAVAggregateAssetDownloadTask avAggregateAssetDownloadTask => avAggregateAssetDownloadTask -> IO RawId
+currentRequest avAggregateAssetDownloadTask  =
+    fmap (RawId . castPtr) $ sendMsg avAggregateAssetDownloadTask (mkSelector "currentRequest") (retPtr retVoid) []
+
+-- | @- response@
+response :: IsAVAggregateAssetDownloadTask avAggregateAssetDownloadTask => avAggregateAssetDownloadTask -> IO RawId
+response avAggregateAssetDownloadTask  =
+    fmap (RawId . castPtr) $ sendMsg avAggregateAssetDownloadTask (mkSelector "response") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -71,4 +92,16 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @URLAsset@
 urlAssetSelector :: Selector
 urlAssetSelector = mkSelector "URLAsset"
+
+-- | @Selector@ for @originalRequest@
+originalRequestSelector :: Selector
+originalRequestSelector = mkSelector "originalRequest"
+
+-- | @Selector@ for @currentRequest@
+currentRequestSelector :: Selector
+currentRequestSelector = mkSelector "currentRequest"
+
+-- | @Selector@ for @response@
+responseSelector :: Selector
+responseSelector = mkSelector "response"
 

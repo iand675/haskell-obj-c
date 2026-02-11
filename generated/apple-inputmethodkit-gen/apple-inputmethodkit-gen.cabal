@@ -12,6 +12,7 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.InputMethodKit.Delegate.IMKStateSetting
       ObjC.InputMethodKit.IMKCandidates
       ObjC.InputMethodKit.IMKInputController
       ObjC.InputMethodKit.IMKServer

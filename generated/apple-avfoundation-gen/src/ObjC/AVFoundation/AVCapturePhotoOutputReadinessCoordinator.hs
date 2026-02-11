@@ -18,12 +18,16 @@ module ObjC.AVFoundation.AVCapturePhotoOutputReadinessCoordinator
   , initWithPhotoOutput
   , startTrackingCaptureRequestUsingPhotoSettings
   , stopTrackingCaptureRequestUsingPhotoSettingsUniqueID
+  , delegate
+  , setDelegate
   , captureReadiness
   , initSelector
   , newSelector
   , initWithPhotoOutputSelector
   , startTrackingCaptureRequestUsingPhotoSettingsSelector
   , stopTrackingCaptureRequestUsingPhotoSettingsUniqueIDSelector
+  , delegateSelector
+  , setDelegateSelector
   , captureReadinessSelector
 
   -- * Enum types
@@ -97,6 +101,28 @@ stopTrackingCaptureRequestUsingPhotoSettingsUniqueID :: IsAVCapturePhotoOutputRe
 stopTrackingCaptureRequestUsingPhotoSettingsUniqueID avCapturePhotoOutputReadinessCoordinator  settingsUniqueID =
     sendMsg avCapturePhotoOutputReadinessCoordinator (mkSelector "stopTrackingCaptureRequestUsingPhotoSettingsUniqueID:") retVoid [argCLong settingsUniqueID]
 
+-- | delegate
+--
+-- The receiver's delegate, called on the main queue.
+--
+-- The value of this property is an object conforming to the AVCapturePhotoOutputReadinessCoordinatorDelegate protocol that will receive a callback when the captureReadiness property changes. Callbacks are delivered on the main queue, allowing UI updates to be done directly in the callback. A callback with the initial value of captureReadiness is delivered when delegate is set.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsAVCapturePhotoOutputReadinessCoordinator avCapturePhotoOutputReadinessCoordinator => avCapturePhotoOutputReadinessCoordinator -> IO RawId
+delegate avCapturePhotoOutputReadinessCoordinator  =
+    fmap (RawId . castPtr) $ sendMsg avCapturePhotoOutputReadinessCoordinator (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- The receiver's delegate, called on the main queue.
+--
+-- The value of this property is an object conforming to the AVCapturePhotoOutputReadinessCoordinatorDelegate protocol that will receive a callback when the captureReadiness property changes. Callbacks are delivered on the main queue, allowing UI updates to be done directly in the callback. A callback with the initial value of captureReadiness is delivered when delegate is set.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsAVCapturePhotoOutputReadinessCoordinator avCapturePhotoOutputReadinessCoordinator => avCapturePhotoOutputReadinessCoordinator -> RawId -> IO ()
+setDelegate avCapturePhotoOutputReadinessCoordinator  value =
+    sendMsg avCapturePhotoOutputReadinessCoordinator (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | captureReadiness
 --
 -- A value specifying whether the coordinator's photo output is ready to respond to new capture requests in a timely manner.
@@ -131,6 +157,14 @@ startTrackingCaptureRequestUsingPhotoSettingsSelector = mkSelector "startTrackin
 -- | @Selector@ for @stopTrackingCaptureRequestUsingPhotoSettingsUniqueID:@
 stopTrackingCaptureRequestUsingPhotoSettingsUniqueIDSelector :: Selector
 stopTrackingCaptureRequestUsingPhotoSettingsUniqueIDSelector = mkSelector "stopTrackingCaptureRequestUsingPhotoSettingsUniqueID:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @captureReadiness@
 captureReadinessSelector :: Selector

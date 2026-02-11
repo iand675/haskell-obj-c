@@ -14,11 +14,21 @@ module ObjC.MLCompute.MLCEmbeddingDescriptor
   , init_
   , descriptorWithEmbeddingCount_embeddingDimension
   , descriptorWithEmbeddingCount_embeddingDimension_paddingIndex_maximumNorm_pNorm_scalesGradientByFrequency
+  , embeddingCount
+  , embeddingDimension
+  , paddingIndex
+  , maximumNorm
+  , pNorm
   , scalesGradientByFrequency
   , newSelector
   , initSelector
   , descriptorWithEmbeddingCount_embeddingDimensionSelector
   , descriptorWithEmbeddingCount_embeddingDimension_paddingIndex_maximumNorm_pNorm_scalesGradientByFrequencySelector
+  , embeddingCountSelector
+  , embeddingDimensionSelector
+  , paddingIndexSelector
+  , maximumNormSelector
+  , pNormSelector
   , scalesGradientByFrequencySelector
 
 
@@ -72,6 +82,51 @@ descriptorWithEmbeddingCount_embeddingDimension_paddingIndex_maximumNorm_pNorm_s
             withObjCPtr pNorm $ \raw_pNorm ->
               sendClassMsg cls' (mkSelector "descriptorWithEmbeddingCount:embeddingDimension:paddingIndex:maximumNorm:pNorm:scalesGradientByFrequency:") (retPtr retVoid) [argPtr (castPtr raw_embeddingCount :: Ptr ()), argPtr (castPtr raw_embeddingDimension :: Ptr ()), argPtr (castPtr raw_paddingIndex :: Ptr ()), argPtr (castPtr raw_maximumNorm :: Ptr ()), argPtr (castPtr raw_pNorm :: Ptr ()), argCULong (if scalesGradientByFrequency then 1 else 0)] >>= retainedObject . castPtr
 
+-- | embeddingCount
+--
+-- The size of the dictionary
+--
+-- ObjC selector: @- embeddingCount@
+embeddingCount :: IsMLCEmbeddingDescriptor mlcEmbeddingDescriptor => mlcEmbeddingDescriptor -> IO (Id NSNumber)
+embeddingCount mlcEmbeddingDescriptor  =
+    sendMsg mlcEmbeddingDescriptor (mkSelector "embeddingCount") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | embeddingDimension
+--
+-- The dimension of embedding vectors
+--
+-- ObjC selector: @- embeddingDimension@
+embeddingDimension :: IsMLCEmbeddingDescriptor mlcEmbeddingDescriptor => mlcEmbeddingDescriptor -> IO (Id NSNumber)
+embeddingDimension mlcEmbeddingDescriptor  =
+    sendMsg mlcEmbeddingDescriptor (mkSelector "embeddingDimension") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | paddingIndex
+--
+-- If set, the embedding vector at paddingIndex is initialized with zero and will not be updated in gradient pass, Default=nil
+--
+-- ObjC selector: @- paddingIndex@
+paddingIndex :: IsMLCEmbeddingDescriptor mlcEmbeddingDescriptor => mlcEmbeddingDescriptor -> IO (Id NSNumber)
+paddingIndex mlcEmbeddingDescriptor  =
+    sendMsg mlcEmbeddingDescriptor (mkSelector "paddingIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | maximumNorm
+--
+-- A float, if set, in the forward pass only, the selected embedding vectors will be re-normalized to have an Lp norm of less than maximumNorm in the dictionary, Default=nil
+--
+-- ObjC selector: @- maximumNorm@
+maximumNorm :: IsMLCEmbeddingDescriptor mlcEmbeddingDescriptor => mlcEmbeddingDescriptor -> IO (Id NSNumber)
+maximumNorm mlcEmbeddingDescriptor  =
+    sendMsg mlcEmbeddingDescriptor (mkSelector "maximumNorm") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | pNorm
+--
+-- A float, the p of the Lp norm, can be set to infinity norm by [NSNumber numberWithFloat:INFINITY]. Default=2.0
+--
+-- ObjC selector: @- pNorm@
+pNorm :: IsMLCEmbeddingDescriptor mlcEmbeddingDescriptor => mlcEmbeddingDescriptor -> IO (Id NSNumber)
+pNorm mlcEmbeddingDescriptor  =
+    sendMsg mlcEmbeddingDescriptor (mkSelector "pNorm") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | scalesGradientByFrequency
 --
 -- If set, the gradients are scaled by the inverse of the frequency of the words in batch before the weight update. Default=NO
@@ -100,6 +155,26 @@ descriptorWithEmbeddingCount_embeddingDimensionSelector = mkSelector "descriptor
 -- | @Selector@ for @descriptorWithEmbeddingCount:embeddingDimension:paddingIndex:maximumNorm:pNorm:scalesGradientByFrequency:@
 descriptorWithEmbeddingCount_embeddingDimension_paddingIndex_maximumNorm_pNorm_scalesGradientByFrequencySelector :: Selector
 descriptorWithEmbeddingCount_embeddingDimension_paddingIndex_maximumNorm_pNorm_scalesGradientByFrequencySelector = mkSelector "descriptorWithEmbeddingCount:embeddingDimension:paddingIndex:maximumNorm:pNorm:scalesGradientByFrequency:"
+
+-- | @Selector@ for @embeddingCount@
+embeddingCountSelector :: Selector
+embeddingCountSelector = mkSelector "embeddingCount"
+
+-- | @Selector@ for @embeddingDimension@
+embeddingDimensionSelector :: Selector
+embeddingDimensionSelector = mkSelector "embeddingDimension"
+
+-- | @Selector@ for @paddingIndex@
+paddingIndexSelector :: Selector
+paddingIndexSelector = mkSelector "paddingIndex"
+
+-- | @Selector@ for @maximumNorm@
+maximumNormSelector :: Selector
+maximumNormSelector = mkSelector "maximumNorm"
+
+-- | @Selector@ for @pNorm@
+pNormSelector :: Selector
+pNormSelector = mkSelector "pNorm"
 
 -- | @Selector@ for @scalesGradientByFrequency@
 scalesGradientByFrequencySelector :: Selector

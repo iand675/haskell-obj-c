@@ -16,6 +16,8 @@ module ObjC.Metal.MTLFunctionDescriptor
   , setConstantValues
   , options
   , setOptions
+  , binaryArchives
+  , setBinaryArchives
   , functionDescriptorSelector
   , nameSelector
   , setNameSelector
@@ -25,6 +27,8 @@ module ObjC.Metal.MTLFunctionDescriptor
   , setConstantValuesSelector
   , optionsSelector
   , setOptionsSelector
+  , binaryArchivesSelector
+  , setBinaryArchivesSelector
 
   -- * Enum types
   , MTLFunctionOptions(MTLFunctionOptions)
@@ -139,6 +143,29 @@ setOptions :: IsMTLFunctionDescriptor mtlFunctionDescriptor => mtlFunctionDescri
 setOptions mtlFunctionDescriptor  value =
     sendMsg mtlFunctionDescriptor (mkSelector "setOptions:") retVoid [argCULong (coerce value)]
 
+-- | binaryArchives
+--
+-- The array of archives to be searched.
+--
+-- Binary archives to be searched for precompiled functions during the compilation of this function.
+--
+-- ObjC selector: @- binaryArchives@
+binaryArchives :: IsMTLFunctionDescriptor mtlFunctionDescriptor => mtlFunctionDescriptor -> IO (Id NSArray)
+binaryArchives mtlFunctionDescriptor  =
+    sendMsg mtlFunctionDescriptor (mkSelector "binaryArchives") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | binaryArchives
+--
+-- The array of archives to be searched.
+--
+-- Binary archives to be searched for precompiled functions during the compilation of this function.
+--
+-- ObjC selector: @- setBinaryArchives:@
+setBinaryArchives :: (IsMTLFunctionDescriptor mtlFunctionDescriptor, IsNSArray value) => mtlFunctionDescriptor -> value -> IO ()
+setBinaryArchives mtlFunctionDescriptor  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mtlFunctionDescriptor (mkSelector "setBinaryArchives:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -178,4 +205,12 @@ optionsSelector = mkSelector "options"
 -- | @Selector@ for @setOptions:@
 setOptionsSelector :: Selector
 setOptionsSelector = mkSelector "setOptions:"
+
+-- | @Selector@ for @binaryArchives@
+binaryArchivesSelector :: Selector
+binaryArchivesSelector = mkSelector "binaryArchives"
+
+-- | @Selector@ for @setBinaryArchives:@
+setBinaryArchivesSelector :: Selector
+setBinaryArchivesSelector = mkSelector "setBinaryArchives:"
 

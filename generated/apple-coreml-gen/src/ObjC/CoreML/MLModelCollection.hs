@@ -14,10 +14,14 @@ module ObjC.CoreML.MLModelCollection
   , endAccessingModelCollectionWithIdentifier_completionHandler
   , init_
   , new
+  , identifier
+  , deploymentID
   , beginAccessingModelCollectionWithIdentifier_completionHandlerSelector
   , endAccessingModelCollectionWithIdentifier_completionHandlerSelector
   , initSelector
   , newSelector
+  , identifierSelector
+  , deploymentIDSelector
 
 
   ) where
@@ -83,6 +87,20 @@ new  =
     cls' <- getRequiredClass "MLModelCollection"
     fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "new") (retPtr retVoid) []
 
+-- | The identifier of the model collection you want to access, as configured in the Core ML Model Deployment dashboard.
+--
+-- ObjC selector: @- identifier@
+identifier :: IsMLModelCollection mlModelCollection => mlModelCollection -> IO RawId
+identifier mlModelCollection  =
+    fmap (RawId . castPtr) $ sendMsg mlModelCollection (mkSelector "identifier") (retPtr retVoid) []
+
+-- | The identifier for the currently downloaded deployment, corresponding to a recent deployment on the Core ML Model Deployment dashboard.
+--
+-- ObjC selector: @- deploymentID@
+deploymentID :: IsMLModelCollection mlModelCollection => mlModelCollection -> IO RawId
+deploymentID mlModelCollection  =
+    fmap (RawId . castPtr) $ sendMsg mlModelCollection (mkSelector "deploymentID") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -102,4 +120,12 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @new@
 newSelector :: Selector
 newSelector = mkSelector "new"
+
+-- | @Selector@ for @identifier@
+identifierSelector :: Selector
+identifierSelector = mkSelector "identifier"
+
+-- | @Selector@ for @deploymentID@
+deploymentIDSelector :: Selector
+deploymentIDSelector = mkSelector "deploymentID"
 

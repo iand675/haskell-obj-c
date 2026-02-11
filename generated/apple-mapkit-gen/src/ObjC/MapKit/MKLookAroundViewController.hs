@@ -10,6 +10,8 @@ module ObjC.MapKit.MKLookAroundViewController
   , initWithScene
   , initWithNibName_bundle
   , initWithCoder
+  , delegate
+  , setDelegate
   , scene
   , setScene
   , navigationEnabled
@@ -23,6 +25,8 @@ module ObjC.MapKit.MKLookAroundViewController
   , initWithSceneSelector
   , initWithNibName_bundleSelector
   , initWithCoderSelector
+  , delegateSelector
+  , setDelegateSelector
   , sceneSelector
   , setSceneSelector
   , navigationEnabledSelector
@@ -77,6 +81,16 @@ initWithCoder :: (IsMKLookAroundViewController mkLookAroundViewController, IsNSC
 initWithCoder mkLookAroundViewController  coder =
   withObjCPtr coder $ \raw_coder ->
       sendMsg mkLookAroundViewController (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+
+-- | @- delegate@
+delegate :: IsMKLookAroundViewController mkLookAroundViewController => mkLookAroundViewController -> IO RawId
+delegate mkLookAroundViewController  =
+    fmap (RawId . castPtr) $ sendMsg mkLookAroundViewController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsMKLookAroundViewController mkLookAroundViewController => mkLookAroundViewController -> RawId -> IO ()
+setDelegate mkLookAroundViewController  value =
+    sendMsg mkLookAroundViewController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- scene@
 scene :: IsMKLookAroundViewController mkLookAroundViewController => mkLookAroundViewController -> IO (Id MKLookAroundScene)
@@ -145,6 +159,14 @@ initWithNibName_bundleSelector = mkSelector "initWithNibName:bundle:"
 -- | @Selector@ for @initWithCoder:@
 initWithCoderSelector :: Selector
 initWithCoderSelector = mkSelector "initWithCoder:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @scene@
 sceneSelector :: Selector

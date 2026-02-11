@@ -48,6 +48,7 @@ module ObjC.MetalPerformanceShaders.MPSKernel
   , initWithCoder_device
   , options
   , setOptions
+  , device
   , label
   , setLabel
   , initWithDeviceSelector
@@ -56,6 +57,7 @@ module ObjC.MetalPerformanceShaders.MPSKernel
   , initWithCoder_deviceSelector
   , optionsSelector
   , setOptionsSelector
+  , deviceSelector
   , labelSelector
   , setLabelSelector
 
@@ -156,6 +158,15 @@ setOptions :: IsMPSKernel mpsKernel => mpsKernel -> MPSKernelOptions -> IO ()
 setOptions mpsKernel  value =
     sendMsg mpsKernel (mkSelector "setOptions:") retVoid [argCULong (coerce value)]
 
+-- | device
+--
+-- The device on which the kernel will be used
+--
+-- ObjC selector: @- device@
+device :: IsMPSKernel mpsKernel => mpsKernel -> IO RawId
+device mpsKernel  =
+    fmap (RawId . castPtr) $ sendMsg mpsKernel (mkSelector "device") (retPtr retVoid) []
+
 -- | label
 --
 -- A string to help identify this object.
@@ -202,6 +213,10 @@ optionsSelector = mkSelector "options"
 -- | @Selector@ for @setOptions:@
 setOptionsSelector :: Selector
 setOptionsSelector = mkSelector "setOptions:"
+
+-- | @Selector@ for @device@
+deviceSelector :: Selector
+deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @label@
 labelSelector :: Selector

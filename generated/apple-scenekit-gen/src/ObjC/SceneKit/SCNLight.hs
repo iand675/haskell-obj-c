@@ -82,6 +82,7 @@ module ObjC.SceneKit.SCNLight
   , setDrawsArea
   , doubleSided
   , setDoubleSided
+  , gobo
   , categoryBitMask
   , setCategoryBitMask
   , lightSelector
@@ -155,6 +156,7 @@ module ObjC.SceneKit.SCNLight
   , setDrawsAreaSelector
   , doubleSidedSelector
   , setDoubleSidedSelector
+  , goboSelector
   , categoryBitMaskSelector
   , setCategoryBitMaskSelector
 
@@ -858,6 +860,17 @@ setDoubleSided :: IsSCNLight scnLight => scnLight -> Bool -> IO ()
 setDoubleSided scnLight  value =
     sendMsg scnLight (mkSelector "setDoubleSided:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | gobo
+--
+-- Specifies the gobo (or "cookie") of the light, used to control the shape of emitted light.
+--
+-- Gobos are only supported by spot lights.
+--
+-- ObjC selector: @- gobo@
+gobo :: IsSCNLight scnLight => scnLight -> IO (Id SCNMaterialProperty)
+gobo scnLight  =
+    sendMsg scnLight (mkSelector "gobo") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | categoryBitMask
 --
 -- Determines the node categories that will be lit by the receiver. Defaults to all bit set.
@@ -1163,6 +1176,10 @@ doubleSidedSelector = mkSelector "doubleSided"
 -- | @Selector@ for @setDoubleSided:@
 setDoubleSidedSelector :: Selector
 setDoubleSidedSelector = mkSelector "setDoubleSided:"
+
+-- | @Selector@ for @gobo@
+goboSelector :: Selector
+goboSelector = mkSelector "gobo"
 
 -- | @Selector@ for @categoryBitMask@
 categoryBitMaskSelector :: Selector

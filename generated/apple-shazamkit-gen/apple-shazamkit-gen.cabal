@@ -12,6 +12,7 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.ShazamKit.Delegate.SHSessionDelegate
       ObjC.ShazamKit.Enums
       ObjC.ShazamKit.Internal.Classes
       ObjC.ShazamKit.Internal.Enums

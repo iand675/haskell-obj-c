@@ -22,8 +22,12 @@ module ObjC.MLCompute.MLCTensorDescriptor
   , convolutionBiasesDescriptorWithFeatureChannelCount_dataType
   , dataType
   , dimensionCount
+  , shape
+  , stride
   , tensorAllocationSizeInBytes
+  , sequenceLengths
   , sortedSequences
+  , batchSizePerSequenceStep
   , maxTensorDimensions
   , newSelector
   , initSelector
@@ -36,8 +40,12 @@ module ObjC.MLCompute.MLCTensorDescriptor
   , convolutionBiasesDescriptorWithFeatureChannelCount_dataTypeSelector
   , dataTypeSelector
   , dimensionCountSelector
+  , shapeSelector
+  , strideSelector
   , tensorAllocationSizeInBytesSelector
+  , sequenceLengthsSelector
   , sortedSequencesSelector
+  , batchSizePerSequenceStepSelector
   , maxTensorDimensionsSelector
 
   -- * Enum types
@@ -242,6 +250,24 @@ dimensionCount :: IsMLCTensorDescriptor mlcTensorDescriptor => mlcTensorDescript
 dimensionCount mlcTensorDescriptor  =
     sendMsg mlcTensorDescriptor (mkSelector "dimensionCount") retCULong []
 
+-- | shape
+--
+-- The size in each dimension
+--
+-- ObjC selector: @- shape@
+shape :: IsMLCTensorDescriptor mlcTensorDescriptor => mlcTensorDescriptor -> IO (Id NSArray)
+shape mlcTensorDescriptor  =
+    sendMsg mlcTensorDescriptor (mkSelector "shape") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | stride
+--
+-- The stride in bytes in each dimension
+--
+-- ObjC selector: @- stride@
+stride :: IsMLCTensorDescriptor mlcTensorDescriptor => mlcTensorDescriptor -> IO (Id NSArray)
+stride mlcTensorDescriptor  =
+    sendMsg mlcTensorDescriptor (mkSelector "stride") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | tensorAllocationSizeInBytes
 --
 -- The allocation size in bytes for a tensor.
@@ -251,6 +277,15 @@ tensorAllocationSizeInBytes :: IsMLCTensorDescriptor mlcTensorDescriptor => mlcT
 tensorAllocationSizeInBytes mlcTensorDescriptor  =
     sendMsg mlcTensorDescriptor (mkSelector "tensorAllocationSizeInBytes") retCULong []
 
+-- | sequenceLengths
+--
+-- TODO
+--
+-- ObjC selector: @- sequenceLengths@
+sequenceLengths :: IsMLCTensorDescriptor mlcTensorDescriptor => mlcTensorDescriptor -> IO (Id NSArray)
+sequenceLengths mlcTensorDescriptor  =
+    sendMsg mlcTensorDescriptor (mkSelector "sequenceLengths") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | sortedSequences
 --
 -- Specifies whether the sequences are sorted or not.
@@ -259,6 +294,17 @@ tensorAllocationSizeInBytes mlcTensorDescriptor  =
 sortedSequences :: IsMLCTensorDescriptor mlcTensorDescriptor => mlcTensorDescriptor -> IO Bool
 sortedSequences mlcTensorDescriptor  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcTensorDescriptor (mkSelector "sortedSequences") retCULong []
+
+-- | batchSizePerSequenceStep
+--
+-- The batch size for each sequence
+--
+-- We populate this only when sequenceLengths is valid. The length of this array should be                the maximum sequence length in sequenceLengths (i.e sequenceLengths[0]).
+--
+-- ObjC selector: @- batchSizePerSequenceStep@
+batchSizePerSequenceStep :: IsMLCTensorDescriptor mlcTensorDescriptor => mlcTensorDescriptor -> IO (Id NSArray)
+batchSizePerSequenceStep mlcTensorDescriptor  =
+    sendMsg mlcTensorDescriptor (mkSelector "batchSizePerSequenceStep") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | maxTensorDimensions
 --
@@ -319,13 +365,29 @@ dataTypeSelector = mkSelector "dataType"
 dimensionCountSelector :: Selector
 dimensionCountSelector = mkSelector "dimensionCount"
 
+-- | @Selector@ for @shape@
+shapeSelector :: Selector
+shapeSelector = mkSelector "shape"
+
+-- | @Selector@ for @stride@
+strideSelector :: Selector
+strideSelector = mkSelector "stride"
+
 -- | @Selector@ for @tensorAllocationSizeInBytes@
 tensorAllocationSizeInBytesSelector :: Selector
 tensorAllocationSizeInBytesSelector = mkSelector "tensorAllocationSizeInBytes"
 
+-- | @Selector@ for @sequenceLengths@
+sequenceLengthsSelector :: Selector
+sequenceLengthsSelector = mkSelector "sequenceLengths"
+
 -- | @Selector@ for @sortedSequences@
 sortedSequencesSelector :: Selector
 sortedSequencesSelector = mkSelector "sortedSequences"
+
+-- | @Selector@ for @batchSizePerSequenceStep@
+batchSizePerSequenceStepSelector :: Selector
+batchSizePerSequenceStepSelector = mkSelector "batchSizePerSequenceStep"
 
 -- | @Selector@ for @maxTensorDimensions@
 maxTensorDimensionsSelector :: Selector

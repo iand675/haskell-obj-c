@@ -7,9 +7,13 @@
 module ObjC.CoreMotion.CMWaterSubmersionManager
   ( CMWaterSubmersionManager
   , IsCMWaterSubmersionManager(..)
+  , delegate
+  , setDelegate
   , waterSubmersionAvailable
   , authorizationStatus
   , maximumDepth
+  , delegateSelector
+  , setDelegateSelector
   , waterSubmersionAvailableSelector
   , authorizationStatusSelector
   , maximumDepthSelector
@@ -39,6 +43,16 @@ import ObjC.CoreMotion.Internal.Classes
 import ObjC.CoreMotion.Internal.Enums
 import ObjC.Foundation.Internal.Classes
 
+-- | @- delegate@
+delegate :: IsCMWaterSubmersionManager cmWaterSubmersionManager => cmWaterSubmersionManager -> IO RawId
+delegate cmWaterSubmersionManager  =
+    fmap (RawId . castPtr) $ sendMsg cmWaterSubmersionManager (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsCMWaterSubmersionManager cmWaterSubmersionManager => cmWaterSubmersionManager -> RawId -> IO ()
+setDelegate cmWaterSubmersionManager  value =
+    sendMsg cmWaterSubmersionManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @+ waterSubmersionAvailable@
 waterSubmersionAvailable :: IO Bool
 waterSubmersionAvailable  =
@@ -61,6 +75,14 @@ maximumDepth cmWaterSubmersionManager  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @waterSubmersionAvailable@
 waterSubmersionAvailableSelector :: Selector

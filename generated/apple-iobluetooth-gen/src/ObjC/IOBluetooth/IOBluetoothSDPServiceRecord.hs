@@ -22,6 +22,9 @@ module ObjC.IOBluetooth.IOBluetoothSDPServiceRecord
   , getAttributes
   , getAttributeDataElement
   , getServiceName
+  , getRFCOMMChannelID
+  , getL2CAPPSM
+  , getServiceRecordHandle
   , matchesUUID16
   , matchesUUIDArray
   , matchesSearchArray
@@ -40,6 +43,9 @@ module ObjC.IOBluetooth.IOBluetoothSDPServiceRecord
   , getAttributesSelector
   , getAttributeDataElementSelector
   , getServiceNameSelector
+  , getRFCOMMChannelIDSelector
+  , getL2CAPPSMSelector
+  , getServiceRecordHandleSelector
   , matchesUUID16Selector
   , matchesUUIDArraySelector
   , matchesSearchArraySelector
@@ -199,6 +205,51 @@ getAttributeDataElement ioBluetoothSDPServiceRecord  attributeID =
 getServiceName :: IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord => ioBluetoothSDPServiceRecord -> IO (Id NSString)
 getServiceName ioBluetoothSDPServiceRecord  =
     sendMsg ioBluetoothSDPServiceRecord (mkSelector "getServiceName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | getRFCOMMChannelID:
+--
+-- Allows the discovery of the RFCOMM channel ID assigned to the service.
+--
+-- This method will search through the ProtoclDescriptorList attribute to find an entry                with the RFCOMM UUID (UUID16: 0x0003).  If one is found, it gets the second element of                the data element sequence and sets the rfcommChannelID pointer to it.  The channel ID                only gets set when kIOReturnSuccess is returned.
+--
+-- @rfcommChannelID@ — A pointer to the location that will get the found RFCOMM channel ID.
+--
+-- Returns: Returns kIOReturnSuccess if the channel ID is found.
+--
+-- ObjC selector: @- getRFCOMMChannelID:@
+getRFCOMMChannelID :: IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord => ioBluetoothSDPServiceRecord -> RawId -> IO CInt
+getRFCOMMChannelID ioBluetoothSDPServiceRecord  rfcommChannelID =
+    sendMsg ioBluetoothSDPServiceRecord (mkSelector "getRFCOMMChannelID:") retCInt [argPtr (castPtr (unRawId rfcommChannelID) :: Ptr ())]
+
+-- | getL2CAPPSM:
+--
+-- Allows the discovery of the L2CAP PSM assigned to the service.
+--
+-- This method will search through the ProtoclDescriptorList attribute to find an entry                with the L2CAP UUID (UUID16: 0x0100).  If one is found, it gets the second element of                the data element sequence and sets the outPSM pointer to it.  The PSM value                only gets set when kIOReturnSuccess is returned.
+--
+-- @outPSM@ — A pointer to the location that will get the found L2CAP PSM.
+--
+-- Returns: Returns kIOReturnSuccess if the PSM is found.
+--
+-- ObjC selector: @- getL2CAPPSM:@
+getL2CAPPSM :: IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord => ioBluetoothSDPServiceRecord -> RawId -> IO CInt
+getL2CAPPSM ioBluetoothSDPServiceRecord  outPSM =
+    sendMsg ioBluetoothSDPServiceRecord (mkSelector "getL2CAPPSM:") retCInt [argPtr (castPtr (unRawId outPSM) :: Ptr ())]
+
+-- | getServiceRecordHandle:
+--
+-- Allows the discovery of the service record handle assigned to the service.
+--
+-- This method will search through the attributes to find the one representing the                 service record handle.  If one is found the outServiceRecordHandle param is set                with the value.  The outServiceRecordHandle value only gets set when kIOReturnSuccess                 is returned.
+--
+-- @outServiceRecordHandle@ — A pointer to the location that will get the found service record handle.
+--
+-- Returns: Returns kIOReturnSuccess if the service record handle is found.
+--
+-- ObjC selector: @- getServiceRecordHandle:@
+getServiceRecordHandle :: IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord => ioBluetoothSDPServiceRecord -> RawId -> IO CInt
+getServiceRecordHandle ioBluetoothSDPServiceRecord  outServiceRecordHandle =
+    sendMsg ioBluetoothSDPServiceRecord (mkSelector "getServiceRecordHandle:") retCInt [argPtr (castPtr (unRawId outServiceRecordHandle) :: Ptr ())]
 
 -- | matchesUUID16:
 --
@@ -362,6 +413,18 @@ getAttributeDataElementSelector = mkSelector "getAttributeDataElement:"
 -- | @Selector@ for @getServiceName@
 getServiceNameSelector :: Selector
 getServiceNameSelector = mkSelector "getServiceName"
+
+-- | @Selector@ for @getRFCOMMChannelID:@
+getRFCOMMChannelIDSelector :: Selector
+getRFCOMMChannelIDSelector = mkSelector "getRFCOMMChannelID:"
+
+-- | @Selector@ for @getL2CAPPSM:@
+getL2CAPPSMSelector :: Selector
+getL2CAPPSMSelector = mkSelector "getL2CAPPSM:"
+
+-- | @Selector@ for @getServiceRecordHandle:@
+getServiceRecordHandleSelector :: Selector
+getServiceRecordHandleSelector = mkSelector "getServiceRecordHandle:"
 
 -- | @Selector@ for @matchesUUID16:@
 matchesUUID16Selector :: Selector

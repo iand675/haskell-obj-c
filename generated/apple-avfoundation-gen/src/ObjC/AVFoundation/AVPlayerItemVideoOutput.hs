@@ -10,11 +10,13 @@ module ObjC.AVFoundation.AVPlayerItemVideoOutput
   , initWithOutputSettings
   , setDelegate_queue
   , requestNotificationOfMediaDataChangeWithAdvanceInterval
+  , delegate
   , delegateQueue
   , initWithPixelBufferAttributesSelector
   , initWithOutputSettingsSelector
   , setDelegate_queueSelector
   , requestNotificationOfMediaDataChangeWithAdvanceIntervalSelector
+  , delegateSelector
   , delegateQueueSelector
 
 
@@ -98,6 +100,15 @@ requestNotificationOfMediaDataChangeWithAdvanceInterval :: IsAVPlayerItemVideoOu
 requestNotificationOfMediaDataChangeWithAdvanceInterval avPlayerItemVideoOutput  interval =
     sendMsg avPlayerItemVideoOutput (mkSelector "requestNotificationOfMediaDataChangeWithAdvanceInterval:") retVoid [argCDouble interval]
 
+-- | delegate
+--
+-- The receiver's delegate.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsAVPlayerItemVideoOutput avPlayerItemVideoOutput => avPlayerItemVideoOutput -> IO RawId
+delegate avPlayerItemVideoOutput  =
+    fmap (RawId . castPtr) $ sendMsg avPlayerItemVideoOutput (mkSelector "delegate") (retPtr retVoid) []
+
 -- | delegateQueue
 --
 -- The dispatch queue where the delegate is messaged.
@@ -126,6 +137,10 @@ setDelegate_queueSelector = mkSelector "setDelegate:queue:"
 -- | @Selector@ for @requestNotificationOfMediaDataChangeWithAdvanceInterval:@
 requestNotificationOfMediaDataChangeWithAdvanceIntervalSelector :: Selector
 requestNotificationOfMediaDataChangeWithAdvanceIntervalSelector = mkSelector "requestNotificationOfMediaDataChangeWithAdvanceInterval:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @delegateQueue@
 delegateQueueSelector :: Selector

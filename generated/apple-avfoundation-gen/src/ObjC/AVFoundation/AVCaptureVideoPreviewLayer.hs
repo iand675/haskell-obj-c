@@ -21,6 +21,7 @@ module ObjC.AVFoundation.AVCaptureVideoPreviewLayer
   , transformedMetadataObjectForMetadataObject
   , session
   , setSession
+  , connection
   , videoGravity
   , setVideoGravity
   , previewing
@@ -43,6 +44,7 @@ module ObjC.AVFoundation.AVCaptureVideoPreviewLayer
   , transformedMetadataObjectForMetadataObjectSelector
   , sessionSelector
   , setSessionSelector
+  , connectionSelector
   , videoGravitySelector
   , setVideoGravitySelector
   , previewingSelector
@@ -194,6 +196,17 @@ setSession :: (IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer, IsAVCapt
 setSession avCaptureVideoPreviewLayer  value =
   withObjCPtr value $ \raw_value ->
       sendMsg avCaptureVideoPreviewLayer (mkSelector "setSession:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | connection
+--
+-- The AVCaptureConnection instance describing the AVCaptureInputPort to which the receiver is connected.
+--
+-- When calling initWithSession: or setSession: with a valid AVCaptureSession instance, a connection is formed to the first eligible video AVCaptureInput. If the receiver is detached from a session, the connection property becomes nil.
+--
+-- ObjC selector: @- connection@
+connection :: IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer => avCaptureVideoPreviewLayer -> IO (Id AVCaptureConnection)
+connection avCaptureVideoPreviewLayer  =
+    sendMsg avCaptureVideoPreviewLayer (mkSelector "connection") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | videoGravity
 --
@@ -395,6 +408,10 @@ sessionSelector = mkSelector "session"
 -- | @Selector@ for @setSession:@
 setSessionSelector :: Selector
 setSessionSelector = mkSelector "setSession:"
+
+-- | @Selector@ for @connection@
+connectionSelector :: Selector
+connectionSelector = mkSelector "connection"
 
 -- | @Selector@ for @videoGravity@
 videoGravitySelector :: Selector

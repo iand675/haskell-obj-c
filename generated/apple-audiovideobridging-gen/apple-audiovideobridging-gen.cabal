@@ -29,6 +29,9 @@ library
       ObjC.AudioVideoBridging.AVBIPAddress
       ObjC.AudioVideoBridging.AVBInterface
       ObjC.AudioVideoBridging.AVBMACAddress
+      ObjC.AudioVideoBridging.Delegate.AVB17221ACMPClient
+      ObjC.AudioVideoBridging.Delegate.AVB17221AECPClient
+      ObjC.AudioVideoBridging.Delegate.AVB17221EntityDiscoveryDelegate
       ObjC.AudioVideoBridging.Enums
       ObjC.AudioVideoBridging.Internal.Classes
       ObjC.AudioVideoBridging.Internal.Enums

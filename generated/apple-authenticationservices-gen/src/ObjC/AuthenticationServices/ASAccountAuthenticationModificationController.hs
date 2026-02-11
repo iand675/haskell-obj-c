@@ -7,7 +7,15 @@ module ObjC.AuthenticationServices.ASAccountAuthenticationModificationController
   ( ASAccountAuthenticationModificationController
   , IsASAccountAuthenticationModificationController(..)
   , performRequest
+  , delegate
+  , setDelegate
+  , presentationContextProvider
+  , setPresentationContextProvider
   , performRequestSelector
+  , delegateSelector
+  , setDelegateSelector
+  , presentationContextProviderSelector
+  , setPresentationContextProviderSelector
 
 
   ) where
@@ -35,6 +43,34 @@ performRequest asAccountAuthenticationModificationController  request =
   withObjCPtr request $ \raw_request ->
       sendMsg asAccountAuthenticationModificationController (mkSelector "performRequest:") retVoid [argPtr (castPtr raw_request :: Ptr ())]
 
+-- | This delegate will be notified upon completion of the upgrade to report success or failure.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsASAccountAuthenticationModificationController asAccountAuthenticationModificationController => asAccountAuthenticationModificationController -> IO RawId
+delegate asAccountAuthenticationModificationController  =
+    fmap (RawId . castPtr) $ sendMsg asAccountAuthenticationModificationController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | This delegate will be notified upon completion of the upgrade to report success or failure.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsASAccountAuthenticationModificationController asAccountAuthenticationModificationController => asAccountAuthenticationModificationController -> RawId -> IO ()
+setDelegate asAccountAuthenticationModificationController  value =
+    sendMsg asAccountAuthenticationModificationController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | This will be used to provide a presentation context to display authorization UI.
+--
+-- ObjC selector: @- presentationContextProvider@
+presentationContextProvider :: IsASAccountAuthenticationModificationController asAccountAuthenticationModificationController => asAccountAuthenticationModificationController -> IO RawId
+presentationContextProvider asAccountAuthenticationModificationController  =
+    fmap (RawId . castPtr) $ sendMsg asAccountAuthenticationModificationController (mkSelector "presentationContextProvider") (retPtr retVoid) []
+
+-- | This will be used to provide a presentation context to display authorization UI.
+--
+-- ObjC selector: @- setPresentationContextProvider:@
+setPresentationContextProvider :: IsASAccountAuthenticationModificationController asAccountAuthenticationModificationController => asAccountAuthenticationModificationController -> RawId -> IO ()
+setPresentationContextProvider asAccountAuthenticationModificationController  value =
+    sendMsg asAccountAuthenticationModificationController (mkSelector "setPresentationContextProvider:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -42,4 +78,20 @@ performRequest asAccountAuthenticationModificationController  request =
 -- | @Selector@ for @performRequest:@
 performRequestSelector :: Selector
 performRequestSelector = mkSelector "performRequest:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @presentationContextProvider@
+presentationContextProviderSelector :: Selector
+presentationContextProviderSelector = mkSelector "presentationContextProvider"
+
+-- | @Selector@ for @setPresentationContextProvider:@
+setPresentationContextProviderSelector :: Selector
+setPresentationContextProviderSelector = mkSelector "setPresentationContextProvider:"
 

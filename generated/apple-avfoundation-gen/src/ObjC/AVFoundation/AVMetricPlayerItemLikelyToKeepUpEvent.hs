@@ -14,10 +14,12 @@ module ObjC.AVFoundation.AVMetricPlayerItemLikelyToKeepUpEvent
   , new
   , variant
   , timeTaken
+  , loadedTimeRanges
   , initSelector
   , newSelector
   , variantSelector
   , timeTakenSelector
+  , loadedTimeRangesSelector
 
 
   ) where
@@ -63,6 +65,15 @@ timeTaken :: IsAVMetricPlayerItemLikelyToKeepUpEvent avMetricPlayerItemLikelyToK
 timeTaken avMetricPlayerItemLikelyToKeepUpEvent  =
     sendMsg avMetricPlayerItemLikelyToKeepUpEvent (mkSelector "timeTaken") retCDouble []
 
+-- | This property provides a collection of time ranges for which the player has the media data readily available. The ranges provided might be discontinuous.
+--
+-- Returns an NSArray of NSValues containing CMTimeRanges.
+--
+-- ObjC selector: @- loadedTimeRanges@
+loadedTimeRanges :: IsAVMetricPlayerItemLikelyToKeepUpEvent avMetricPlayerItemLikelyToKeepUpEvent => avMetricPlayerItemLikelyToKeepUpEvent -> IO (Id NSArray)
+loadedTimeRanges avMetricPlayerItemLikelyToKeepUpEvent  =
+    sendMsg avMetricPlayerItemLikelyToKeepUpEvent (mkSelector "loadedTimeRanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -82,4 +93,8 @@ variantSelector = mkSelector "variant"
 -- | @Selector@ for @timeTaken@
 timeTakenSelector :: Selector
 timeTakenSelector = mkSelector "timeTaken"
+
+-- | @Selector@ for @loadedTimeRanges@
+loadedTimeRangesSelector :: Selector
+loadedTimeRangesSelector = mkSelector "loadedTimeRanges"
 

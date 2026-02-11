@@ -9,6 +9,7 @@ module ObjC.AVFoundation.AVMutableMovieTrack
   , hasMediaCharacteristic
   , metadataForFormat
   , associatedTracksOfType
+  , appendSampleBuffer_decodeTime_presentationTime_error
   , replaceFormatDescription_withFormatDescription
   , addTrackAssociationToTrack_type
   , removeTrackAssociationToTrack_type
@@ -42,6 +43,7 @@ module ObjC.AVFoundation.AVMutableMovieTrack
   , hasMediaCharacteristicSelector
   , metadataForFormatSelector
   , associatedTracksOfTypeSelector
+  , appendSampleBuffer_decodeTime_presentationTime_errorSelector
   , replaceFormatDescription_withFormatDescriptionSelector
   , addTrackAssociationToTrack_typeSelector
   , removeTrackAssociationToTrack_typeSelector
@@ -108,6 +110,36 @@ associatedTracksOfType :: (IsAVMutableMovieTrack avMutableMovieTrack, IsNSString
 associatedTracksOfType avMutableMovieTrack  trackAssociationType =
   withObjCPtr trackAssociationType $ \raw_trackAssociationType ->
       sendMsg avMutableMovieTrack (mkSelector "associatedTracksOfType:") (retPtr retVoid) [argPtr (castPtr raw_trackAssociationType :: Ptr ())] >>= retainedObject . castPtr
+
+-- | appendSampleBuffer:decodeTime:presentationTime:error:
+--
+-- Appends sample data to a media file and adds sample references for the added data to a track's media sample tables.
+--
+-- @sampleBuffer@ — The CMSampleBuffer to be appended; this may be obtained from an instance of AVAssetReader.
+--
+-- @outDecodeTime@ — A pointer to a CMTime structure to receive the decode time in the media of the first sample appended from the sample buffer. Pass NULL if you do not need this information.
+--
+-- @outPresentationTime@ — A pointer to a CMTime structure to receive the presentation time in the media of the first sample appended from the sample buffer. Pass NULL if you do not need this information.
+--
+-- @outError@ — If the appending fails, describes the nature of the failure. For example, if the device containing the track's media data storage is full, AVErrorDiskFull is returned.
+--
+-- Returns: A BOOL value indicating the success of the operation.
+--
+-- If the sample buffer carries sample data, the sample data is written to the container specified by the track property mediaDataStorage if non-nil,                    or else by the movie property defaultMediaDataStorage if non-nil, and sample references will be appended to the track's media.                    If both media data storage properties are nil, the method will fail and return NO.                    If the sample buffer carries sample references only, sample data will not be written and sample references to the samples in their                    original container will be appended to the track's media as necessary.
+--
+-- Note regarding sample timing: in a track's media, the first sample's decode timestamp must always be zero.                    For an audio track, each sample buffer's duration is used as the sample decode duration.                    For other track types, difference between a sample's decode timestamp and the following                     sample's decode timestamp is used as the first sample's decode duration, so as to preserve the relative timing.
+--
+-- Note that this method does not modify the track's sourceTimeMappings but only appends sample references and sample data to the track's media.                      To make the new samples appear in the track's timeline, invoke -insertMediaTimeRange:intoTimeRange:.                    You can retrieve the mediaPresentationTimeRange property before and after appending a sequence of samples,                    using CMTimeRangeGetEnd on each to calculate the media TimeRange for -insertMediaTimeRange:intoTimeRange:.
+--
+-- It's safe for multiple threads to call this method on different tracks at once.
+--
+-- This method throws an exception for any of the following reasons:                        - the sample buffer's media type does not match the track's media type                        - the sample buffer contains image buffers (must contain encoded video)                        - the sample buffer contains caption groups (must contain encoded media data)
+--
+-- ObjC selector: @- appendSampleBuffer:decodeTime:presentationTime:error:@
+appendSampleBuffer_decodeTime_presentationTime_error :: (IsAVMutableMovieTrack avMutableMovieTrack, IsNSError outError) => avMutableMovieTrack -> Ptr () -> RawId -> RawId -> outError -> IO Bool
+appendSampleBuffer_decodeTime_presentationTime_error avMutableMovieTrack  sampleBuffer outDecodeTime outPresentationTime outError =
+  withObjCPtr outError $ \raw_outError ->
+      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMutableMovieTrack (mkSelector "appendSampleBuffer:decodeTime:presentationTime:error:") retCULong [argPtr sampleBuffer, argPtr (castPtr (unRawId outDecodeTime) :: Ptr ()), argPtr (castPtr (unRawId outPresentationTime) :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
 
 -- | replaceFormatDescription:withFormatDescription:
 --
@@ -477,6 +509,10 @@ metadataForFormatSelector = mkSelector "metadataForFormat:"
 -- | @Selector@ for @associatedTracksOfType:@
 associatedTracksOfTypeSelector :: Selector
 associatedTracksOfTypeSelector = mkSelector "associatedTracksOfType:"
+
+-- | @Selector@ for @appendSampleBuffer:decodeTime:presentationTime:error:@
+appendSampleBuffer_decodeTime_presentationTime_errorSelector :: Selector
+appendSampleBuffer_decodeTime_presentationTime_errorSelector = mkSelector "appendSampleBuffer:decodeTime:presentationTime:error:"
 
 -- | @Selector@ for @replaceFormatDescription:withFormatDescription:@
 replaceFormatDescription_withFormatDescriptionSelector :: Selector

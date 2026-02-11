@@ -13,6 +13,8 @@ module ObjC.UserNotifications.UNNotificationSound
   , criticalSoundNamed_withAudioVolume
   , init_
   , defaultSound
+  , defaultRingtoneSound
+  , defaultCriticalSound
   , defaultCriticalSoundWithAudioVolumeSelector
   , soundNamedSelector
   , ringtoneSoundNamedSelector
@@ -20,6 +22,8 @@ module ObjC.UserNotifications.UNNotificationSound
   , criticalSoundNamed_withAudioVolumeSelector
   , initSelector
   , defaultSoundSelector
+  , defaultRingtoneSoundSelector
+  , defaultCriticalSoundSelector
 
 
   ) where
@@ -90,6 +94,20 @@ defaultSound  =
     cls' <- getRequiredClass "UNNotificationSound"
     sendClassMsg cls' (mkSelector "defaultSound") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @+ defaultRingtoneSound@
+defaultRingtoneSound :: IO (Id UNNotificationSound)
+defaultRingtoneSound  =
+  do
+    cls' <- getRequiredClass "UNNotificationSound"
+    sendClassMsg cls' (mkSelector "defaultRingtoneSound") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ defaultCriticalSound@
+defaultCriticalSound :: IO (Id UNNotificationSound)
+defaultCriticalSound  =
+  do
+    cls' <- getRequiredClass "UNNotificationSound"
+    sendClassMsg cls' (mkSelector "defaultCriticalSound") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -121,4 +139,12 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @defaultSound@
 defaultSoundSelector :: Selector
 defaultSoundSelector = mkSelector "defaultSound"
+
+-- | @Selector@ for @defaultRingtoneSound@
+defaultRingtoneSoundSelector :: Selector
+defaultRingtoneSoundSelector = mkSelector "defaultRingtoneSound"
+
+-- | @Selector@ for @defaultCriticalSound@
+defaultCriticalSoundSelector :: Selector
+defaultCriticalSoundSelector = mkSelector "defaultCriticalSound"
 

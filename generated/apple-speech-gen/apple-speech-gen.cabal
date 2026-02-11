@@ -12,6 +12,7 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.Speech.Delegate.SFSpeechRecognizerDelegate
       ObjC.Speech.Enums
       ObjC.Speech.Internal.Classes
       ObjC.Speech.Internal.Enums

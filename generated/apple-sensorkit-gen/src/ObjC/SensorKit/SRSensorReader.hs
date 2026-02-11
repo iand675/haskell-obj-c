@@ -17,6 +17,8 @@ module ObjC.SensorKit.SRSensorReader
   , requestAuthorizationForSensors_completion
   , authorizationStatus
   , sensor
+  , delegate
+  , setDelegate
   , initWithSensorSelector
   , initSelector
   , newSelector
@@ -27,6 +29,8 @@ module ObjC.SensorKit.SRSensorReader
   , requestAuthorizationForSensors_completionSelector
   , authorizationStatusSelector
   , sensorSelector
+  , delegateSelector
+  , setDelegateSelector
 
   -- * Enum types
   , SRAuthorizationStatus(SRAuthorizationStatus)
@@ -155,6 +159,16 @@ sensor :: IsSRSensorReader srSensorReader => srSensorReader -> IO (Id NSString)
 sensor srSensorReader  =
     sendMsg srSensorReader (mkSelector "sensor") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- delegate@
+delegate :: IsSRSensorReader srSensorReader => srSensorReader -> IO RawId
+delegate srSensorReader  =
+    fmap (RawId . castPtr) $ sendMsg srSensorReader (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsSRSensorReader srSensorReader => srSensorReader -> RawId -> IO ()
+setDelegate srSensorReader  value =
+    sendMsg srSensorReader (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -198,4 +212,12 @@ authorizationStatusSelector = mkSelector "authorizationStatus"
 -- | @Selector@ for @sensor@
 sensorSelector :: Selector
 sensorSelector = mkSelector "sensor"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

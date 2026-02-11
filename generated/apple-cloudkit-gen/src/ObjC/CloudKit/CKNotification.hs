@@ -26,6 +26,7 @@ module ObjC.CloudKit.CKNotification
   , subscriptionOwnerUserRecordID
   , isPruned
   , subscriptionID
+  , badge
   , initSelector
   , newSelector
   , notificationFromRemoteNotificationDictionarySelector
@@ -35,6 +36,7 @@ module ObjC.CloudKit.CKNotification
   , subscriptionOwnerUserRecordIDSelector
   , isPrunedSelector
   , subscriptionIDSelector
+  , badgeSelector
 
   -- * Enum types
   , CKNotificationType(CKNotificationType)
@@ -121,6 +123,11 @@ subscriptionID :: IsCKNotification ckNotification => ckNotification -> IO (Id NS
 subscriptionID ckNotification  =
     sendMsg ckNotification (mkSelector "subscriptionID") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- badge@
+badge :: IsCKNotification ckNotification => ckNotification -> IO (Id NSNumber)
+badge ckNotification  =
+    sendMsg ckNotification (mkSelector "badge") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -160,4 +167,8 @@ isPrunedSelector = mkSelector "isPruned"
 -- | @Selector@ for @subscriptionID@
 subscriptionIDSelector :: Selector
 subscriptionIDSelector = mkSelector "subscriptionID"
+
+-- | @Selector@ for @badge@
+badgeSelector :: Selector
+badgeSelector = mkSelector "badge"
 

@@ -22,6 +22,8 @@ module ObjC.AppKit.NSRuleEditor
   , removeRowAtIndex
   , removeRowsAtIndexes_includeSubrows
   , selectRowIndexes_byExtendingSelection
+  , delegate
+  , setDelegate
   , formattingStringsFilename
   , setFormattingStringsFilename
   , formattingDictionary
@@ -62,6 +64,8 @@ module ObjC.AppKit.NSRuleEditor
   , removeRowAtIndexSelector
   , removeRowsAtIndexes_includeSubrowsSelector
   , selectRowIndexes_byExtendingSelectionSelector
+  , delegateSelector
+  , setDelegateSelector
   , formattingStringsFilenameSelector
   , setFormattingStringsFilenameSelector
   , formattingDictionarySelector
@@ -194,6 +198,16 @@ selectRowIndexes_byExtendingSelection :: (IsNSRuleEditor nsRuleEditor, IsNSIndex
 selectRowIndexes_byExtendingSelection nsRuleEditor  indexes extend =
   withObjCPtr indexes $ \raw_indexes ->
       sendMsg nsRuleEditor (mkSelector "selectRowIndexes:byExtendingSelection:") retVoid [argPtr (castPtr raw_indexes :: Ptr ()), argCULong (if extend then 1 else 0)]
+
+-- | @- delegate@
+delegate :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> IO RawId
+delegate nsRuleEditor  =
+    fmap (RawId . castPtr) $ sendMsg nsRuleEditor (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> RawId -> IO ()
+setDelegate nsRuleEditor  value =
+    sendMsg nsRuleEditor (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- formattingStringsFilename@
 formattingStringsFilename :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> IO (Id NSString)
@@ -389,6 +403,14 @@ removeRowsAtIndexes_includeSubrowsSelector = mkSelector "removeRowsAtIndexes:inc
 -- | @Selector@ for @selectRowIndexes:byExtendingSelection:@
 selectRowIndexes_byExtendingSelectionSelector :: Selector
 selectRowIndexes_byExtendingSelectionSelector = mkSelector "selectRowIndexes:byExtendingSelection:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @formattingStringsFilename@
 formattingStringsFilenameSelector :: Selector

@@ -6,6 +6,8 @@
 module ObjC.CoreLocation.CLGeocoder
   ( CLGeocoder
   , IsCLGeocoder(..)
+  , reverseGeocodeLocation_completionHandler
+  , reverseGeocodeLocation_preferredLocale_completionHandler
   , geocodeAddressDictionary_completionHandler
   , geocodeAddressString_inRegion_completionHandler
   , geocodeAddressString_inRegion_preferredLocale_completionHandler
@@ -14,6 +16,8 @@ module ObjC.CoreLocation.CLGeocoder
   , geocodePostalAddress_completionHandler
   , geocodePostalAddress_preferredLocale_completionHandler
   , geocoding
+  , reverseGeocodeLocation_completionHandlerSelector
+  , reverseGeocodeLocation_preferredLocale_completionHandlerSelector
   , geocodeAddressDictionary_completionHandlerSelector
   , geocodeAddressString_inRegion_completionHandlerSelector
   , geocodeAddressString_inRegion_preferredLocale_completionHandlerSelector
@@ -41,6 +45,17 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.CoreLocation.Internal.Classes
 import ObjC.Contacts.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | @- reverseGeocodeLocation:completionHandler:@
+reverseGeocodeLocation_completionHandler :: IsCLGeocoder clGeocoder => clGeocoder -> RawId -> Ptr () -> IO ()
+reverseGeocodeLocation_completionHandler clGeocoder  location completionHandler =
+    sendMsg clGeocoder (mkSelector "reverseGeocodeLocation:completionHandler:") retVoid [argPtr (castPtr (unRawId location) :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+
+-- | @- reverseGeocodeLocation:preferredLocale:completionHandler:@
+reverseGeocodeLocation_preferredLocale_completionHandler :: (IsCLGeocoder clGeocoder, IsNSLocale locale) => clGeocoder -> RawId -> locale -> Ptr () -> IO ()
+reverseGeocodeLocation_preferredLocale_completionHandler clGeocoder  location locale completionHandler =
+  withObjCPtr locale $ \raw_locale ->
+      sendMsg clGeocoder (mkSelector "reverseGeocodeLocation:preferredLocale:completionHandler:") retVoid [argPtr (castPtr (unRawId location) :: Ptr ()), argPtr (castPtr raw_locale :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
 
 -- | @- geocodeAddressDictionary:completionHandler:@
 geocodeAddressDictionary_completionHandler :: (IsCLGeocoder clGeocoder, IsNSDictionary addressDictionary) => clGeocoder -> addressDictionary -> Ptr () -> IO ()
@@ -95,6 +110,14 @@ geocoding clGeocoder  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @reverseGeocodeLocation:completionHandler:@
+reverseGeocodeLocation_completionHandlerSelector :: Selector
+reverseGeocodeLocation_completionHandlerSelector = mkSelector "reverseGeocodeLocation:completionHandler:"
+
+-- | @Selector@ for @reverseGeocodeLocation:preferredLocale:completionHandler:@
+reverseGeocodeLocation_preferredLocale_completionHandlerSelector :: Selector
+reverseGeocodeLocation_preferredLocale_completionHandlerSelector = mkSelector "reverseGeocodeLocation:preferredLocale:completionHandler:"
 
 -- | @Selector@ for @geocodeAddressDictionary:completionHandler:@
 geocodeAddressDictionary_completionHandlerSelector :: Selector

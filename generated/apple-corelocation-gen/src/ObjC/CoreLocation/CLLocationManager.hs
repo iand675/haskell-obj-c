@@ -45,6 +45,8 @@ module ObjC.CoreLocation.CLLocationManager
   , authorizationStatus
   , accuracyAuthorization
   , authorizedForWidgetUpdates
+  , delegate
+  , setDelegate
   , locationServicesEnabled
   , purpose
   , setPurpose
@@ -107,6 +109,8 @@ module ObjC.CoreLocation.CLLocationManager
   , stopMonitoringVisitsSelector
   , accuracyAuthorizationSelector
   , authorizedForWidgetUpdatesSelector
+  , delegateSelector
+  , setDelegateSelector
   , purposeSelector
   , setPurposeSelector
   , activityTypeSelector
@@ -393,6 +397,16 @@ authorizedForWidgetUpdates :: IsCLLocationManager clLocationManager => clLocatio
 authorizedForWidgetUpdates clLocationManager  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg clLocationManager (mkSelector "authorizedForWidgetUpdates") retCULong []
 
+-- | @- delegate@
+delegate :: IsCLLocationManager clLocationManager => clLocationManager -> IO RawId
+delegate clLocationManager  =
+    fmap (RawId . castPtr) $ sendMsg clLocationManager (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsCLLocationManager clLocationManager => clLocationManager -> RawId -> IO ()
+setDelegate clLocationManager  value =
+    sendMsg clLocationManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- locationServicesEnabled@
 locationServicesEnabled :: IsCLLocationManager clLocationManager => clLocationManager -> IO Bool
 locationServicesEnabled clLocationManager  =
@@ -670,6 +684,14 @@ accuracyAuthorizationSelector = mkSelector "accuracyAuthorization"
 -- | @Selector@ for @authorizedForWidgetUpdates@
 authorizedForWidgetUpdatesSelector :: Selector
 authorizedForWidgetUpdatesSelector = mkSelector "authorizedForWidgetUpdates"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @purpose@
 purposeSelector :: Selector

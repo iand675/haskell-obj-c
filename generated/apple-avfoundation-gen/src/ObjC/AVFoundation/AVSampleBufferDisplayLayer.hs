@@ -17,6 +17,7 @@ module ObjC.AVFoundation.AVSampleBufferDisplayLayer
   , videoGravity
   , setVideoGravity
   , readyForDisplay
+  , sampleBufferRenderer
   , outputObscuredDueToInsufficientExternalProtection
   , preventsAutomaticBackgroundingDuringVideoPlayback
   , setPreventsAutomaticBackgroundingDuringVideoPlayback
@@ -26,6 +27,7 @@ module ObjC.AVFoundation.AVSampleBufferDisplayLayer
   , setPreventsCapture
   , timebase
   , status
+  , error_
   , requiresFlushToResumeDecoding
   , readyForMoreMediaData
   , hasSufficientMediaDataForReliablePlaybackStart
@@ -39,6 +41,7 @@ module ObjC.AVFoundation.AVSampleBufferDisplayLayer
   , videoGravitySelector
   , setVideoGravitySelector
   , readyForDisplaySelector
+  , sampleBufferRendererSelector
   , outputObscuredDueToInsufficientExternalProtectionSelector
   , preventsAutomaticBackgroundingDuringVideoPlaybackSelector
   , setPreventsAutomaticBackgroundingDuringVideoPlaybackSelector
@@ -48,6 +51,7 @@ module ObjC.AVFoundation.AVSampleBufferDisplayLayer
   , setPreventsCaptureSelector
   , timebaseSelector
   , statusSelector
+  , errorSelector
   , requiresFlushToResumeDecodingSelector
   , readyForMoreMediaDataSelector
   , hasSufficientMediaDataForReliablePlaybackStartSelector
@@ -205,6 +209,17 @@ readyForDisplay :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => av
 readyForDisplay avSampleBufferDisplayLayer  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSampleBufferDisplayLayer (mkSelector "readyForDisplay") retCULong []
 
+-- | sampleBufferRenderer
+--
+-- An AVSampleBufferVideoRenderer instance that allows enqueuing sample buffers for rendering.
+--
+-- Although AVSampleBufferDisplayLayer conforms to the AVQueuedSampleBufferRendering protocol, the sampleBufferRenderer should be used to enqueue sample buffers. sampleBufferRenderer allows the client to safely enqueue sample buffers from a background thread. NOTE: Do not use AVSampleBufferDisplayLayer's AVQueuedSampleBufferRendering functions when using sampleBufferRenderer.
+--
+-- ObjC selector: @- sampleBufferRenderer@
+sampleBufferRenderer :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> IO (Id AVSampleBufferVideoRenderer)
+sampleBufferRenderer avSampleBufferDisplayLayer  =
+    sendMsg avSampleBufferDisplayLayer (mkSelector "sampleBufferRenderer") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | outputObscuredDueToInsufficientExternalProtection
 --
 -- Whether or not decoded output is being obscured due to insufficient external protection.
@@ -308,6 +323,17 @@ status :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBuf
 status avSampleBufferDisplayLayer  =
     fmap (coerce :: CLong -> AVQueuedSampleBufferRenderingStatus) $ sendMsg avSampleBufferDisplayLayer (mkSelector "status") retCLong []
 
+-- | error
+--
+-- If the display layer's status is AVQueuedSampleBufferRenderingStatusFailed, this describes the error that caused the failure.
+--
+-- The value of this property is an NSError that describes what caused the display layer to no longer be able to enqueue sample buffers. If the status is not AVQueuedSampleBufferRenderingStatusFailed, the value of this property is nil.
+--
+-- ObjC selector: @- error@
+error_ :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> IO (Id NSError)
+error_ avSampleBufferDisplayLayer  =
+    sendMsg avSampleBufferDisplayLayer (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | requiresFlushToResumeDecoding
 --
 -- Indicates that the receiver is in a state where it requires a call to -flush to continue decoding frames.
@@ -395,6 +421,10 @@ setVideoGravitySelector = mkSelector "setVideoGravity:"
 readyForDisplaySelector :: Selector
 readyForDisplaySelector = mkSelector "readyForDisplay"
 
+-- | @Selector@ for @sampleBufferRenderer@
+sampleBufferRendererSelector :: Selector
+sampleBufferRendererSelector = mkSelector "sampleBufferRenderer"
+
 -- | @Selector@ for @outputObscuredDueToInsufficientExternalProtection@
 outputObscuredDueToInsufficientExternalProtectionSelector :: Selector
 outputObscuredDueToInsufficientExternalProtectionSelector = mkSelector "outputObscuredDueToInsufficientExternalProtection"
@@ -430,6 +460,10 @@ timebaseSelector = mkSelector "timebase"
 -- | @Selector@ for @status@
 statusSelector :: Selector
 statusSelector = mkSelector "status"
+
+-- | @Selector@ for @error@
+errorSelector :: Selector
+errorSelector = mkSelector "error"
 
 -- | @Selector@ for @requiresFlushToResumeDecoding@
 requiresFlushToResumeDecodingSelector :: Selector

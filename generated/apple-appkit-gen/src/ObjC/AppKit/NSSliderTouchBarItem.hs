@@ -6,6 +6,9 @@
 module ObjC.AppKit.NSSliderTouchBarItem
   ( NSSliderTouchBarItem
   , IsNSSliderTouchBarItem(..)
+  , view
+  , slider
+  , setSlider
   , doubleValue
   , setDoubleValue
   , minimumSliderWidth
@@ -26,6 +29,9 @@ module ObjC.AppKit.NSSliderTouchBarItem
   , setAction
   , customizationLabel
   , setCustomizationLabel
+  , viewSelector
+  , sliderSelector
+  , setSliderSelector
   , doubleValueSelector
   , setDoubleValueSelector
   , minimumSliderWidthSelector
@@ -64,6 +70,26 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.AppKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | @- view@
+view :: IsNSSliderTouchBarItem nsSliderTouchBarItem => nsSliderTouchBarItem -> IO (Id NSView)
+view nsSliderTouchBarItem  =
+    sendMsg nsSliderTouchBarItem (mkSelector "view") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The slider displayed by the bar item. It is automatically created, but can be set to a custom subclass. doubleValue, minValue, maxValue, etc can all be read and set through the slider.
+--
+-- ObjC selector: @- slider@
+slider :: IsNSSliderTouchBarItem nsSliderTouchBarItem => nsSliderTouchBarItem -> IO (Id NSSlider)
+slider nsSliderTouchBarItem  =
+    sendMsg nsSliderTouchBarItem (mkSelector "slider") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The slider displayed by the bar item. It is automatically created, but can be set to a custom subclass. doubleValue, minValue, maxValue, etc can all be read and set through the slider.
+--
+-- ObjC selector: @- setSlider:@
+setSlider :: (IsNSSliderTouchBarItem nsSliderTouchBarItem, IsNSSlider value) => nsSliderTouchBarItem -> value -> IO ()
+setSlider nsSliderTouchBarItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsSliderTouchBarItem (mkSelector "setSlider:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | The double value of the control
 --
@@ -208,6 +234,18 @@ setCustomizationLabel nsSliderTouchBarItem  value =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @view@
+viewSelector :: Selector
+viewSelector = mkSelector "view"
+
+-- | @Selector@ for @slider@
+sliderSelector :: Selector
+sliderSelector = mkSelector "slider"
+
+-- | @Selector@ for @setSlider:@
+setSliderSelector :: Selector
+setSliderSelector = mkSelector "setSlider:"
 
 -- | @Selector@ for @doubleValue@
 doubleValueSelector :: Selector

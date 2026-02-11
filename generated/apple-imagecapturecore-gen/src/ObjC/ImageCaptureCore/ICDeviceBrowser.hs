@@ -18,11 +18,14 @@ module ObjC.ImageCaptureCore.ICDeviceBrowser
   , requestControlAuthorizationWithCompletion
   , resetContentsAuthorizationWithCompletion
   , resetControlAuthorizationWithCompletion
+  , delegate
+  , setDelegate
   , browsing
   , suspended
   , browsedDeviceTypeMask
   , setBrowsedDeviceTypeMask
   , devices
+  , preferredDevice
   , contentsAuthorizationStatus
   , controlAuthorizationStatus
   , initSelector
@@ -32,11 +35,14 @@ module ObjC.ImageCaptureCore.ICDeviceBrowser
   , requestControlAuthorizationWithCompletionSelector
   , resetContentsAuthorizationWithCompletionSelector
   , resetControlAuthorizationWithCompletionSelector
+  , delegateSelector
+  , setDelegateSelector
   , browsingSelector
   , suspendedSelector
   , browsedDeviceTypeMaskSelector
   , setBrowsedDeviceTypeMaskSelector
   , devicesSelector
+  , preferredDeviceSelector
   , contentsAuthorizationStatusSelector
   , controlAuthorizationStatusSelector
 
@@ -132,6 +138,24 @@ resetControlAuthorizationWithCompletion :: IsICDeviceBrowser icDeviceBrowser => 
 resetControlAuthorizationWithCompletion icDeviceBrowser  completion =
     sendMsg icDeviceBrowser (mkSelector "resetControlAuthorizationWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
 
+-- | delegate
+--
+-- The delegate. It must conform to ICDeviceBrowserDelegate protocol. The messages this delegate can expect to receive are described by ICDeviceBrowserDelegate protocol.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> IO RawId
+delegate icDeviceBrowser  =
+    fmap (RawId . castPtr) $ sendMsg icDeviceBrowser (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- The delegate. It must conform to ICDeviceBrowserDelegate protocol. The messages this delegate can expect to receive are described by ICDeviceBrowserDelegate protocol.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> RawId -> IO ()
+setDelegate icDeviceBrowser  value =
+    sendMsg icDeviceBrowser (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | browsing
 --
 -- Indicates whether the device browser is browsing for devices.
@@ -176,6 +200,17 @@ setBrowsedDeviceTypeMask icDeviceBrowser  value =
 devices :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> IO (Id NSArray)
 devices icDeviceBrowser  =
     sendMsg icDeviceBrowser (mkSelector "devices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | preferredDevice
+--
+-- This property returns a device object that should be selected by the client application when it is launched.
+--
+-- If the client application that calls this method is the auto-launch application associated with a device and that device is the last device attached (through USB, FireWire or network), then that device will be the preferred device. The best place to call this method is in the implmentation of the ICDeviceBrowser delegate method "deviceBrowser:didAddDevice:moreComing:", if the "moreComing" parameter passed to the delegate is "NO"; or in the delegate method "deviceBrowserDidEnumerateLocalDevices:".
+--
+-- ObjC selector: @- preferredDevice@
+preferredDevice :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> IO RawId
+preferredDevice icDeviceBrowser  =
+    fmap (RawId . castPtr) $ sendMsg icDeviceBrowser (mkSelector "preferredDevice") (retPtr retVoid) []
 
 -- | contentsAuthorizationStatus
 --
@@ -229,6 +264,14 @@ resetContentsAuthorizationWithCompletionSelector = mkSelector "resetContentsAuth
 resetControlAuthorizationWithCompletionSelector :: Selector
 resetControlAuthorizationWithCompletionSelector = mkSelector "resetControlAuthorizationWithCompletion:"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @browsing@
 browsingSelector :: Selector
 browsingSelector = mkSelector "browsing"
@@ -248,6 +291,10 @@ setBrowsedDeviceTypeMaskSelector = mkSelector "setBrowsedDeviceTypeMask:"
 -- | @Selector@ for @devices@
 devicesSelector :: Selector
 devicesSelector = mkSelector "devices"
+
+-- | @Selector@ for @preferredDevice@
+preferredDeviceSelector :: Selector
+preferredDeviceSelector = mkSelector "preferredDevice"
 
 -- | @Selector@ for @contentsAuthorizationStatus@
 contentsAuthorizationStatusSelector :: Selector

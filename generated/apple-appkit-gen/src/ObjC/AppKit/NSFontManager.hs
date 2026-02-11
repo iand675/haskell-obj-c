@@ -54,6 +54,7 @@ module ObjC.AppKit.NSFontManager
   , setAction
   , delegate
   , setDelegate
+  , collectionNames
   , currentFontAction
   , target
   , setTarget
@@ -104,6 +105,7 @@ module ObjC.AppKit.NSFontManager
   , setActionSelector
   , delegateSelector
   , setDelegateSelector
+  , collectionNamesSelector
   , currentFontActionSelector
   , targetSelector
   , setTargetSelector
@@ -421,6 +423,11 @@ setDelegate :: IsNSFontManager nsFontManager => nsFontManager -> RawId -> IO ()
 setDelegate nsFontManager  value =
     sendMsg nsFontManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
+-- | @- collectionNames@
+collectionNames :: IsNSFontManager nsFontManager => nsFontManager -> IO (Id NSArray)
+collectionNames nsFontManager  =
+    sendMsg nsFontManager (mkSelector "collectionNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- currentFontAction@
 currentFontAction :: IsNSFontManager nsFontManager => nsFontManager -> IO NSFontAction
 currentFontAction nsFontManager  =
@@ -627,6 +634,10 @@ delegateSelector = mkSelector "delegate"
 -- | @Selector@ for @setDelegate:@
 setDelegateSelector :: Selector
 setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @collectionNames@
+collectionNamesSelector :: Selector
+collectionNamesSelector = mkSelector "collectionNames"
 
 -- | @Selector@ for @currentFontAction@
 currentFontActionSelector :: Selector

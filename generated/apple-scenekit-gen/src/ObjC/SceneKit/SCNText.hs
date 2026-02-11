@@ -27,6 +27,8 @@ module ObjC.SceneKit.SCNText
   , setChamferRadius
   , chamferSegmentCount
   , setChamferSegmentCount
+  , chamferProfile
+  , setChamferProfile
   , flatness
   , setFlatness
   , textWithString_extrusionDepthSelector
@@ -46,6 +48,8 @@ module ObjC.SceneKit.SCNText
   , setChamferRadiusSelector
   , chamferSegmentCountSelector
   , setChamferSegmentCountSelector
+  , chamferProfileSelector
+  , setChamferProfileSelector
   , flatnessSelector
   , setFlatnessSelector
 
@@ -262,6 +266,29 @@ setChamferSegmentCount :: IsSCNText scnText => scnText -> CLong -> IO ()
 setChamferSegmentCount scnText  value =
     sendMsg scnText (mkSelector "setChamferSegmentCount:") retVoid [argCLong value]
 
+-- | chamferProfile
+--
+-- Describes the profile used to when "chamferRadius" is not nil. When "chamferProfile" is nil we fallback on a path representing a quadrant.
+--
+-- The profile should be a 2D curve beginning at (0,1) and ending at (1,0). The "flatness" property is also used to flatten this path. The default value is nil.
+--
+-- ObjC selector: @- chamferProfile@
+chamferProfile :: IsSCNText scnText => scnText -> IO (Id NSBezierPath)
+chamferProfile scnText  =
+    sendMsg scnText (mkSelector "chamferProfile") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | chamferProfile
+--
+-- Describes the profile used to when "chamferRadius" is not nil. When "chamferProfile" is nil we fallback on a path representing a quadrant.
+--
+-- The profile should be a 2D curve beginning at (0,1) and ending at (1,0). The "flatness" property is also used to flatten this path. The default value is nil.
+--
+-- ObjC selector: @- setChamferProfile:@
+setChamferProfile :: (IsSCNText scnText, IsNSBezierPath value) => scnText -> value -> IO ()
+setChamferProfile scnText  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg scnText (mkSelector "setChamferProfile:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | flatness
 --
 -- Specifies the accuracy (or smoothness) with which fonts are rendered.
@@ -355,6 +382,14 @@ chamferSegmentCountSelector = mkSelector "chamferSegmentCount"
 -- | @Selector@ for @setChamferSegmentCount:@
 setChamferSegmentCountSelector :: Selector
 setChamferSegmentCountSelector = mkSelector "setChamferSegmentCount:"
+
+-- | @Selector@ for @chamferProfile@
+chamferProfileSelector :: Selector
+chamferProfileSelector = mkSelector "chamferProfile"
+
+-- | @Selector@ for @setChamferProfile:@
+setChamferProfileSelector :: Selector
+setChamferProfileSelector = mkSelector "setChamferProfile:"
 
 -- | @Selector@ for @flatness@
 flatnessSelector :: Selector

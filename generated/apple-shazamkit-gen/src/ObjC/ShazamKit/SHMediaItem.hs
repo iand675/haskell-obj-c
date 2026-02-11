@@ -40,6 +40,8 @@ module ObjC.ShazamKit.SHMediaItem
   , videoURL
   , explicitContent
   , isrc
+  , timeRanges
+  , frequencySkewRanges
   , creationDate
   , mediaItemWithPropertiesSelector
   , fetchMediaItemWithShazamID_completionHandlerSelector
@@ -59,6 +61,8 @@ module ObjC.ShazamKit.SHMediaItem
   , videoURLSelector
   , explicitContentSelector
   , isrcSelector
+  , timeRangesSelector
+  , frequencySkewRangesSelector
   , creationDateSelector
 
 
@@ -233,6 +237,20 @@ isrc :: IsSHMediaItem shMediaItem => shMediaItem -> IO (Id NSString)
 isrc shMediaItem  =
     sendMsg shMediaItem (mkSelector "isrc") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | An array of ranges that indicate the offsets within the reference signature that this media item describes.
+--
+-- ObjC selector: @- timeRanges@
+timeRanges :: IsSHMediaItem shMediaItem => shMediaItem -> IO (Id NSArray)
+timeRanges shMediaItem  =
+    sendMsg shMediaItem (mkSelector "timeRanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | An array of ranges that indicate the frequency skews in the reference signature that this media item describes.
+--
+-- ObjC selector: @- frequencySkewRanges@
+frequencySkewRanges :: IsSHMediaItem shMediaItem => shMediaItem -> IO (Id NSArray)
+frequencySkewRanges shMediaItem  =
+    sendMsg shMediaItem (mkSelector "frequencySkewRanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | The date the media item was created.
 --
 -- ObjC selector: @- creationDate@
@@ -315,6 +333,14 @@ explicitContentSelector = mkSelector "explicitContent"
 -- | @Selector@ for @isrc@
 isrcSelector :: Selector
 isrcSelector = mkSelector "isrc"
+
+-- | @Selector@ for @timeRanges@
+timeRangesSelector :: Selector
+timeRangesSelector = mkSelector "timeRanges"
+
+-- | @Selector@ for @frequencySkewRanges@
+frequencySkewRangesSelector :: Selector
+frequencySkewRangesSelector = mkSelector "frequencySkewRanges"
 
 -- | @Selector@ for @creationDate@
 creationDateSelector :: Selector

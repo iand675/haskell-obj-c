@@ -17,6 +17,9 @@ library:
   source-dirs: src
   exposed-modules:
   - ObjC.ApplicationServices
+  - ObjC.ApplicationServices.Delegate.PDEPanel
+  - ObjC.ApplicationServices.Delegate.PDEPlugIn
+  - ObjC.ApplicationServices.Delegate.PDEPlugInCallbackProtocol
   - ObjC.ApplicationServices.Enums
   - ObjC.ApplicationServices.Internal.Enums
   - ObjC.ApplicationServices.Internal.Structs

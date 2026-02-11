@@ -90,6 +90,13 @@ library:
   - ObjC.AVFAudio.AVSpeechSynthesisVoice
   - ObjC.AVFAudio.AVSpeechSynthesizer
   - ObjC.AVFAudio.AVSpeechUtterance
+  - ObjC.AVFAudio.Delegate.AVAudio3DMixing
+  - ObjC.AVFAudio.Delegate.AVAudioMixing
+  - ObjC.AVFAudio.Delegate.AVAudioPlayerDelegate
+  - ObjC.AVFAudio.Delegate.AVAudioRecorderDelegate
+  - ObjC.AVFAudio.Delegate.AVAudioSessionDelegate
+  - ObjC.AVFAudio.Delegate.AVAudioStereoMixing
+  - ObjC.AVFAudio.Delegate.AVSpeechSynthesizerDelegate
   - ObjC.AVFAudio.Enums
   - ObjC.AVFAudio.Internal.Classes
   - ObjC.AVFAudio.Internal.Enums

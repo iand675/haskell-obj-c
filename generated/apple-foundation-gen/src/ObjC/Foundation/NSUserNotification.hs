@@ -34,8 +34,18 @@ module ObjC.Foundation.NSUserNotification
   , activationType
   , otherButtonTitle
   , setOtherButtonTitle
+  , identifier
+  , setIdentifier
+  , contentImage
+  , setContentImage
   , hasReplyButton
   , setHasReplyButton
+  , responsePlaceholder
+  , setResponsePlaceholder
+  , response
+  , additionalActions
+  , setAdditionalActions
+  , additionalActivationAction
   , initSelector
   , titleSelector
   , setTitleSelector
@@ -63,8 +73,18 @@ module ObjC.Foundation.NSUserNotification
   , activationTypeSelector
   , otherButtonTitleSelector
   , setOtherButtonTitleSelector
+  , identifierSelector
+  , setIdentifierSelector
+  , contentImageSelector
+  , setContentImageSelector
   , hasReplyButtonSelector
   , setHasReplyButtonSelector
+  , responsePlaceholderSelector
+  , setResponsePlaceholderSelector
+  , responseSelector
+  , additionalActionsSelector
+  , setAdditionalActionsSelector
+  , additionalActivationActionSelector
 
   -- * Enum types
   , NSUserNotificationActivationType(NSUserNotificationActivationType)
@@ -236,6 +256,27 @@ setOtherButtonTitle nsUserNotification  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsUserNotification (mkSelector "setOtherButtonTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- identifier@
+identifier :: IsNSUserNotification nsUserNotification => nsUserNotification -> IO (Id NSString)
+identifier nsUserNotification  =
+    sendMsg nsUserNotification (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setIdentifier:@
+setIdentifier :: (IsNSUserNotification nsUserNotification, IsNSString value) => nsUserNotification -> value -> IO ()
+setIdentifier nsUserNotification  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsUserNotification (mkSelector "setIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- contentImage@
+contentImage :: IsNSUserNotification nsUserNotification => nsUserNotification -> IO RawId
+contentImage nsUserNotification  =
+    fmap (RawId . castPtr) $ sendMsg nsUserNotification (mkSelector "contentImage") (retPtr retVoid) []
+
+-- | @- setContentImage:@
+setContentImage :: IsNSUserNotification nsUserNotification => nsUserNotification -> RawId -> IO ()
+setContentImage nsUserNotification  value =
+    sendMsg nsUserNotification (mkSelector "setContentImage:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- hasReplyButton@
 hasReplyButton :: IsNSUserNotification nsUserNotification => nsUserNotification -> IO Bool
 hasReplyButton nsUserNotification  =
@@ -245,6 +286,38 @@ hasReplyButton nsUserNotification  =
 setHasReplyButton :: IsNSUserNotification nsUserNotification => nsUserNotification -> Bool -> IO ()
 setHasReplyButton nsUserNotification  value =
     sendMsg nsUserNotification (mkSelector "setHasReplyButton:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | @- responsePlaceholder@
+responsePlaceholder :: IsNSUserNotification nsUserNotification => nsUserNotification -> IO (Id NSString)
+responsePlaceholder nsUserNotification  =
+    sendMsg nsUserNotification (mkSelector "responsePlaceholder") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setResponsePlaceholder:@
+setResponsePlaceholder :: (IsNSUserNotification nsUserNotification, IsNSString value) => nsUserNotification -> value -> IO ()
+setResponsePlaceholder nsUserNotification  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsUserNotification (mkSelector "setResponsePlaceholder:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- response@
+response :: IsNSUserNotification nsUserNotification => nsUserNotification -> IO (Id NSAttributedString)
+response nsUserNotification  =
+    sendMsg nsUserNotification (mkSelector "response") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- additionalActions@
+additionalActions :: IsNSUserNotification nsUserNotification => nsUserNotification -> IO (Id NSArray)
+additionalActions nsUserNotification  =
+    sendMsg nsUserNotification (mkSelector "additionalActions") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setAdditionalActions:@
+setAdditionalActions :: (IsNSUserNotification nsUserNotification, IsNSArray value) => nsUserNotification -> value -> IO ()
+setAdditionalActions nsUserNotification  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsUserNotification (mkSelector "setAdditionalActions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- additionalActivationAction@
+additionalActivationAction :: IsNSUserNotification nsUserNotification => nsUserNotification -> IO (Id NSUserNotificationAction)
+additionalActivationAction nsUserNotification  =
+    sendMsg nsUserNotification (mkSelector "additionalActivationAction") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -358,6 +431,22 @@ otherButtonTitleSelector = mkSelector "otherButtonTitle"
 setOtherButtonTitleSelector :: Selector
 setOtherButtonTitleSelector = mkSelector "setOtherButtonTitle:"
 
+-- | @Selector@ for @identifier@
+identifierSelector :: Selector
+identifierSelector = mkSelector "identifier"
+
+-- | @Selector@ for @setIdentifier:@
+setIdentifierSelector :: Selector
+setIdentifierSelector = mkSelector "setIdentifier:"
+
+-- | @Selector@ for @contentImage@
+contentImageSelector :: Selector
+contentImageSelector = mkSelector "contentImage"
+
+-- | @Selector@ for @setContentImage:@
+setContentImageSelector :: Selector
+setContentImageSelector = mkSelector "setContentImage:"
+
 -- | @Selector@ for @hasReplyButton@
 hasReplyButtonSelector :: Selector
 hasReplyButtonSelector = mkSelector "hasReplyButton"
@@ -365,4 +454,28 @@ hasReplyButtonSelector = mkSelector "hasReplyButton"
 -- | @Selector@ for @setHasReplyButton:@
 setHasReplyButtonSelector :: Selector
 setHasReplyButtonSelector = mkSelector "setHasReplyButton:"
+
+-- | @Selector@ for @responsePlaceholder@
+responsePlaceholderSelector :: Selector
+responsePlaceholderSelector = mkSelector "responsePlaceholder"
+
+-- | @Selector@ for @setResponsePlaceholder:@
+setResponsePlaceholderSelector :: Selector
+setResponsePlaceholderSelector = mkSelector "setResponsePlaceholder:"
+
+-- | @Selector@ for @response@
+responseSelector :: Selector
+responseSelector = mkSelector "response"
+
+-- | @Selector@ for @additionalActions@
+additionalActionsSelector :: Selector
+additionalActionsSelector = mkSelector "additionalActions"
+
+-- | @Selector@ for @setAdditionalActions:@
+setAdditionalActionsSelector :: Selector
+setAdditionalActionsSelector = mkSelector "setAdditionalActions:"
+
+-- | @Selector@ for @additionalActivationAction@
+additionalActivationActionSelector :: Selector
+additionalActivationActionSelector = mkSelector "additionalActivationAction"
 

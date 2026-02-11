@@ -49,6 +49,8 @@ module ObjC.AppKit.NSImageRep
   , layoutDirection
   , setLayoutDirection
   , registeredImageRepClasses
+  , imageUnfilteredTypes
+  , imageTypes
   , initSelector
   , initWithCoderSelector
   , drawSelector
@@ -91,6 +93,8 @@ module ObjC.AppKit.NSImageRep
   , layoutDirectionSelector
   , setLayoutDirectionSelector
   , registeredImageRepClassesSelector
+  , imageUnfilteredTypesSelector
+  , imageTypesSelector
 
   -- * Enum types
   , NSCompositingOperation(NSCompositingOperation)
@@ -412,6 +416,20 @@ registeredImageRepClasses  =
     cls' <- getRequiredClass "NSImageRep"
     sendClassMsg cls' (mkSelector "registeredImageRepClasses") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @+ imageUnfilteredTypes@
+imageUnfilteredTypes :: IO (Id NSArray)
+imageUnfilteredTypes  =
+  do
+    cls' <- getRequiredClass "NSImageRep"
+    sendClassMsg cls' (mkSelector "imageUnfilteredTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ imageTypes@
+imageTypes :: IO (Id NSArray)
+imageTypes  =
+  do
+    cls' <- getRequiredClass "NSImageRep"
+    sendClassMsg cls' (mkSelector "imageTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -583,4 +601,12 @@ setLayoutDirectionSelector = mkSelector "setLayoutDirection:"
 -- | @Selector@ for @registeredImageRepClasses@
 registeredImageRepClassesSelector :: Selector
 registeredImageRepClassesSelector = mkSelector "registeredImageRepClasses"
+
+-- | @Selector@ for @imageUnfilteredTypes@
+imageUnfilteredTypesSelector :: Selector
+imageUnfilteredTypesSelector = mkSelector "imageUnfilteredTypes"
+
+-- | @Selector@ for @imageTypes@
+imageTypesSelector :: Selector
+imageTypesSelector = mkSelector "imageTypes"
 

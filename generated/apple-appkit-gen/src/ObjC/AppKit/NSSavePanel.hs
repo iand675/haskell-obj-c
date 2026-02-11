@@ -24,10 +24,18 @@ module ObjC.AppKit.NSSavePanel
   , url
   , identifier
   , setIdentifier
+  , directoryURL
+  , setDirectoryURL
+  , allowedContentTypes
+  , setAllowedContentTypes
   , allowsOtherFileTypes
   , setAllowsOtherFileTypes
+  , currentContentType
+  , setCurrentContentType
   , accessoryView
   , setAccessoryView
+  , delegate
+  , setDelegate
   , expanded
   , canCreateDirectories
   , setCanCreateDirectories
@@ -43,14 +51,20 @@ module ObjC.AppKit.NSSavePanel
   , setTitle
   , nameFieldLabel
   , setNameFieldLabel
+  , nameFieldStringValue
+  , setNameFieldStringValue
   , message
   , setMessage
   , showsHiddenFiles
   , setShowsHiddenFiles
   , showsTagField
   , setShowsTagField
+  , tagNames
+  , setTagNames
   , showsContentTypes
   , setShowsContentTypes
+  , allowedFileTypes
+  , setAllowedFileTypes
   , savePanelSelector
   , validateVisibleColumnsSelector
   , okSelector
@@ -69,10 +83,18 @@ module ObjC.AppKit.NSSavePanel
   , urlSelector
   , identifierSelector
   , setIdentifierSelector
+  , directoryURLSelector
+  , setDirectoryURLSelector
+  , allowedContentTypesSelector
+  , setAllowedContentTypesSelector
   , allowsOtherFileTypesSelector
   , setAllowsOtherFileTypesSelector
+  , currentContentTypeSelector
+  , setCurrentContentTypeSelector
   , accessoryViewSelector
   , setAccessoryViewSelector
+  , delegateSelector
+  , setDelegateSelector
   , expandedSelector
   , canCreateDirectoriesSelector
   , setCanCreateDirectoriesSelector
@@ -88,14 +110,20 @@ module ObjC.AppKit.NSSavePanel
   , setTitleSelector
   , nameFieldLabelSelector
   , setNameFieldLabelSelector
+  , nameFieldStringValueSelector
+  , setNameFieldStringValueSelector
   , messageSelector
   , setMessageSelector
   , showsHiddenFilesSelector
   , setShowsHiddenFilesSelector
   , showsTagFieldSelector
   , setShowsTagFieldSelector
+  , tagNamesSelector
+  , setTagNamesSelector
   , showsContentTypesSelector
   , setShowsContentTypesSelector
+  , allowedFileTypesSelector
+  , setAllowedFileTypesSelector
 
 
   ) where
@@ -114,6 +142,7 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.AppKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+import ObjC.UniformTypeIdentifiers.Internal.Classes
 
 -- | Creates a new instance of the NSSavePanel. This class is not a singleton.
 --
@@ -236,6 +265,36 @@ setIdentifier nsSavePanel  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsSavePanel (mkSelector "setIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @NSSavePanel@/@NSOpenPanel@: Sets and returns the directory that is displayed. Set to @nil@ to display the default directory. This method will not block to resolve the URL, and the directory will asynchronously be set, if required. - Note: Can only be set during the configuration phase.
+--
+-- ObjC selector: @- directoryURL@
+directoryURL :: IsNSSavePanel nsSavePanel => nsSavePanel -> IO (Id NSURL)
+directoryURL nsSavePanel  =
+    sendMsg nsSavePanel (mkSelector "directoryURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @NSSavePanel@/@NSOpenPanel@: Sets and returns the directory that is displayed. Set to @nil@ to display the default directory. This method will not block to resolve the URL, and the directory will asynchronously be set, if required. - Note: Can only be set during the configuration phase.
+--
+-- ObjC selector: @- setDirectoryURL:@
+setDirectoryURL :: (IsNSSavePanel nsSavePanel, IsNSURL value) => nsSavePanel -> value -> IO ()
+setDirectoryURL nsSavePanel  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsSavePanel (mkSelector "setDirectoryURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @NSSavePanel@: An array of UTTypes specifying the file types the user can save the file as. Set to `\@[]@ to specify that any file type can be used. If no extension is given by the user, the first preferred extension from the array will be used as the extension for the save panel. If the user specifies a type not in the array, and @allowsOtherFileTypes@ is @YES`, they will be presented with another dialog when prompted to save. The default value is the empty array. @NSOpenPanel@: This property determines which files should be enabled in the open panel. Using the deprecated methods to show the open panel (the ones that take a "types:" parameter) will overwrite this value, and should not be used. @allowedContentTypes@ can be changed while the panel is running (ie: from an accessory view). This is also known as the "enabled file types". Set to `\@[]` to specify that all files should be enabled.
+--
+-- ObjC selector: @- allowedContentTypes@
+allowedContentTypes :: IsNSSavePanel nsSavePanel => nsSavePanel -> IO (Id NSArray)
+allowedContentTypes nsSavePanel  =
+    sendMsg nsSavePanel (mkSelector "allowedContentTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @NSSavePanel@: An array of UTTypes specifying the file types the user can save the file as. Set to `\@[]@ to specify that any file type can be used. If no extension is given by the user, the first preferred extension from the array will be used as the extension for the save panel. If the user specifies a type not in the array, and @allowsOtherFileTypes@ is @YES`, they will be presented with another dialog when prompted to save. The default value is the empty array. @NSOpenPanel@: This property determines which files should be enabled in the open panel. Using the deprecated methods to show the open panel (the ones that take a "types:" parameter) will overwrite this value, and should not be used. @allowedContentTypes@ can be changed while the panel is running (ie: from an accessory view). This is also known as the "enabled file types". Set to `\@[]` to specify that all files should be enabled.
+--
+-- ObjC selector: @- setAllowedContentTypes:@
+setAllowedContentTypes :: (IsNSSavePanel nsSavePanel, IsNSArray value) => nsSavePanel -> value -> IO ()
+setAllowedContentTypes nsSavePanel  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsSavePanel (mkSelector "setAllowedContentTypes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @NSSavePanel@: Returns a BOOL value that indicates whether the panel allows the user to save files with an extension that is not in the list of @allowedFileTypes@. @NSOpenPanel@: Not used.
 --
 -- ObjC selector: @- allowsOtherFileTypes@
@@ -249,6 +308,21 @@ allowsOtherFileTypes nsSavePanel  =
 setAllowsOtherFileTypes :: IsNSSavePanel nsSavePanel => nsSavePanel -> Bool -> IO ()
 setAllowsOtherFileTypes nsSavePanel  value =
     sendMsg nsSavePanel (mkSelector "setAllowsOtherFileTypes:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | @NSSavePanel@:The current type. If set to @nil@, resets to the first allowed content type. Returns @nil@ if @allowedContentTypes@ is empty. @NSOpenPanel@: Not used. - Note: Asserts that @currentContentType@ conforms to @UTTypeData@ or @UTTypeDirectory@.
+--
+-- ObjC selector: @- currentContentType@
+currentContentType :: IsNSSavePanel nsSavePanel => nsSavePanel -> IO (Id UTType)
+currentContentType nsSavePanel  =
+    sendMsg nsSavePanel (mkSelector "currentContentType") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @NSSavePanel@:The current type. If set to @nil@, resets to the first allowed content type. Returns @nil@ if @allowedContentTypes@ is empty. @NSOpenPanel@: Not used. - Note: Asserts that @currentContentType@ conforms to @UTTypeData@ or @UTTypeDirectory@.
+--
+-- ObjC selector: @- setCurrentContentType:@
+setCurrentContentType :: (IsNSSavePanel nsSavePanel, IsUTType value) => nsSavePanel -> value -> IO ()
+setCurrentContentType nsSavePanel  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsSavePanel (mkSelector "setCurrentContentType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | Sets and returns the accessory view shown in the panel.
 --
@@ -272,6 +346,20 @@ setAccessoryView :: (IsNSSavePanel nsSavePanel, IsNSView value) => nsSavePanel -
 setAccessoryView nsSavePanel  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsSavePanel (mkSelector "setAccessoryView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @NSSavePanel@/@NSOpenPanel@: Sets and returns the delegate.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsNSSavePanel nsSavePanel => nsSavePanel -> IO RawId
+delegate nsSavePanel  =
+    fmap (RawId . castPtr) $ sendMsg nsSavePanel (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @NSSavePanel@/@NSOpenPanel@: Sets and returns the delegate.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsNSSavePanel nsSavePanel => nsSavePanel -> RawId -> IO ()
+setDelegate nsSavePanel  value =
+    sendMsg nsSavePanel (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @NSSavePanel@: Returns @YES@ if the panel is expanded. Defaults to @NO@. Persists in the user defaults. @NSOpenPanel@: Not used.
 --
@@ -381,6 +469,21 @@ setNameFieldLabel nsSavePanel  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsSavePanel (mkSelector "setNameFieldLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @NSSavePanel@: Sets and returns the user-editable file name shown in the name field. - Note: Calling the deprecated methods that take a "name:" parameter will overwrite any values set before the panel is shown. - Note: If @[panel isExtensionHidden]@ is set to @YES@, the extension will be hidden. - Note: Can only be set during the configuration phase. @NSOpenPanel@: Not used.
+--
+-- ObjC selector: @- nameFieldStringValue@
+nameFieldStringValue :: IsNSSavePanel nsSavePanel => nsSavePanel -> IO (Id NSString)
+nameFieldStringValue nsSavePanel  =
+    sendMsg nsSavePanel (mkSelector "nameFieldStringValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @NSSavePanel@: Sets and returns the user-editable file name shown in the name field. - Note: Calling the deprecated methods that take a "name:" parameter will overwrite any values set before the panel is shown. - Note: If @[panel isExtensionHidden]@ is set to @YES@, the extension will be hidden. - Note: Can only be set during the configuration phase. @NSOpenPanel@: Not used.
+--
+-- ObjC selector: @- setNameFieldStringValue:@
+setNameFieldStringValue :: (IsNSSavePanel nsSavePanel, IsNSString value) => nsSavePanel -> value -> IO ()
+setNameFieldStringValue nsSavePanel  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsSavePanel (mkSelector "setNameFieldStringValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @NSSavePanel@/@NSOpenPanel@: Sets and returns the message shown under title of the panel.
 --
 -- ObjC selector: @- message@
@@ -424,6 +527,21 @@ setShowsTagField :: IsNSSavePanel nsSavePanel => nsSavePanel -> Bool -> IO ()
 setShowsTagField nsSavePanel  value =
     sendMsg nsSavePanel (mkSelector "setShowsTagField:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @NSSavePanel@: When -showsTagField returns YES, set any initial Tag names to be displayed, if necessary, prior to displaying the receiver. Also, if the user clicks "Save", take the result of -tagNames, and set them on the resulting file after saving is complete. Tag names are NSStrings, arrays of which can be used directly with the NSURLTagNamesKey API for getting and setting tags on files. Passing @nil@ or an empty array to -setTagNames: will result in no initial Tag names appearing in the receiver. When -showsTagField returns YES, -tagNames always returns a non-nil array, and when NO, -tagNames always returns @nil@. @NSOpenPanel@: Not used.
+--
+-- ObjC selector: @- tagNames@
+tagNames :: IsNSSavePanel nsSavePanel => nsSavePanel -> IO (Id NSArray)
+tagNames nsSavePanel  =
+    sendMsg nsSavePanel (mkSelector "tagNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @NSSavePanel@: When -showsTagField returns YES, set any initial Tag names to be displayed, if necessary, prior to displaying the receiver. Also, if the user clicks "Save", take the result of -tagNames, and set them on the resulting file after saving is complete. Tag names are NSStrings, arrays of which can be used directly with the NSURLTagNamesKey API for getting and setting tags on files. Passing @nil@ or an empty array to -setTagNames: will result in no initial Tag names appearing in the receiver. When -showsTagField returns YES, -tagNames always returns a non-nil array, and when NO, -tagNames always returns @nil@. @NSOpenPanel@: Not used.
+--
+-- ObjC selector: @- setTagNames:@
+setTagNames :: (IsNSSavePanel nsSavePanel, IsNSArray value) => nsSavePanel -> value -> IO ()
+setTagNames nsSavePanel  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsSavePanel (mkSelector "setTagNames:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @NSSavePanel@: Whether or not to show a control for selecting the type of the saved file. The control shows the types in @allowedContentTypes@. Default is @NO@. @NSOpenPanel@: Not used. - Note: If @allowedContentTypes@ is empty, the control is not displayed.
 --
 -- ObjC selector: @- showsContentTypes@
@@ -437,6 +555,21 @@ showsContentTypes nsSavePanel  =
 setShowsContentTypes :: IsNSSavePanel nsSavePanel => nsSavePanel -> Bool -> IO ()
 setShowsContentTypes nsSavePanel  value =
     sendMsg nsSavePanel (mkSelector "setShowsContentTypes:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | @NSSavePanel@: An array of NSStrings specifying the file types the user can save the file as. The file type can be a common file extension, or a UTI. A nil value indicates that any file type can be used. If the array is not nil and the array contains no items, an exception will be raised. If no extension is given by the user, the first item in the allowedFileTypes will be used as the extension for the save panel. If the user specifies a type not in the array, and 'allowsOtherFileTypes' is YES, they will be presented with another dialog when prompted to save. The default value is 'nil'. @NSOpenPanel@: On versions less than 10.6, this property is ignored. For applications that link against 10.6 and higher, this property will determine which files should be enabled in the open panel. Using the deprecated methods to show the open panel (the ones that take a "types:" parameter) will overwrite this value, and should not be used. The allowedFileTypes can be changed while the panel is running (ie: from an accessory view). The file type can be a common file extension, or a UTI. This is also known as the "enabled file types". A nil value indicates that all files should be enabled.
+--
+-- ObjC selector: @- allowedFileTypes@
+allowedFileTypes :: IsNSSavePanel nsSavePanel => nsSavePanel -> IO (Id NSArray)
+allowedFileTypes nsSavePanel  =
+    sendMsg nsSavePanel (mkSelector "allowedFileTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @NSSavePanel@: An array of NSStrings specifying the file types the user can save the file as. The file type can be a common file extension, or a UTI. A nil value indicates that any file type can be used. If the array is not nil and the array contains no items, an exception will be raised. If no extension is given by the user, the first item in the allowedFileTypes will be used as the extension for the save panel. If the user specifies a type not in the array, and 'allowsOtherFileTypes' is YES, they will be presented with another dialog when prompted to save. The default value is 'nil'. @NSOpenPanel@: On versions less than 10.6, this property is ignored. For applications that link against 10.6 and higher, this property will determine which files should be enabled in the open panel. Using the deprecated methods to show the open panel (the ones that take a "types:" parameter) will overwrite this value, and should not be used. The allowedFileTypes can be changed while the panel is running (ie: from an accessory view). The file type can be a common file extension, or a UTI. This is also known as the "enabled file types". A nil value indicates that all files should be enabled.
+--
+-- ObjC selector: @- setAllowedFileTypes:@
+setAllowedFileTypes :: (IsNSSavePanel nsSavePanel, IsNSArray value) => nsSavePanel -> value -> IO ()
+setAllowedFileTypes nsSavePanel  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsSavePanel (mkSelector "setAllowedFileTypes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -514,6 +647,22 @@ identifierSelector = mkSelector "identifier"
 setIdentifierSelector :: Selector
 setIdentifierSelector = mkSelector "setIdentifier:"
 
+-- | @Selector@ for @directoryURL@
+directoryURLSelector :: Selector
+directoryURLSelector = mkSelector "directoryURL"
+
+-- | @Selector@ for @setDirectoryURL:@
+setDirectoryURLSelector :: Selector
+setDirectoryURLSelector = mkSelector "setDirectoryURL:"
+
+-- | @Selector@ for @allowedContentTypes@
+allowedContentTypesSelector :: Selector
+allowedContentTypesSelector = mkSelector "allowedContentTypes"
+
+-- | @Selector@ for @setAllowedContentTypes:@
+setAllowedContentTypesSelector :: Selector
+setAllowedContentTypesSelector = mkSelector "setAllowedContentTypes:"
+
 -- | @Selector@ for @allowsOtherFileTypes@
 allowsOtherFileTypesSelector :: Selector
 allowsOtherFileTypesSelector = mkSelector "allowsOtherFileTypes"
@@ -522,6 +671,14 @@ allowsOtherFileTypesSelector = mkSelector "allowsOtherFileTypes"
 setAllowsOtherFileTypesSelector :: Selector
 setAllowsOtherFileTypesSelector = mkSelector "setAllowsOtherFileTypes:"
 
+-- | @Selector@ for @currentContentType@
+currentContentTypeSelector :: Selector
+currentContentTypeSelector = mkSelector "currentContentType"
+
+-- | @Selector@ for @setCurrentContentType:@
+setCurrentContentTypeSelector :: Selector
+setCurrentContentTypeSelector = mkSelector "setCurrentContentType:"
+
 -- | @Selector@ for @accessoryView@
 accessoryViewSelector :: Selector
 accessoryViewSelector = mkSelector "accessoryView"
@@ -529,6 +686,14 @@ accessoryViewSelector = mkSelector "accessoryView"
 -- | @Selector@ for @setAccessoryView:@
 setAccessoryViewSelector :: Selector
 setAccessoryViewSelector = mkSelector "setAccessoryView:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @expanded@
 expandedSelector :: Selector
@@ -590,6 +755,14 @@ nameFieldLabelSelector = mkSelector "nameFieldLabel"
 setNameFieldLabelSelector :: Selector
 setNameFieldLabelSelector = mkSelector "setNameFieldLabel:"
 
+-- | @Selector@ for @nameFieldStringValue@
+nameFieldStringValueSelector :: Selector
+nameFieldStringValueSelector = mkSelector "nameFieldStringValue"
+
+-- | @Selector@ for @setNameFieldStringValue:@
+setNameFieldStringValueSelector :: Selector
+setNameFieldStringValueSelector = mkSelector "setNameFieldStringValue:"
+
 -- | @Selector@ for @message@
 messageSelector :: Selector
 messageSelector = mkSelector "message"
@@ -614,6 +787,14 @@ showsTagFieldSelector = mkSelector "showsTagField"
 setShowsTagFieldSelector :: Selector
 setShowsTagFieldSelector = mkSelector "setShowsTagField:"
 
+-- | @Selector@ for @tagNames@
+tagNamesSelector :: Selector
+tagNamesSelector = mkSelector "tagNames"
+
+-- | @Selector@ for @setTagNames:@
+setTagNamesSelector :: Selector
+setTagNamesSelector = mkSelector "setTagNames:"
+
 -- | @Selector@ for @showsContentTypes@
 showsContentTypesSelector :: Selector
 showsContentTypesSelector = mkSelector "showsContentTypes"
@@ -621,4 +802,12 @@ showsContentTypesSelector = mkSelector "showsContentTypes"
 -- | @Selector@ for @setShowsContentTypes:@
 setShowsContentTypesSelector :: Selector
 setShowsContentTypesSelector = mkSelector "setShowsContentTypes:"
+
+-- | @Selector@ for @allowedFileTypes@
+allowedFileTypesSelector :: Selector
+allowedFileTypesSelector = mkSelector "allowedFileTypes"
+
+-- | @Selector@ for @setAllowedFileTypes:@
+setAllowedFileTypesSelector :: Selector
+setAllowedFileTypesSelector = mkSelector "setAllowedFileTypes:"
 

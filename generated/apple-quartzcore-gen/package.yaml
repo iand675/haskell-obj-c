@@ -47,6 +47,13 @@ library:
   - ObjC.QuartzCore.CATransformLayer
   - ObjC.QuartzCore.CATransition
   - ObjC.QuartzCore.CAValueFunction
+  - ObjC.QuartzCore.Delegate.CAAction
+  - ObjC.QuartzCore.Delegate.CAAnimationDelegate
+  - ObjC.QuartzCore.Delegate.CALayerDelegate
+  - ObjC.QuartzCore.Delegate.CALayoutManager
+  - ObjC.QuartzCore.Delegate.CAMediaTiming
+  - ObjC.QuartzCore.Delegate.CAMetalDisplayLinkDelegate
+  - ObjC.QuartzCore.Delegate.CAMetalDrawable
   - ObjC.QuartzCore.Enums
   - ObjC.QuartzCore.Internal.Classes
   - ObjC.QuartzCore.Internal.Enums

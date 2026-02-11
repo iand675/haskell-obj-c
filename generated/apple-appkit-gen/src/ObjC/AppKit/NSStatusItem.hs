@@ -15,6 +15,7 @@ module ObjC.AppKit.NSStatusItem
   , setLength
   , menu
   , setMenu
+  , button
   , behavior
   , setBehavior
   , visible
@@ -27,10 +28,22 @@ module ObjC.AppKit.NSStatusItem
   , setDoubleAction
   , target
   , setTarget
+  , title
+  , setTitle
+  , attributedTitle
+  , setAttributedTitle
+  , image
+  , setImage
+  , alternateImage
+  , setAlternateImage
   , enabled
   , setEnabled
   , highlightMode
   , setHighlightMode
+  , toolTip
+  , setToolTip
+  , view
+  , setView
   , sendActionOnSelector
   , drawStatusBarBackgroundInRect_withHighlightSelector
   , popUpStatusItemMenuSelector
@@ -39,6 +52,7 @@ module ObjC.AppKit.NSStatusItem
   , setLengthSelector
   , menuSelector
   , setMenuSelector
+  , buttonSelector
   , behaviorSelector
   , setBehaviorSelector
   , visibleSelector
@@ -51,10 +65,22 @@ module ObjC.AppKit.NSStatusItem
   , setDoubleActionSelector
   , targetSelector
   , setTargetSelector
+  , titleSelector
+  , setTitleSelector
+  , attributedTitleSelector
+  , setAttributedTitleSelector
+  , imageSelector
+  , setImageSelector
+  , alternateImageSelector
+  , setAlternateImageSelector
   , enabledSelector
   , setEnabledSelector
   , highlightModeSelector
   , setHighlightModeSelector
+  , toolTipSelector
+  , setToolTipSelector
+  , viewSelector
+  , setViewSelector
 
   -- * Enum types
   , NSEventMask(NSEventMask)
@@ -158,6 +184,11 @@ setMenu nsStatusItem  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsStatusItem (mkSelector "setMenu:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- button@
+button :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO (Id NSStatusBarButton)
+button nsStatusItem  =
+    sendMsg nsStatusItem (mkSelector "button") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- behavior@
 behavior :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO NSStatusItemBehavior
 behavior nsStatusItem  =
@@ -219,6 +250,50 @@ setTarget :: IsNSStatusItem nsStatusItem => nsStatusItem -> RawId -> IO ()
 setTarget nsStatusItem  value =
     sendMsg nsStatusItem (mkSelector "setTarget:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
+-- | @- title@
+title :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO (Id NSString)
+title nsStatusItem  =
+    sendMsg nsStatusItem (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setTitle:@
+setTitle :: (IsNSStatusItem nsStatusItem, IsNSString value) => nsStatusItem -> value -> IO ()
+setTitle nsStatusItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsStatusItem (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- attributedTitle@
+attributedTitle :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO (Id NSAttributedString)
+attributedTitle nsStatusItem  =
+    sendMsg nsStatusItem (mkSelector "attributedTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setAttributedTitle:@
+setAttributedTitle :: (IsNSStatusItem nsStatusItem, IsNSAttributedString value) => nsStatusItem -> value -> IO ()
+setAttributedTitle nsStatusItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsStatusItem (mkSelector "setAttributedTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- image@
+image :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO (Id NSImage)
+image nsStatusItem  =
+    sendMsg nsStatusItem (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setImage:@
+setImage :: (IsNSStatusItem nsStatusItem, IsNSImage value) => nsStatusItem -> value -> IO ()
+setImage nsStatusItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsStatusItem (mkSelector "setImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- alternateImage@
+alternateImage :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO (Id NSImage)
+alternateImage nsStatusItem  =
+    sendMsg nsStatusItem (mkSelector "alternateImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setAlternateImage:@
+setAlternateImage :: (IsNSStatusItem nsStatusItem, IsNSImage value) => nsStatusItem -> value -> IO ()
+setAlternateImage nsStatusItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsStatusItem (mkSelector "setAlternateImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- enabled@
 enabled :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO Bool
 enabled nsStatusItem  =
@@ -238,6 +313,28 @@ highlightMode nsStatusItem  =
 setHighlightMode :: IsNSStatusItem nsStatusItem => nsStatusItem -> Bool -> IO ()
 setHighlightMode nsStatusItem  value =
     sendMsg nsStatusItem (mkSelector "setHighlightMode:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | @- toolTip@
+toolTip :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO (Id NSString)
+toolTip nsStatusItem  =
+    sendMsg nsStatusItem (mkSelector "toolTip") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setToolTip:@
+setToolTip :: (IsNSStatusItem nsStatusItem, IsNSString value) => nsStatusItem -> value -> IO ()
+setToolTip nsStatusItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsStatusItem (mkSelector "setToolTip:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- view@
+view :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO (Id NSView)
+view nsStatusItem  =
+    sendMsg nsStatusItem (mkSelector "view") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setView:@
+setView :: (IsNSStatusItem nsStatusItem, IsNSView value) => nsStatusItem -> value -> IO ()
+setView nsStatusItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsStatusItem (mkSelector "setView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -274,6 +371,10 @@ menuSelector = mkSelector "menu"
 -- | @Selector@ for @setMenu:@
 setMenuSelector :: Selector
 setMenuSelector = mkSelector "setMenu:"
+
+-- | @Selector@ for @button@
+buttonSelector :: Selector
+buttonSelector = mkSelector "button"
 
 -- | @Selector@ for @behavior@
 behaviorSelector :: Selector
@@ -323,6 +424,38 @@ targetSelector = mkSelector "target"
 setTargetSelector :: Selector
 setTargetSelector = mkSelector "setTarget:"
 
+-- | @Selector@ for @title@
+titleSelector :: Selector
+titleSelector = mkSelector "title"
+
+-- | @Selector@ for @setTitle:@
+setTitleSelector :: Selector
+setTitleSelector = mkSelector "setTitle:"
+
+-- | @Selector@ for @attributedTitle@
+attributedTitleSelector :: Selector
+attributedTitleSelector = mkSelector "attributedTitle"
+
+-- | @Selector@ for @setAttributedTitle:@
+setAttributedTitleSelector :: Selector
+setAttributedTitleSelector = mkSelector "setAttributedTitle:"
+
+-- | @Selector@ for @image@
+imageSelector :: Selector
+imageSelector = mkSelector "image"
+
+-- | @Selector@ for @setImage:@
+setImageSelector :: Selector
+setImageSelector = mkSelector "setImage:"
+
+-- | @Selector@ for @alternateImage@
+alternateImageSelector :: Selector
+alternateImageSelector = mkSelector "alternateImage"
+
+-- | @Selector@ for @setAlternateImage:@
+setAlternateImageSelector :: Selector
+setAlternateImageSelector = mkSelector "setAlternateImage:"
+
 -- | @Selector@ for @enabled@
 enabledSelector :: Selector
 enabledSelector = mkSelector "enabled"
@@ -338,4 +471,20 @@ highlightModeSelector = mkSelector "highlightMode"
 -- | @Selector@ for @setHighlightMode:@
 setHighlightModeSelector :: Selector
 setHighlightModeSelector = mkSelector "setHighlightMode:"
+
+-- | @Selector@ for @toolTip@
+toolTipSelector :: Selector
+toolTipSelector = mkSelector "toolTip"
+
+-- | @Selector@ for @setToolTip:@
+setToolTipSelector :: Selector
+setToolTipSelector = mkSelector "setToolTip:"
+
+-- | @Selector@ for @view@
+viewSelector :: Selector
+viewSelector = mkSelector "view"
+
+-- | @Selector@ for @setView:@
+setViewSelector :: Selector
+setViewSelector = mkSelector "setView:"
 

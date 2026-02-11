@@ -7,7 +7,11 @@ module ObjC.SharedWithYouCore.SWCollaborationCoordinator
   ( SWCollaborationCoordinator
   , IsSWCollaborationCoordinator(..)
   , sharedCoordinator
+  , actionHandler
+  , setActionHandler
   , sharedCoordinatorSelector
+  , actionHandlerSelector
+  , setActionHandlerSelector
 
 
   ) where
@@ -34,6 +38,16 @@ sharedCoordinator  =
     cls' <- getRequiredClass "SWCollaborationCoordinator"
     sendClassMsg cls' (mkSelector "sharedCoordinator") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- actionHandler@
+actionHandler :: IsSWCollaborationCoordinator swCollaborationCoordinator => swCollaborationCoordinator -> IO RawId
+actionHandler swCollaborationCoordinator  =
+    fmap (RawId . castPtr) $ sendMsg swCollaborationCoordinator (mkSelector "actionHandler") (retPtr retVoid) []
+
+-- | @- setActionHandler:@
+setActionHandler :: IsSWCollaborationCoordinator swCollaborationCoordinator => swCollaborationCoordinator -> RawId -> IO ()
+setActionHandler swCollaborationCoordinator  value =
+    sendMsg swCollaborationCoordinator (mkSelector "setActionHandler:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -41,4 +55,12 @@ sharedCoordinator  =
 -- | @Selector@ for @sharedCoordinator@
 sharedCoordinatorSelector :: Selector
 sharedCoordinatorSelector = mkSelector "sharedCoordinator"
+
+-- | @Selector@ for @actionHandler@
+actionHandlerSelector :: Selector
+actionHandlerSelector = mkSelector "actionHandler"
+
+-- | @Selector@ for @setActionHandler:@
+setActionHandlerSelector :: Selector
+setActionHandlerSelector = mkSelector "setActionHandler:"
 

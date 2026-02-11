@@ -53,6 +53,9 @@ library:
   - ObjC.CoreMotion.CMWaterSubmersionManager
   - ObjC.CoreMotion.CMWaterSubmersionMeasurement
   - ObjC.CoreMotion.CMWaterTemperature
+  - ObjC.CoreMotion.Delegate.CMFallDetectionDelegate
+  - ObjC.CoreMotion.Delegate.CMHeadphoneMotionManagerDelegate
+  - ObjC.CoreMotion.Delegate.CMWaterSubmersionManagerDelegate
   - ObjC.CoreMotion.Enums
   - ObjC.CoreMotion.Internal.Classes
   - ObjC.CoreMotion.Internal.Enums

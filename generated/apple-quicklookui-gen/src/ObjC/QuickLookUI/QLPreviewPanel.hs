@@ -20,8 +20,11 @@ module ObjC.QuickLookUI.QLPreviewPanel
   , enterFullScreenMode_withOptions
   , exitFullScreenModeWithOptions
   , currentController
+  , dataSource
+  , setDataSource
   , currentPreviewItemIndex
   , setCurrentPreviewItemIndex
+  , currentPreviewItem
   , displayState
   , setDisplayState
   , delegate
@@ -35,8 +38,11 @@ module ObjC.QuickLookUI.QLPreviewPanel
   , enterFullScreenMode_withOptionsSelector
   , exitFullScreenModeWithOptionsSelector
   , currentControllerSelector
+  , dataSourceSelector
+  , setDataSourceSelector
   , currentPreviewItemIndexSelector
   , setCurrentPreviewItemIndexSelector
+  , currentPreviewItemSelector
   , displayStateSelector
   , setDisplayStateSelector
   , delegateSelector
@@ -149,6 +155,20 @@ currentController :: IsQLPreviewPanel qlPreviewPanel => qlPreviewPanel -> IO Raw
 currentController qlPreviewPanel  =
     fmap (RawId . castPtr) $ sendMsg qlPreviewPanel (mkSelector "currentController") (retPtr retVoid) []
 
+-- | The preview panel data source.
+--
+-- ObjC selector: @- dataSource@
+dataSource :: IsQLPreviewPanel qlPreviewPanel => qlPreviewPanel -> IO RawId
+dataSource qlPreviewPanel  =
+    fmap (RawId . castPtr) $ sendMsg qlPreviewPanel (mkSelector "dataSource") (retPtr retVoid) []
+
+-- | The preview panel data source.
+--
+-- ObjC selector: @- setDataSource:@
+setDataSource :: IsQLPreviewPanel qlPreviewPanel => qlPreviewPanel -> RawId -> IO ()
+setDataSource qlPreviewPanel  value =
+    sendMsg qlPreviewPanel (mkSelector "setDataSource:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | The index of the current preview item.
 --
 -- The value is @NSNotFound@ if there’s no current preview item.
@@ -166,6 +186,15 @@ currentPreviewItemIndex qlPreviewPanel  =
 setCurrentPreviewItemIndex :: IsQLPreviewPanel qlPreviewPanel => qlPreviewPanel -> CLong -> IO ()
 setCurrentPreviewItemIndex qlPreviewPanel  value =
     sendMsg qlPreviewPanel (mkSelector "setCurrentPreviewItemIndex:") retVoid [argCLong value]
+
+-- | The currently previewed item.
+--
+-- The value is @nil@ if there’s no current preview item.
+--
+-- ObjC selector: @- currentPreviewItem@
+currentPreviewItem :: IsQLPreviewPanel qlPreviewPanel => qlPreviewPanel -> IO RawId
+currentPreviewItem qlPreviewPanel  =
+    fmap (RawId . castPtr) $ sendMsg qlPreviewPanel (mkSelector "currentPreviewItem") (retPtr retVoid) []
 
 -- | The preview panel’s display state.
 --
@@ -252,6 +281,14 @@ exitFullScreenModeWithOptionsSelector = mkSelector "exitFullScreenModeWithOption
 currentControllerSelector :: Selector
 currentControllerSelector = mkSelector "currentController"
 
+-- | @Selector@ for @dataSource@
+dataSourceSelector :: Selector
+dataSourceSelector = mkSelector "dataSource"
+
+-- | @Selector@ for @setDataSource:@
+setDataSourceSelector :: Selector
+setDataSourceSelector = mkSelector "setDataSource:"
+
 -- | @Selector@ for @currentPreviewItemIndex@
 currentPreviewItemIndexSelector :: Selector
 currentPreviewItemIndexSelector = mkSelector "currentPreviewItemIndex"
@@ -259,6 +296,10 @@ currentPreviewItemIndexSelector = mkSelector "currentPreviewItemIndex"
 -- | @Selector@ for @setCurrentPreviewItemIndex:@
 setCurrentPreviewItemIndexSelector :: Selector
 setCurrentPreviewItemIndexSelector = mkSelector "setCurrentPreviewItemIndex:"
+
+-- | @Selector@ for @currentPreviewItem@
+currentPreviewItemSelector :: Selector
+currentPreviewItemSelector = mkSelector "currentPreviewItem"
 
 -- | @Selector@ for @displayState@
 displayStateSelector :: Selector

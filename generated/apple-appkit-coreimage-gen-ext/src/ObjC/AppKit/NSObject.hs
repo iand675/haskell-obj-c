@@ -7,23 +7,37 @@
 module ObjC.AppKit.NSObject
   ( NSObject
   , IsNSObject(..)
+  , application_delegateHandlesKey
+  , tableView_writeRows_toPasteboard
   , validateToolbarItem
+  , textStorageWillProcessEditing
+  , textStorageDidProcessEditing
+  , panel_isValidFilename
+  , panel_directoryDidChange
+  , panel_compareFilename_with_caseSensitive
+  , panel_shouldShowFilename
   , awakeFromNib
   , prepareForInterfaceBuilder
   , changeColor
   , validModesForFontPanel
   , changeFont
+  , fontManager_willIncludeFont
+  , controlTextDidBeginEditing
+  , controlTextDidEndEditing
+  , controlTextDidChange
   , objectDidBeginEditing
   , objectDidEndEditing
   , discardEditing
   , commitEditing
   , commitEditingWithDelegate_didCommitSelector_contextInfo
+  , commitEditingAndReturnError
   , setDefaultPlaceholder_forMarker_withBinding
   , defaultPlaceholderForMarker_withBinding
   , exposeBinding
   , valueClassForBinding
   , unbind
   , validateMenuItem
+  , layer_shouldInheritContentsScale_fromWindow
   , draggingSourceOperationMaskForLocal
   , ignoreModifierKeysWhileDragging
   , pasteboard_provideDataForType
@@ -33,29 +47,45 @@ module ObjC.AppKit.NSObject
   , accessibilityIsAttributeSettable
   , accessibilitySetValue_forAttribute
   , accessibilityAttributeValue_forParameter
+  , accessibilityActionDescription
   , accessibilityPerformAction
   , accessibilityIsIgnored
   , accessibilityIndexOfChild
   , accessibilityArrayAttributeCount
+  , accessibilityArrayAttributeValues_index_maxCount
   , accessibilityFocusedUIElement
   , accessibilityNotifiesWhenDestroyed
+  , application_delegateHandlesKeySelector
+  , tableView_writeRows_toPasteboardSelector
   , validateToolbarItemSelector
+  , textStorageWillProcessEditingSelector
+  , textStorageDidProcessEditingSelector
+  , panel_isValidFilenameSelector
+  , panel_directoryDidChangeSelector
+  , panel_compareFilename_with_caseSensitiveSelector
+  , panel_shouldShowFilenameSelector
   , awakeFromNibSelector
   , prepareForInterfaceBuilderSelector
   , changeColorSelector
   , validModesForFontPanelSelector
   , changeFontSelector
+  , fontManager_willIncludeFontSelector
+  , controlTextDidBeginEditingSelector
+  , controlTextDidEndEditingSelector
+  , controlTextDidChangeSelector
   , objectDidBeginEditingSelector
   , objectDidEndEditingSelector
   , discardEditingSelector
   , commitEditingSelector
   , commitEditingWithDelegate_didCommitSelector_contextInfoSelector
+  , commitEditingAndReturnErrorSelector
   , setDefaultPlaceholder_forMarker_withBindingSelector
   , defaultPlaceholderForMarker_withBindingSelector
   , exposeBindingSelector
   , valueClassForBindingSelector
   , unbindSelector
   , validateMenuItemSelector
+  , layer_shouldInheritContentsScale_fromWindowSelector
   , draggingSourceOperationMaskForLocalSelector
   , ignoreModifierKeysWhileDraggingSelector
   , pasteboard_provideDataForTypeSelector
@@ -65,10 +95,12 @@ module ObjC.AppKit.NSObject
   , accessibilityIsAttributeSettableSelector
   , accessibilitySetValue_forAttributeSelector
   , accessibilityAttributeValue_forParameterSelector
+  , accessibilityActionDescriptionSelector
   , accessibilityPerformActionSelector
   , accessibilityIsIgnoredSelector
   , accessibilityIndexOfChildSelector
   , accessibilityArrayAttributeCountSelector
+  , accessibilityArrayAttributeValues_index_maxCountSelector
   , accessibilityFocusedUIElementSelector
   , accessibilityNotifiesWhenDestroyedSelector
 
@@ -114,11 +146,54 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.AppKit.Internal.Classes
 import ObjC.AppKit.Internal.Enums
 
+-- | @- application:delegateHandlesKey:@
+application_delegateHandlesKey :: (IsNSObject nsObject, IsNSApplication sender) => nsObject -> sender -> RawId -> IO Bool
+application_delegateHandlesKey nsObject  sender key =
+  withObjCPtr sender $ \raw_sender ->
+      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "application:delegateHandlesKey:") retCULong [argPtr (castPtr raw_sender :: Ptr ()), argPtr (castPtr (unRawId key) :: Ptr ())]
+
+-- | @- tableView:writeRows:toPasteboard:@
+tableView_writeRows_toPasteboard :: (IsNSObject nsObject, IsNSTableView tableView, IsNSPasteboard pboard) => nsObject -> tableView -> RawId -> pboard -> IO Bool
+tableView_writeRows_toPasteboard nsObject  tableView rows pboard =
+  withObjCPtr tableView $ \raw_tableView ->
+    withObjCPtr pboard $ \raw_pboard ->
+        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "tableView:writeRows:toPasteboard:") retCULong [argPtr (castPtr raw_tableView :: Ptr ()), argPtr (castPtr (unRawId rows) :: Ptr ()), argPtr (castPtr raw_pboard :: Ptr ())]
+
 -- | @- validateToolbarItem:@
 validateToolbarItem :: (IsNSObject nsObject, IsNSToolbarItem item) => nsObject -> item -> IO Bool
 validateToolbarItem nsObject  item =
   withObjCPtr item $ \raw_item ->
       fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "validateToolbarItem:") retCULong [argPtr (castPtr raw_item :: Ptr ())]
+
+-- | @- textStorageWillProcessEditing:@
+textStorageWillProcessEditing :: IsNSObject nsObject => nsObject -> RawId -> IO ()
+textStorageWillProcessEditing nsObject  notification =
+    sendMsg nsObject (mkSelector "textStorageWillProcessEditing:") retVoid [argPtr (castPtr (unRawId notification) :: Ptr ())]
+
+-- | @- textStorageDidProcessEditing:@
+textStorageDidProcessEditing :: IsNSObject nsObject => nsObject -> RawId -> IO ()
+textStorageDidProcessEditing nsObject  notification =
+    sendMsg nsObject (mkSelector "textStorageDidProcessEditing:") retVoid [argPtr (castPtr (unRawId notification) :: Ptr ())]
+
+-- | @- panel:isValidFilename:@
+panel_isValidFilename :: IsNSObject nsObject => nsObject -> RawId -> RawId -> IO Bool
+panel_isValidFilename nsObject  sender filename =
+    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "panel:isValidFilename:") retCULong [argPtr (castPtr (unRawId sender) :: Ptr ()), argPtr (castPtr (unRawId filename) :: Ptr ())]
+
+-- | @- panel:directoryDidChange:@
+panel_directoryDidChange :: IsNSObject nsObject => nsObject -> RawId -> RawId -> IO ()
+panel_directoryDidChange nsObject  sender path =
+    sendMsg nsObject (mkSelector "panel:directoryDidChange:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ()), argPtr (castPtr (unRawId path) :: Ptr ())]
+
+-- | @- panel:compareFilename:with:caseSensitive:@
+panel_compareFilename_with_caseSensitive :: IsNSObject nsObject => nsObject -> RawId -> RawId -> RawId -> Bool -> IO CInt
+panel_compareFilename_with_caseSensitive nsObject  sender name1 name2 caseSensitive =
+    sendMsg nsObject (mkSelector "panel:compareFilename:with:caseSensitive:") retCInt [argPtr (castPtr (unRawId sender) :: Ptr ()), argPtr (castPtr (unRawId name1) :: Ptr ()), argPtr (castPtr (unRawId name2) :: Ptr ()), argCULong (if caseSensitive then 1 else 0)]
+
+-- | @- panel:shouldShowFilename:@
+panel_shouldShowFilename :: IsNSObject nsObject => nsObject -> RawId -> RawId -> IO Bool
+panel_shouldShowFilename nsObject  sender filename =
+    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "panel:shouldShowFilename:") retCULong [argPtr (castPtr (unRawId sender) :: Ptr ()), argPtr (castPtr (unRawId filename) :: Ptr ())]
 
 -- | @- awakeFromNib@
 awakeFromNib :: IsNSObject nsObject => nsObject -> IO ()
@@ -146,6 +221,26 @@ changeFont :: IsNSObject nsObject => nsObject -> RawId -> IO ()
 changeFont nsObject  sender =
     sendMsg nsObject (mkSelector "changeFont:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
 
+-- | @- fontManager:willIncludeFont:@
+fontManager_willIncludeFont :: IsNSObject nsObject => nsObject -> RawId -> RawId -> IO Bool
+fontManager_willIncludeFont nsObject  sender fontName =
+    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "fontManager:willIncludeFont:") retCULong [argPtr (castPtr (unRawId sender) :: Ptr ()), argPtr (castPtr (unRawId fontName) :: Ptr ())]
+
+-- | @- controlTextDidBeginEditing:@
+controlTextDidBeginEditing :: IsNSObject nsObject => nsObject -> RawId -> IO ()
+controlTextDidBeginEditing nsObject  obj_ =
+    sendMsg nsObject (mkSelector "controlTextDidBeginEditing:") retVoid [argPtr (castPtr (unRawId obj_) :: Ptr ())]
+
+-- | @- controlTextDidEndEditing:@
+controlTextDidEndEditing :: IsNSObject nsObject => nsObject -> RawId -> IO ()
+controlTextDidEndEditing nsObject  obj_ =
+    sendMsg nsObject (mkSelector "controlTextDidEndEditing:") retVoid [argPtr (castPtr (unRawId obj_) :: Ptr ())]
+
+-- | @- controlTextDidChange:@
+controlTextDidChange :: IsNSObject nsObject => nsObject -> RawId -> IO ()
+controlTextDidChange nsObject  obj_ =
+    sendMsg nsObject (mkSelector "controlTextDidChange:") retVoid [argPtr (castPtr (unRawId obj_) :: Ptr ())]
+
 -- | @- objectDidBeginEditing:@
 objectDidBeginEditing :: IsNSObject nsObject => nsObject -> RawId -> IO ()
 objectDidBeginEditing nsObject  editor =
@@ -170,6 +265,11 @@ commitEditing nsObject  =
 commitEditingWithDelegate_didCommitSelector_contextInfo :: IsNSObject nsObject => nsObject -> RawId -> Selector -> Ptr () -> IO ()
 commitEditingWithDelegate_didCommitSelector_contextInfo nsObject  delegate didCommitSelector contextInfo =
     sendMsg nsObject (mkSelector "commitEditingWithDelegate:didCommitSelector:contextInfo:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (unSelector didCommitSelector), argPtr contextInfo]
+
+-- | @- commitEditingAndReturnError:@
+commitEditingAndReturnError :: IsNSObject nsObject => nsObject -> RawId -> IO Bool
+commitEditingAndReturnError nsObject  error_ =
+    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "commitEditingAndReturnError:") retCULong [argPtr (castPtr (unRawId error_) :: Ptr ())]
 
 -- | @+ setDefaultPlaceholder:forMarker:withBinding:@
 setDefaultPlaceholder_forMarker_withBinding :: RawId -> RawId -> RawId -> IO ()
@@ -207,6 +307,12 @@ validateMenuItem :: (IsNSObject nsObject, IsNSMenuItem menuItem) => nsObject -> 
 validateMenuItem nsObject  menuItem =
   withObjCPtr menuItem $ \raw_menuItem ->
       fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "validateMenuItem:") retCULong [argPtr (castPtr raw_menuItem :: Ptr ())]
+
+-- | @- layer:shouldInheritContentsScale:fromWindow:@
+layer_shouldInheritContentsScale_fromWindow :: (IsNSObject nsObject, IsNSWindow window) => nsObject -> RawId -> CDouble -> window -> IO Bool
+layer_shouldInheritContentsScale_fromWindow nsObject  layer newScale window =
+  withObjCPtr window $ \raw_window ->
+      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "layer:shouldInheritContentsScale:fromWindow:") retCULong [argPtr (castPtr (unRawId layer) :: Ptr ()), argCDouble newScale, argPtr (castPtr raw_window :: Ptr ())]
 
 -- | @- draggingSourceOperationMaskForLocal:@
 draggingSourceOperationMaskForLocal :: IsNSObject nsObject => nsObject -> Bool -> IO NSDragOperation
@@ -255,6 +361,11 @@ accessibilityAttributeValue_forParameter :: IsNSObject nsObject => nsObject -> R
 accessibilityAttributeValue_forParameter nsObject  attribute parameter =
     fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "accessibilityAttributeValue:forParameter:") (retPtr retVoid) [argPtr (castPtr (unRawId attribute) :: Ptr ()), argPtr (castPtr (unRawId parameter) :: Ptr ())]
 
+-- | @- accessibilityActionDescription:@
+accessibilityActionDescription :: IsNSObject nsObject => nsObject -> RawId -> IO RawId
+accessibilityActionDescription nsObject  action =
+    fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "accessibilityActionDescription:") (retPtr retVoid) [argPtr (castPtr (unRawId action) :: Ptr ())]
+
 -- | @- accessibilityPerformAction:@
 accessibilityPerformAction :: IsNSObject nsObject => nsObject -> RawId -> IO ()
 accessibilityPerformAction nsObject  action =
@@ -275,6 +386,11 @@ accessibilityArrayAttributeCount :: IsNSObject nsObject => nsObject -> RawId -> 
 accessibilityArrayAttributeCount nsObject  attribute =
     sendMsg nsObject (mkSelector "accessibilityArrayAttributeCount:") retCULong [argPtr (castPtr (unRawId attribute) :: Ptr ())]
 
+-- | @- accessibilityArrayAttributeValues:index:maxCount:@
+accessibilityArrayAttributeValues_index_maxCount :: IsNSObject nsObject => nsObject -> RawId -> CULong -> CULong -> IO RawId
+accessibilityArrayAttributeValues_index_maxCount nsObject  attribute index maxCount =
+    fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "accessibilityArrayAttributeValues:index:maxCount:") (retPtr retVoid) [argPtr (castPtr (unRawId attribute) :: Ptr ()), argCULong index, argCULong maxCount]
+
 -- | @- accessibilityFocusedUIElement@
 accessibilityFocusedUIElement :: IsNSObject nsObject => nsObject -> IO RawId
 accessibilityFocusedUIElement nsObject  =
@@ -289,9 +405,41 @@ accessibilityNotifiesWhenDestroyed nsObject  =
 -- Selectors
 -- ---------------------------------------------------------------------------
 
+-- | @Selector@ for @application:delegateHandlesKey:@
+application_delegateHandlesKeySelector :: Selector
+application_delegateHandlesKeySelector = mkSelector "application:delegateHandlesKey:"
+
+-- | @Selector@ for @tableView:writeRows:toPasteboard:@
+tableView_writeRows_toPasteboardSelector :: Selector
+tableView_writeRows_toPasteboardSelector = mkSelector "tableView:writeRows:toPasteboard:"
+
 -- | @Selector@ for @validateToolbarItem:@
 validateToolbarItemSelector :: Selector
 validateToolbarItemSelector = mkSelector "validateToolbarItem:"
+
+-- | @Selector@ for @textStorageWillProcessEditing:@
+textStorageWillProcessEditingSelector :: Selector
+textStorageWillProcessEditingSelector = mkSelector "textStorageWillProcessEditing:"
+
+-- | @Selector@ for @textStorageDidProcessEditing:@
+textStorageDidProcessEditingSelector :: Selector
+textStorageDidProcessEditingSelector = mkSelector "textStorageDidProcessEditing:"
+
+-- | @Selector@ for @panel:isValidFilename:@
+panel_isValidFilenameSelector :: Selector
+panel_isValidFilenameSelector = mkSelector "panel:isValidFilename:"
+
+-- | @Selector@ for @panel:directoryDidChange:@
+panel_directoryDidChangeSelector :: Selector
+panel_directoryDidChangeSelector = mkSelector "panel:directoryDidChange:"
+
+-- | @Selector@ for @panel:compareFilename:with:caseSensitive:@
+panel_compareFilename_with_caseSensitiveSelector :: Selector
+panel_compareFilename_with_caseSensitiveSelector = mkSelector "panel:compareFilename:with:caseSensitive:"
+
+-- | @Selector@ for @panel:shouldShowFilename:@
+panel_shouldShowFilenameSelector :: Selector
+panel_shouldShowFilenameSelector = mkSelector "panel:shouldShowFilename:"
 
 -- | @Selector@ for @awakeFromNib@
 awakeFromNibSelector :: Selector
@@ -313,6 +461,22 @@ validModesForFontPanelSelector = mkSelector "validModesForFontPanel:"
 changeFontSelector :: Selector
 changeFontSelector = mkSelector "changeFont:"
 
+-- | @Selector@ for @fontManager:willIncludeFont:@
+fontManager_willIncludeFontSelector :: Selector
+fontManager_willIncludeFontSelector = mkSelector "fontManager:willIncludeFont:"
+
+-- | @Selector@ for @controlTextDidBeginEditing:@
+controlTextDidBeginEditingSelector :: Selector
+controlTextDidBeginEditingSelector = mkSelector "controlTextDidBeginEditing:"
+
+-- | @Selector@ for @controlTextDidEndEditing:@
+controlTextDidEndEditingSelector :: Selector
+controlTextDidEndEditingSelector = mkSelector "controlTextDidEndEditing:"
+
+-- | @Selector@ for @controlTextDidChange:@
+controlTextDidChangeSelector :: Selector
+controlTextDidChangeSelector = mkSelector "controlTextDidChange:"
+
 -- | @Selector@ for @objectDidBeginEditing:@
 objectDidBeginEditingSelector :: Selector
 objectDidBeginEditingSelector = mkSelector "objectDidBeginEditing:"
@@ -332,6 +496,10 @@ commitEditingSelector = mkSelector "commitEditing"
 -- | @Selector@ for @commitEditingWithDelegate:didCommitSelector:contextInfo:@
 commitEditingWithDelegate_didCommitSelector_contextInfoSelector :: Selector
 commitEditingWithDelegate_didCommitSelector_contextInfoSelector = mkSelector "commitEditingWithDelegate:didCommitSelector:contextInfo:"
+
+-- | @Selector@ for @commitEditingAndReturnError:@
+commitEditingAndReturnErrorSelector :: Selector
+commitEditingAndReturnErrorSelector = mkSelector "commitEditingAndReturnError:"
 
 -- | @Selector@ for @setDefaultPlaceholder:forMarker:withBinding:@
 setDefaultPlaceholder_forMarker_withBindingSelector :: Selector
@@ -356,6 +524,10 @@ unbindSelector = mkSelector "unbind:"
 -- | @Selector@ for @validateMenuItem:@
 validateMenuItemSelector :: Selector
 validateMenuItemSelector = mkSelector "validateMenuItem:"
+
+-- | @Selector@ for @layer:shouldInheritContentsScale:fromWindow:@
+layer_shouldInheritContentsScale_fromWindowSelector :: Selector
+layer_shouldInheritContentsScale_fromWindowSelector = mkSelector "layer:shouldInheritContentsScale:fromWindow:"
 
 -- | @Selector@ for @draggingSourceOperationMaskForLocal:@
 draggingSourceOperationMaskForLocalSelector :: Selector
@@ -393,6 +565,10 @@ accessibilitySetValue_forAttributeSelector = mkSelector "accessibilitySetValue:f
 accessibilityAttributeValue_forParameterSelector :: Selector
 accessibilityAttributeValue_forParameterSelector = mkSelector "accessibilityAttributeValue:forParameter:"
 
+-- | @Selector@ for @accessibilityActionDescription:@
+accessibilityActionDescriptionSelector :: Selector
+accessibilityActionDescriptionSelector = mkSelector "accessibilityActionDescription:"
+
 -- | @Selector@ for @accessibilityPerformAction:@
 accessibilityPerformActionSelector :: Selector
 accessibilityPerformActionSelector = mkSelector "accessibilityPerformAction:"
@@ -408,6 +584,10 @@ accessibilityIndexOfChildSelector = mkSelector "accessibilityIndexOfChild:"
 -- | @Selector@ for @accessibilityArrayAttributeCount:@
 accessibilityArrayAttributeCountSelector :: Selector
 accessibilityArrayAttributeCountSelector = mkSelector "accessibilityArrayAttributeCount:"
+
+-- | @Selector@ for @accessibilityArrayAttributeValues:index:maxCount:@
+accessibilityArrayAttributeValues_index_maxCountSelector :: Selector
+accessibilityArrayAttributeValues_index_maxCountSelector = mkSelector "accessibilityArrayAttributeValues:index:maxCount:"
 
 -- | @Selector@ for @accessibilityFocusedUIElement@
 accessibilityFocusedUIElementSelector :: Selector

@@ -17,6 +17,8 @@ module ObjC.IOBluetoothUI.IOBluetoothPairingController
   , getResults
   , setOptions
   , getOptions
+  , setSearchAttributes
+  , getSearchAttributes
   , addAllowedUUID
   , addAllowedUUIDArray
   , clearAllowedUUIDs
@@ -31,6 +33,8 @@ module ObjC.IOBluetoothUI.IOBluetoothPairingController
   , getResultsSelector
   , setOptionsSelector
   , getOptionsSelector
+  , setSearchAttributesSelector
+  , getSearchAttributesSelector
   , addAllowedUUIDSelector
   , addAllowedUUIDArraySelector
   , clearAllowedUUIDsSelector
@@ -133,6 +137,34 @@ setOptions ioBluetoothPairingController  options =
 getOptions :: IsIOBluetoothPairingController ioBluetoothPairingController => ioBluetoothPairingController -> IO CUInt
 getOptions ioBluetoothPairingController  =
     sendMsg ioBluetoothPairingController (mkSelector "getOptions") retCUInt []
+
+-- | setSearchAttributes:
+--
+-- Sets the search attributes that control the panel's search/inquiry behavior.
+--
+-- The device search attributes control the inquiry behavior of the panel.  They allow only devices				that match the specified attributes (i.e. class of device) to be displayed to the user.  Note that				this only covers attributes returned in an inquiry result and not actual SDP services on the device.
+--
+-- NOTE: This method is only available in Mac OS X 10.2.4 (Bluetooth v1.1) or later.
+--
+-- @searchAttributes@ — Attributes to control the panel's inquiry behavior.
+--
+-- ObjC selector: @- setSearchAttributes:@
+setSearchAttributes :: IsIOBluetoothPairingController ioBluetoothPairingController => ioBluetoothPairingController -> Const RawId -> IO ()
+setSearchAttributes ioBluetoothPairingController  searchAttributes =
+    sendMsg ioBluetoothPairingController (mkSelector "setSearchAttributes:") retVoid [argPtr (castPtr (unRawId (unConst searchAttributes)) :: Ptr ())]
+
+-- | getSearchAttributes
+--
+-- Returns the search attributes that control the panel's search/inquiry behavior.
+--
+-- NOTE: This method is only available in Mac OS X 10.2.4 (Bluetooth v1.1) or later.
+--
+-- Returns: Returns the search attributes set by setSearchAttributes:
+--
+-- ObjC selector: @- getSearchAttributes@
+getSearchAttributes :: IsIOBluetoothPairingController ioBluetoothPairingController => ioBluetoothPairingController -> IO (Const RawId)
+getSearchAttributes ioBluetoothPairingController  =
+    fmap Const $ fmap (RawId . castPtr) $ sendMsg ioBluetoothPairingController (mkSelector "getSearchAttributes") (retPtr retVoid) []
 
 -- | addAllowedUUID:
 --
@@ -287,6 +319,14 @@ setOptionsSelector = mkSelector "setOptions:"
 -- | @Selector@ for @getOptions@
 getOptionsSelector :: Selector
 getOptionsSelector = mkSelector "getOptions"
+
+-- | @Selector@ for @setSearchAttributes:@
+setSearchAttributesSelector :: Selector
+setSearchAttributesSelector = mkSelector "setSearchAttributes:"
+
+-- | @Selector@ for @getSearchAttributes@
+getSearchAttributesSelector :: Selector
+getSearchAttributesSelector = mkSelector "getSearchAttributes"
 
 -- | @Selector@ for @addAllowedUUID:@
 addAllowedUUIDSelector :: Selector

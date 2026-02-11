@@ -14,6 +14,8 @@ module ObjC.MapKit.MKAnnotationView
   , setSelected_animated
   , setDragState_animated
   , reuseIdentifier
+  , annotation
+  , setAnnotation
   , image
   , setImage
   , enabled
@@ -28,10 +30,15 @@ module ObjC.MapKit.MKAnnotationView
   , setLeftCalloutAccessoryView
   , rightCalloutAccessoryView
   , setRightCalloutAccessoryView
+  , detailCalloutAccessoryView
+  , setDetailCalloutAccessoryView
   , draggable
   , setDraggable
   , dragState
   , setDragState
+  , clusteringIdentifier
+  , setClusteringIdentifier
+  , clusterAnnotationView
   , displayPriority
   , setDisplayPriority
   , zPriority
@@ -47,6 +54,8 @@ module ObjC.MapKit.MKAnnotationView
   , setSelected_animatedSelector
   , setDragState_animatedSelector
   , reuseIdentifierSelector
+  , annotationSelector
+  , setAnnotationSelector
   , imageSelector
   , setImageSelector
   , enabledSelector
@@ -61,10 +70,15 @@ module ObjC.MapKit.MKAnnotationView
   , setLeftCalloutAccessoryViewSelector
   , rightCalloutAccessoryViewSelector
   , setRightCalloutAccessoryViewSelector
+  , detailCalloutAccessoryViewSelector
+  , setDetailCalloutAccessoryViewSelector
   , draggableSelector
   , setDraggableSelector
   , dragStateSelector
   , setDragStateSelector
+  , clusteringIdentifierSelector
+  , setClusteringIdentifierSelector
+  , clusterAnnotationViewSelector
   , displayPrioritySelector
   , setDisplayPrioritySelector
   , zPrioritySelector
@@ -142,6 +156,16 @@ reuseIdentifier :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO
 reuseIdentifier mkAnnotationView  =
     sendMsg mkAnnotationView (mkSelector "reuseIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- annotation@
+annotation :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO RawId
+annotation mkAnnotationView  =
+    fmap (RawId . castPtr) $ sendMsg mkAnnotationView (mkSelector "annotation") (retPtr retVoid) []
+
+-- | @- setAnnotation:@
+setAnnotation :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> RawId -> IO ()
+setAnnotation mkAnnotationView  value =
+    sendMsg mkAnnotationView (mkSelector "setAnnotation:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- image@
 image :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO (Id NSImage)
 image mkAnnotationView  =
@@ -215,6 +239,16 @@ setRightCalloutAccessoryView mkAnnotationView  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mkAnnotationView (mkSelector "setRightCalloutAccessoryView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- detailCalloutAccessoryView@
+detailCalloutAccessoryView :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO RawId
+detailCalloutAccessoryView mkAnnotationView  =
+    fmap (RawId . castPtr) $ sendMsg mkAnnotationView (mkSelector "detailCalloutAccessoryView") (retPtr retVoid) []
+
+-- | @- setDetailCalloutAccessoryView:@
+setDetailCalloutAccessoryView :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> RawId -> IO ()
+setDetailCalloutAccessoryView mkAnnotationView  value =
+    sendMsg mkAnnotationView (mkSelector "setDetailCalloutAccessoryView:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- draggable@
 draggable :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO Bool
 draggable mkAnnotationView  =
@@ -234,6 +268,22 @@ dragState mkAnnotationView  =
 setDragState :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> MKAnnotationViewDragState -> IO ()
 setDragState mkAnnotationView  value =
     sendMsg mkAnnotationView (mkSelector "setDragState:") retVoid [argCULong (coerce value)]
+
+-- | @- clusteringIdentifier@
+clusteringIdentifier :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO (Id NSString)
+clusteringIdentifier mkAnnotationView  =
+    sendMsg mkAnnotationView (mkSelector "clusteringIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setClusteringIdentifier:@
+setClusteringIdentifier :: (IsMKAnnotationView mkAnnotationView, IsNSString value) => mkAnnotationView -> value -> IO ()
+setClusteringIdentifier mkAnnotationView  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mkAnnotationView (mkSelector "setClusteringIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- clusterAnnotationView@
+clusterAnnotationView :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO (Id MKAnnotationView)
+clusterAnnotationView mkAnnotationView  =
+    sendMsg mkAnnotationView (mkSelector "clusterAnnotationView") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- displayPriority@
 displayPriority :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO CFloat
@@ -307,6 +357,14 @@ setDragState_animatedSelector = mkSelector "setDragState:animated:"
 reuseIdentifierSelector :: Selector
 reuseIdentifierSelector = mkSelector "reuseIdentifier"
 
+-- | @Selector@ for @annotation@
+annotationSelector :: Selector
+annotationSelector = mkSelector "annotation"
+
+-- | @Selector@ for @setAnnotation:@
+setAnnotationSelector :: Selector
+setAnnotationSelector = mkSelector "setAnnotation:"
+
 -- | @Selector@ for @image@
 imageSelector :: Selector
 imageSelector = mkSelector "image"
@@ -363,6 +421,14 @@ rightCalloutAccessoryViewSelector = mkSelector "rightCalloutAccessoryView"
 setRightCalloutAccessoryViewSelector :: Selector
 setRightCalloutAccessoryViewSelector = mkSelector "setRightCalloutAccessoryView:"
 
+-- | @Selector@ for @detailCalloutAccessoryView@
+detailCalloutAccessoryViewSelector :: Selector
+detailCalloutAccessoryViewSelector = mkSelector "detailCalloutAccessoryView"
+
+-- | @Selector@ for @setDetailCalloutAccessoryView:@
+setDetailCalloutAccessoryViewSelector :: Selector
+setDetailCalloutAccessoryViewSelector = mkSelector "setDetailCalloutAccessoryView:"
+
 -- | @Selector@ for @draggable@
 draggableSelector :: Selector
 draggableSelector = mkSelector "draggable"
@@ -378,6 +444,18 @@ dragStateSelector = mkSelector "dragState"
 -- | @Selector@ for @setDragState:@
 setDragStateSelector :: Selector
 setDragStateSelector = mkSelector "setDragState:"
+
+-- | @Selector@ for @clusteringIdentifier@
+clusteringIdentifierSelector :: Selector
+clusteringIdentifierSelector = mkSelector "clusteringIdentifier"
+
+-- | @Selector@ for @setClusteringIdentifier:@
+setClusteringIdentifierSelector :: Selector
+setClusteringIdentifierSelector = mkSelector "setClusteringIdentifier:"
+
+-- | @Selector@ for @clusterAnnotationView@
+clusterAnnotationViewSelector :: Selector
+clusterAnnotationViewSelector = mkSelector "clusterAnnotationView"
 
 -- | @Selector@ for @displayPriority@
 displayPrioritySelector :: Selector

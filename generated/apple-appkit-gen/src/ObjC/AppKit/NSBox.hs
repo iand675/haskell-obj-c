@@ -31,6 +31,10 @@ module ObjC.AppKit.NSBox
   , setBorderWidth
   , cornerRadius
   , setCornerRadius
+  , borderColor
+  , setBorderColor
+  , fillColor
+  , setFillColor
   , borderType
   , setBorderType
   , sizeToFitSelector
@@ -57,6 +61,10 @@ module ObjC.AppKit.NSBox
   , setBorderWidthSelector
   , cornerRadiusSelector
   , setCornerRadiusSelector
+  , borderColorSelector
+  , setBorderColorSelector
+  , fillColorSelector
+  , setFillColorSelector
   , borderTypeSelector
   , setBorderTypeSelector
 
@@ -222,6 +230,28 @@ setCornerRadius :: IsNSBox nsBox => nsBox -> CDouble -> IO ()
 setCornerRadius nsBox  value =
     sendMsg nsBox (mkSelector "setCornerRadius:") retVoid [argCDouble value]
 
+-- | @- borderColor@
+borderColor :: IsNSBox nsBox => nsBox -> IO (Id NSColor)
+borderColor nsBox  =
+    sendMsg nsBox (mkSelector "borderColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setBorderColor:@
+setBorderColor :: (IsNSBox nsBox, IsNSColor value) => nsBox -> value -> IO ()
+setBorderColor nsBox  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsBox (mkSelector "setBorderColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- fillColor@
+fillColor :: IsNSBox nsBox => nsBox -> IO (Id NSColor)
+fillColor nsBox  =
+    sendMsg nsBox (mkSelector "fillColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setFillColor:@
+setFillColor :: (IsNSBox nsBox, IsNSColor value) => nsBox -> value -> IO ()
+setFillColor nsBox  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsBox (mkSelector "setFillColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- borderType@
 borderType :: IsNSBox nsBox => nsBox -> IO NSBorderType
 borderType nsBox  =
@@ -331,6 +361,22 @@ cornerRadiusSelector = mkSelector "cornerRadius"
 -- | @Selector@ for @setCornerRadius:@
 setCornerRadiusSelector :: Selector
 setCornerRadiusSelector = mkSelector "setCornerRadius:"
+
+-- | @Selector@ for @borderColor@
+borderColorSelector :: Selector
+borderColorSelector = mkSelector "borderColor"
+
+-- | @Selector@ for @setBorderColor:@
+setBorderColorSelector :: Selector
+setBorderColorSelector = mkSelector "setBorderColor:"
+
+-- | @Selector@ for @fillColor@
+fillColorSelector :: Selector
+fillColorSelector = mkSelector "fillColor"
+
+-- | @Selector@ for @setFillColor:@
+setFillColorSelector :: Selector
+setFillColorSelector = mkSelector "setFillColor:"
 
 -- | @Selector@ for @borderType@
 borderTypeSelector :: Selector

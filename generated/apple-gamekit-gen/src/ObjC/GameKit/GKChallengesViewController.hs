@@ -6,6 +6,10 @@
 module ObjC.GameKit.GKChallengesViewController
   ( GKChallengesViewController
   , IsGKChallengesViewController(..)
+  , challengeDelegate
+  , setChallengeDelegate
+  , challengeDelegateSelector
+  , setChallengeDelegateSelector
 
 
   ) where
@@ -26,7 +30,25 @@ import ObjC.GameKit.Internal.Classes
 import ObjC.AppKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | @- challengeDelegate@
+challengeDelegate :: IsGKChallengesViewController gkChallengesViewController => gkChallengesViewController -> IO RawId
+challengeDelegate gkChallengesViewController  =
+    fmap (RawId . castPtr) $ sendMsg gkChallengesViewController (mkSelector "challengeDelegate") (retPtr retVoid) []
+
+-- | @- setChallengeDelegate:@
+setChallengeDelegate :: IsGKChallengesViewController gkChallengesViewController => gkChallengesViewController -> RawId -> IO ()
+setChallengeDelegate gkChallengesViewController  value =
+    sendMsg gkChallengesViewController (mkSelector "setChallengeDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @challengeDelegate@
+challengeDelegateSelector :: Selector
+challengeDelegateSelector = mkSelector "challengeDelegate"
+
+-- | @Selector@ for @setChallengeDelegate:@
+setChallengeDelegateSelector :: Selector
+setChallengeDelegateSelector = mkSelector "setChallengeDelegate:"
 

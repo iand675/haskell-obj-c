@@ -16,6 +16,8 @@ module ObjC.PassKit.PKPaymentRequest
   , paymentCouponCodeExpiredErrorWithLocalizedDescription
   , merchantIdentifier
   , setMerchantIdentifier
+  , attributionIdentifier
+  , setAttributionIdentifier
   , countryCode
   , setCountryCode
   , supportedNetworks
@@ -24,6 +26,8 @@ module ObjC.PassKit.PKPaymentRequest
   , setMerchantCapabilities
   , supportsCouponCode
   , setSupportsCouponCode
+  , couponCode
+  , setCouponCode
   , merchantCategoryCode
   , setMerchantCategoryCode
   , paymentSummaryItems
@@ -52,6 +56,14 @@ module ObjC.PassKit.PKPaymentRequest
   , setApplicationData
   , supportedCountries
   , setSupportedCountries
+  , multiTokenContexts
+  , setMultiTokenContexts
+  , recurringPaymentRequest
+  , setRecurringPaymentRequest
+  , automaticReloadPaymentRequest
+  , setAutomaticReloadPaymentRequest
+  , deferredPaymentRequest
+  , setDeferredPaymentRequest
   , applePayLaterAvailability
   , setApplePayLaterAvailability
   , availableNetworksSelector
@@ -63,6 +75,8 @@ module ObjC.PassKit.PKPaymentRequest
   , paymentCouponCodeExpiredErrorWithLocalizedDescriptionSelector
   , merchantIdentifierSelector
   , setMerchantIdentifierSelector
+  , attributionIdentifierSelector
+  , setAttributionIdentifierSelector
   , countryCodeSelector
   , setCountryCodeSelector
   , supportedNetworksSelector
@@ -71,6 +85,8 @@ module ObjC.PassKit.PKPaymentRequest
   , setMerchantCapabilitiesSelector
   , supportsCouponCodeSelector
   , setSupportsCouponCodeSelector
+  , couponCodeSelector
+  , setCouponCodeSelector
   , merchantCategoryCodeSelector
   , setMerchantCategoryCodeSelector
   , paymentSummaryItemsSelector
@@ -99,6 +115,14 @@ module ObjC.PassKit.PKPaymentRequest
   , setApplicationDataSelector
   , supportedCountriesSelector
   , setSupportedCountriesSelector
+  , multiTokenContextsSelector
+  , setMultiTokenContextsSelector
+  , recurringPaymentRequestSelector
+  , setRecurringPaymentRequestSelector
+  , automaticReloadPaymentRequestSelector
+  , setAutomaticReloadPaymentRequestSelector
+  , deferredPaymentRequestSelector
+  , setDeferredPaymentRequestSelector
   , applePayLaterAvailabilitySelector
   , setApplePayLaterAvailabilitySelector
 
@@ -217,6 +241,17 @@ setMerchantIdentifier pkPaymentRequest  value =
   withObjCPtr value $ \raw_value ->
       sendMsg pkPaymentRequest (mkSelector "setMerchantIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- attributionIdentifier@
+attributionIdentifier :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id NSString)
+attributionIdentifier pkPaymentRequest  =
+    sendMsg pkPaymentRequest (mkSelector "attributionIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setAttributionIdentifier:@
+setAttributionIdentifier :: (IsPKPaymentRequest pkPaymentRequest, IsNSString value) => pkPaymentRequest -> value -> IO ()
+setAttributionIdentifier pkPaymentRequest  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg pkPaymentRequest (mkSelector "setAttributionIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- countryCode@
 countryCode :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id NSString)
 countryCode pkPaymentRequest  =
@@ -258,6 +293,17 @@ supportsCouponCode pkPaymentRequest  =
 setSupportsCouponCode :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> Bool -> IO ()
 setSupportsCouponCode pkPaymentRequest  value =
     sendMsg pkPaymentRequest (mkSelector "setSupportsCouponCode:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | @- couponCode@
+couponCode :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id NSString)
+couponCode pkPaymentRequest  =
+    sendMsg pkPaymentRequest (mkSelector "couponCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setCouponCode:@
+setCouponCode :: (IsPKPaymentRequest pkPaymentRequest, IsNSString value) => pkPaymentRequest -> value -> IO ()
+setCouponCode pkPaymentRequest  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg pkPaymentRequest (mkSelector "setCouponCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- merchantCategoryCode@
 merchantCategoryCode :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO CShort
@@ -408,6 +454,50 @@ setSupportedCountries pkPaymentRequest  value =
   withObjCPtr value $ \raw_value ->
       sendMsg pkPaymentRequest (mkSelector "setSupportedCountries:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- multiTokenContexts@
+multiTokenContexts :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id NSArray)
+multiTokenContexts pkPaymentRequest  =
+    sendMsg pkPaymentRequest (mkSelector "multiTokenContexts") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setMultiTokenContexts:@
+setMultiTokenContexts :: (IsPKPaymentRequest pkPaymentRequest, IsNSArray value) => pkPaymentRequest -> value -> IO ()
+setMultiTokenContexts pkPaymentRequest  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg pkPaymentRequest (mkSelector "setMultiTokenContexts:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- recurringPaymentRequest@
+recurringPaymentRequest :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id PKRecurringPaymentRequest)
+recurringPaymentRequest pkPaymentRequest  =
+    sendMsg pkPaymentRequest (mkSelector "recurringPaymentRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setRecurringPaymentRequest:@
+setRecurringPaymentRequest :: (IsPKPaymentRequest pkPaymentRequest, IsPKRecurringPaymentRequest value) => pkPaymentRequest -> value -> IO ()
+setRecurringPaymentRequest pkPaymentRequest  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg pkPaymentRequest (mkSelector "setRecurringPaymentRequest:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- automaticReloadPaymentRequest@
+automaticReloadPaymentRequest :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id PKAutomaticReloadPaymentRequest)
+automaticReloadPaymentRequest pkPaymentRequest  =
+    sendMsg pkPaymentRequest (mkSelector "automaticReloadPaymentRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setAutomaticReloadPaymentRequest:@
+setAutomaticReloadPaymentRequest :: (IsPKPaymentRequest pkPaymentRequest, IsPKAutomaticReloadPaymentRequest value) => pkPaymentRequest -> value -> IO ()
+setAutomaticReloadPaymentRequest pkPaymentRequest  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg pkPaymentRequest (mkSelector "setAutomaticReloadPaymentRequest:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- deferredPaymentRequest@
+deferredPaymentRequest :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id PKDeferredPaymentRequest)
+deferredPaymentRequest pkPaymentRequest  =
+    sendMsg pkPaymentRequest (mkSelector "deferredPaymentRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setDeferredPaymentRequest:@
+setDeferredPaymentRequest :: (IsPKPaymentRequest pkPaymentRequest, IsPKDeferredPaymentRequest value) => pkPaymentRequest -> value -> IO ()
+setDeferredPaymentRequest pkPaymentRequest  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg pkPaymentRequest (mkSelector "setDeferredPaymentRequest:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- applePayLaterAvailability@
 applePayLaterAvailability :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO PKApplePayLaterAvailability
 applePayLaterAvailability pkPaymentRequest  =
@@ -458,6 +548,14 @@ merchantIdentifierSelector = mkSelector "merchantIdentifier"
 setMerchantIdentifierSelector :: Selector
 setMerchantIdentifierSelector = mkSelector "setMerchantIdentifier:"
 
+-- | @Selector@ for @attributionIdentifier@
+attributionIdentifierSelector :: Selector
+attributionIdentifierSelector = mkSelector "attributionIdentifier"
+
+-- | @Selector@ for @setAttributionIdentifier:@
+setAttributionIdentifierSelector :: Selector
+setAttributionIdentifierSelector = mkSelector "setAttributionIdentifier:"
+
 -- | @Selector@ for @countryCode@
 countryCodeSelector :: Selector
 countryCodeSelector = mkSelector "countryCode"
@@ -489,6 +587,14 @@ supportsCouponCodeSelector = mkSelector "supportsCouponCode"
 -- | @Selector@ for @setSupportsCouponCode:@
 setSupportsCouponCodeSelector :: Selector
 setSupportsCouponCodeSelector = mkSelector "setSupportsCouponCode:"
+
+-- | @Selector@ for @couponCode@
+couponCodeSelector :: Selector
+couponCodeSelector = mkSelector "couponCode"
+
+-- | @Selector@ for @setCouponCode:@
+setCouponCodeSelector :: Selector
+setCouponCodeSelector = mkSelector "setCouponCode:"
 
 -- | @Selector@ for @merchantCategoryCode@
 merchantCategoryCodeSelector :: Selector
@@ -601,6 +707,38 @@ supportedCountriesSelector = mkSelector "supportedCountries"
 -- | @Selector@ for @setSupportedCountries:@
 setSupportedCountriesSelector :: Selector
 setSupportedCountriesSelector = mkSelector "setSupportedCountries:"
+
+-- | @Selector@ for @multiTokenContexts@
+multiTokenContextsSelector :: Selector
+multiTokenContextsSelector = mkSelector "multiTokenContexts"
+
+-- | @Selector@ for @setMultiTokenContexts:@
+setMultiTokenContextsSelector :: Selector
+setMultiTokenContextsSelector = mkSelector "setMultiTokenContexts:"
+
+-- | @Selector@ for @recurringPaymentRequest@
+recurringPaymentRequestSelector :: Selector
+recurringPaymentRequestSelector = mkSelector "recurringPaymentRequest"
+
+-- | @Selector@ for @setRecurringPaymentRequest:@
+setRecurringPaymentRequestSelector :: Selector
+setRecurringPaymentRequestSelector = mkSelector "setRecurringPaymentRequest:"
+
+-- | @Selector@ for @automaticReloadPaymentRequest@
+automaticReloadPaymentRequestSelector :: Selector
+automaticReloadPaymentRequestSelector = mkSelector "automaticReloadPaymentRequest"
+
+-- | @Selector@ for @setAutomaticReloadPaymentRequest:@
+setAutomaticReloadPaymentRequestSelector :: Selector
+setAutomaticReloadPaymentRequestSelector = mkSelector "setAutomaticReloadPaymentRequest:"
+
+-- | @Selector@ for @deferredPaymentRequest@
+deferredPaymentRequestSelector :: Selector
+deferredPaymentRequestSelector = mkSelector "deferredPaymentRequest"
+
+-- | @Selector@ for @setDeferredPaymentRequest:@
+setDeferredPaymentRequestSelector :: Selector
+setDeferredPaymentRequestSelector = mkSelector "setDeferredPaymentRequest:"
 
 -- | @Selector@ for @applePayLaterAvailability@
 applePayLaterAvailabilitySelector :: Selector

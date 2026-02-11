@@ -8,9 +8,11 @@ module ObjC.Foundation.NSProtocolChecker
   , IsNSProtocolChecker(..)
   , protocolCheckerWithTarget_protocol
   , initWithTarget_protocol
+  , protocol
   , target
   , protocolCheckerWithTarget_protocolSelector
   , initWithTarget_protocolSelector
+  , protocolSelector
   , targetSelector
 
 
@@ -44,6 +46,11 @@ initWithTarget_protocol nsProtocolChecker  anObject aProtocol =
   withObjCPtr anObject $ \raw_anObject ->
       sendMsg nsProtocolChecker (mkSelector "initWithTarget:protocol:") (retPtr retVoid) [argPtr (castPtr raw_anObject :: Ptr ()), argPtr (castPtr (unRawId aProtocol) :: Ptr ())] >>= ownedObject . castPtr
 
+-- | @- protocol@
+protocol :: IsNSProtocolChecker nsProtocolChecker => nsProtocolChecker -> IO RawId
+protocol nsProtocolChecker  =
+    fmap (RawId . castPtr) $ sendMsg nsProtocolChecker (mkSelector "protocol") (retPtr retVoid) []
+
 -- | @- target@
 target :: IsNSProtocolChecker nsProtocolChecker => nsProtocolChecker -> IO (Id NSObject)
 target nsProtocolChecker  =
@@ -60,6 +67,10 @@ protocolCheckerWithTarget_protocolSelector = mkSelector "protocolCheckerWithTarg
 -- | @Selector@ for @initWithTarget:protocol:@
 initWithTarget_protocolSelector :: Selector
 initWithTarget_protocolSelector = mkSelector "initWithTarget:protocol:"
+
+-- | @Selector@ for @protocol@
+protocolSelector :: Selector
+protocolSelector = mkSelector "protocol"
 
 -- | @Selector@ for @target@
 targetSelector :: Selector

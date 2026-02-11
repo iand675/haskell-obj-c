@@ -13,11 +13,13 @@ module ObjC.MetalPerformanceShaders.MPSSVGFDefaultTextureAllocator
   , textureWithPixelFormat_width_height
   , returnTexture
   , reset
+  , device
   , allocatedTextureCount
   , initWithDeviceSelector
   , textureWithPixelFormat_width_heightSelector
   , returnTextureSelector
   , resetSelector
+  , deviceSelector
   , allocatedTextureCountSelector
 
   -- * Enum types
@@ -205,6 +207,13 @@ reset :: IsMPSSVGFDefaultTextureAllocator mpssvgfDefaultTextureAllocator => mpss
 reset mpssvgfDefaultTextureAllocator  =
     sendMsg mpssvgfDefaultTextureAllocator (mkSelector "reset") retVoid []
 
+-- | Metal device this object was allocated from
+--
+-- ObjC selector: @- device@
+device :: IsMPSSVGFDefaultTextureAllocator mpssvgfDefaultTextureAllocator => mpssvgfDefaultTextureAllocator -> IO RawId
+device mpssvgfDefaultTextureAllocator  =
+    fmap (RawId . castPtr) $ sendMsg mpssvgfDefaultTextureAllocator (mkSelector "device") (retPtr retVoid) []
+
 -- | The number of textures which have been allocated from this allocator
 --
 -- ObjC selector: @- allocatedTextureCount@
@@ -231,6 +240,10 @@ returnTextureSelector = mkSelector "returnTexture:"
 -- | @Selector@ for @reset@
 resetSelector :: Selector
 resetSelector = mkSelector "reset"
+
+-- | @Selector@ for @device@
+deviceSelector :: Selector
+deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @allocatedTextureCount@
 allocatedTextureCountSelector :: Selector

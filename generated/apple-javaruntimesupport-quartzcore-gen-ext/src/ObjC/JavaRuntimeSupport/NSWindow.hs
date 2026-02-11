@@ -6,6 +6,10 @@
 module ObjC.JavaRuntimeSupport.NSWindow
   ( NSWindow
   , IsNSWindow(..)
+  , javaAddToOrderingGroup
+  , javaRemoveFromOrderingGroup
+  , javaAddToOrderingGroupSelector
+  , javaRemoveFromOrderingGroupSelector
 
 
   ) where
@@ -25,7 +29,25 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.JavaRuntimeSupport.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | @- javaAddToOrderingGroup:@
+javaAddToOrderingGroup :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
+javaAddToOrderingGroup nsWindow  ownedWindow =
+    sendMsg nsWindow (mkSelector "javaAddToOrderingGroup:") retVoid [argPtr (castPtr (unRawId ownedWindow) :: Ptr ())]
+
+-- | @- javaRemoveFromOrderingGroup:@
+javaRemoveFromOrderingGroup :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
+javaRemoveFromOrderingGroup nsWindow  ownedWindow =
+    sendMsg nsWindow (mkSelector "javaRemoveFromOrderingGroup:") retVoid [argPtr (castPtr (unRawId ownedWindow) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @javaAddToOrderingGroup:@
+javaAddToOrderingGroupSelector :: Selector
+javaAddToOrderingGroupSelector = mkSelector "javaAddToOrderingGroup:"
+
+-- | @Selector@ for @javaRemoveFromOrderingGroup:@
+javaRemoveFromOrderingGroupSelector :: Selector
+javaRemoveFromOrderingGroupSelector = mkSelector "javaRemoveFromOrderingGroup:"
 

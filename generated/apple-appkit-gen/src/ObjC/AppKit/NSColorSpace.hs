@@ -12,10 +12,17 @@ module ObjC.AppKit.NSColorSpace
   , initWithCGColorSpace
   , availableColorSpacesWithModel
   , iccProfileData
+  , colorSyncProfile
   , cgColorSpace
   , numberOfColorComponents
   , colorSpaceModel
   , localizedName
+  , sRGBColorSpace
+  , genericGamma22GrayColorSpace
+  , extendedSRGBColorSpace
+  , extendedGenericGamma22GrayColorSpace
+  , displayP3ColorSpace
+  , adobeRGB1998ColorSpace
   , genericRGBColorSpace
   , genericGrayColorSpace
   , genericCMYKColorSpace
@@ -27,10 +34,17 @@ module ObjC.AppKit.NSColorSpace
   , initWithCGColorSpaceSelector
   , availableColorSpacesWithModelSelector
   , iccProfileDataSelector
+  , colorSyncProfileSelector
   , cgColorSpaceSelector
   , numberOfColorComponentsSelector
   , colorSpaceModelSelector
   , localizedNameSelector
+  , sRGBColorSpaceSelector
+  , genericGamma22GrayColorSpaceSelector
+  , extendedSRGBColorSpaceSelector
+  , extendedGenericGamma22GrayColorSpaceSelector
+  , displayP3ColorSpaceSelector
+  , adobeRGB1998ColorSpaceSelector
   , genericRGBColorSpaceSelector
   , genericGrayColorSpaceSelector
   , genericCMYKColorSpaceSelector
@@ -95,6 +109,11 @@ iccProfileData :: IsNSColorSpace nsColorSpace => nsColorSpace -> IO (Id NSData)
 iccProfileData nsColorSpace  =
     sendMsg nsColorSpace (mkSelector "ICCProfileData") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- colorSyncProfile@
+colorSyncProfile :: IsNSColorSpace nsColorSpace => nsColorSpace -> IO (Ptr ())
+colorSyncProfile nsColorSpace  =
+    fmap castPtr $ sendMsg nsColorSpace (mkSelector "colorSyncProfile") (retPtr retVoid) []
+
 -- | @- CGColorSpace@
 cgColorSpace :: IsNSColorSpace nsColorSpace => nsColorSpace -> IO (Ptr ())
 cgColorSpace nsColorSpace  =
@@ -114,6 +133,48 @@ colorSpaceModel nsColorSpace  =
 localizedName :: IsNSColorSpace nsColorSpace => nsColorSpace -> IO (Id NSString)
 localizedName nsColorSpace  =
     sendMsg nsColorSpace (mkSelector "localizedName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ sRGBColorSpace@
+sRGBColorSpace :: IO (Id NSColorSpace)
+sRGBColorSpace  =
+  do
+    cls' <- getRequiredClass "NSColorSpace"
+    sendClassMsg cls' (mkSelector "sRGBColorSpace") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ genericGamma22GrayColorSpace@
+genericGamma22GrayColorSpace :: IO (Id NSColorSpace)
+genericGamma22GrayColorSpace  =
+  do
+    cls' <- getRequiredClass "NSColorSpace"
+    sendClassMsg cls' (mkSelector "genericGamma22GrayColorSpace") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ extendedSRGBColorSpace@
+extendedSRGBColorSpace :: IO (Id NSColorSpace)
+extendedSRGBColorSpace  =
+  do
+    cls' <- getRequiredClass "NSColorSpace"
+    sendClassMsg cls' (mkSelector "extendedSRGBColorSpace") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ extendedGenericGamma22GrayColorSpace@
+extendedGenericGamma22GrayColorSpace :: IO (Id NSColorSpace)
+extendedGenericGamma22GrayColorSpace  =
+  do
+    cls' <- getRequiredClass "NSColorSpace"
+    sendClassMsg cls' (mkSelector "extendedGenericGamma22GrayColorSpace") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ displayP3ColorSpace@
+displayP3ColorSpace :: IO (Id NSColorSpace)
+displayP3ColorSpace  =
+  do
+    cls' <- getRequiredClass "NSColorSpace"
+    sendClassMsg cls' (mkSelector "displayP3ColorSpace") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ adobeRGB1998ColorSpace@
+adobeRGB1998ColorSpace :: IO (Id NSColorSpace)
+adobeRGB1998ColorSpace  =
+  do
+    cls' <- getRequiredClass "NSColorSpace"
+    sendClassMsg cls' (mkSelector "adobeRGB1998ColorSpace") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @+ genericRGBColorSpace@
 genericRGBColorSpace :: IO (Id NSColorSpace)
@@ -181,6 +242,10 @@ availableColorSpacesWithModelSelector = mkSelector "availableColorSpacesWithMode
 iccProfileDataSelector :: Selector
 iccProfileDataSelector = mkSelector "ICCProfileData"
 
+-- | @Selector@ for @colorSyncProfile@
+colorSyncProfileSelector :: Selector
+colorSyncProfileSelector = mkSelector "colorSyncProfile"
+
 -- | @Selector@ for @CGColorSpace@
 cgColorSpaceSelector :: Selector
 cgColorSpaceSelector = mkSelector "CGColorSpace"
@@ -196,6 +261,30 @@ colorSpaceModelSelector = mkSelector "colorSpaceModel"
 -- | @Selector@ for @localizedName@
 localizedNameSelector :: Selector
 localizedNameSelector = mkSelector "localizedName"
+
+-- | @Selector@ for @sRGBColorSpace@
+sRGBColorSpaceSelector :: Selector
+sRGBColorSpaceSelector = mkSelector "sRGBColorSpace"
+
+-- | @Selector@ for @genericGamma22GrayColorSpace@
+genericGamma22GrayColorSpaceSelector :: Selector
+genericGamma22GrayColorSpaceSelector = mkSelector "genericGamma22GrayColorSpace"
+
+-- | @Selector@ for @extendedSRGBColorSpace@
+extendedSRGBColorSpaceSelector :: Selector
+extendedSRGBColorSpaceSelector = mkSelector "extendedSRGBColorSpace"
+
+-- | @Selector@ for @extendedGenericGamma22GrayColorSpace@
+extendedGenericGamma22GrayColorSpaceSelector :: Selector
+extendedGenericGamma22GrayColorSpaceSelector = mkSelector "extendedGenericGamma22GrayColorSpace"
+
+-- | @Selector@ for @displayP3ColorSpace@
+displayP3ColorSpaceSelector :: Selector
+displayP3ColorSpaceSelector = mkSelector "displayP3ColorSpace"
+
+-- | @Selector@ for @adobeRGB1998ColorSpace@
+adobeRGB1998ColorSpaceSelector :: Selector
+adobeRGB1998ColorSpaceSelector = mkSelector "adobeRGB1998ColorSpace"
 
 -- | @Selector@ for @genericRGBColorSpace@
 genericRGBColorSpaceSelector :: Selector

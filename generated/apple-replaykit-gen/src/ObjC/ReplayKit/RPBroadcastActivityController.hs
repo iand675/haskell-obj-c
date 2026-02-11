@@ -10,6 +10,10 @@
 module ObjC.ReplayKit.RPBroadcastActivityController
   ( RPBroadcastActivityController
   , IsRPBroadcastActivityController(..)
+  , delegate
+  , setDelegate
+  , delegateSelector
+  , setDelegateSelector
 
 
   ) where
@@ -30,7 +34,29 @@ import ObjC.ReplayKit.Internal.Classes
 import ObjC.AppKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | Delegate that is notified when the activity view controller is complete.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsRPBroadcastActivityController rpBroadcastActivityController => rpBroadcastActivityController -> IO RawId
+delegate rpBroadcastActivityController  =
+    fmap (RawId . castPtr) $ sendMsg rpBroadcastActivityController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | Delegate that is notified when the activity view controller is complete.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsRPBroadcastActivityController rpBroadcastActivityController => rpBroadcastActivityController -> RawId -> IO ()
+setDelegate rpBroadcastActivityController  value =
+    sendMsg rpBroadcastActivityController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

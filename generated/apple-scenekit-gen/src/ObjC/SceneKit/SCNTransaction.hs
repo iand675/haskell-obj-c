@@ -15,6 +15,8 @@ module ObjC.SceneKit.SCNTransaction
   , setValue_forKey
   , animationDuration
   , setAnimationDuration
+  , animationTimingFunction
+  , setAnimationTimingFunction
   , disableActions
   , setDisableActions
   , completionBlock
@@ -28,6 +30,8 @@ module ObjC.SceneKit.SCNTransaction
   , setValue_forKeySelector
   , animationDurationSelector
   , setAnimationDurationSelector
+  , animationTimingFunctionSelector
+  , setAnimationTimingFunctionSelector
   , disableActionsSelector
   , setDisableActionsSelector
   , completionBlockSelector
@@ -116,6 +120,21 @@ setAnimationDuration value =
     cls' <- getRequiredClass "SCNTransaction"
     sendClassMsg cls' (mkSelector "setAnimationDuration:") retVoid [argCDouble value]
 
+-- | @+ animationTimingFunction@
+animationTimingFunction :: IO (Id CAMediaTimingFunction)
+animationTimingFunction  =
+  do
+    cls' <- getRequiredClass "SCNTransaction"
+    sendClassMsg cls' (mkSelector "animationTimingFunction") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ setAnimationTimingFunction:@
+setAnimationTimingFunction :: IsCAMediaTimingFunction value => value -> IO ()
+setAnimationTimingFunction value =
+  do
+    cls' <- getRequiredClass "SCNTransaction"
+    withObjCPtr value $ \raw_value ->
+      sendClassMsg cls' (mkSelector "setAnimationTimingFunction:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @+ disableActions@
 disableActions :: IO Bool
 disableActions  =
@@ -183,6 +202,14 @@ animationDurationSelector = mkSelector "animationDuration"
 -- | @Selector@ for @setAnimationDuration:@
 setAnimationDurationSelector :: Selector
 setAnimationDurationSelector = mkSelector "setAnimationDuration:"
+
+-- | @Selector@ for @animationTimingFunction@
+animationTimingFunctionSelector :: Selector
+animationTimingFunctionSelector = mkSelector "animationTimingFunction"
+
+-- | @Selector@ for @setAnimationTimingFunction:@
+setAnimationTimingFunctionSelector :: Selector
+setAnimationTimingFunctionSelector = mkSelector "setAnimationTimingFunction:"
 
 -- | @Selector@ for @disableActions@
 disableActionsSelector :: Selector

@@ -17,15 +17,19 @@ module ObjC.AppKit.NSMenuItem
   , setTitleWithMnemonic
   , usesUserKeyEquivalents
   , setUsesUserKeyEquivalents
+  , writingToolsItems
   , menu
   , setMenu
   , hasSubmenu
   , submenu
   , setSubmenu
+  , parentItem
   , title
   , setTitle
   , attributedTitle
   , setAttributedTitle
+  , subtitle
+  , setSubtitle
   , separatorItem
   , sectionHeader
   , keyEquivalent
@@ -63,12 +67,16 @@ module ObjC.AppKit.NSMenuItem
   , setTag
   , representedObject
   , setRepresentedObject
+  , view
+  , setView
   , highlighted
   , hidden
   , setHidden
   , hiddenOrHasHiddenAncestor
   , toolTip
   , setToolTip
+  , badge
+  , setBadge
   , separatorItemSelector
   , sectionHeaderWithTitleSelector
   , initWithTitle_action_keyEquivalentSelector
@@ -79,15 +87,19 @@ module ObjC.AppKit.NSMenuItem
   , setTitleWithMnemonicSelector
   , usesUserKeyEquivalentsSelector
   , setUsesUserKeyEquivalentsSelector
+  , writingToolsItemsSelector
   , menuSelector
   , setMenuSelector
   , hasSubmenuSelector
   , submenuSelector
   , setSubmenuSelector
+  , parentItemSelector
   , titleSelector
   , setTitleSelector
   , attributedTitleSelector
   , setAttributedTitleSelector
+  , subtitleSelector
+  , setSubtitleSelector
   , sectionHeaderSelector
   , keyEquivalentSelector
   , setKeyEquivalentSelector
@@ -124,12 +136,16 @@ module ObjC.AppKit.NSMenuItem
   , setTagSelector
   , representedObjectSelector
   , setRepresentedObjectSelector
+  , viewSelector
+  , setViewSelector
   , highlightedSelector
   , hiddenSelector
   , setHiddenSelector
   , hiddenOrHasHiddenAncestorSelector
   , toolTipSelector
   , setToolTipSelector
+  , badgeSelector
+  , setBadgeSelector
 
   -- * Enum types
   , NSEventModifierFlags(NSEventModifierFlags)
@@ -226,6 +242,15 @@ setUsesUserKeyEquivalents value =
     cls' <- getRequiredClass "NSMenuItem"
     sendClassMsg cls' (mkSelector "setUsesUserKeyEquivalents:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | An array of standard menu items related to Writing Tools. Each call to this method returns an array of newly allocated instances of NSMenuItem.
+--
+-- ObjC selector: @+ writingToolsItems@
+writingToolsItems :: IO (Id NSArray)
+writingToolsItems  =
+  do
+    cls' <- getRequiredClass "NSMenuItem"
+    sendClassMsg cls' (mkSelector "writingToolsItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Note: Never call the setter method directly: it is there only for subclassers.
 --
 -- ObjC selector: @- menu@
@@ -257,6 +282,13 @@ setSubmenu nsMenuItem  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsMenuItem (mkSelector "setSubmenu:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | Returns: The @NSMenuItem@ whose submenu contains the receiver, or nil if the receiver does not have a parent item.
+--
+-- ObjC selector: @- parentItem@
+parentItem :: IsNSMenuItem nsMenuItem => nsMenuItem -> IO (Id NSMenuItem)
+parentItem nsMenuItem  =
+    sendMsg nsMenuItem (mkSelector "parentItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- title@
 title :: IsNSMenuItem nsMenuItem => nsMenuItem -> IO (Id NSString)
 title nsMenuItem  =
@@ -278,6 +310,29 @@ setAttributedTitle :: (IsNSMenuItem nsMenuItem, IsNSAttributedString value) => n
 setAttributedTitle nsMenuItem  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsMenuItem (mkSelector "setAttributedTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | Used to specify a standard subtitle for the menu item.
+--
+-- The subtitle is displayed below the standard title.
+--
+-- Note: On macOS 14, a menu item with an attributed title does not show the subtitle. The subtitle is shown on macOS 15 and later.
+--
+-- ObjC selector: @- subtitle@
+subtitle :: IsNSMenuItem nsMenuItem => nsMenuItem -> IO (Id NSString)
+subtitle nsMenuItem  =
+    sendMsg nsMenuItem (mkSelector "subtitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Used to specify a standard subtitle for the menu item.
+--
+-- The subtitle is displayed below the standard title.
+--
+-- Note: On macOS 14, a menu item with an attributed title does not show the subtitle. The subtitle is shown on macOS 15 and later.
+--
+-- ObjC selector: @- setSubtitle:@
+setSubtitle :: (IsNSMenuItem nsMenuItem, IsNSString value) => nsMenuItem -> value -> IO ()
+setSubtitle nsMenuItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsMenuItem (mkSelector "setSubtitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- separatorItem@
 separatorItem :: IsNSMenuItem nsMenuItem => nsMenuItem -> IO Bool
@@ -471,6 +526,17 @@ setRepresentedObject :: IsNSMenuItem nsMenuItem => nsMenuItem -> RawId -> IO ()
 setRepresentedObject nsMenuItem  value =
     sendMsg nsMenuItem (mkSelector "setRepresentedObject:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
+-- | @- view@
+view :: IsNSMenuItem nsMenuItem => nsMenuItem -> IO (Id NSView)
+view nsMenuItem  =
+    sendMsg nsMenuItem (mkSelector "view") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setView:@
+setView :: (IsNSMenuItem nsMenuItem, IsNSView value) => nsMenuItem -> value -> IO ()
+setView nsMenuItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsMenuItem (mkSelector "setView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- highlighted@
 highlighted :: IsNSMenuItem nsMenuItem => nsMenuItem -> IO Bool
 highlighted nsMenuItem  =
@@ -501,6 +567,25 @@ setToolTip :: (IsNSMenuItem nsMenuItem, IsNSString value) => nsMenuItem -> value
 setToolTip nsMenuItem  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsMenuItem (mkSelector "setToolTip:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | A badge used to provide additional quantitative information specific to the menu item, such as the number of available updates.
+--
+-- Note: The default value of this property is @nil.@
+--
+-- ObjC selector: @- badge@
+badge :: IsNSMenuItem nsMenuItem => nsMenuItem -> IO (Id NSMenuItemBadge)
+badge nsMenuItem  =
+    sendMsg nsMenuItem (mkSelector "badge") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | A badge used to provide additional quantitative information specific to the menu item, such as the number of available updates.
+--
+-- Note: The default value of this property is @nil.@
+--
+-- ObjC selector: @- setBadge:@
+setBadge :: (IsNSMenuItem nsMenuItem, IsNSMenuItemBadge value) => nsMenuItem -> value -> IO ()
+setBadge nsMenuItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsMenuItem (mkSelector "setBadge:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -546,6 +631,10 @@ usesUserKeyEquivalentsSelector = mkSelector "usesUserKeyEquivalents"
 setUsesUserKeyEquivalentsSelector :: Selector
 setUsesUserKeyEquivalentsSelector = mkSelector "setUsesUserKeyEquivalents:"
 
+-- | @Selector@ for @writingToolsItems@
+writingToolsItemsSelector :: Selector
+writingToolsItemsSelector = mkSelector "writingToolsItems"
+
 -- | @Selector@ for @menu@
 menuSelector :: Selector
 menuSelector = mkSelector "menu"
@@ -566,6 +655,10 @@ submenuSelector = mkSelector "submenu"
 setSubmenuSelector :: Selector
 setSubmenuSelector = mkSelector "setSubmenu:"
 
+-- | @Selector@ for @parentItem@
+parentItemSelector :: Selector
+parentItemSelector = mkSelector "parentItem"
+
 -- | @Selector@ for @title@
 titleSelector :: Selector
 titleSelector = mkSelector "title"
@@ -581,6 +674,14 @@ attributedTitleSelector = mkSelector "attributedTitle"
 -- | @Selector@ for @setAttributedTitle:@
 setAttributedTitleSelector :: Selector
 setAttributedTitleSelector = mkSelector "setAttributedTitle:"
+
+-- | @Selector@ for @subtitle@
+subtitleSelector :: Selector
+subtitleSelector = mkSelector "subtitle"
+
+-- | @Selector@ for @setSubtitle:@
+setSubtitleSelector :: Selector
+setSubtitleSelector = mkSelector "setSubtitle:"
 
 -- | @Selector@ for @sectionHeader@
 sectionHeaderSelector :: Selector
@@ -726,6 +827,14 @@ representedObjectSelector = mkSelector "representedObject"
 setRepresentedObjectSelector :: Selector
 setRepresentedObjectSelector = mkSelector "setRepresentedObject:"
 
+-- | @Selector@ for @view@
+viewSelector :: Selector
+viewSelector = mkSelector "view"
+
+-- | @Selector@ for @setView:@
+setViewSelector :: Selector
+setViewSelector = mkSelector "setView:"
+
 -- | @Selector@ for @highlighted@
 highlightedSelector :: Selector
 highlightedSelector = mkSelector "highlighted"
@@ -749,4 +858,12 @@ toolTipSelector = mkSelector "toolTip"
 -- | @Selector@ for @setToolTip:@
 setToolTipSelector :: Selector
 setToolTipSelector = mkSelector "setToolTip:"
+
+-- | @Selector@ for @badge@
+badgeSelector :: Selector
+badgeSelector = mkSelector "badge"
+
+-- | @Selector@ for @setBadge:@
+setBadgeSelector :: Selector
+setBadgeSelector = mkSelector "setBadge:"
 

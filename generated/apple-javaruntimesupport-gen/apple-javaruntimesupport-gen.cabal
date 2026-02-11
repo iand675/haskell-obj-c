@@ -12,6 +12,8 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.JavaRuntimeSupport.Delegate.JRSMenuDelegate
+      ObjC.JavaRuntimeSupport.Delegate.JRSRemoteLayer
       ObjC.JavaRuntimeSupport.Internal.Classes
       ObjC.JavaRuntimeSupport.JRSAppKitAWT
       ObjC.JavaRuntimeSupport.JRSDrag

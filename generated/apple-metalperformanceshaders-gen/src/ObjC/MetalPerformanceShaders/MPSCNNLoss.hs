@@ -78,6 +78,8 @@ module ObjC.MetalPerformanceShaders.MPSCNNLoss
   , initWithCoder_device
   , encodeToCommandBuffer_sourceImage_labels_destinationImage
   , encodeToCommandBuffer_sourceImage_labels
+  , encodeBatchToCommandBuffer_sourceImages_labels_destinationImages
+  , encodeBatchToCommandBuffer_sourceImages_labels
   , lossType
   , reductionType
   , weight
@@ -91,6 +93,8 @@ module ObjC.MetalPerformanceShaders.MPSCNNLoss
   , initWithCoder_deviceSelector
   , encodeToCommandBuffer_sourceImage_labels_destinationImageSelector
   , encodeToCommandBuffer_sourceImage_labelsSelector
+  , encodeBatchToCommandBuffer_sourceImages_labels_destinationImagesSelector
+  , encodeBatchToCommandBuffer_sourceImages_labelsSelector
   , lossTypeSelector
   , reductionTypeSelector
   , weightSelector
@@ -204,6 +208,16 @@ encodeToCommandBuffer_sourceImage_labels mpscnnLoss  commandBuffer sourceImage l
     withObjCPtr labels $ \raw_labels ->
         sendMsg mpscnnLoss (mkSelector "encodeToCommandBuffer:sourceImage:labels:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_labels :: Ptr ())] >>= retainedObject . castPtr
 
+-- | @- encodeBatchToCommandBuffer:sourceImages:labels:destinationImages:@
+encodeBatchToCommandBuffer_sourceImages_labels_destinationImages :: IsMPSCNNLoss mpscnnLoss => mpscnnLoss -> RawId -> RawId -> RawId -> RawId -> IO ()
+encodeBatchToCommandBuffer_sourceImages_labels_destinationImages mpscnnLoss  commandBuffer sourceImage labels destinationImage =
+    sendMsg mpscnnLoss (mkSelector "encodeBatchToCommandBuffer:sourceImages:labels:destinationImages:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImage) :: Ptr ()), argPtr (castPtr (unRawId labels) :: Ptr ()), argPtr (castPtr (unRawId destinationImage) :: Ptr ())]
+
+-- | @- encodeBatchToCommandBuffer:sourceImages:labels:@
+encodeBatchToCommandBuffer_sourceImages_labels :: IsMPSCNNLoss mpscnnLoss => mpscnnLoss -> RawId -> RawId -> RawId -> IO RawId
+encodeBatchToCommandBuffer_sourceImages_labels mpscnnLoss  commandBuffer sourceImage labels =
+    fmap (RawId . castPtr) $ sendMsg mpscnnLoss (mkSelector "encodeBatchToCommandBuffer:sourceImages:labels:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImage) :: Ptr ()), argPtr (castPtr (unRawId labels) :: Ptr ())]
+
 -- | See MPSCNNLossDescriptor for information about the following properties.
 --
 -- ObjC selector: @- lossType@
@@ -269,6 +283,14 @@ encodeToCommandBuffer_sourceImage_labels_destinationImageSelector = mkSelector "
 -- | @Selector@ for @encodeToCommandBuffer:sourceImage:labels:@
 encodeToCommandBuffer_sourceImage_labelsSelector :: Selector
 encodeToCommandBuffer_sourceImage_labelsSelector = mkSelector "encodeToCommandBuffer:sourceImage:labels:"
+
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:labels:destinationImages:@
+encodeBatchToCommandBuffer_sourceImages_labels_destinationImagesSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_labels_destinationImagesSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:labels:destinationImages:"
+
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:labels:@
+encodeBatchToCommandBuffer_sourceImages_labelsSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_labelsSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:labels:"
 
 -- | @Selector@ for @lossType@
 lossTypeSelector :: Selector

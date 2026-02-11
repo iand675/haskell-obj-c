@@ -12,7 +12,9 @@
 module ObjC.CoreMIDI.MIDICIDeviceManager
   ( MIDICIDeviceManager
   , IsMIDICIDeviceManager(..)
+  , sharedInstance
   , discoveredCIDevices
+  , sharedInstanceSelector
   , discoveredCIDevicesSelector
 
 
@@ -33,6 +35,19 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.CoreMIDI.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | sharedInstance
+--
+-- Retrieve the shared MIDI-CI device manager for the client process.
+--
+-- After the first access of the property, the client process may observe notifications which are				posted when the system-wide cache changes. In environments where virtual MIDI endpoint				creation is not allowed, callbacks are only invoked when the process is not suspended.				However, any suspended process will receive an updated copy of the cache when it				resumes its running state.
+--
+-- ObjC selector: @+ sharedInstance@
+sharedInstance :: IO (Id MIDICIDeviceManager)
+sharedInstance  =
+  do
+    cls' <- getRequiredClass "MIDICIDeviceManager"
+    sendClassMsg cls' (mkSelector "sharedInstance") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | discoveredCIDevices
 --
 -- A list of MIDICIDevices that responded to the last MIDI-CI discovery request.
@@ -45,6 +60,10 @@ discoveredCIDevices midiciDeviceManager  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @sharedInstance@
+sharedInstanceSelector :: Selector
+sharedInstanceSelector = mkSelector "sharedInstance"
 
 -- | @Selector@ for @discoveredCIDevices@
 discoveredCIDevicesSelector :: Selector

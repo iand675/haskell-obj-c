@@ -13,6 +13,7 @@ module ObjC.BrowserEngineKit.BEDownloadMonitor
   , beginMonitoring
   , resumeMonitoring_completionHandler
   , createAccessToken
+  , identifier
   , sourceURL
   , destinationURL
   , initSelector
@@ -22,6 +23,7 @@ module ObjC.BrowserEngineKit.BEDownloadMonitor
   , beginMonitoringSelector
   , resumeMonitoring_completionHandlerSelector
   , createAccessTokenSelector
+  , identifierSelector
   , sourceURLSelector
   , destinationURLSelector
 
@@ -89,6 +91,11 @@ createAccessToken  =
     cls' <- getRequiredClass "BEDownloadMonitor"
     sendClassMsg cls' (mkSelector "createAccessToken") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- identifier@
+identifier :: IsBEDownloadMonitor beDownloadMonitor => beDownloadMonitor -> IO (Id NSUUID)
+identifier beDownloadMonitor  =
+    sendMsg beDownloadMonitor (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- sourceURL@
 sourceURL :: IsBEDownloadMonitor beDownloadMonitor => beDownloadMonitor -> IO (Id NSURL)
 sourceURL beDownloadMonitor  =
@@ -130,6 +137,10 @@ resumeMonitoring_completionHandlerSelector = mkSelector "resumeMonitoring:comple
 -- | @Selector@ for @createAccessToken@
 createAccessTokenSelector :: Selector
 createAccessTokenSelector = mkSelector "createAccessToken"
+
+-- | @Selector@ for @identifier@
+identifierSelector :: Selector
+identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @sourceURL@
 sourceURLSelector :: Selector

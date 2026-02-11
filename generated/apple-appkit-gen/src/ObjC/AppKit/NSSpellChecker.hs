@@ -42,9 +42,15 @@ module ObjC.AppKit.NSSpellChecker
   , forgetWord
   , sharedSpellChecker
   , sharedSpellCheckerExists
+  , userReplacementsDictionary
   , spellingPanel
   , accessoryView
   , setAccessoryView
+  , substitutionsPanel
+  , substitutionsPanelAccessoryViewController
+  , setSubstitutionsPanelAccessoryViewController
+  , availableLanguages
+  , userPreferredLanguages
   , automaticallyIdentifiesLanguages
   , setAutomaticallyIdentifiesLanguages
   , automaticTextReplacementEnabled
@@ -90,9 +96,15 @@ module ObjC.AppKit.NSSpellChecker
   , forgetWordSelector
   , sharedSpellCheckerSelector
   , sharedSpellCheckerExistsSelector
+  , userReplacementsDictionarySelector
   , spellingPanelSelector
   , accessoryViewSelector
   , setAccessoryViewSelector
+  , substitutionsPanelSelector
+  , substitutionsPanelAccessoryViewControllerSelector
+  , setSubstitutionsPanelAccessoryViewControllerSelector
+  , availableLanguagesSelector
+  , userPreferredLanguagesSelector
   , automaticallyIdentifiesLanguagesSelector
   , setAutomaticallyIdentifiesLanguagesSelector
   , automaticTextReplacementEnabledSelector
@@ -366,6 +378,11 @@ sharedSpellCheckerExists  =
     cls' <- getRequiredClass "NSSpellChecker"
     fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "sharedSpellCheckerExists") retCULong []
 
+-- | @- userReplacementsDictionary@
+userReplacementsDictionary :: IsNSSpellChecker nsSpellChecker => nsSpellChecker -> IO (Id NSDictionary)
+userReplacementsDictionary nsSpellChecker  =
+    sendMsg nsSpellChecker (mkSelector "userReplacementsDictionary") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- spellingPanel@
 spellingPanel :: IsNSSpellChecker nsSpellChecker => nsSpellChecker -> IO (Id NSPanel)
 spellingPanel nsSpellChecker  =
@@ -381,6 +398,32 @@ setAccessoryView :: (IsNSSpellChecker nsSpellChecker, IsNSView value) => nsSpell
 setAccessoryView nsSpellChecker  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsSpellChecker (mkSelector "setAccessoryView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- substitutionsPanel@
+substitutionsPanel :: IsNSSpellChecker nsSpellChecker => nsSpellChecker -> IO (Id NSPanel)
+substitutionsPanel nsSpellChecker  =
+    sendMsg nsSpellChecker (mkSelector "substitutionsPanel") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- substitutionsPanelAccessoryViewController@
+substitutionsPanelAccessoryViewController :: IsNSSpellChecker nsSpellChecker => nsSpellChecker -> IO (Id NSViewController)
+substitutionsPanelAccessoryViewController nsSpellChecker  =
+    sendMsg nsSpellChecker (mkSelector "substitutionsPanelAccessoryViewController") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setSubstitutionsPanelAccessoryViewController:@
+setSubstitutionsPanelAccessoryViewController :: (IsNSSpellChecker nsSpellChecker, IsNSViewController value) => nsSpellChecker -> value -> IO ()
+setSubstitutionsPanelAccessoryViewController nsSpellChecker  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsSpellChecker (mkSelector "setSubstitutionsPanelAccessoryViewController:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- availableLanguages@
+availableLanguages :: IsNSSpellChecker nsSpellChecker => nsSpellChecker -> IO (Id NSArray)
+availableLanguages nsSpellChecker  =
+    sendMsg nsSpellChecker (mkSelector "availableLanguages") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- userPreferredLanguages@
+userPreferredLanguages :: IsNSSpellChecker nsSpellChecker => nsSpellChecker -> IO (Id NSArray)
+userPreferredLanguages nsSpellChecker  =
+    sendMsg nsSpellChecker (mkSelector "userPreferredLanguages") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- automaticallyIdentifiesLanguages@
 automaticallyIdentifiesLanguages :: IsNSSpellChecker nsSpellChecker => nsSpellChecker -> IO Bool
@@ -592,6 +635,10 @@ sharedSpellCheckerSelector = mkSelector "sharedSpellChecker"
 sharedSpellCheckerExistsSelector :: Selector
 sharedSpellCheckerExistsSelector = mkSelector "sharedSpellCheckerExists"
 
+-- | @Selector@ for @userReplacementsDictionary@
+userReplacementsDictionarySelector :: Selector
+userReplacementsDictionarySelector = mkSelector "userReplacementsDictionary"
+
 -- | @Selector@ for @spellingPanel@
 spellingPanelSelector :: Selector
 spellingPanelSelector = mkSelector "spellingPanel"
@@ -603,6 +650,26 @@ accessoryViewSelector = mkSelector "accessoryView"
 -- | @Selector@ for @setAccessoryView:@
 setAccessoryViewSelector :: Selector
 setAccessoryViewSelector = mkSelector "setAccessoryView:"
+
+-- | @Selector@ for @substitutionsPanel@
+substitutionsPanelSelector :: Selector
+substitutionsPanelSelector = mkSelector "substitutionsPanel"
+
+-- | @Selector@ for @substitutionsPanelAccessoryViewController@
+substitutionsPanelAccessoryViewControllerSelector :: Selector
+substitutionsPanelAccessoryViewControllerSelector = mkSelector "substitutionsPanelAccessoryViewController"
+
+-- | @Selector@ for @setSubstitutionsPanelAccessoryViewController:@
+setSubstitutionsPanelAccessoryViewControllerSelector :: Selector
+setSubstitutionsPanelAccessoryViewControllerSelector = mkSelector "setSubstitutionsPanelAccessoryViewController:"
+
+-- | @Selector@ for @availableLanguages@
+availableLanguagesSelector :: Selector
+availableLanguagesSelector = mkSelector "availableLanguages"
+
+-- | @Selector@ for @userPreferredLanguages@
+userPreferredLanguagesSelector :: Selector
+userPreferredLanguagesSelector = mkSelector "userPreferredLanguages"
 
 -- | @Selector@ for @automaticallyIdentifiesLanguages@
 automaticallyIdentifiesLanguagesSelector :: Selector

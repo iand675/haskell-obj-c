@@ -31,6 +31,7 @@ module ObjC.CloudKit.CKRecord
   , share
   , parent
   , setParent
+  , encryptedValues
   , initSelector
   , newSelector
   , initWithRecordTypeSelector
@@ -56,6 +57,7 @@ module ObjC.CloudKit.CKRecord
   , shareSelector
   , parentSelector
   , setParentSelector
+  , encryptedValuesSelector
 
 
   ) where
@@ -291,6 +293,13 @@ setParent ckRecord  value =
   withObjCPtr value $ \raw_value ->
       sendMsg ckRecord (mkSelector "setParent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | Any values set here will be locally encrypted before being saved to the server and locally decrypted when fetched from the server. Encryption and decryption is handled by the CloudKit framework. Key material necessary for decryption are available to the owner of the record, as well as any users that can access this record via a CKShare. All CKRecordValue types can be set here except CKAsset and CKReference.
+--
+-- ObjC selector: @- encryptedValues@
+encryptedValues :: IsCKRecord ckRecord => ckRecord -> IO RawId
+encryptedValues ckRecord  =
+    fmap (RawId . castPtr) $ sendMsg ckRecord (mkSelector "encryptedValues") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -394,4 +403,8 @@ parentSelector = mkSelector "parent"
 -- | @Selector@ for @setParent:@
 setParentSelector :: Selector
 setParentSelector = mkSelector "setParent:"
+
+-- | @Selector@ for @encryptedValues@
+encryptedValuesSelector :: Selector
+encryptedValuesSelector = mkSelector "encryptedValues"
 

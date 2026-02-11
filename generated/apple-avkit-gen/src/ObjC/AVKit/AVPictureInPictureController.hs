@@ -18,7 +18,11 @@ module ObjC.AVKit.AVPictureInPictureController
   , invalidatePlaybackState
   , pictureInPictureButtonStartImage
   , pictureInPictureButtonStopImage
+  , contentSource
+  , setContentSource
   , playerLayer
+  , delegate
+  , setDelegate
   , pictureInPicturePossible
   , pictureInPictureActive
   , pictureInPictureSuspended
@@ -35,7 +39,11 @@ module ObjC.AVKit.AVPictureInPictureController
   , invalidatePlaybackStateSelector
   , pictureInPictureButtonStartImageSelector
   , pictureInPictureButtonStopImageSelector
+  , contentSourceSelector
+  , setContentSourceSelector
   , playerLayerSelector
+  , delegateSelector
+  , setDelegateSelector
   , pictureInPicturePossibleSelector
   , pictureInPictureActiveSelector
   , pictureInPictureSuspendedSelector
@@ -157,6 +165,25 @@ pictureInPictureButtonStopImage  =
     cls' <- getRequiredClass "AVPictureInPictureController"
     sendClassMsg cls' (mkSelector "pictureInPictureButtonStopImage") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | contentSource
+--
+-- The receiver's content source. Can be changed while Picture in Picture is active, but the new content source must be ready for display (in the case of AVPlayerLayer, that means AVPlayerLayer.isReadyForDisplay must return YES), otherwise Picture in Picture will stop.
+--
+-- ObjC selector: @- contentSource@
+contentSource :: IsAVPictureInPictureController avPictureInPictureController => avPictureInPictureController -> IO (Id AVPictureInPictureControllerContentSource)
+contentSource avPictureInPictureController  =
+    sendMsg avPictureInPictureController (mkSelector "contentSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | contentSource
+--
+-- The receiver's content source. Can be changed while Picture in Picture is active, but the new content source must be ready for display (in the case of AVPlayerLayer, that means AVPlayerLayer.isReadyForDisplay must return YES), otherwise Picture in Picture will stop.
+--
+-- ObjC selector: @- setContentSource:@
+setContentSource :: (IsAVPictureInPictureController avPictureInPictureController, IsAVPictureInPictureControllerContentSource value) => avPictureInPictureController -> value -> IO ()
+setContentSource avPictureInPictureController  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avPictureInPictureController (mkSelector "setContentSource:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | playerLayer
 --
 -- The receiver's player layer.
@@ -165,6 +192,24 @@ pictureInPictureButtonStopImage  =
 playerLayer :: IsAVPictureInPictureController avPictureInPictureController => avPictureInPictureController -> IO (Id AVPlayerLayer)
 playerLayer avPictureInPictureController  =
     sendMsg avPictureInPictureController (mkSelector "playerLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | delegate
+--
+-- The receiver's delegate.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsAVPictureInPictureController avPictureInPictureController => avPictureInPictureController -> IO RawId
+delegate avPictureInPictureController  =
+    fmap (RawId . castPtr) $ sendMsg avPictureInPictureController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- The receiver's delegate.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsAVPictureInPictureController avPictureInPictureController => avPictureInPictureController -> RawId -> IO ()
+setDelegate avPictureInPictureController  value =
+    sendMsg avPictureInPictureController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | pictureInPicturePossible
 --
@@ -284,9 +329,25 @@ pictureInPictureButtonStartImageSelector = mkSelector "pictureInPictureButtonSta
 pictureInPictureButtonStopImageSelector :: Selector
 pictureInPictureButtonStopImageSelector = mkSelector "pictureInPictureButtonStopImage"
 
+-- | @Selector@ for @contentSource@
+contentSourceSelector :: Selector
+contentSourceSelector = mkSelector "contentSource"
+
+-- | @Selector@ for @setContentSource:@
+setContentSourceSelector :: Selector
+setContentSourceSelector = mkSelector "setContentSource:"
+
 -- | @Selector@ for @playerLayer@
 playerLayerSelector :: Selector
 playerLayerSelector = mkSelector "playerLayer"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @pictureInPicturePossible@
 pictureInPicturePossibleSelector :: Selector

@@ -84,6 +84,8 @@ module ObjC.AppKit.NSApplication
   , nextEventMatchingMask_untilDate_inMode_dequeue
   , discardEventsMatchingMask_beforeEvent
   , sharedApplication
+  , delegate
+  , setDelegate
   , mainWindow
   , keyWindow
   , active
@@ -94,8 +96,11 @@ module ObjC.AppKit.NSApplication
   , windows
   , mainMenu
   , setMainMenu
+  , helpMenu
+  , setHelpMenu
   , applicationIconImage
   , setApplicationIconImage
+  , dockTile
   , presentationOptions
   , setPresentationOptions
   , currentSystemPresentationOptions
@@ -105,6 +110,7 @@ module ObjC.AppKit.NSApplication
   , orderedWindows
   , automaticCustomizeTouchBarMenuItemEnabled
   , setAutomaticCustomizeTouchBarMenuItemEnabled
+  , context
   , registeredForRemoteNotifications
   , enabledRemoteNotificationTypes
   , userInterfaceLayoutDirection
@@ -116,6 +122,9 @@ module ObjC.AppKit.NSApplication
   , windowsMenu
   , setWindowsMenu
   , currentEvent
+  , appearance
+  , setAppearance
+  , effectiveAppearance
   , hideSelector
   , unhideSelector
   , unhideWithoutActivationSelector
@@ -193,6 +202,8 @@ module ObjC.AppKit.NSApplication
   , nextEventMatchingMask_untilDate_inMode_dequeueSelector
   , discardEventsMatchingMask_beforeEventSelector
   , sharedApplicationSelector
+  , delegateSelector
+  , setDelegateSelector
   , mainWindowSelector
   , keyWindowSelector
   , activeSelector
@@ -203,8 +214,11 @@ module ObjC.AppKit.NSApplication
   , windowsSelector
   , mainMenuSelector
   , setMainMenuSelector
+  , helpMenuSelector
+  , setHelpMenuSelector
   , applicationIconImageSelector
   , setApplicationIconImageSelector
+  , dockTileSelector
   , presentationOptionsSelector
   , setPresentationOptionsSelector
   , currentSystemPresentationOptionsSelector
@@ -214,6 +228,7 @@ module ObjC.AppKit.NSApplication
   , orderedWindowsSelector
   , automaticCustomizeTouchBarMenuItemEnabledSelector
   , setAutomaticCustomizeTouchBarMenuItemEnabledSelector
+  , contextSelector
   , registeredForRemoteNotificationsSelector
   , enabledRemoteNotificationTypesSelector
   , userInterfaceLayoutDirectionSelector
@@ -225,6 +240,9 @@ module ObjC.AppKit.NSApplication
   , windowsMenuSelector
   , setWindowsMenuSelector
   , currentEventSelector
+  , appearanceSelector
+  , setAppearanceSelector
+  , effectiveAppearanceSelector
 
   -- * Enum types
   , NSApplicationActivationPolicy(NSApplicationActivationPolicy)
@@ -797,6 +815,16 @@ sharedApplication  =
     cls' <- getRequiredClass "NSApplication"
     sendClassMsg cls' (mkSelector "sharedApplication") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- delegate@
+delegate :: IsNSApplication nsApplication => nsApplication -> IO RawId
+delegate nsApplication  =
+    fmap (RawId . castPtr) $ sendMsg nsApplication (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSApplication nsApplication => nsApplication -> RawId -> IO ()
+setDelegate nsApplication  value =
+    sendMsg nsApplication (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- mainWindow@
 mainWindow :: IsNSApplication nsApplication => nsApplication -> IO (Id NSWindow)
 mainWindow nsApplication  =
@@ -850,6 +878,21 @@ setMainMenu nsApplication  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsApplication (mkSelector "setMainMenu:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | Set or get the Help menu for the app.  If a non-nil menu is set as the Help menu, Spotlight for Help will be installed in it; otherwise AppKit will install Spotlight for Help into a menu of its choosing (and that menu is not returned from @-helpMenu@).  If you wish to completely suppress Spotlight for Help, you can set a menu that does not appear in the menu bar.  @NSApplication@ retains its Help menu and releases it when a different menu is set.
+--
+-- ObjC selector: @- helpMenu@
+helpMenu :: IsNSApplication nsApplication => nsApplication -> IO (Id NSMenu)
+helpMenu nsApplication  =
+    sendMsg nsApplication (mkSelector "helpMenu") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Set or get the Help menu for the app.  If a non-nil menu is set as the Help menu, Spotlight for Help will be installed in it; otherwise AppKit will install Spotlight for Help into a menu of its choosing (and that menu is not returned from @-helpMenu@).  If you wish to completely suppress Spotlight for Help, you can set a menu that does not appear in the menu bar.  @NSApplication@ retains its Help menu and releases it when a different menu is set.
+--
+-- ObjC selector: @- setHelpMenu:@
+setHelpMenu :: (IsNSApplication nsApplication, IsNSMenu value) => nsApplication -> value -> IO ()
+setHelpMenu nsApplication  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsApplication (mkSelector "setHelpMenu:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- applicationIconImage@
 applicationIconImage :: IsNSApplication nsApplication => nsApplication -> IO (Id NSImage)
 applicationIconImage nsApplication  =
@@ -860,6 +903,11 @@ setApplicationIconImage :: (IsNSApplication nsApplication, IsNSImage value) => n
 setApplicationIconImage nsApplication  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsApplication (mkSelector "setApplicationIconImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- dockTile@
+dockTile :: IsNSApplication nsApplication => nsApplication -> IO (Id NSDockTile)
+dockTile nsApplication  =
+    sendMsg nsApplication (mkSelector "dockTile") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | Gets or sets the @presentationOptions@ that should be in effect for the system when this application is the active application.  Only certain combinations of @NSApplicationPresentationOptions@ flags are allowed, as detailed in the AppKit Release Notes and the reference documentation for @-setPresentationOptions:@.  When given an invalid combination of option flags, @-setPresentationOptions:@ raises an exception.
 --
@@ -915,6 +963,13 @@ automaticCustomizeTouchBarMenuItemEnabled nsApplication  =
 setAutomaticCustomizeTouchBarMenuItemEnabled :: IsNSApplication nsApplication => nsApplication -> Bool -> IO ()
 setAutomaticCustomizeTouchBarMenuItemEnabled nsApplication  value =
     sendMsg nsApplication (mkSelector "setAutomaticCustomizeTouchBarMenuItemEnabled:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | This method is deprecated as of macOS 10.12. Beginning in OS X 10.11 it would always return nil. Prior to this it would return an undefined graphics context that was not generally suitable for drawing.
+--
+-- ObjC selector: @- context@
+context :: IsNSApplication nsApplication => nsApplication -> IO (Id NSGraphicsContext)
+context nsApplication  =
+    sendMsg nsApplication (mkSelector "context") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | Returns: @YES@ if the application is currently registered for remote notifications, taking into account any systemwide settings; doesn't relate to connectivity.
 --
@@ -976,6 +1031,22 @@ setWindowsMenu nsApplication  value =
 currentEvent :: IsNSApplication nsApplication => nsApplication -> IO (Id NSEvent)
 currentEvent nsApplication  =
     sendMsg nsApplication (mkSelector "currentEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- appearance@
+appearance :: IsNSApplication nsApplication => nsApplication -> IO (Id NSAppearance)
+appearance nsApplication  =
+    sendMsg nsApplication (mkSelector "appearance") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setAppearance:@
+setAppearance :: (IsNSApplication nsApplication, IsNSAppearance value) => nsApplication -> value -> IO ()
+setAppearance nsApplication  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsApplication (mkSelector "setAppearance:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- effectiveAppearance@
+effectiveAppearance :: IsNSApplication nsApplication => nsApplication -> IO (Id NSAppearance)
+effectiveAppearance nsApplication  =
+    sendMsg nsApplication (mkSelector "effectiveAppearance") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -1289,6 +1360,14 @@ discardEventsMatchingMask_beforeEventSelector = mkSelector "discardEventsMatchin
 sharedApplicationSelector :: Selector
 sharedApplicationSelector = mkSelector "sharedApplication"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @mainWindow@
 mainWindowSelector :: Selector
 mainWindowSelector = mkSelector "mainWindow"
@@ -1329,6 +1408,14 @@ mainMenuSelector = mkSelector "mainMenu"
 setMainMenuSelector :: Selector
 setMainMenuSelector = mkSelector "setMainMenu:"
 
+-- | @Selector@ for @helpMenu@
+helpMenuSelector :: Selector
+helpMenuSelector = mkSelector "helpMenu"
+
+-- | @Selector@ for @setHelpMenu:@
+setHelpMenuSelector :: Selector
+setHelpMenuSelector = mkSelector "setHelpMenu:"
+
 -- | @Selector@ for @applicationIconImage@
 applicationIconImageSelector :: Selector
 applicationIconImageSelector = mkSelector "applicationIconImage"
@@ -1336,6 +1423,10 @@ applicationIconImageSelector = mkSelector "applicationIconImage"
 -- | @Selector@ for @setApplicationIconImage:@
 setApplicationIconImageSelector :: Selector
 setApplicationIconImageSelector = mkSelector "setApplicationIconImage:"
+
+-- | @Selector@ for @dockTile@
+dockTileSelector :: Selector
+dockTileSelector = mkSelector "dockTile"
 
 -- | @Selector@ for @presentationOptions@
 presentationOptionsSelector :: Selector
@@ -1372,6 +1463,10 @@ automaticCustomizeTouchBarMenuItemEnabledSelector = mkSelector "automaticCustomi
 -- | @Selector@ for @setAutomaticCustomizeTouchBarMenuItemEnabled:@
 setAutomaticCustomizeTouchBarMenuItemEnabledSelector :: Selector
 setAutomaticCustomizeTouchBarMenuItemEnabledSelector = mkSelector "setAutomaticCustomizeTouchBarMenuItemEnabled:"
+
+-- | @Selector@ for @context@
+contextSelector :: Selector
+contextSelector = mkSelector "context"
 
 -- | @Selector@ for @registeredForRemoteNotifications@
 registeredForRemoteNotificationsSelector :: Selector
@@ -1416,4 +1511,16 @@ setWindowsMenuSelector = mkSelector "setWindowsMenu:"
 -- | @Selector@ for @currentEvent@
 currentEventSelector :: Selector
 currentEventSelector = mkSelector "currentEvent"
+
+-- | @Selector@ for @appearance@
+appearanceSelector :: Selector
+appearanceSelector = mkSelector "appearance"
+
+-- | @Selector@ for @setAppearance:@
+setAppearanceSelector :: Selector
+setAppearanceSelector = mkSelector "setAppearance:"
+
+-- | @Selector@ for @effectiveAppearance@
+effectiveAppearanceSelector :: Selector
+effectiveAppearanceSelector = mkSelector "effectiveAppearance"
 

@@ -46,6 +46,7 @@ module ObjC.CoreWLAN.CWInterface
   , associateToEnterpriseNetwork_identity_username_password_error
   , startIBSSModeWithSSID_security_channel_password_error
   , commitConfiguration_authorization_error
+  , interfaceName
   , powerOnSelector
   , supportedWLANChannelsSelector
   , wlanChannelSelector
@@ -81,6 +82,7 @@ module ObjC.CoreWLAN.CWInterface
   , associateToEnterpriseNetwork_identity_username_password_errorSelector
   , startIBSSModeWithSSID_security_channel_password_errorSelector
   , commitConfiguration_authorization_errorSelector
+  , interfaceNameSelector
 
   -- * Enum types
   , CWCipherKeyFlags(CWCipherKeyFlags)
@@ -627,6 +629,13 @@ commitConfiguration_authorization_error cwInterface  configuration authorization
       withObjCPtr error_ $ \raw_error_ ->
           fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwInterface (mkSelector "commitConfiguration:authorization:error:") retCULong [argPtr (castPtr raw_configuration :: Ptr ()), argPtr (castPtr raw_authorization :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
 
+-- | Returns the BSD name of the Wi-Fi interface (e.g. "en0").
+--
+-- ObjC selector: @- interfaceName@
+interfaceName :: IsCWInterface cwInterface => cwInterface -> IO RawId
+interfaceName cwInterface  =
+    fmap (RawId . castPtr) $ sendMsg cwInterface (mkSelector "interfaceName") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -770,4 +779,8 @@ startIBSSModeWithSSID_security_channel_password_errorSelector = mkSelector "star
 -- | @Selector@ for @commitConfiguration:authorization:error:@
 commitConfiguration_authorization_errorSelector :: Selector
 commitConfiguration_authorization_errorSelector = mkSelector "commitConfiguration:authorization:error:"
+
+-- | @Selector@ for @interfaceName@
+interfaceNameSelector :: Selector
+interfaceNameSelector = mkSelector "interfaceName"
 

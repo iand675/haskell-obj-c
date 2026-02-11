@@ -16,12 +16,14 @@ module ObjC.Virtualization.VZVirtioFileSystemDeviceConfiguration
   , setTag
   , share
   , setShare
+  , macOSGuestAutomountTag
   , initWithTagSelector
   , validateTag_errorSelector
   , tagSelector
   , setTagSelector
   , shareSelector
   , setShareSelector
+  , macOSGuestAutomountTagSelector
 
 
   ) where
@@ -122,6 +124,17 @@ setShare vzVirtioFileSystemDeviceConfiguration  value =
   withObjCPtr value $ \raw_value ->
       sendMsg vzVirtioFileSystemDeviceConfiguration (mkSelector "setShare:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | The macOS automount tag.
+--
+-- A device configured with this tag will be automatically mounted in a macOS guest.
+--
+-- ObjC selector: @+ macOSGuestAutomountTag@
+macOSGuestAutomountTag :: IO (Id NSString)
+macOSGuestAutomountTag  =
+  do
+    cls' <- getRequiredClass "VZVirtioFileSystemDeviceConfiguration"
+    sendClassMsg cls' (mkSelector "macOSGuestAutomountTag") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -149,4 +162,8 @@ shareSelector = mkSelector "share"
 -- | @Selector@ for @setShare:@
 setShareSelector :: Selector
 setShareSelector = mkSelector "setShare:"
+
+-- | @Selector@ for @macOSGuestAutomountTag@
+macOSGuestAutomountTagSelector :: Selector
+macOSGuestAutomountTagSelector = mkSelector "macOSGuestAutomountTag"
 

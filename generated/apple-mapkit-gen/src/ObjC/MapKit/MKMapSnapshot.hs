@@ -7,7 +7,9 @@ module ObjC.MapKit.MKMapSnapshot
   ( MKMapSnapshot
   , IsMKMapSnapshot(..)
   , image
+  , appearance
   , imageSelector
+  , appearanceSelector
 
 
   ) where
@@ -34,6 +36,11 @@ image :: IsMKMapSnapshot mkMapSnapshot => mkMapSnapshot -> IO (Id NSImage)
 image mkMapSnapshot  =
     sendMsg mkMapSnapshot (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- appearance@
+appearance :: IsMKMapSnapshot mkMapSnapshot => mkMapSnapshot -> IO (Id NSAppearance)
+appearance mkMapSnapshot  =
+    sendMsg mkMapSnapshot (mkSelector "appearance") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -41,4 +48,8 @@ image mkMapSnapshot  =
 -- | @Selector@ for @image@
 imageSelector :: Selector
 imageSelector = mkSelector "image"
+
+-- | @Selector@ for @appearance@
+appearanceSelector :: Selector
+appearanceSelector = mkSelector "appearance"
 

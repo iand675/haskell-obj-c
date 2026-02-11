@@ -41,6 +41,8 @@ module ObjC.IOBluetooth.IOBluetoothHandsFree
   , deviceCallHoldModes
   , smsMode
   , smsEnabled
+  , delegate
+  , setDelegate
   , connected
   , indicatorSelector
   , setIndicator_valueSelector
@@ -66,6 +68,8 @@ module ObjC.IOBluetooth.IOBluetoothHandsFree
   , deviceCallHoldModesSelector
   , smsModeSelector
   , smsEnabledSelector
+  , delegateSelector
+  , setDelegateSelector
   , connectedSelector
 
   -- * Enum types
@@ -484,6 +488,48 @@ smsEnabled :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFre
 smsEnabled ioBluetoothHandsFree  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothHandsFree (mkSelector "SMSEnabled") retCULong []
 
+-- | delegate
+--
+-- Return the delegate
+--
+-- Returns the hands free object's delegate.
+--
+-- Returns: The delegate for the hands free object or nil if it doesn't have a delegate.
+--
+-- setDelegate:newDelegate
+--
+-- Sets the hands free object’s delegate to a given object or removes an existing delegate.
+--
+-- A IOBluetoothHandsFree delegate can optionally respond to any of the delegate methods in IOBluetoothHandsFreeDelegate and any subclasses delegates.
+--
+-- @newDelegate@ — The delegate for the hands free object. Pass nil to remove an existing delegate.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> IO RawId
+delegate ioBluetoothHandsFree  =
+    fmap (RawId . castPtr) $ sendMsg ioBluetoothHandsFree (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- Return the delegate
+--
+-- Returns the hands free object's delegate.
+--
+-- Returns: The delegate for the hands free object or nil if it doesn't have a delegate.
+--
+-- setDelegate:newDelegate
+--
+-- Sets the hands free object’s delegate to a given object or removes an existing delegate.
+--
+-- A IOBluetoothHandsFree delegate can optionally respond to any of the delegate methods in IOBluetoothHandsFreeDelegate and any subclasses delegates.
+--
+-- @newDelegate@ — The delegate for the hands free object. Pass nil to remove an existing delegate.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> RawId -> IO ()
+setDelegate ioBluetoothHandsFree  value =
+    sendMsg ioBluetoothHandsFree (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | isConnected
 --
 -- Determine if there is a serivice level connection to the device
@@ -596,6 +642,14 @@ smsModeSelector = mkSelector "SMSMode"
 -- | @Selector@ for @SMSEnabled@
 smsEnabledSelector :: Selector
 smsEnabledSelector = mkSelector "SMSEnabled"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @connected@
 connectedSelector :: Selector

@@ -16,6 +16,8 @@ module ObjC.GameKit.GKVoiceChatService
   , denyCallID
   , receivedRealTimeData_fromParticipantID
   , receivedData_fromParticipantID
+  , client
+  , setClient
   , microphoneMuted
   , setMicrophoneMuted
   , remoteParticipantVolume
@@ -34,6 +36,8 @@ module ObjC.GameKit.GKVoiceChatService
   , denyCallIDSelector
   , receivedRealTimeData_fromParticipantIDSelector
   , receivedData_fromParticipantIDSelector
+  , clientSelector
+  , setClientSelector
   , microphoneMutedSelector
   , setMicrophoneMutedSelector
   , remoteParticipantVolumeSelector
@@ -114,6 +118,16 @@ receivedData_fromParticipantID gkVoiceChatService  arbitraryData participantID =
   withObjCPtr arbitraryData $ \raw_arbitraryData ->
     withObjCPtr participantID $ \raw_participantID ->
         sendMsg gkVoiceChatService (mkSelector "receivedData:fromParticipantID:") retVoid [argPtr (castPtr raw_arbitraryData :: Ptr ()), argPtr (castPtr raw_participantID :: Ptr ())]
+
+-- | @- client@
+client :: IsGKVoiceChatService gkVoiceChatService => gkVoiceChatService -> IO RawId
+client gkVoiceChatService  =
+    fmap (RawId . castPtr) $ sendMsg gkVoiceChatService (mkSelector "client") (retPtr retVoid) []
+
+-- | @- setClient:@
+setClient :: IsGKVoiceChatService gkVoiceChatService => gkVoiceChatService -> RawId -> IO ()
+setClient gkVoiceChatService  value =
+    sendMsg gkVoiceChatService (mkSelector "setClient:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- microphoneMuted@
 microphoneMuted :: IsGKVoiceChatService gkVoiceChatService => gkVoiceChatService -> IO Bool
@@ -200,6 +214,14 @@ receivedRealTimeData_fromParticipantIDSelector = mkSelector "receivedRealTimeDat
 -- | @Selector@ for @receivedData:fromParticipantID:@
 receivedData_fromParticipantIDSelector :: Selector
 receivedData_fromParticipantIDSelector = mkSelector "receivedData:fromParticipantID:"
+
+-- | @Selector@ for @client@
+clientSelector :: Selector
+clientSelector = mkSelector "client"
+
+-- | @Selector@ for @setClient:@
+setClientSelector :: Selector
+setClientSelector = mkSelector "setClient:"
 
 -- | @Selector@ for @microphoneMuted@
 microphoneMutedSelector :: Selector

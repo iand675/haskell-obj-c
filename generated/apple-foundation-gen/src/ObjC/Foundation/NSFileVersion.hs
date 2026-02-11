@@ -21,6 +21,7 @@ module ObjC.Foundation.NSFileVersion
   , localizedNameOfSavingComputer
   , originatorNameComponents
   , modificationDate
+  , persistentIdentifier
   , conflict
   , resolved
   , setResolved
@@ -42,6 +43,7 @@ module ObjC.Foundation.NSFileVersion
   , localizedNameOfSavingComputerSelector
   , originatorNameComponentsSelector
   , modificationDateSelector
+  , persistentIdentifierSelector
   , conflictSelector
   , resolvedSelector
   , setResolvedSelector
@@ -170,6 +172,11 @@ modificationDate :: IsNSFileVersion nsFileVersion => nsFileVersion -> IO (Id NSD
 modificationDate nsFileVersion  =
     sendMsg nsFileVersion (mkSelector "modificationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- persistentIdentifier@
+persistentIdentifier :: IsNSFileVersion nsFileVersion => nsFileVersion -> IO RawId
+persistentIdentifier nsFileVersion  =
+    fmap (RawId . castPtr) $ sendMsg nsFileVersion (mkSelector "persistentIdentifier") (retPtr retVoid) []
+
 -- | @- conflict@
 conflict :: IsNSFileVersion nsFileVersion => nsFileVersion -> IO Bool
 conflict nsFileVersion  =
@@ -264,6 +271,10 @@ originatorNameComponentsSelector = mkSelector "originatorNameComponents"
 -- | @Selector@ for @modificationDate@
 modificationDateSelector :: Selector
 modificationDateSelector = mkSelector "modificationDate"
+
+-- | @Selector@ for @persistentIdentifier@
+persistentIdentifierSelector :: Selector
+persistentIdentifierSelector = mkSelector "persistentIdentifier"
 
 -- | @Selector@ for @conflict@
 conflictSelector :: Selector

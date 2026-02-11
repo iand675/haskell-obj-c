@@ -9,6 +9,9 @@ module ObjC.CoreLocation.CLPlacemark
   , init_
   , new
   , initWithPlacemark
+  , region
+  , timeZone
+  , addressDictionary
   , name
   , thoroughfare
   , subThoroughfare
@@ -22,9 +25,13 @@ module ObjC.CoreLocation.CLPlacemark
   , inlandWater
   , ocean
   , areasOfInterest
+  , postalAddress
   , initSelector
   , newSelector
   , initWithPlacemarkSelector
+  , regionSelector
+  , timeZoneSelector
+  , addressDictionarySelector
   , nameSelector
   , thoroughfareSelector
   , subThoroughfareSelector
@@ -38,6 +45,7 @@ module ObjC.CoreLocation.CLPlacemark
   , inlandWaterSelector
   , oceanSelector
   , areasOfInterestSelector
+  , postalAddressSelector
 
 
   ) where
@@ -74,6 +82,21 @@ initWithPlacemark :: (IsCLPlacemark clPlacemark, IsCLPlacemark placemark) => clP
 initWithPlacemark clPlacemark  placemark =
   withObjCPtr placemark $ \raw_placemark ->
       sendMsg clPlacemark (mkSelector "initWithPlacemark:") (retPtr retVoid) [argPtr (castPtr raw_placemark :: Ptr ())] >>= ownedObject . castPtr
+
+-- | @- region@
+region :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id CLRegion)
+region clPlacemark  =
+    sendMsg clPlacemark (mkSelector "region") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- timeZone@
+timeZone :: IsCLPlacemark clPlacemark => clPlacemark -> IO RawId
+timeZone clPlacemark  =
+    fmap (RawId . castPtr) $ sendMsg clPlacemark (mkSelector "timeZone") (retPtr retVoid) []
+
+-- | @- addressDictionary@
+addressDictionary :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id NSDictionary)
+addressDictionary clPlacemark  =
+    sendMsg clPlacemark (mkSelector "addressDictionary") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- name@
 name :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id NSString)
@@ -140,6 +163,11 @@ areasOfInterest :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id NSArray)
 areasOfInterest clPlacemark  =
     sendMsg clPlacemark (mkSelector "areasOfInterest") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- postalAddress@
+postalAddress :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id CNPostalAddress)
+postalAddress clPlacemark  =
+    sendMsg clPlacemark (mkSelector "postalAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -155,6 +183,18 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @initWithPlacemark:@
 initWithPlacemarkSelector :: Selector
 initWithPlacemarkSelector = mkSelector "initWithPlacemark:"
+
+-- | @Selector@ for @region@
+regionSelector :: Selector
+regionSelector = mkSelector "region"
+
+-- | @Selector@ for @timeZone@
+timeZoneSelector :: Selector
+timeZoneSelector = mkSelector "timeZone"
+
+-- | @Selector@ for @addressDictionary@
+addressDictionarySelector :: Selector
+addressDictionarySelector = mkSelector "addressDictionary"
 
 -- | @Selector@ for @name@
 nameSelector :: Selector
@@ -207,4 +247,8 @@ oceanSelector = mkSelector "ocean"
 -- | @Selector@ for @areasOfInterest@
 areasOfInterestSelector :: Selector
 areasOfInterestSelector = mkSelector "areasOfInterest"
+
+-- | @Selector@ for @postalAddress@
+postalAddressSelector :: Selector
+postalAddressSelector = mkSelector "postalAddress"
 

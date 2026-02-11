@@ -22,6 +22,8 @@ module ObjC.AppKit.NSSpeechSynthesizer
   , setObject_forProperty_error
   , attributesForVoice
   , speaking
+  , delegate
+  , setDelegate
   , rate
   , setRate
   , volume
@@ -46,6 +48,8 @@ module ObjC.AppKit.NSSpeechSynthesizer
   , setObject_forProperty_errorSelector
   , attributesForVoiceSelector
   , speakingSelector
+  , delegateSelector
+  , setDelegateSelector
   , rateSelector
   , setRateSelector
   , volumeSelector
@@ -169,6 +173,16 @@ speaking :: IsNSSpeechSynthesizer nsSpeechSynthesizer => nsSpeechSynthesizer -> 
 speaking nsSpeechSynthesizer  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsSpeechSynthesizer (mkSelector "speaking") retCULong []
 
+-- | @- delegate@
+delegate :: IsNSSpeechSynthesizer nsSpeechSynthesizer => nsSpeechSynthesizer -> IO RawId
+delegate nsSpeechSynthesizer  =
+    fmap (RawId . castPtr) $ sendMsg nsSpeechSynthesizer (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSSpeechSynthesizer nsSpeechSynthesizer => nsSpeechSynthesizer -> RawId -> IO ()
+setDelegate nsSpeechSynthesizer  value =
+    sendMsg nsSpeechSynthesizer (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- rate@
 rate :: IsNSSpeechSynthesizer nsSpeechSynthesizer => nsSpeechSynthesizer -> IO CFloat
 rate nsSpeechSynthesizer  =
@@ -283,6 +297,14 @@ attributesForVoiceSelector = mkSelector "attributesForVoice:"
 -- | @Selector@ for @speaking@
 speakingSelector :: Selector
 speakingSelector = mkSelector "speaking"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @rate@
 rateSelector :: Selector

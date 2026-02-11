@@ -24,6 +24,8 @@ module ObjC.AppKit.NSTouchBar
   , setEscapeKeyReplacementItemIdentifier
   , templateItems
   , setTemplateItems
+  , delegate
+  , setDelegate
   , visible
   , automaticCustomizeTouchBarMenuItemEnabled
   , setAutomaticCustomizeTouchBarMenuItemEnabled
@@ -45,6 +47,8 @@ module ObjC.AppKit.NSTouchBar
   , setEscapeKeyReplacementItemIdentifierSelector
   , templateItemsSelector
   , setTemplateItemsSelector
+  , delegateSelector
+  , setDelegateSelector
   , visibleSelector
   , automaticCustomizeTouchBarMenuItemEnabledSelector
   , setAutomaticCustomizeTouchBarMenuItemEnabledSelector
@@ -166,6 +170,16 @@ setTemplateItems nsTouchBar  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsTouchBar (mkSelector "setTemplateItems:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsNSTouchBar nsTouchBar => nsTouchBar -> IO RawId
+delegate nsTouchBar  =
+    fmap (RawId . castPtr) $ sendMsg nsTouchBar (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSTouchBar nsTouchBar => nsTouchBar -> RawId -> IO ()
+setDelegate nsTouchBar  value =
+    sendMsg nsTouchBar (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- visible@
 visible :: IsNSTouchBar nsTouchBar => nsTouchBar -> IO Bool
 visible nsTouchBar  =
@@ -260,6 +274,14 @@ templateItemsSelector = mkSelector "templateItems"
 -- | @Selector@ for @setTemplateItems:@
 setTemplateItemsSelector :: Selector
 setTemplateItemsSelector = mkSelector "setTemplateItems:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @visible@
 visibleSelector :: Selector

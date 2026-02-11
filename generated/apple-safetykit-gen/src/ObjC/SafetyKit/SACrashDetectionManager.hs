@@ -16,9 +16,13 @@ module ObjC.SafetyKit.SACrashDetectionManager
   , requestAuthorizationWithCompletionHandler
   , available
   , authorizationStatus
+  , delegate
+  , setDelegate
   , requestAuthorizationWithCompletionHandlerSelector
   , availableSelector
   , authorizationStatusSelector
+  , delegateSelector
+  , setDelegateSelector
 
   -- * Enum types
   , SAAuthorizationStatus(SAAuthorizationStatus)
@@ -73,6 +77,24 @@ authorizationStatus :: IsSACrashDetectionManager saCrashDetectionManager => saCr
 authorizationStatus saCrashDetectionManager  =
     fmap (coerce :: CLong -> SAAuthorizationStatus) $ sendMsg saCrashDetectionManager (mkSelector "authorizationStatus") retCLong []
 
+-- | delegate
+--
+-- The delegate object to receive Crash Detection events.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsSACrashDetectionManager saCrashDetectionManager => saCrashDetectionManager -> IO RawId
+delegate saCrashDetectionManager  =
+    fmap (RawId . castPtr) $ sendMsg saCrashDetectionManager (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- The delegate object to receive Crash Detection events.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsSACrashDetectionManager saCrashDetectionManager => saCrashDetectionManager -> RawId -> IO ()
+setDelegate saCrashDetectionManager  value =
+    sendMsg saCrashDetectionManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -88,4 +110,12 @@ availableSelector = mkSelector "available"
 -- | @Selector@ for @authorizationStatus@
 authorizationStatusSelector :: Selector
 authorizationStatusSelector = mkSelector "authorizationStatus"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

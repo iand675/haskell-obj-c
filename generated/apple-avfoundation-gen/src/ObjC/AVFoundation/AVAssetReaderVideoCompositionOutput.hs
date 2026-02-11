@@ -20,6 +20,7 @@ module ObjC.AVFoundation.AVAssetReaderVideoCompositionOutput
   , videoSettings
   , videoComposition
   , setVideoComposition
+  , customVideoCompositor
   , initSelector
   , newSelector
   , assetReaderVideoCompositionOutputWithVideoTracks_videoSettingsSelector
@@ -28,6 +29,7 @@ module ObjC.AVFoundation.AVAssetReaderVideoCompositionOutput
   , videoSettingsSelector
   , videoCompositionSelector
   , setVideoCompositionSelector
+  , customVideoCompositorSelector
 
 
   ) where
@@ -160,6 +162,17 @@ setVideoComposition avAssetReaderVideoCompositionOutput  value =
   withObjCPtr value $ \raw_value ->
       sendMsg avAssetReaderVideoCompositionOutput (mkSelector "setVideoComposition:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | customVideoCompositor
+--
+-- Indicates the custom video compositor instance used by the receiver.
+--
+-- This property is nil if there is no video compositor, or if the internal video compositor is in use.
+--
+-- ObjC selector: @- customVideoCompositor@
+customVideoCompositor :: IsAVAssetReaderVideoCompositionOutput avAssetReaderVideoCompositionOutput => avAssetReaderVideoCompositionOutput -> IO RawId
+customVideoCompositor avAssetReaderVideoCompositionOutput  =
+    fmap (RawId . castPtr) $ sendMsg avAssetReaderVideoCompositionOutput (mkSelector "customVideoCompositor") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -195,4 +208,8 @@ videoCompositionSelector = mkSelector "videoComposition"
 -- | @Selector@ for @setVideoComposition:@
 setVideoCompositionSelector :: Selector
 setVideoCompositionSelector = mkSelector "setVideoComposition:"
+
+-- | @Selector@ for @customVideoCompositor@
+customVideoCompositorSelector :: Selector
+customVideoCompositorSelector = mkSelector "customVideoCompositor"
 

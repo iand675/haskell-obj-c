@@ -8,7 +8,9 @@
 module ObjC.Metal.MTLFunctionReflection
   ( MTLFunctionReflection
   , IsMTLFunctionReflection(..)
+  , bindings
   , userAnnotation
+  , bindingsSelector
   , userAnnotationSelector
 
 
@@ -29,6 +31,13 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.Metal.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | Provides a list of inputs and outputs of the function.
+--
+-- ObjC selector: @- bindings@
+bindings :: IsMTLFunctionReflection mtlFunctionReflection => mtlFunctionReflection -> IO (Id NSArray)
+bindings mtlFunctionReflection  =
+    sendMsg mtlFunctionReflection (mkSelector "bindings") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | The string passed to the user annotation attribute for this function. Null if no user annotation is present for this function.
 --
 -- ObjC selector: @- userAnnotation@
@@ -39,6 +48,10 @@ userAnnotation mtlFunctionReflection  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @bindings@
+bindingsSelector :: Selector
+bindingsSelector = mkSelector "bindings"
 
 -- | @Selector@ for @userAnnotation@
 userAnnotationSelector :: Selector

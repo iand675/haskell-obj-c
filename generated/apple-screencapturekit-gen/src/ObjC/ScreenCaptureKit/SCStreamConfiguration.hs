@@ -22,6 +22,8 @@ module ObjC.ScreenCaptureKit.SCStreamConfiguration
   , setScalesToFit
   , preservesAspectRatio
   , setPreservesAspectRatio
+  , streamName
+  , setStreamName
   , showsCursor
   , setShowsCursor
   , showMouseClicks
@@ -62,6 +64,8 @@ module ObjC.ScreenCaptureKit.SCStreamConfiguration
   , setIncludeChildWindows
   , captureMicrophone
   , setCaptureMicrophone
+  , microphoneCaptureDeviceID
+  , setMicrophoneCaptureDeviceID
   , captureDynamicRange
   , setCaptureDynamicRange
   , streamConfigurationWithPresetSelector
@@ -75,6 +79,8 @@ module ObjC.ScreenCaptureKit.SCStreamConfiguration
   , setScalesToFitSelector
   , preservesAspectRatioSelector
   , setPreservesAspectRatioSelector
+  , streamNameSelector
+  , setStreamNameSelector
   , showsCursorSelector
   , setShowsCursorSelector
   , showMouseClicksSelector
@@ -115,6 +121,8 @@ module ObjC.ScreenCaptureKit.SCStreamConfiguration
   , setIncludeChildWindowsSelector
   , captureMicrophoneSelector
   , setCaptureMicrophoneSelector
+  , microphoneCaptureDeviceIDSelector
+  , setMicrophoneCaptureDeviceIDSelector
   , captureDynamicRangeSelector
   , setCaptureDynamicRangeSelector
 
@@ -240,6 +248,21 @@ preservesAspectRatio scStreamConfiguration  =
 setPreservesAspectRatio :: IsSCStreamConfiguration scStreamConfiguration => scStreamConfiguration -> Bool -> IO ()
 setPreservesAspectRatio scStreamConfiguration  value =
     sendMsg scStreamConfiguration (mkSelector "setPreservesAspectRatio:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | SCStreamProperty the name of the stream
+--
+-- ObjC selector: @- streamName@
+streamName :: IsSCStreamConfiguration scStreamConfiguration => scStreamConfiguration -> IO (Id NSString)
+streamName scStreamConfiguration  =
+    sendMsg scStreamConfiguration (mkSelector "streamName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | SCStreamProperty the name of the stream
+--
+-- ObjC selector: @- setStreamName:@
+setStreamName :: (IsSCStreamConfiguration scStreamConfiguration, IsNSString value) => scStreamConfiguration -> value -> IO ()
+setStreamName scStreamConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg scStreamConfiguration (mkSelector "setStreamName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | SCStreamProperty that specifies whether the cursor should appear in the stream.  By default the cursor is visible.
 --
@@ -521,6 +544,21 @@ setCaptureMicrophone :: IsSCStreamConfiguration scStreamConfiguration => scStrea
 setCaptureMicrophone scStreamConfiguration  value =
     sendMsg scStreamConfiguration (mkSelector "setCaptureMicrophone:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | SCStreamProperty that specifies which microphone device to capture. This deviceID is the uniqueID from AVCaptureDevice for the microphone. System Default Microphone will be used if not specified by client. For Mac Catalyst apps, the System Default Microphone will be captured.
+--
+-- ObjC selector: @- microphoneCaptureDeviceID@
+microphoneCaptureDeviceID :: IsSCStreamConfiguration scStreamConfiguration => scStreamConfiguration -> IO (Id NSString)
+microphoneCaptureDeviceID scStreamConfiguration  =
+    sendMsg scStreamConfiguration (mkSelector "microphoneCaptureDeviceID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | SCStreamProperty that specifies which microphone device to capture. This deviceID is the uniqueID from AVCaptureDevice for the microphone. System Default Microphone will be used if not specified by client. For Mac Catalyst apps, the System Default Microphone will be captured.
+--
+-- ObjC selector: @- setMicrophoneCaptureDeviceID:@
+setMicrophoneCaptureDeviceID :: (IsSCStreamConfiguration scStreamConfiguration, IsNSString value) => scStreamConfiguration -> value -> IO ()
+setMicrophoneCaptureDeviceID scStreamConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg scStreamConfiguration (mkSelector "setMicrophoneCaptureDeviceID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | SCStreamProperty client will choose captureDynamicRange between SCCaptureDynamicRangeSDR, SCCaptureDynamicRangeHDRLocalDisplay,  SCCaptureDynamicRangeHDRCanonicalDisplay. By default, the stream is capturing with SCCaptureDynamicRangeSDR. HDR capture is only supported with Apple Silicon Mac, setting this property on Intel Mac will have no effect. HDR recording is not support yet, adding a recording output to a stream with SCCaptureDynamicRangeHDR set will fail.
 --
 -- ObjC selector: @- captureDynamicRange@
@@ -582,6 +620,14 @@ preservesAspectRatioSelector = mkSelector "preservesAspectRatio"
 -- | @Selector@ for @setPreservesAspectRatio:@
 setPreservesAspectRatioSelector :: Selector
 setPreservesAspectRatioSelector = mkSelector "setPreservesAspectRatio:"
+
+-- | @Selector@ for @streamName@
+streamNameSelector :: Selector
+streamNameSelector = mkSelector "streamName"
+
+-- | @Selector@ for @setStreamName:@
+setStreamNameSelector :: Selector
+setStreamNameSelector = mkSelector "setStreamName:"
 
 -- | @Selector@ for @showsCursor@
 showsCursorSelector :: Selector
@@ -742,6 +788,14 @@ captureMicrophoneSelector = mkSelector "captureMicrophone"
 -- | @Selector@ for @setCaptureMicrophone:@
 setCaptureMicrophoneSelector :: Selector
 setCaptureMicrophoneSelector = mkSelector "setCaptureMicrophone:"
+
+-- | @Selector@ for @microphoneCaptureDeviceID@
+microphoneCaptureDeviceIDSelector :: Selector
+microphoneCaptureDeviceIDSelector = mkSelector "microphoneCaptureDeviceID"
+
+-- | @Selector@ for @setMicrophoneCaptureDeviceID:@
+setMicrophoneCaptureDeviceIDSelector :: Selector
+setMicrophoneCaptureDeviceIDSelector = mkSelector "setMicrophoneCaptureDeviceID:"
 
 -- | @Selector@ for @captureDynamicRange@
 captureDynamicRangeSelector :: Selector

@@ -25,6 +25,7 @@ library:
   - ObjC.CoreAudioKit.CABTLEMIDIWindowController
   - ObjC.CoreAudioKit.CAInterDeviceAudioViewController
   - ObjC.CoreAudioKit.CANetworkBrowserWindowController
+  - ObjC.CoreAudioKit.Delegate.AUCustomViewPersistentData
   - ObjC.CoreAudioKit.Enums
   - ObjC.CoreAudioKit.Internal.Classes
   - ObjC.CoreAudioKit.Internal.Enums

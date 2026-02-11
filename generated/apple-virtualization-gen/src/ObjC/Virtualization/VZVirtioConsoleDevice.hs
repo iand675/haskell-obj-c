@@ -14,9 +14,13 @@ module ObjC.Virtualization.VZVirtioConsoleDevice
   , IsVZVirtioConsoleDevice(..)
   , new
   , init_
+  , delegate
+  , setDelegate
   , ports
   , newSelector
   , initSelector
+  , delegateSelector
+  , setDelegateSelector
   , portsSelector
 
 
@@ -49,6 +53,20 @@ init_ :: IsVZVirtioConsoleDevice vzVirtioConsoleDevice => vzVirtioConsoleDevice 
 init_ vzVirtioConsoleDevice  =
     sendMsg vzVirtioConsoleDevice (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | Pointer to a delegate object for the console device.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsVZVirtioConsoleDevice vzVirtioConsoleDevice => vzVirtioConsoleDevice -> IO RawId
+delegate vzVirtioConsoleDevice  =
+    fmap (RawId . castPtr) $ sendMsg vzVirtioConsoleDevice (mkSelector "delegate") (retPtr retVoid) []
+
+-- | Pointer to a delegate object for the console device.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsVZVirtioConsoleDevice vzVirtioConsoleDevice => vzVirtioConsoleDevice -> RawId -> IO ()
+setDelegate vzVirtioConsoleDevice  value =
+    sendMsg vzVirtioConsoleDevice (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | The console ports currently being used by this console device.
 --
 -- ObjC selector: @- ports@
@@ -67,6 +85,14 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @init@
 initSelector :: Selector
 initSelector = mkSelector "init"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @ports@
 portsSelector :: Selector

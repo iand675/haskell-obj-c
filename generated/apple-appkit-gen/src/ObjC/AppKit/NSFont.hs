@@ -33,12 +33,16 @@ module ObjC.AppKit.NSFont
   , systemFontSizeForControlSize
   , boundingRectForCGGlyph
   , advancementForCGGlyph
+  , getBoundingRects_forCGGlyphs_count
+  , getAdvancements_forCGGlyphs_count
   , set
   , setInContext
   , preferredFontForTextStyle_options
   , glyphWithName
   , boundingRectForGlyph
   , advancementForGlyph
+  , getBoundingRects_forGlyphs_count
+  , getAdvancements_forGlyphs_count
   , getAdvancements_forPackedGlyphs_length
   , screenFontWithRenderingMode
   , systemFontSize
@@ -46,6 +50,7 @@ module ObjC.AppKit.NSFont
   , labelFontSize
   , fontName
   , pointSize
+  , matrix
   , familyName
   , displayName
   , fontDescriptor
@@ -64,6 +69,7 @@ module ObjC.AppKit.NSFont
   , capHeight
   , xHeight
   , fixedPitch
+  , verticalFont
   , vertical
   , printerFont
   , screenFont
@@ -94,12 +100,16 @@ module ObjC.AppKit.NSFont
   , systemFontSizeForControlSizeSelector
   , boundingRectForCGGlyphSelector
   , advancementForCGGlyphSelector
+  , getBoundingRects_forCGGlyphs_countSelector
+  , getAdvancements_forCGGlyphs_countSelector
   , setSelector
   , setInContextSelector
   , preferredFontForTextStyle_optionsSelector
   , glyphWithNameSelector
   , boundingRectForGlyphSelector
   , advancementForGlyphSelector
+  , getBoundingRects_forGlyphs_countSelector
+  , getAdvancements_forGlyphs_countSelector
   , getAdvancements_forPackedGlyphs_lengthSelector
   , screenFontWithRenderingModeSelector
   , systemFontSizeSelector
@@ -107,6 +117,7 @@ module ObjC.AppKit.NSFont
   , labelFontSizeSelector
   , fontNameSelector
   , pointSizeSelector
+  , matrixSelector
   , familyNameSelector
   , displayNameSelector
   , fontDescriptorSelector
@@ -125,6 +136,7 @@ module ObjC.AppKit.NSFont
   , capHeightSelector
   , xHeightSelector
   , fixedPitchSelector
+  , verticalFontSelector
   , verticalSelector
   , printerFontSelector
   , screenFontSelector
@@ -353,6 +365,16 @@ advancementForCGGlyph :: IsNSFont nsFont => nsFont -> CUShort -> IO NSSize
 advancementForCGGlyph nsFont  glyph =
     sendMsgStret nsFont (mkSelector "advancementForCGGlyph:") retNSSize [argCUInt (fromIntegral glyph)]
 
+-- | @- getBoundingRects:forCGGlyphs:count:@
+getBoundingRects_forCGGlyphs_count :: IsNSFont nsFont => nsFont -> Ptr NSRect -> Const RawId -> CULong -> IO ()
+getBoundingRects_forCGGlyphs_count nsFont  bounds glyphs glyphCount =
+    sendMsg nsFont (mkSelector "getBoundingRects:forCGGlyphs:count:") retVoid [argPtr bounds, argPtr (castPtr (unRawId (unConst glyphs)) :: Ptr ()), argCULong glyphCount]
+
+-- | @- getAdvancements:forCGGlyphs:count:@
+getAdvancements_forCGGlyphs_count :: IsNSFont nsFont => nsFont -> Ptr NSSize -> Const RawId -> CULong -> IO ()
+getAdvancements_forCGGlyphs_count nsFont  advancements glyphs glyphCount =
+    sendMsg nsFont (mkSelector "getAdvancements:forCGGlyphs:count:") retVoid [argPtr advancements, argPtr (castPtr (unRawId (unConst glyphs)) :: Ptr ()), argCULong glyphCount]
+
 -- | ******* NSGraphicsContext-related ********
 --
 -- ObjC selector: @- set@
@@ -390,6 +412,16 @@ boundingRectForGlyph nsFont  glyph =
 advancementForGlyph :: IsNSFont nsFont => nsFont -> CUInt -> IO NSSize
 advancementForGlyph nsFont  glyph =
     sendMsgStret nsFont (mkSelector "advancementForGlyph:") retNSSize [argCUInt glyph]
+
+-- | @- getBoundingRects:forGlyphs:count:@
+getBoundingRects_forGlyphs_count :: IsNSFont nsFont => nsFont -> Ptr NSRect -> Const RawId -> CULong -> IO ()
+getBoundingRects_forGlyphs_count nsFont  bounds glyphs glyphCount =
+    sendMsg nsFont (mkSelector "getBoundingRects:forGlyphs:count:") retVoid [argPtr bounds, argPtr (castPtr (unRawId (unConst glyphs)) :: Ptr ()), argCULong glyphCount]
+
+-- | @- getAdvancements:forGlyphs:count:@
+getAdvancements_forGlyphs_count :: IsNSFont nsFont => nsFont -> Ptr NSSize -> Const RawId -> CULong -> IO ()
+getAdvancements_forGlyphs_count nsFont  advancements glyphs glyphCount =
+    sendMsg nsFont (mkSelector "getAdvancements:forGlyphs:count:") retVoid [argPtr advancements, argPtr (castPtr (unRawId (unConst glyphs)) :: Ptr ()), argCULong glyphCount]
 
 -- | @- getAdvancements:forPackedGlyphs:length:@
 getAdvancements_forPackedGlyphs_length :: IsNSFont nsFont => nsFont -> Ptr NSSize -> Const (Ptr ()) -> CULong -> IO ()
@@ -433,6 +465,11 @@ fontName nsFont  =
 pointSize :: IsNSFont nsFont => nsFont -> IO CDouble
 pointSize nsFont  =
     sendMsg nsFont (mkSelector "pointSize") retCDouble []
+
+-- | @- matrix@
+matrix :: IsNSFont nsFont => nsFont -> IO RawId
+matrix nsFont  =
+    fmap (RawId . castPtr) $ sendMsg nsFont (mkSelector "matrix") (retPtr retVoid) []
 
 -- | @- familyName@
 familyName :: IsNSFont nsFont => nsFont -> IO (Id NSString)
@@ -525,6 +562,13 @@ xHeight nsFont  =
 fixedPitch :: IsNSFont nsFont => nsFont -> IO Bool
 fixedPitch nsFont  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFont (mkSelector "fixedPitch") retCULong []
+
+-- | ******* Vertical mode ********
+--
+-- ObjC selector: @- verticalFont@
+verticalFont :: IsNSFont nsFont => nsFont -> IO (Id NSFont)
+verticalFont nsFont  =
+    sendMsg nsFont (mkSelector "verticalFont") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- vertical@
 vertical :: IsNSFont nsFont => nsFont -> IO Bool
@@ -656,6 +700,14 @@ boundingRectForCGGlyphSelector = mkSelector "boundingRectForCGGlyph:"
 advancementForCGGlyphSelector :: Selector
 advancementForCGGlyphSelector = mkSelector "advancementForCGGlyph:"
 
+-- | @Selector@ for @getBoundingRects:forCGGlyphs:count:@
+getBoundingRects_forCGGlyphs_countSelector :: Selector
+getBoundingRects_forCGGlyphs_countSelector = mkSelector "getBoundingRects:forCGGlyphs:count:"
+
+-- | @Selector@ for @getAdvancements:forCGGlyphs:count:@
+getAdvancements_forCGGlyphs_countSelector :: Selector
+getAdvancements_forCGGlyphs_countSelector = mkSelector "getAdvancements:forCGGlyphs:count:"
+
 -- | @Selector@ for @set@
 setSelector :: Selector
 setSelector = mkSelector "set"
@@ -679,6 +731,14 @@ boundingRectForGlyphSelector = mkSelector "boundingRectForGlyph:"
 -- | @Selector@ for @advancementForGlyph:@
 advancementForGlyphSelector :: Selector
 advancementForGlyphSelector = mkSelector "advancementForGlyph:"
+
+-- | @Selector@ for @getBoundingRects:forGlyphs:count:@
+getBoundingRects_forGlyphs_countSelector :: Selector
+getBoundingRects_forGlyphs_countSelector = mkSelector "getBoundingRects:forGlyphs:count:"
+
+-- | @Selector@ for @getAdvancements:forGlyphs:count:@
+getAdvancements_forGlyphs_countSelector :: Selector
+getAdvancements_forGlyphs_countSelector = mkSelector "getAdvancements:forGlyphs:count:"
 
 -- | @Selector@ for @getAdvancements:forPackedGlyphs:length:@
 getAdvancements_forPackedGlyphs_lengthSelector :: Selector
@@ -707,6 +767,10 @@ fontNameSelector = mkSelector "fontName"
 -- | @Selector@ for @pointSize@
 pointSizeSelector :: Selector
 pointSizeSelector = mkSelector "pointSize"
+
+-- | @Selector@ for @matrix@
+matrixSelector :: Selector
+matrixSelector = mkSelector "matrix"
 
 -- | @Selector@ for @familyName@
 familyNameSelector :: Selector
@@ -779,6 +843,10 @@ xHeightSelector = mkSelector "xHeight"
 -- | @Selector@ for @fixedPitch@
 fixedPitchSelector :: Selector
 fixedPitchSelector = mkSelector "fixedPitch"
+
+-- | @Selector@ for @verticalFont@
+verticalFontSelector :: Selector
+verticalFontSelector = mkSelector "verticalFont"
 
 -- | @Selector@ for @vertical@
 verticalSelector :: Selector

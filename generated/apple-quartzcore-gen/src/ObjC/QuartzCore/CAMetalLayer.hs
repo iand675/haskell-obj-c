@@ -7,6 +7,9 @@ module ObjC.QuartzCore.CAMetalLayer
   ( CAMetalLayer
   , IsCAMetalLayer(..)
   , nextDrawable
+  , device
+  , setDevice
+  , preferredDevice
   , pixelFormat
   , setPixelFormat
   , framebufferOnly
@@ -25,7 +28,13 @@ module ObjC.QuartzCore.CAMetalLayer
   , setDisplaySyncEnabled
   , allowsNextDrawableTimeout
   , setAllowsNextDrawableTimeout
+  , developerHUDProperties
+  , setDeveloperHUDProperties
+  , residencySet
   , nextDrawableSelector
+  , deviceSelector
+  , setDeviceSelector
+  , preferredDeviceSelector
   , pixelFormatSelector
   , setPixelFormatSelector
   , framebufferOnlySelector
@@ -44,6 +53,9 @@ module ObjC.QuartzCore.CAMetalLayer
   , setDisplaySyncEnabledSelector
   , allowsNextDrawableTimeoutSelector
   , setAllowsNextDrawableTimeoutSelector
+  , developerHUDPropertiesSelector
+  , setDeveloperHUDPropertiesSelector
+  , residencySetSelector
 
 
   ) where
@@ -67,6 +79,21 @@ import ObjC.Foundation.Internal.Classes
 nextDrawable :: IsCAMetalLayer caMetalLayer => caMetalLayer -> IO RawId
 nextDrawable caMetalLayer  =
     fmap (RawId . castPtr) $ sendMsg caMetalLayer (mkSelector "nextDrawable") (retPtr retVoid) []
+
+-- | @- device@
+device :: IsCAMetalLayer caMetalLayer => caMetalLayer -> IO RawId
+device caMetalLayer  =
+    fmap (RawId . castPtr) $ sendMsg caMetalLayer (mkSelector "device") (retPtr retVoid) []
+
+-- | @- setDevice:@
+setDevice :: IsCAMetalLayer caMetalLayer => caMetalLayer -> RawId -> IO ()
+setDevice caMetalLayer  value =
+    sendMsg caMetalLayer (mkSelector "setDevice:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- preferredDevice@
+preferredDevice :: IsCAMetalLayer caMetalLayer => caMetalLayer -> IO RawId
+preferredDevice caMetalLayer  =
+    fmap (RawId . castPtr) $ sendMsg caMetalLayer (mkSelector "preferredDevice") (retPtr retVoid) []
 
 -- | @- pixelFormat@
 pixelFormat :: IsCAMetalLayer caMetalLayer => caMetalLayer -> IO CInt
@@ -159,6 +186,22 @@ setAllowsNextDrawableTimeout :: IsCAMetalLayer caMetalLayer => caMetalLayer -> B
 setAllowsNextDrawableTimeout caMetalLayer  value =
     sendMsg caMetalLayer (mkSelector "setAllowsNextDrawableTimeout:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @- developerHUDProperties@
+developerHUDProperties :: IsCAMetalLayer caMetalLayer => caMetalLayer -> IO (Id NSDictionary)
+developerHUDProperties caMetalLayer  =
+    sendMsg caMetalLayer (mkSelector "developerHUDProperties") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setDeveloperHUDProperties:@
+setDeveloperHUDProperties :: (IsCAMetalLayer caMetalLayer, IsNSDictionary value) => caMetalLayer -> value -> IO ()
+setDeveloperHUDProperties caMetalLayer  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg caMetalLayer (mkSelector "setDeveloperHUDProperties:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- residencySet@
+residencySet :: IsCAMetalLayer caMetalLayer => caMetalLayer -> IO RawId
+residencySet caMetalLayer  =
+    fmap (RawId . castPtr) $ sendMsg caMetalLayer (mkSelector "residencySet") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -166,6 +209,18 @@ setAllowsNextDrawableTimeout caMetalLayer  value =
 -- | @Selector@ for @nextDrawable@
 nextDrawableSelector :: Selector
 nextDrawableSelector = mkSelector "nextDrawable"
+
+-- | @Selector@ for @device@
+deviceSelector :: Selector
+deviceSelector = mkSelector "device"
+
+-- | @Selector@ for @setDevice:@
+setDeviceSelector :: Selector
+setDeviceSelector = mkSelector "setDevice:"
+
+-- | @Selector@ for @preferredDevice@
+preferredDeviceSelector :: Selector
+preferredDeviceSelector = mkSelector "preferredDevice"
 
 -- | @Selector@ for @pixelFormat@
 pixelFormatSelector :: Selector
@@ -238,4 +293,16 @@ allowsNextDrawableTimeoutSelector = mkSelector "allowsNextDrawableTimeout"
 -- | @Selector@ for @setAllowsNextDrawableTimeout:@
 setAllowsNextDrawableTimeoutSelector :: Selector
 setAllowsNextDrawableTimeoutSelector = mkSelector "setAllowsNextDrawableTimeout:"
+
+-- | @Selector@ for @developerHUDProperties@
+developerHUDPropertiesSelector :: Selector
+developerHUDPropertiesSelector = mkSelector "developerHUDProperties"
+
+-- | @Selector@ for @setDeveloperHUDProperties:@
+setDeveloperHUDPropertiesSelector :: Selector
+setDeveloperHUDPropertiesSelector = mkSelector "setDeveloperHUDProperties:"
+
+-- | @Selector@ for @residencySet@
+residencySetSelector :: Selector
+residencySetSelector = mkSelector "residencySet"
 

@@ -19,6 +19,8 @@ module ObjC.Metal.MTLFunctionStitchingGraph
   , setNodes
   , outputNode
   , setOutputNode
+  , attributes
+  , setAttributes
   , initWithFunctionName_nodes_outputNode_attributesSelector
   , functionNameSelector
   , setFunctionNameSelector
@@ -26,6 +28,8 @@ module ObjC.Metal.MTLFunctionStitchingGraph
   , setNodesSelector
   , outputNodeSelector
   , setOutputNodeSelector
+  , attributesSelector
+  , setAttributesSelector
 
 
   ) where
@@ -87,6 +91,17 @@ setOutputNode mtlFunctionStitchingGraph  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mtlFunctionStitchingGraph (mkSelector "setOutputNode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- attributes@
+attributes :: IsMTLFunctionStitchingGraph mtlFunctionStitchingGraph => mtlFunctionStitchingGraph -> IO (Id NSArray)
+attributes mtlFunctionStitchingGraph  =
+    sendMsg mtlFunctionStitchingGraph (mkSelector "attributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setAttributes:@
+setAttributes :: (IsMTLFunctionStitchingGraph mtlFunctionStitchingGraph, IsNSArray value) => mtlFunctionStitchingGraph -> value -> IO ()
+setAttributes mtlFunctionStitchingGraph  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mtlFunctionStitchingGraph (mkSelector "setAttributes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -118,4 +133,12 @@ outputNodeSelector = mkSelector "outputNode"
 -- | @Selector@ for @setOutputNode:@
 setOutputNodeSelector :: Selector
 setOutputNodeSelector = mkSelector "setOutputNode:"
+
+-- | @Selector@ for @attributes@
+attributesSelector :: Selector
+attributesSelector = mkSelector "attributes"
+
+-- | @Selector@ for @setAttributes:@
+setAttributesSelector :: Selector
+setAttributesSelector = mkSelector "setAttributes:"
 

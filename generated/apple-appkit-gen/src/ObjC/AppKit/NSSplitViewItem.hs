@@ -48,6 +48,10 @@ module ObjC.AppKit.NSSplitViewItem
   , setTitlebarSeparatorStyle
   , automaticallyAdjustsSafeAreaInsets
   , setAutomaticallyAdjustsSafeAreaInsets
+  , topAlignedAccessoryViewControllers
+  , setTopAlignedAccessoryViewControllers
+  , bottomAlignedAccessoryViewControllers
+  , setBottomAlignedAccessoryViewControllers
   , splitViewItemWithViewControllerSelector
   , sidebarWithViewControllerSelector
   , contentListWithViewControllerSelector
@@ -87,6 +91,10 @@ module ObjC.AppKit.NSSplitViewItem
   , setTitlebarSeparatorStyleSelector
   , automaticallyAdjustsSafeAreaInsetsSelector
   , setAutomaticallyAdjustsSafeAreaInsetsSelector
+  , topAlignedAccessoryViewControllersSelector
+  , setTopAlignedAccessoryViewControllersSelector
+  , bottomAlignedAccessoryViewControllersSelector
+  , setBottomAlignedAccessoryViewControllersSelector
 
   -- * Enum types
   , NSSplitViewItemBehavior(NSSplitViewItemBehavior)
@@ -425,6 +433,32 @@ setAutomaticallyAdjustsSafeAreaInsets :: IsNSSplitViewItem nsSplitViewItem => ns
 setAutomaticallyAdjustsSafeAreaInsets nsSplitViewItem  value =
     sendMsg nsSplitViewItem (mkSelector "setAutomaticallyAdjustsSafeAreaInsets:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | The following methods allow you to add accessory views to the top/bottom of this splitViewItem. See @NSSplitViewItemAccessoryViewController@ for more details.
+--
+-- ObjC selector: @- topAlignedAccessoryViewControllers@
+topAlignedAccessoryViewControllers :: IsNSSplitViewItem nsSplitViewItem => nsSplitViewItem -> IO (Id NSArray)
+topAlignedAccessoryViewControllers nsSplitViewItem  =
+    sendMsg nsSplitViewItem (mkSelector "topAlignedAccessoryViewControllers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The following methods allow you to add accessory views to the top/bottom of this splitViewItem. See @NSSplitViewItemAccessoryViewController@ for more details.
+--
+-- ObjC selector: @- setTopAlignedAccessoryViewControllers:@
+setTopAlignedAccessoryViewControllers :: (IsNSSplitViewItem nsSplitViewItem, IsNSArray value) => nsSplitViewItem -> value -> IO ()
+setTopAlignedAccessoryViewControllers nsSplitViewItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsSplitViewItem (mkSelector "setTopAlignedAccessoryViewControllers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- bottomAlignedAccessoryViewControllers@
+bottomAlignedAccessoryViewControllers :: IsNSSplitViewItem nsSplitViewItem => nsSplitViewItem -> IO (Id NSArray)
+bottomAlignedAccessoryViewControllers nsSplitViewItem  =
+    sendMsg nsSplitViewItem (mkSelector "bottomAlignedAccessoryViewControllers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setBottomAlignedAccessoryViewControllers:@
+setBottomAlignedAccessoryViewControllers :: (IsNSSplitViewItem nsSplitViewItem, IsNSArray value) => nsSplitViewItem -> value -> IO ()
+setBottomAlignedAccessoryViewControllers nsSplitViewItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsSplitViewItem (mkSelector "setBottomAlignedAccessoryViewControllers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -584,4 +618,20 @@ automaticallyAdjustsSafeAreaInsetsSelector = mkSelector "automaticallyAdjustsSaf
 -- | @Selector@ for @setAutomaticallyAdjustsSafeAreaInsets:@
 setAutomaticallyAdjustsSafeAreaInsetsSelector :: Selector
 setAutomaticallyAdjustsSafeAreaInsetsSelector = mkSelector "setAutomaticallyAdjustsSafeAreaInsets:"
+
+-- | @Selector@ for @topAlignedAccessoryViewControllers@
+topAlignedAccessoryViewControllersSelector :: Selector
+topAlignedAccessoryViewControllersSelector = mkSelector "topAlignedAccessoryViewControllers"
+
+-- | @Selector@ for @setTopAlignedAccessoryViewControllers:@
+setTopAlignedAccessoryViewControllersSelector :: Selector
+setTopAlignedAccessoryViewControllersSelector = mkSelector "setTopAlignedAccessoryViewControllers:"
+
+-- | @Selector@ for @bottomAlignedAccessoryViewControllers@
+bottomAlignedAccessoryViewControllersSelector :: Selector
+bottomAlignedAccessoryViewControllersSelector = mkSelector "bottomAlignedAccessoryViewControllers"
+
+-- | @Selector@ for @setBottomAlignedAccessoryViewControllers:@
+setBottomAlignedAccessoryViewControllersSelector :: Selector
+setBottomAlignedAccessoryViewControllersSelector = mkSelector "setBottomAlignedAccessoryViewControllers:"
 

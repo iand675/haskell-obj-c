@@ -29,6 +29,7 @@ module ObjC.Foundation.NSScriptObjectSpecifier
   , evaluationErrorNumber
   , setEvaluationErrorNumber
   , evaluationErrorSpecifier
+  , descriptor
   , objectSpecifierWithDescriptorSelector
   , initWithContainerSpecifier_keySelector
   , initWithContainerClassDescription_containerSpecifier_keySelector
@@ -52,6 +53,7 @@ module ObjC.Foundation.NSScriptObjectSpecifier
   , evaluationErrorNumberSelector
   , setEvaluationErrorNumberSelector
   , evaluationErrorSpecifierSelector
+  , descriptorSelector
 
 
   ) where
@@ -198,6 +200,11 @@ evaluationErrorSpecifier :: IsNSScriptObjectSpecifier nsScriptObjectSpecifier =>
 evaluationErrorSpecifier nsScriptObjectSpecifier  =
     sendMsg nsScriptObjectSpecifier (mkSelector "evaluationErrorSpecifier") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- descriptor@
+descriptor :: IsNSScriptObjectSpecifier nsScriptObjectSpecifier => nsScriptObjectSpecifier -> IO (Id NSAppleEventDescriptor)
+descriptor nsScriptObjectSpecifier  =
+    sendMsg nsScriptObjectSpecifier (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -293,4 +300,8 @@ setEvaluationErrorNumberSelector = mkSelector "setEvaluationErrorNumber:"
 -- | @Selector@ for @evaluationErrorSpecifier@
 evaluationErrorSpecifierSelector :: Selector
 evaluationErrorSpecifierSelector = mkSelector "evaluationErrorSpecifier"
+
+-- | @Selector@ for @descriptor@
+descriptorSelector :: Selector
+descriptorSelector = mkSelector "descriptor"
 

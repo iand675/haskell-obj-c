@@ -44,6 +44,9 @@ library
       ObjC.Runtime.Framework
       ObjC.Runtime.NSString
       ObjC.Runtime.DynClass
+      ObjC.Runtime.StableIvar
+      ObjC.Runtime.ActionTarget
+      ObjC.Runtime.DelegateProxy
       ObjC.Runtime.TH
       ObjC.Runtime.Block
   other-modules:
@@ -62,8 +65,11 @@ library
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , containers
+    , hashable
     , libffi
     , template-haskell
+    , unordered-containers
   default-language: Haskell2010
 
 test-suite haskell-obj-c-test
@@ -79,8 +85,11 @@ test-suite haskell-obj-c-test
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , containers
+    , hashable
     , haskell-obj-c
     , hspec
     , libffi
     , template-haskell
+    , unordered-containers
   default-language: Haskell2010

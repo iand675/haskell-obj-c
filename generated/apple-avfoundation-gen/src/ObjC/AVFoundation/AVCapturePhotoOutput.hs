@@ -35,11 +35,15 @@ module ObjC.AVFoundation.AVCapturePhotoOutput
   , supportedRawPhotoPixelFormatTypesForFileType
   , jpegPhotoDataRepresentationForJPEGSampleBuffer_previewPhotoSampleBuffer
   , dngPhotoDataRepresentationForRawSampleBuffer_previewPhotoSampleBuffer
+  , preparedPhotoSettingsArray
   , availablePhotoPixelFormatTypes
   , availablePhotoCodecTypes
+  , availableRawPhotoCodecTypes
   , appleProRAWSupported
   , appleProRAWEnabled
   , setAppleProRAWEnabled
+  , availableRawPhotoPixelFormatTypes
+  , availablePhotoFileTypes
   , availableRawPhotoFileTypes
   , maxPhotoQualityPrioritization
   , setMaxPhotoQualityPrioritization
@@ -64,6 +68,8 @@ module ObjC.AVFoundation.AVCapturePhotoOutput
   , supportedFlashModes
   , autoRedEyeReductionSupported
   , isFlashScene
+  , photoSettingsForSceneMonitoring
+  , setPhotoSettingsForSceneMonitoring
   , highResolutionCaptureEnabled
   , setHighResolutionCaptureEnabled
   , maxBracketedCapturePhotoCount
@@ -101,6 +107,9 @@ module ObjC.AVFoundation.AVCapturePhotoOutput
   , portraitEffectsMatteDeliverySupported
   , portraitEffectsMatteDeliveryEnabled
   , setPortraitEffectsMatteDeliveryEnabled
+  , availableSemanticSegmentationMatteTypes
+  , enabledSemanticSegmentationMatteTypes
+  , setEnabledSemanticSegmentationMatteTypes
   , initSelector
   , newSelector
   , capturePhotoWithSettings_delegateSelector
@@ -113,11 +122,15 @@ module ObjC.AVFoundation.AVCapturePhotoOutput
   , supportedRawPhotoPixelFormatTypesForFileTypeSelector
   , jpegPhotoDataRepresentationForJPEGSampleBuffer_previewPhotoSampleBufferSelector
   , dngPhotoDataRepresentationForRawSampleBuffer_previewPhotoSampleBufferSelector
+  , preparedPhotoSettingsArraySelector
   , availablePhotoPixelFormatTypesSelector
   , availablePhotoCodecTypesSelector
+  , availableRawPhotoCodecTypesSelector
   , appleProRAWSupportedSelector
   , appleProRAWEnabledSelector
   , setAppleProRAWEnabledSelector
+  , availableRawPhotoPixelFormatTypesSelector
+  , availablePhotoFileTypesSelector
   , availableRawPhotoFileTypesSelector
   , maxPhotoQualityPrioritizationSelector
   , setMaxPhotoQualityPrioritizationSelector
@@ -142,6 +155,8 @@ module ObjC.AVFoundation.AVCapturePhotoOutput
   , supportedFlashModesSelector
   , autoRedEyeReductionSupportedSelector
   , isFlashSceneSelector
+  , photoSettingsForSceneMonitoringSelector
+  , setPhotoSettingsForSceneMonitoringSelector
   , highResolutionCaptureEnabledSelector
   , setHighResolutionCaptureEnabledSelector
   , maxBracketedCapturePhotoCountSelector
@@ -179,6 +194,9 @@ module ObjC.AVFoundation.AVCapturePhotoOutput
   , portraitEffectsMatteDeliverySupportedSelector
   , portraitEffectsMatteDeliveryEnabledSelector
   , setPortraitEffectsMatteDeliveryEnabledSelector
+  , availableSemanticSegmentationMatteTypesSelector
+  , enabledSemanticSegmentationMatteTypesSelector
+  , setEnabledSemanticSegmentationMatteTypesSelector
 
   -- * Enum types
   , AVCapturePhotoOutputCaptureReadiness(AVCapturePhotoOutputCaptureReadiness)
@@ -396,6 +414,17 @@ dngPhotoDataRepresentationForRawSampleBuffer_previewPhotoSampleBuffer rawSampleB
     cls' <- getRequiredClass "AVCapturePhotoOutput"
     sendClassMsg cls' (mkSelector "DNGPhotoDataRepresentationForRawSampleBuffer:previewPhotoSampleBuffer:") (retPtr retVoid) [argPtr rawSampleBuffer, argPtr previewPhotoSampleBuffer] >>= retainedObject . castPtr
 
+-- | preparedPhotoSettingsArray
+--
+-- An array of AVCapturePhotoSettings instances for which the receiver is prepared to capture.
+--
+-- See also setPreparedPhotoSettingsArray:completionHandler:    Some types of photo capture, such as bracketed captures and RAW captures, require the receiver to allocate additional buffers or prepare other resources. To prevent photo capture requests from executing slowly due to lazy resource allocation, you may call -setPreparedPhotoSettingsArray:completionHandler: with an array of settings objects representative of the types of capture you will be performing (e.g., settings for a bracketed capture, RAW capture, and/or still image stabilization capture). By default, the receiver prepares sufficient resources to capture photos with default settings, +[AVCapturePhotoSettings photoSettings].
+--
+-- ObjC selector: @- preparedPhotoSettingsArray@
+preparedPhotoSettingsArray :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id NSArray)
+preparedPhotoSettingsArray avCapturePhotoOutput  =
+    sendMsg avCapturePhotoOutput (mkSelector "preparedPhotoSettingsArray") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | availablePhotoPixelFormatTypes
 --
 -- An array of kCVPixelBufferPixelFormatTypeKey values that are currently supported by the receiver.
@@ -417,6 +446,17 @@ availablePhotoPixelFormatTypes avCapturePhotoOutput  =
 availablePhotoCodecTypes :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id NSArray)
 availablePhotoCodecTypes avCapturePhotoOutput  =
     sendMsg avCapturePhotoOutput (mkSelector "availablePhotoCodecTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | availableRawPhotoCodecTypes
+--
+-- An array of available AVVideoCodecType values that may be used for the raw photo.
+--
+-- Not all codecs can be used for all rawPixelFormatType values and this call will show all of the possible codecs available. To check if a codec is available for a specific rawPixelFormatType and rawFileType, one should use supportedRawPhotoCodecTypesForRawPhotoPixelFormatType:fileType:.
+--
+-- ObjC selector: @- availableRawPhotoCodecTypes@
+availableRawPhotoCodecTypes :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id NSArray)
+availableRawPhotoCodecTypes avCapturePhotoOutput  =
+    sendMsg avCapturePhotoOutput (mkSelector "availableRawPhotoCodecTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | appleProRAWSupported
 --
@@ -454,6 +494,28 @@ appleProRAWEnabled avCapturePhotoOutput  =
 setAppleProRAWEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> Bool -> IO ()
 setAppleProRAWEnabled avCapturePhotoOutput  value =
     sendMsg avCapturePhotoOutput (mkSelector "setAppleProRAWEnabled:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | availableRawPhotoPixelFormatTypes
+--
+-- An array of RAW CVPixelBufferPixelFormatTypeKey values that are currently supported by the receiver.
+--
+-- If you wish to capture a RAW photo, you must ensure that the RAW format you want is present in the receiver's availableRawPhotoPixelFormatTypes array. If you've not yet added your receiver to an AVCaptureSession with a video source, no RAW formats are available. See AVCapturePhotoOutput.appleProRAWEnabled on how to enable support for partially processed RAW formats. This property is key-value observable. RAW capture is not supported on all platforms.
+--
+-- ObjC selector: @- availableRawPhotoPixelFormatTypes@
+availableRawPhotoPixelFormatTypes :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id NSArray)
+availableRawPhotoPixelFormatTypes avCapturePhotoOutput  =
+    sendMsg avCapturePhotoOutput (mkSelector "availableRawPhotoPixelFormatTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | availablePhotoFileTypes
+--
+-- An array of AVFileType values that are currently supported by the receiver.
+--
+-- If you wish to capture a photo that is formatted for a particular file container, such as HEIF or DICOM, you must ensure that the fileType you desire is present in the receiver's availablePhotoFileTypes array. If you've not yet added your receiver to an AVCaptureSession with a video source, no file types are available. This property is key-value observable.
+--
+-- ObjC selector: @- availablePhotoFileTypes@
+availablePhotoFileTypes :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id NSArray)
+availablePhotoFileTypes avCapturePhotoOutput  =
+    sendMsg avCapturePhotoOutput (mkSelector "availablePhotoFileTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | availableRawPhotoFileTypes
 --
@@ -732,6 +794,29 @@ autoRedEyeReductionSupported avCapturePhotoOutput  =
 isFlashScene :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
 isFlashScene avCapturePhotoOutput  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "isFlashScene") retCULong []
+
+-- | photoSettingsForSceneMonitoring
+--
+-- Settings that govern the behavior of isFlashScene and isStillImageStabilizationScene.
+--
+-- You can influence the return values of isFlashScene and isStillImageStabilizationScene by setting this property, indicating the flashMode and photoQualityPrioritization values that should be considered for scene monitoring. For instance, if you set flashMode to AVCaptureFlashModeOff, isFlashScene always reports NO. If you set it to AVCaptureFlashModeAuto or AVCaptureFlashModeOn, isFlashScene answers YES or NO based on the current scene's lighting conditions. Note that there is some overlap in the light level ranges that benefit from still image stabilization and flash. If your photoSettingsForSceneMonitoring indicate that both still image stabilization and flash scenes should be monitored, still image stabilization takes precedence, and isFlashScene becomes YES at lower overall light levels. The default value for this property is nil. See isStillImageStabilizationScene and isFlashScene for further discussion.
+--
+-- ObjC selector: @- photoSettingsForSceneMonitoring@
+photoSettingsForSceneMonitoring :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id AVCapturePhotoSettings)
+photoSettingsForSceneMonitoring avCapturePhotoOutput  =
+    sendMsg avCapturePhotoOutput (mkSelector "photoSettingsForSceneMonitoring") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | photoSettingsForSceneMonitoring
+--
+-- Settings that govern the behavior of isFlashScene and isStillImageStabilizationScene.
+--
+-- You can influence the return values of isFlashScene and isStillImageStabilizationScene by setting this property, indicating the flashMode and photoQualityPrioritization values that should be considered for scene monitoring. For instance, if you set flashMode to AVCaptureFlashModeOff, isFlashScene always reports NO. If you set it to AVCaptureFlashModeAuto or AVCaptureFlashModeOn, isFlashScene answers YES or NO based on the current scene's lighting conditions. Note that there is some overlap in the light level ranges that benefit from still image stabilization and flash. If your photoSettingsForSceneMonitoring indicate that both still image stabilization and flash scenes should be monitored, still image stabilization takes precedence, and isFlashScene becomes YES at lower overall light levels. The default value for this property is nil. See isStillImageStabilizationScene and isFlashScene for further discussion.
+--
+-- ObjC selector: @- setPhotoSettingsForSceneMonitoring:@
+setPhotoSettingsForSceneMonitoring :: (IsAVCapturePhotoOutput avCapturePhotoOutput, IsAVCapturePhotoSettings value) => avCapturePhotoOutput -> value -> IO ()
+setPhotoSettingsForSceneMonitoring avCapturePhotoOutput  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avCapturePhotoOutput (mkSelector "setPhotoSettingsForSceneMonitoring:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | highResolutionCaptureEnabled
 --
@@ -1148,6 +1233,40 @@ setPortraitEffectsMatteDeliveryEnabled :: IsAVCapturePhotoOutput avCapturePhotoO
 setPortraitEffectsMatteDeliveryEnabled avCapturePhotoOutput  value =
     sendMsg avCapturePhotoOutput (mkSelector "setPortraitEffectsMatteDeliveryEnabled:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | availableSemanticSegmentationMatteTypes
+--
+-- An array of supported semantic segmentation matte types that may be captured and delivered along with your AVCapturePhotos.
+--
+-- Some cameras and configurations support the delivery of semantic segmentation matting images (e.g. segmentations of the hair, skin, or teeth in the photo). This property returns an array of AVSemanticSegmentationMatteTypes available given the session's current configuration. When switching cameras or formats this property may change. When this property changes, enabledSemanticSegmentationMatteTypes reverts to an empty array. If you've previously opted in for delivery of one or more semantic segmentation mattes and then change configurations, you need to set up your enabledSemanticSegmentationMatteTypes again. This property is key-value observable.
+--
+-- ObjC selector: @- availableSemanticSegmentationMatteTypes@
+availableSemanticSegmentationMatteTypes :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id NSArray)
+availableSemanticSegmentationMatteTypes avCapturePhotoOutput  =
+    sendMsg avCapturePhotoOutput (mkSelector "availableSemanticSegmentationMatteTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | enabledSemanticSegmentationMatteTypes
+--
+-- An array of semantic segmentation matte types which the photo render pipeline is prepared to deliver.
+--
+-- Default is empty array. You may set this to the array of matte types you'd like to be delivered with your AVCapturePhotos. The array may only contain values present in availableSemanticSegmentationMatteTypes. Enabling semantic segmentation matte delivery requires a lengthy reconfiguration of the capture render pipeline, so if you intend to capture semantic segmentation mattes, you should set this property to YES before calling -[AVCaptureSession startRunning].
+--
+-- ObjC selector: @- enabledSemanticSegmentationMatteTypes@
+enabledSemanticSegmentationMatteTypes :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id NSArray)
+enabledSemanticSegmentationMatteTypes avCapturePhotoOutput  =
+    sendMsg avCapturePhotoOutput (mkSelector "enabledSemanticSegmentationMatteTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | enabledSemanticSegmentationMatteTypes
+--
+-- An array of semantic segmentation matte types which the photo render pipeline is prepared to deliver.
+--
+-- Default is empty array. You may set this to the array of matte types you'd like to be delivered with your AVCapturePhotos. The array may only contain values present in availableSemanticSegmentationMatteTypes. Enabling semantic segmentation matte delivery requires a lengthy reconfiguration of the capture render pipeline, so if you intend to capture semantic segmentation mattes, you should set this property to YES before calling -[AVCaptureSession startRunning].
+--
+-- ObjC selector: @- setEnabledSemanticSegmentationMatteTypes:@
+setEnabledSemanticSegmentationMatteTypes :: (IsAVCapturePhotoOutput avCapturePhotoOutput, IsNSArray value) => avCapturePhotoOutput -> value -> IO ()
+setEnabledSemanticSegmentationMatteTypes avCapturePhotoOutput  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avCapturePhotoOutput (mkSelector "setEnabledSemanticSegmentationMatteTypes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -1200,6 +1319,10 @@ jpegPhotoDataRepresentationForJPEGSampleBuffer_previewPhotoSampleBufferSelector 
 dngPhotoDataRepresentationForRawSampleBuffer_previewPhotoSampleBufferSelector :: Selector
 dngPhotoDataRepresentationForRawSampleBuffer_previewPhotoSampleBufferSelector = mkSelector "DNGPhotoDataRepresentationForRawSampleBuffer:previewPhotoSampleBuffer:"
 
+-- | @Selector@ for @preparedPhotoSettingsArray@
+preparedPhotoSettingsArraySelector :: Selector
+preparedPhotoSettingsArraySelector = mkSelector "preparedPhotoSettingsArray"
+
 -- | @Selector@ for @availablePhotoPixelFormatTypes@
 availablePhotoPixelFormatTypesSelector :: Selector
 availablePhotoPixelFormatTypesSelector = mkSelector "availablePhotoPixelFormatTypes"
@@ -1207,6 +1330,10 @@ availablePhotoPixelFormatTypesSelector = mkSelector "availablePhotoPixelFormatTy
 -- | @Selector@ for @availablePhotoCodecTypes@
 availablePhotoCodecTypesSelector :: Selector
 availablePhotoCodecTypesSelector = mkSelector "availablePhotoCodecTypes"
+
+-- | @Selector@ for @availableRawPhotoCodecTypes@
+availableRawPhotoCodecTypesSelector :: Selector
+availableRawPhotoCodecTypesSelector = mkSelector "availableRawPhotoCodecTypes"
 
 -- | @Selector@ for @appleProRAWSupported@
 appleProRAWSupportedSelector :: Selector
@@ -1219,6 +1346,14 @@ appleProRAWEnabledSelector = mkSelector "appleProRAWEnabled"
 -- | @Selector@ for @setAppleProRAWEnabled:@
 setAppleProRAWEnabledSelector :: Selector
 setAppleProRAWEnabledSelector = mkSelector "setAppleProRAWEnabled:"
+
+-- | @Selector@ for @availableRawPhotoPixelFormatTypes@
+availableRawPhotoPixelFormatTypesSelector :: Selector
+availableRawPhotoPixelFormatTypesSelector = mkSelector "availableRawPhotoPixelFormatTypes"
+
+-- | @Selector@ for @availablePhotoFileTypes@
+availablePhotoFileTypesSelector :: Selector
+availablePhotoFileTypesSelector = mkSelector "availablePhotoFileTypes"
 
 -- | @Selector@ for @availableRawPhotoFileTypes@
 availableRawPhotoFileTypesSelector :: Selector
@@ -1315,6 +1450,14 @@ autoRedEyeReductionSupportedSelector = mkSelector "autoRedEyeReductionSupported"
 -- | @Selector@ for @isFlashScene@
 isFlashSceneSelector :: Selector
 isFlashSceneSelector = mkSelector "isFlashScene"
+
+-- | @Selector@ for @photoSettingsForSceneMonitoring@
+photoSettingsForSceneMonitoringSelector :: Selector
+photoSettingsForSceneMonitoringSelector = mkSelector "photoSettingsForSceneMonitoring"
+
+-- | @Selector@ for @setPhotoSettingsForSceneMonitoring:@
+setPhotoSettingsForSceneMonitoringSelector :: Selector
+setPhotoSettingsForSceneMonitoringSelector = mkSelector "setPhotoSettingsForSceneMonitoring:"
 
 -- | @Selector@ for @highResolutionCaptureEnabled@
 highResolutionCaptureEnabledSelector :: Selector
@@ -1463,4 +1606,16 @@ portraitEffectsMatteDeliveryEnabledSelector = mkSelector "portraitEffectsMatteDe
 -- | @Selector@ for @setPortraitEffectsMatteDeliveryEnabled:@
 setPortraitEffectsMatteDeliveryEnabledSelector :: Selector
 setPortraitEffectsMatteDeliveryEnabledSelector = mkSelector "setPortraitEffectsMatteDeliveryEnabled:"
+
+-- | @Selector@ for @availableSemanticSegmentationMatteTypes@
+availableSemanticSegmentationMatteTypesSelector :: Selector
+availableSemanticSegmentationMatteTypesSelector = mkSelector "availableSemanticSegmentationMatteTypes"
+
+-- | @Selector@ for @enabledSemanticSegmentationMatteTypes@
+enabledSemanticSegmentationMatteTypesSelector :: Selector
+enabledSemanticSegmentationMatteTypesSelector = mkSelector "enabledSemanticSegmentationMatteTypes"
+
+-- | @Selector@ for @setEnabledSemanticSegmentationMatteTypes:@
+setEnabledSemanticSegmentationMatteTypesSelector :: Selector
+setEnabledSemanticSegmentationMatteTypesSelector = mkSelector "setEnabledSemanticSegmentationMatteTypes:"
 

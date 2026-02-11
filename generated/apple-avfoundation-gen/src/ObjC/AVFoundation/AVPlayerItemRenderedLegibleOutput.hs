@@ -17,12 +17,14 @@ module ObjC.AVFoundation.AVPlayerItemRenderedLegibleOutput
   , init_
   , new
   , setDelegate_queue
+  , delegate
   , delegateQueue
   , advanceIntervalForDelegateInvocation
   , setAdvanceIntervalForDelegateInvocation
   , initSelector
   , newSelector
   , setDelegate_queueSelector
+  , delegateSelector
   , delegateQueueSelector
   , advanceIntervalForDelegateInvocationSelector
   , setAdvanceIntervalForDelegateInvocationSelector
@@ -73,6 +75,17 @@ setDelegate_queue avPlayerItemRenderedLegibleOutput  delegate delegateQueue =
   withObjCPtr delegateQueue $ \raw_delegateQueue ->
       sendMsg avPlayerItemRenderedLegibleOutput (mkSelector "setDelegate:queue:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_delegateQueue :: Ptr ())]
 
+-- | delegate
+--
+-- The receiver's delegate.
+--
+-- The delegate is held using a zeroing-weak reference, so this property will have a value of nil after a delegate that was previously set has been deallocated.  This property is not key-value observable.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsAVPlayerItemRenderedLegibleOutput avPlayerItemRenderedLegibleOutput => avPlayerItemRenderedLegibleOutput -> IO RawId
+delegate avPlayerItemRenderedLegibleOutput  =
+    fmap (RawId . castPtr) $ sendMsg avPlayerItemRenderedLegibleOutput (mkSelector "delegate") (retPtr retVoid) []
+
 -- | delegateQueue
 --
 -- The dispatch queue where the delegate is messaged.
@@ -121,6 +134,10 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @setDelegate:queue:@
 setDelegate_queueSelector :: Selector
 setDelegate_queueSelector = mkSelector "setDelegate:queue:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @delegateQueue@
 delegateQueueSelector :: Selector

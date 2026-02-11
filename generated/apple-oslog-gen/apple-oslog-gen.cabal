@@ -12,6 +12,8 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.OSLog.Delegate.OSLogEntryFromProcess
+      ObjC.OSLog.Delegate.OSLogEntryWithPayload
       ObjC.OSLog.Enums
       ObjC.OSLog.Internal.Classes
       ObjC.OSLog.Internal.Enums

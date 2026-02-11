@@ -27,6 +27,8 @@ module ObjC.FileProvider.NSFileProviderExtension
   , writePlaceholderAtURL_withMetadata_error
   , placeholderURLForURL
   , domain
+  , providerIdentifier
+  , documentStorageURL
   , urlForItemWithPersistentIdentifierSelector
   , persistentIdentifierForItemAtURLSelector
   , providePlaceholderAtURL_completionHandlerSelector
@@ -48,6 +50,8 @@ module ObjC.FileProvider.NSFileProviderExtension
   , writePlaceholderAtURL_withMetadata_errorSelector
   , placeholderURLForURLSelector
   , domainSelector
+  , providerIdentifierSelector
+  , documentStorageURLSelector
 
 
   ) where
@@ -341,6 +345,22 @@ domain :: IsNSFileProviderExtension nsFileProviderExtension => nsFileProviderExt
 domain nsFileProviderExtension  =
     sendMsg nsFileProviderExtension (mkSelector "domain") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | An identifier unique to this provider.
+--
+-- When modifying the files stored in the directory returned by documentStorageURL, you should pass this identifier to your file coordinator's setPurposeIdentifier: method.
+--
+-- ObjC selector: @- providerIdentifier@
+providerIdentifier :: IsNSFileProviderExtension nsFileProviderExtension => nsFileProviderExtension -> IO (Id NSString)
+providerIdentifier nsFileProviderExtension  =
+    sendMsg nsFileProviderExtension (mkSelector "providerIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The root URL for provided documents. This URL is derived by consulting the NSExtensionFileProviderDocumentGroup property on your extension. The document storage URL is the folder "File Provider Storage" in the corresponding container.
+--
+-- ObjC selector: @- documentStorageURL@
+documentStorageURL :: IsNSFileProviderExtension nsFileProviderExtension => nsFileProviderExtension -> IO (Id NSURL)
+documentStorageURL nsFileProviderExtension  =
+    sendMsg nsFileProviderExtension (mkSelector "documentStorageURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -428,4 +448,12 @@ placeholderURLForURLSelector = mkSelector "placeholderURLForURL:"
 -- | @Selector@ for @domain@
 domainSelector :: Selector
 domainSelector = mkSelector "domain"
+
+-- | @Selector@ for @providerIdentifier@
+providerIdentifierSelector :: Selector
+providerIdentifierSelector = mkSelector "providerIdentifier"
+
+-- | @Selector@ for @documentStorageURL@
+documentStorageURLSelector :: Selector
+documentStorageURLSelector = mkSelector "documentStorageURL"
 

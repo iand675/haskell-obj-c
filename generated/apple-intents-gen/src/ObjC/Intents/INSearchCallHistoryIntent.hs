@@ -13,6 +13,7 @@ module ObjC.Intents.INSearchCallHistoryIntent
   , recipient
   , callCapabilities
   , callTypes
+  , unseen
   , callType
   , initWithDateCreated_recipient_callCapabilities_callTypes_unseenSelector
   , initWithCallType_dateCreated_recipient_callCapabilitiesSelector
@@ -20,6 +21,7 @@ module ObjC.Intents.INSearchCallHistoryIntent
   , recipientSelector
   , callCapabilitiesSelector
   , callTypesSelector
+  , unseenSelector
   , callTypeSelector
 
   -- * Enum types
@@ -99,6 +101,11 @@ callTypes :: IsINSearchCallHistoryIntent inSearchCallHistoryIntent => inSearchCa
 callTypes inSearchCallHistoryIntent  =
     fmap (coerce :: CULong -> INCallRecordTypeOptions) $ sendMsg inSearchCallHistoryIntent (mkSelector "callTypes") retCULong []
 
+-- | @- unseen@
+unseen :: IsINSearchCallHistoryIntent inSearchCallHistoryIntent => inSearchCallHistoryIntent -> IO (Id NSNumber)
+unseen inSearchCallHistoryIntent  =
+    sendMsg inSearchCallHistoryIntent (mkSelector "unseen") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- callType@
 callType :: IsINSearchCallHistoryIntent inSearchCallHistoryIntent => inSearchCallHistoryIntent -> IO INCallRecordType
 callType inSearchCallHistoryIntent  =
@@ -131,6 +138,10 @@ callCapabilitiesSelector = mkSelector "callCapabilities"
 -- | @Selector@ for @callTypes@
 callTypesSelector :: Selector
 callTypesSelector = mkSelector "callTypes"
+
+-- | @Selector@ for @unseen@
+unseenSelector :: Selector
+unseenSelector = mkSelector "unseen"
 
 -- | @Selector@ for @callType@
 callTypeSelector :: Selector

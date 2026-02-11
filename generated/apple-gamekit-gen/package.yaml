@@ -17,6 +17,23 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.GameKit.Delegate.GKAchievementViewControllerDelegate
+  - ObjC.GameKit.Delegate.GKChallengeEventHandlerDelegate
+  - ObjC.GameKit.Delegate.GKChallengeListener
+  - ObjC.GameKit.Delegate.GKChallengesViewControllerDelegate
+  - ObjC.GameKit.Delegate.GKFriendRequestComposeViewControllerDelegate
+  - ObjC.GameKit.Delegate.GKGameCenterControllerDelegate
+  - ObjC.GameKit.Delegate.GKGameSessionEventListener
+  - ObjC.GameKit.Delegate.GKInviteEventListener
+  - ObjC.GameKit.Delegate.GKLeaderboardViewControllerDelegate
+  - ObjC.GameKit.Delegate.GKMatchDelegate
+  - ObjC.GameKit.Delegate.GKMatchmakerViewControllerDelegate
+  - ObjC.GameKit.Delegate.GKSavedGameListener
+  - ObjC.GameKit.Delegate.GKSessionDelegate
+  - ObjC.GameKit.Delegate.GKTurnBasedEventHandlerDelegate
+  - ObjC.GameKit.Delegate.GKTurnBasedEventListener
+  - ObjC.GameKit.Delegate.GKTurnBasedMatchmakerViewControllerDelegate
+  - ObjC.GameKit.Delegate.GKVoiceChatClient
   - ObjC.GameKit.Enums
   - ObjC.GameKit.GKAccessPoint
   - ObjC.GameKit.GKAchievement

@@ -19,6 +19,8 @@ module ObjC.Accessibility.AXNumericDataAxisDescriptor
   , setUpperBound
   , valueDescriptionProvider
   , setValueDescriptionProvider
+  , gridlinePositions
+  , setGridlinePositions
   , initWithTitle_lowerBound_upperBound_gridlinePositions_valueDescriptionProviderSelector
   , initWithAttributedTitle_lowerBound_upperBound_gridlinePositions_valueDescriptionProviderSelector
   , initSelector
@@ -31,6 +33,8 @@ module ObjC.Accessibility.AXNumericDataAxisDescriptor
   , setUpperBoundSelector
   , valueDescriptionProviderSelector
   , setValueDescriptionProviderSelector
+  , gridlinePositionsSelector
+  , setGridlinePositionsSelector
 
   -- * Enum types
   , AXNumericDataAxisDescriptorScale(AXNumericDataAxisDescriptorScale)
@@ -138,6 +142,21 @@ setValueDescriptionProvider :: IsAXNumericDataAxisDescriptor axNumericDataAxisDe
 setValueDescriptionProvider axNumericDataAxisDescriptor  value =
     sendMsg axNumericDataAxisDescriptor (mkSelector "setValueDescriptionProvider:") retVoid [argPtr (castPtr value :: Ptr ())]
 
+-- | The positions of any gridlines along this axis.
+--
+-- ObjC selector: @- gridlinePositions@
+gridlinePositions :: IsAXNumericDataAxisDescriptor axNumericDataAxisDescriptor => axNumericDataAxisDescriptor -> IO (Id NSArray)
+gridlinePositions axNumericDataAxisDescriptor  =
+    sendMsg axNumericDataAxisDescriptor (mkSelector "gridlinePositions") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The positions of any gridlines along this axis.
+--
+-- ObjC selector: @- setGridlinePositions:@
+setGridlinePositions :: (IsAXNumericDataAxisDescriptor axNumericDataAxisDescriptor, IsNSArray value) => axNumericDataAxisDescriptor -> value -> IO ()
+setGridlinePositions axNumericDataAxisDescriptor  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg axNumericDataAxisDescriptor (mkSelector "setGridlinePositions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -189,4 +208,12 @@ valueDescriptionProviderSelector = mkSelector "valueDescriptionProvider"
 -- | @Selector@ for @setValueDescriptionProvider:@
 setValueDescriptionProviderSelector :: Selector
 setValueDescriptionProviderSelector = mkSelector "setValueDescriptionProvider:"
+
+-- | @Selector@ for @gridlinePositions@
+gridlinePositionsSelector :: Selector
+gridlinePositionsSelector = mkSelector "gridlinePositions"
+
+-- | @Selector@ for @setGridlinePositions:@
+setGridlinePositionsSelector :: Selector
+setGridlinePositionsSelector = mkSelector "setGridlinePositions:"
 

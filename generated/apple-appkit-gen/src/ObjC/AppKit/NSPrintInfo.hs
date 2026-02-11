@@ -53,6 +53,7 @@ module ObjC.AppKit.NSPrintInfo
   , imageablePageBounds
   , localizedPaperName
   , defaultPrinter
+  , printSettings
   , selectionOnly
   , setSelectionOnly
   , initWithDictionarySelector
@@ -101,6 +102,7 @@ module ObjC.AppKit.NSPrintInfo
   , imageablePageBoundsSelector
   , localizedPaperNameSelector
   , defaultPrinterSelector
+  , printSettingsSelector
   , selectionOnlySelector
   , setSelectionOnlySelector
 
@@ -381,6 +383,11 @@ defaultPrinter  =
     cls' <- getRequiredClass "NSPrintInfo"
     sendClassMsg cls' (mkSelector "defaultPrinter") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- printSettings@
+printSettings :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO (Id NSMutableDictionary)
+printSettings nsPrintInfo  =
+    sendMsg nsPrintInfo (mkSelector "printSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- selectionOnly@
 selectionOnly :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO Bool
 selectionOnly nsPrintInfo  =
@@ -578,6 +585,10 @@ localizedPaperNameSelector = mkSelector "localizedPaperName"
 -- | @Selector@ for @defaultPrinter@
 defaultPrinterSelector :: Selector
 defaultPrinterSelector = mkSelector "defaultPrinter"
+
+-- | @Selector@ for @printSettings@
+printSettingsSelector :: Selector
+printSettingsSelector = mkSelector "printSettings"
 
 -- | @Selector@ for @selectionOnly@
 selectionOnlySelector :: Selector

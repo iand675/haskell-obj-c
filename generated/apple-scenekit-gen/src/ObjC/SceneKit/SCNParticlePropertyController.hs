@@ -12,6 +12,8 @@ module ObjC.SceneKit.SCNParticlePropertyController
   ( SCNParticlePropertyController
   , IsSCNParticlePropertyController(..)
   , controllerWithAnimation
+  , animation
+  , setAnimation
   , inputMode
   , setInputMode
   , inputScale
@@ -23,6 +25,8 @@ module ObjC.SceneKit.SCNParticlePropertyController
   , inputProperty
   , setInputProperty
   , controllerWithAnimationSelector
+  , animationSelector
+  , setAnimationSelector
   , inputModeSelector
   , setInputModeSelector
   , inputScaleSelector
@@ -66,6 +70,17 @@ controllerWithAnimation animation =
     cls' <- getRequiredClass "SCNParticlePropertyController"
     withObjCPtr animation $ \raw_animation ->
       sendClassMsg cls' (mkSelector "controllerWithAnimation:") (retPtr retVoid) [argPtr (castPtr raw_animation :: Ptr ())] >>= retainedObject . castPtr
+
+-- | @- animation@
+animation :: IsSCNParticlePropertyController scnParticlePropertyController => scnParticlePropertyController -> IO (Id CAAnimation)
+animation scnParticlePropertyController  =
+    sendMsg scnParticlePropertyController (mkSelector "animation") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setAnimation:@
+setAnimation :: (IsSCNParticlePropertyController scnParticlePropertyController, IsCAAnimation value) => scnParticlePropertyController -> value -> IO ()
+setAnimation scnParticlePropertyController  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg scnParticlePropertyController (mkSelector "setAnimation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- inputMode@
 inputMode :: IsSCNParticlePropertyController scnParticlePropertyController => scnParticlePropertyController -> IO SCNParticleInputMode
@@ -126,6 +141,14 @@ setInputProperty scnParticlePropertyController  value =
 -- | @Selector@ for @controllerWithAnimation:@
 controllerWithAnimationSelector :: Selector
 controllerWithAnimationSelector = mkSelector "controllerWithAnimation:"
+
+-- | @Selector@ for @animation@
+animationSelector :: Selector
+animationSelector = mkSelector "animation"
+
+-- | @Selector@ for @setAnimation:@
+setAnimationSelector :: Selector
+setAnimationSelector = mkSelector "setAnimation:"
 
 -- | @Selector@ for @inputMode@
 inputModeSelector :: Selector

@@ -20,12 +20,14 @@ module ObjC.AppKit.NSPrintPanel
   , accessoryView
   , updateFromPrintInfo
   , finalWritePrintInfo
+  , accessoryControllers
   , options
   , setOptions
   , helpAnchor
   , setHelpAnchor
   , jobStyleHint
   , setJobStyleHint
+  , printInfo
   , printPanelSelector
   , addAccessoryControllerSelector
   , removeAccessoryControllerSelector
@@ -39,12 +41,14 @@ module ObjC.AppKit.NSPrintPanel
   , accessoryViewSelector
   , updateFromPrintInfoSelector
   , finalWritePrintInfoSelector
+  , accessoryControllersSelector
   , optionsSelector
   , setOptionsSelector
   , helpAnchorSelector
   , setHelpAnchorSelector
   , jobStyleHintSelector
   , setJobStyleHintSelector
+  , printInfoSelector
 
   -- * Enum types
   , NSPrintPanelOptions(NSPrintPanelOptions)
@@ -151,6 +155,11 @@ finalWritePrintInfo :: IsNSPrintPanel nsPrintPanel => nsPrintPanel -> IO ()
 finalWritePrintInfo nsPrintPanel  =
     sendMsg nsPrintPanel (mkSelector "finalWritePrintInfo") retVoid []
 
+-- | @- accessoryControllers@
+accessoryControllers :: IsNSPrintPanel nsPrintPanel => nsPrintPanel -> IO (Id NSArray)
+accessoryControllers nsPrintPanel  =
+    sendMsg nsPrintPanel (mkSelector "accessoryControllers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- options@
 options :: IsNSPrintPanel nsPrintPanel => nsPrintPanel -> IO NSPrintPanelOptions
 options nsPrintPanel  =
@@ -182,6 +191,11 @@ setJobStyleHint :: (IsNSPrintPanel nsPrintPanel, IsNSString value) => nsPrintPan
 setJobStyleHint nsPrintPanel  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsPrintPanel (mkSelector "setJobStyleHint:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- printInfo@
+printInfo :: IsNSPrintPanel nsPrintPanel => nsPrintPanel -> IO (Id NSPrintInfo)
+printInfo nsPrintPanel  =
+    sendMsg nsPrintPanel (mkSelector "printInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -239,6 +253,10 @@ updateFromPrintInfoSelector = mkSelector "updateFromPrintInfo"
 finalWritePrintInfoSelector :: Selector
 finalWritePrintInfoSelector = mkSelector "finalWritePrintInfo"
 
+-- | @Selector@ for @accessoryControllers@
+accessoryControllersSelector :: Selector
+accessoryControllersSelector = mkSelector "accessoryControllers"
+
 -- | @Selector@ for @options@
 optionsSelector :: Selector
 optionsSelector = mkSelector "options"
@@ -262,4 +280,8 @@ jobStyleHintSelector = mkSelector "jobStyleHint"
 -- | @Selector@ for @setJobStyleHint:@
 setJobStyleHintSelector :: Selector
 setJobStyleHintSelector = mkSelector "setJobStyleHint:"
+
+-- | @Selector@ for @printInfo@
+printInfoSelector :: Selector
+printInfoSelector = mkSelector "printInfo"
 

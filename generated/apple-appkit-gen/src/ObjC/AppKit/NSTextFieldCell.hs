@@ -24,6 +24,8 @@ module ObjC.AppKit.NSTextFieldCell
   , setPlaceholderString
   , placeholderAttributedString
   , setPlaceholderAttributedString
+  , allowedInputSourceLocales
+  , setAllowedInputSourceLocales
   , initTextCellSelector
   , initWithCoderSelector
   , initImageCellSelector
@@ -41,6 +43,8 @@ module ObjC.AppKit.NSTextFieldCell
   , setPlaceholderStringSelector
   , placeholderAttributedStringSelector
   , setPlaceholderAttributedStringSelector
+  , allowedInputSourceLocalesSelector
+  , setAllowedInputSourceLocalesSelector
 
   -- * Enum types
   , NSTextFieldBezelStyle(NSTextFieldBezelStyle)
@@ -158,6 +162,17 @@ setPlaceholderAttributedString nsTextFieldCell  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsTextFieldCell (mkSelector "setPlaceholderAttributedString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- allowedInputSourceLocales@
+allowedInputSourceLocales :: IsNSTextFieldCell nsTextFieldCell => nsTextFieldCell -> IO (Id NSArray)
+allowedInputSourceLocales nsTextFieldCell  =
+    sendMsg nsTextFieldCell (mkSelector "allowedInputSourceLocales") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setAllowedInputSourceLocales:@
+setAllowedInputSourceLocales :: (IsNSTextFieldCell nsTextFieldCell, IsNSArray value) => nsTextFieldCell -> value -> IO ()
+setAllowedInputSourceLocales nsTextFieldCell  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsTextFieldCell (mkSelector "setAllowedInputSourceLocales:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -229,4 +244,12 @@ placeholderAttributedStringSelector = mkSelector "placeholderAttributedString"
 -- | @Selector@ for @setPlaceholderAttributedString:@
 setPlaceholderAttributedStringSelector :: Selector
 setPlaceholderAttributedStringSelector = mkSelector "setPlaceholderAttributedString:"
+
+-- | @Selector@ for @allowedInputSourceLocales@
+allowedInputSourceLocalesSelector :: Selector
+allowedInputSourceLocalesSelector = mkSelector "allowedInputSourceLocales"
+
+-- | @Selector@ for @setAllowedInputSourceLocales:@
+setAllowedInputSourceLocalesSelector :: Selector
+setAllowedInputSourceLocalesSelector = mkSelector "setAllowedInputSourceLocales:"
 

@@ -14,9 +14,11 @@ module ObjC.SharedWithYou.SWHighlight
   , IsSWHighlight(..)
   , init_
   , new
+  , identifier
   , url
   , initSelector
   , newSelector
+  , identifierSelector
   , urlSelector
 
 
@@ -49,6 +51,13 @@ new  =
     cls' <- getRequiredClass "SWHighlight"
     sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | The unique identifier for this highlight
+--
+-- ObjC selector: @- identifier@
+identifier :: IsSWHighlight swHighlight => swHighlight -> IO RawId
+identifier swHighlight  =
+    fmap (RawId . castPtr) $ sendMsg swHighlight (mkSelector "identifier") (retPtr retVoid) []
+
 -- | The surfaced content URL
 --
 -- ObjC selector: @- URL@
@@ -67,6 +76,10 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @new@
 newSelector :: Selector
 newSelector = mkSelector "new"
+
+-- | @Selector@ for @identifier@
+identifierSelector :: Selector
+identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @URL@
 urlSelector :: Selector

@@ -38,6 +38,7 @@ module ObjC.PHASE.PHASEEngine
   , groups
   , duckers
   , activeGroupPreset
+  , lastRenderTime
   , initSelector
   , newSelector
   , initWithUpdateModeSelector
@@ -63,6 +64,7 @@ module ObjC.PHASE.PHASEEngine
   , groupsSelector
   , duckersSelector
   , activeGroupPresetSelector
+  , lastRenderTimeSelector
 
   -- * Enum types
   , PHASERenderingMode(PHASERenderingMode)
@@ -381,6 +383,17 @@ activeGroupPreset :: IsPHASEEngine phaseEngine => phaseEngine -> IO (Id PHASEGro
 activeGroupPreset phaseEngine  =
     sendMsg phaseEngine (mkSelector "activeGroupPreset") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | lastRenderTime
+--
+-- Obtain the time for which the engine most recently rendered.
+--
+-- Will return nil if the engine is not running
+--
+-- ObjC selector: @- lastRenderTime@
+lastRenderTime :: IsPHASEEngine phaseEngine => phaseEngine -> IO (Id AVAudioTime)
+lastRenderTime phaseEngine  =
+    sendMsg phaseEngine (mkSelector "lastRenderTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -484,4 +497,8 @@ duckersSelector = mkSelector "duckers"
 -- | @Selector@ for @activeGroupPreset@
 activeGroupPresetSelector :: Selector
 activeGroupPresetSelector = mkSelector "activeGroupPreset"
+
+-- | @Selector@ for @lastRenderTime@
+lastRenderTimeSelector :: Selector
+lastRenderTimeSelector = mkSelector "lastRenderTime"
 

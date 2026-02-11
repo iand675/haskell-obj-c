@@ -11,11 +11,13 @@ module ObjC.QuickLookThumbnailing.QLThumbnailGenerator
   , cancelRequest
   , saveBestRepresentationForRequest_toFileAtURL_asContentType_completionHandler
   , saveBestRepresentationForRequest_toFileAtURL_withContentType_completionHandler
+  , sharedGenerator
   , generateBestRepresentationForRequest_completionHandlerSelector
   , generateRepresentationsForRequest_updateHandlerSelector
   , cancelRequestSelector
   , saveBestRepresentationForRequest_toFileAtURL_asContentType_completionHandlerSelector
   , saveBestRepresentationForRequest_toFileAtURL_withContentType_completionHandlerSelector
+  , sharedGeneratorSelector
 
 
   ) where
@@ -90,6 +92,13 @@ saveBestRepresentationForRequest_toFileAtURL_withContentType_completionHandler q
       withObjCPtr contentType $ \raw_contentType ->
           sendMsg qlThumbnailGenerator (mkSelector "saveBestRepresentationForRequest:toFileAtURL:withContentType:completionHandler:") retVoid [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr raw_fileURL :: Ptr ()), argPtr (castPtr raw_contentType :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
 
+-- | @+ sharedGenerator@
+sharedGenerator :: IO (Id QLThumbnailGenerator)
+sharedGenerator  =
+  do
+    cls' <- getRequiredClass "QLThumbnailGenerator"
+    sendClassMsg cls' (mkSelector "sharedGenerator") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -113,4 +122,8 @@ saveBestRepresentationForRequest_toFileAtURL_asContentType_completionHandlerSele
 -- | @Selector@ for @saveBestRepresentationForRequest:toFileAtURL:withContentType:completionHandler:@
 saveBestRepresentationForRequest_toFileAtURL_withContentType_completionHandlerSelector :: Selector
 saveBestRepresentationForRequest_toFileAtURL_withContentType_completionHandlerSelector = mkSelector "saveBestRepresentationForRequest:toFileAtURL:withContentType:completionHandler:"
+
+-- | @Selector@ for @sharedGenerator@
+sharedGeneratorSelector :: Selector
+sharedGeneratorSelector = mkSelector "sharedGenerator"
 

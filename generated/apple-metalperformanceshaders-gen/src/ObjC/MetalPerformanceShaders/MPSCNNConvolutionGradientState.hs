@@ -23,8 +23,12 @@
 module ObjC.MetalPerformanceShaders.MPSCNNConvolutionGradientState
   ( MPSCNNConvolutionGradientState
   , IsMPSCNNConvolutionGradientState(..)
+  , gradientForWeights
+  , gradientForBiases
   , convolution
   , gradientForWeightsLayout
+  , gradientForWeightsSelector
+  , gradientForBiasesSelector
   , convolutionSelector
   , gradientForWeightsLayoutSelector
 
@@ -50,6 +54,26 @@ import ObjC.MetalPerformanceShaders.Internal.Classes
 import ObjC.MetalPerformanceShaders.Internal.Enums
 import ObjC.Foundation.Internal.Classes
 
+-- | gradientForWeights
+--
+-- A buffer that contains the loss function gradients with respect to weights.              Each value in the buffer is a float. The layout of the gradients with respect to the weights is the same as              the weights layout provided by data source i.e. it can be interpreted as 4D array
+--
+-- gradientForWeights[outputFeatureChannels][kernelHeight][kernelWidth][inputFeatureChannels/groups]              For depthwise convolution it will be (since we only support channel multiplier of 1 currently)                   gradientForWeights[outputFeatureChannels][kernelHeight][kernelWidth]
+--
+-- ObjC selector: @- gradientForWeights@
+gradientForWeights :: IsMPSCNNConvolutionGradientState mpscnnConvolutionGradientState => mpscnnConvolutionGradientState -> IO RawId
+gradientForWeights mpscnnConvolutionGradientState  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnConvolutionGradientState (mkSelector "gradientForWeights") (retPtr retVoid) []
+
+-- | gradientForBiases
+--
+-- A buffer that contains the loss function gradients with respect to biases.
+--
+-- ObjC selector: @- gradientForBiases@
+gradientForBiases :: IsMPSCNNConvolutionGradientState mpscnnConvolutionGradientState => mpscnnConvolutionGradientState -> IO RawId
+gradientForBiases mpscnnConvolutionGradientState  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnConvolutionGradientState (mkSelector "gradientForBiases") (retPtr retVoid) []
+
 -- | convolution
 --
 -- The convolution filter that produced the state.              For child MPSCNNConvolutionTrasposeGradientState object, convolution              below refers to MPSCNNConvolution object that produced MPSCNNConvolutionGradientState object              which was used to create MPSCNNConvolutionTransposeGradientState object. See resultStateForSourceImage:sourceStates              method of MPSCNNConvolutionTranspose below.
@@ -71,6 +95,14 @@ gradientForWeightsLayout mpscnnConvolutionGradientState  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @gradientForWeights@
+gradientForWeightsSelector :: Selector
+gradientForWeightsSelector = mkSelector "gradientForWeights"
+
+-- | @Selector@ for @gradientForBiases@
+gradientForBiasesSelector :: Selector
+gradientForBiasesSelector = mkSelector "gradientForBiases"
 
 -- | @Selector@ for @convolution@
 convolutionSelector :: Selector

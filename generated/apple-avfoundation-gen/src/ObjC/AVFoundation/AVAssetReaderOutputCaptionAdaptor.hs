@@ -13,6 +13,8 @@ module ObjC.AVFoundation.AVAssetReaderOutputCaptionAdaptor
   , nextCaptionGroup
   , captionsNotPresentInPreviousGroupsInCaptionGroup
   , assetReaderTrackOutput
+  , validationDelegate
+  , setValidationDelegate
   , initSelector
   , newSelector
   , assetReaderOutputCaptionAdaptorWithAssetReaderTrackOutputSelector
@@ -20,6 +22,8 @@ module ObjC.AVFoundation.AVAssetReaderOutputCaptionAdaptor
   , nextCaptionGroupSelector
   , captionsNotPresentInPreviousGroupsInCaptionGroupSelector
   , assetReaderTrackOutputSelector
+  , validationDelegateSelector
+  , setValidationDelegateSelector
 
 
   ) where
@@ -125,6 +129,24 @@ assetReaderTrackOutput :: IsAVAssetReaderOutputCaptionAdaptor avAssetReaderOutpu
 assetReaderTrackOutput avAssetReaderOutputCaptionAdaptor  =
     sendMsg avAssetReaderOutputCaptionAdaptor (mkSelector "assetReaderTrackOutput") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | validationDelegate:
+--
+-- Register caption validation handling callback protocol to the caption adaptor.
+--
+-- ObjC selector: @- validationDelegate@
+validationDelegate :: IsAVAssetReaderOutputCaptionAdaptor avAssetReaderOutputCaptionAdaptor => avAssetReaderOutputCaptionAdaptor -> IO RawId
+validationDelegate avAssetReaderOutputCaptionAdaptor  =
+    fmap (RawId . castPtr) $ sendMsg avAssetReaderOutputCaptionAdaptor (mkSelector "validationDelegate") (retPtr retVoid) []
+
+-- | validationDelegate:
+--
+-- Register caption validation handling callback protocol to the caption adaptor.
+--
+-- ObjC selector: @- setValidationDelegate:@
+setValidationDelegate :: IsAVAssetReaderOutputCaptionAdaptor avAssetReaderOutputCaptionAdaptor => avAssetReaderOutputCaptionAdaptor -> RawId -> IO ()
+setValidationDelegate avAssetReaderOutputCaptionAdaptor  value =
+    sendMsg avAssetReaderOutputCaptionAdaptor (mkSelector "setValidationDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -156,4 +178,12 @@ captionsNotPresentInPreviousGroupsInCaptionGroupSelector = mkSelector "captionsN
 -- | @Selector@ for @assetReaderTrackOutput@
 assetReaderTrackOutputSelector :: Selector
 assetReaderTrackOutputSelector = mkSelector "assetReaderTrackOutput"
+
+-- | @Selector@ for @validationDelegate@
+validationDelegateSelector :: Selector
+validationDelegateSelector = mkSelector "validationDelegate"
+
+-- | @Selector@ for @setValidationDelegate:@
+setValidationDelegateSelector :: Selector
+setValidationDelegateSelector = mkSelector "setValidationDelegate:"
 

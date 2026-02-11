@@ -10,8 +10,10 @@ module ObjC.Collaboration.CBGroupIdentity
   , IsCBGroupIdentity(..)
   , groupIdentityWithPosixGID_authority
   , posixGID
+  , members
   , groupIdentityWithPosixGID_authoritySelector
   , posixGIDSelector
+  , membersSelector
 
 
   ) where
@@ -58,6 +60,17 @@ posixGID :: IsCBGroupIdentity cbGroupIdentity => cbGroupIdentity -> IO CUInt
 posixGID cbGroupIdentity  =
     sendMsg cbGroupIdentity (mkSelector "posixGID") retCUInt []
 
+-- | Returns the members of the group.
+--
+-- This method only returns direct members of a group, it does not return members of members. Both user and group identities can be members of a group, but a group cannot be a member of itself. You also cannot have “circular” membership, i.e. a group be a member of another group that is a member of the first group.
+--
+-- - Returns: An array of @CBIdentity@ objects each representing a member of the group identity.
+--
+-- ObjC selector: @- members@
+members :: IsCBGroupIdentity cbGroupIdentity => cbGroupIdentity -> IO RawId
+members cbGroupIdentity  =
+    fmap (RawId . castPtr) $ sendMsg cbGroupIdentity (mkSelector "members") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -69,4 +82,8 @@ groupIdentityWithPosixGID_authoritySelector = mkSelector "groupIdentityWithPosix
 -- | @Selector@ for @posixGID@
 posixGIDSelector :: Selector
 posixGIDSelector = mkSelector "posixGID"
+
+-- | @Selector@ for @members@
+membersSelector :: Selector
+membersSelector = mkSelector "members"
 

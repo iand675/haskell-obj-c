@@ -12,8 +12,10 @@ module ObjC.MetalKit.MTKMeshBufferAllocator
   , IsMTKMeshBufferAllocator(..)
   , init_
   , initWithDevice
+  , device
   , initSelector
   , initWithDeviceSelector
+  , deviceSelector
 
 
   ) where
@@ -53,6 +55,15 @@ initWithDevice :: IsMTKMeshBufferAllocator mtkMeshBufferAllocator => mtkMeshBuff
 initWithDevice mtkMeshBufferAllocator  device =
     sendMsg mtkMeshBufferAllocator (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
 
+-- | device
+--
+-- Device used to create buffers.
+--
+-- ObjC selector: @- device@
+device :: IsMTKMeshBufferAllocator mtkMeshBufferAllocator => mtkMeshBufferAllocator -> IO RawId
+device mtkMeshBufferAllocator  =
+    fmap (RawId . castPtr) $ sendMsg mtkMeshBufferAllocator (mkSelector "device") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -64,4 +75,8 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @initWithDevice:@
 initWithDeviceSelector :: Selector
 initWithDeviceSelector = mkSelector "initWithDevice:"
+
+-- | @Selector@ for @device@
+deviceSelector :: Selector
+deviceSelector = mkSelector "device"
 

@@ -20,6 +20,9 @@ module ObjC.BackgroundAssets.BAAssetPackManager
   , fileDescriptorForPath_searchingInAssetPackWithIdentifier_error
   , urlForPath_error
   , removeAssetPackWithIdentifier_completionHandler
+  , sharedManager
+  , delegate
+  , setDelegate
   , initSelector
   , newSelector
   , getAssetPackWithIdentifier_completionHandlerSelector
@@ -29,6 +32,9 @@ module ObjC.BackgroundAssets.BAAssetPackManager
   , fileDescriptorForPath_searchingInAssetPackWithIdentifier_errorSelector
   , urlForPath_errorSelector
   , removeAssetPackWithIdentifier_completionHandlerSelector
+  , sharedManagerSelector
+  , delegateSelector
+  , setDelegateSelector
 
   -- * Enum types
   , NSDataReadingOptions(NSDataReadingOptions)
@@ -142,6 +148,29 @@ removeAssetPackWithIdentifier_completionHandler baAssetPackManager  assetPackIde
   withObjCPtr assetPackIdentifier $ \raw_assetPackIdentifier ->
       sendMsg baAssetPackManager (mkSelector "removeAssetPackWithIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_assetPackIdentifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
 
+-- | The shared asset-pack manager.
+--
+-- ObjC selector: @+ sharedManager@
+sharedManager :: IO (Id BAAssetPackManager)
+sharedManager  =
+  do
+    cls' <- getRequiredClass "BAAssetPackManager"
+    sendClassMsg cls' (mkSelector "sharedManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | An object that receives notifications about events that occur as an asset pack is downloaded.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsBAAssetPackManager baAssetPackManager => baAssetPackManager -> IO RawId
+delegate baAssetPackManager  =
+    fmap (RawId . castPtr) $ sendMsg baAssetPackManager (mkSelector "delegate") (retPtr retVoid) []
+
+-- | An object that receives notifications about events that occur as an asset pack is downloaded.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsBAAssetPackManager baAssetPackManager => baAssetPackManager -> RawId -> IO ()
+setDelegate baAssetPackManager  value =
+    sendMsg baAssetPackManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -181,4 +210,16 @@ urlForPath_errorSelector = mkSelector "URLForPath:error:"
 -- | @Selector@ for @removeAssetPackWithIdentifier:completionHandler:@
 removeAssetPackWithIdentifier_completionHandlerSelector :: Selector
 removeAssetPackWithIdentifier_completionHandlerSelector = mkSelector "removeAssetPackWithIdentifier:completionHandler:"
+
+-- | @Selector@ for @sharedManager@
+sharedManagerSelector :: Selector
+sharedManagerSelector = mkSelector "sharedManager"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

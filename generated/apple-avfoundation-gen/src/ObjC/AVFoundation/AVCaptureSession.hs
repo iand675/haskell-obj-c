@@ -38,9 +38,12 @@ module ObjC.AVFoundation.AVCaptureSession
   , setSessionPreset
   , inputs
   , outputs
+  , connections
   , supportsControls
   , maxControlsCount
+  , controlsDelegate
   , controlsDelegateCallbackQueue
+  , controls
   , running
   , interrupted
   , multitaskingCameraAccessSupported
@@ -62,6 +65,7 @@ module ObjC.AVFoundation.AVCaptureSession
   , manualDeferredStartSupported
   , automaticallyRunsDeferredStart
   , setAutomaticallyRunsDeferredStart
+  , deferredStartDelegate
   , deferredStartDelegateCallbackQueue
   , canSetSessionPresetSelector
   , canAddInputSelector
@@ -89,9 +93,12 @@ module ObjC.AVFoundation.AVCaptureSession
   , setSessionPresetSelector
   , inputsSelector
   , outputsSelector
+  , connectionsSelector
   , supportsControlsSelector
   , maxControlsCountSelector
+  , controlsDelegateSelector
   , controlsDelegateCallbackQueueSelector
+  , controlsSelector
   , runningSelector
   , interruptedSelector
   , multitaskingCameraAccessSupportedSelector
@@ -113,6 +120,7 @@ module ObjC.AVFoundation.AVCaptureSession
   , manualDeferredStartSupportedSelector
   , automaticallyRunsDeferredStartSelector
   , setAutomaticallyRunsDeferredStartSelector
+  , deferredStartDelegateSelector
   , deferredStartDelegateCallbackQueueSelector
 
 
@@ -499,6 +507,17 @@ outputs :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO (Id NSA
 outputs avCaptureSession  =
     sendMsg avCaptureSession (mkSelector "outputs") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | connections
+--
+-- An NSArray of AVCaptureConnections currently added to the receiver.
+--
+-- The value of this property is an NSArray of AVCaptureConnections currently added to the receiver. Connections are formed implicitly by the receiver when a client calls -addInput: or -addOutput:. Connections are formed explicitly when a client calls -addConnection:.
+--
+-- ObjC selector: @- connections@
+connections :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO (Id NSArray)
+connections avCaptureSession  =
+    sendMsg avCaptureSession (mkSelector "connections") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | supportsControls
 --
 -- Indicates whether session controls are supported on this platform.
@@ -519,6 +538,19 @@ maxControlsCount :: IsAVCaptureSession avCaptureSession => avCaptureSession -> I
 maxControlsCount avCaptureSession  =
     sendMsg avCaptureSession (mkSelector "maxControlsCount") retCLong []
 
+-- | controlsDelegate
+--
+-- The receiver's controls delegate.
+--
+-- The value of this property is an object conforming to the @AVCaptureSessionControlsDelegate@ protocol that receives events about the session's controls. The delegate is set using the @-setControlsDelegate:queue:@ method.
+--
+-- A controls delegate must be specified for controls to become active.
+--
+-- ObjC selector: @- controlsDelegate@
+controlsDelegate :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO RawId
+controlsDelegate avCaptureSession  =
+    fmap (RawId . castPtr) $ sendMsg avCaptureSession (mkSelector "controlsDelegate") (retPtr retVoid) []
+
 -- | controlsDelegateCallbackQueue
 --
 -- The dispatch queue on which all controls delegate methods will be called.
@@ -529,6 +561,17 @@ maxControlsCount avCaptureSession  =
 controlsDelegateCallbackQueue :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO (Id NSObject)
 controlsDelegateCallbackQueue avCaptureSession  =
     sendMsg avCaptureSession (mkSelector "controlsDelegateCallbackQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | controls
+--
+-- An @NSArray@ of @AVCaptureControl@s currently added to the session.
+--
+-- The value of this property is an @NSArray@ of @AVCaptureControl@s currently added to the session. Clients can add @AVCaptureControl@s to a session by calling @-addControl:@.
+--
+-- ObjC selector: @- controls@
+controls :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO (Id NSArray)
+controls avCaptureSession  =
+    sendMsg avCaptureSession (mkSelector "controls") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | running
 --
@@ -809,6 +852,15 @@ setAutomaticallyRunsDeferredStart :: IsAVCaptureSession avCaptureSession => avCa
 setAutomaticallyRunsDeferredStart avCaptureSession  value =
     sendMsg avCaptureSession (mkSelector "setAutomaticallyRunsDeferredStart:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | A delegate object that observes events about deferred start.
+--
+-- Call the ``setDeferredStartDelegate:deferredStartDelegateCallbackQueue:`` method to set the deferred start delegate for a session.
+--
+-- ObjC selector: @- deferredStartDelegate@
+deferredStartDelegate :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO RawId
+deferredStartDelegate avCaptureSession  =
+    fmap (RawId . castPtr) $ sendMsg avCaptureSession (mkSelector "deferredStartDelegate") (retPtr retVoid) []
+
 -- | The dispatch queue on which the session calls deferred start delegate methods.
 --
 -- Call the ``setDeferredStartDelegate:deferredStartDelegateCallbackQueue:`` method to specify the dispatch queue on which to call the deferred start delegate methods.
@@ -926,6 +978,10 @@ inputsSelector = mkSelector "inputs"
 outputsSelector :: Selector
 outputsSelector = mkSelector "outputs"
 
+-- | @Selector@ for @connections@
+connectionsSelector :: Selector
+connectionsSelector = mkSelector "connections"
+
 -- | @Selector@ for @supportsControls@
 supportsControlsSelector :: Selector
 supportsControlsSelector = mkSelector "supportsControls"
@@ -934,9 +990,17 @@ supportsControlsSelector = mkSelector "supportsControls"
 maxControlsCountSelector :: Selector
 maxControlsCountSelector = mkSelector "maxControlsCount"
 
+-- | @Selector@ for @controlsDelegate@
+controlsDelegateSelector :: Selector
+controlsDelegateSelector = mkSelector "controlsDelegate"
+
 -- | @Selector@ for @controlsDelegateCallbackQueue@
 controlsDelegateCallbackQueueSelector :: Selector
 controlsDelegateCallbackQueueSelector = mkSelector "controlsDelegateCallbackQueue"
+
+-- | @Selector@ for @controls@
+controlsSelector :: Selector
+controlsSelector = mkSelector "controls"
 
 -- | @Selector@ for @running@
 runningSelector :: Selector
@@ -1021,6 +1085,10 @@ automaticallyRunsDeferredStartSelector = mkSelector "automaticallyRunsDeferredSt
 -- | @Selector@ for @setAutomaticallyRunsDeferredStart:@
 setAutomaticallyRunsDeferredStartSelector :: Selector
 setAutomaticallyRunsDeferredStartSelector = mkSelector "setAutomaticallyRunsDeferredStart:"
+
+-- | @Selector@ for @deferredStartDelegate@
+deferredStartDelegateSelector :: Selector
+deferredStartDelegateSelector = mkSelector "deferredStartDelegate"
 
 -- | @Selector@ for @deferredStartDelegateCallbackQueue@
 deferredStartDelegateCallbackQueueSelector :: Selector

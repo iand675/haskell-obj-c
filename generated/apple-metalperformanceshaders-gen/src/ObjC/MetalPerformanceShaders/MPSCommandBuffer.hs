@@ -20,16 +20,24 @@ module ObjC.MetalPerformanceShaders.MPSCommandBuffer
   , init_
   , commitAndContinue
   , prefetchHeapForWorkloadSize
+  , commandBuffer
+  , rootCommandBuffer
   , predicate
   , setPredicate
+  , heapProvider
+  , setHeapProvider
   , commandBufferWithCommandBufferSelector
   , commandBufferFromCommandQueueSelector
   , initWithCommandBufferSelector
   , initSelector
   , commitAndContinueSelector
   , prefetchHeapForWorkloadSizeSelector
+  , commandBufferSelector
+  , rootCommandBufferSelector
   , predicateSelector
   , setPredicateSelector
+  , heapProviderSelector
+  , setHeapProviderSelector
 
 
   ) where
@@ -113,6 +121,26 @@ prefetchHeapForWorkloadSize :: IsMPSCommandBuffer mpsCommandBuffer => mpsCommand
 prefetchHeapForWorkloadSize mpsCommandBuffer  size =
     sendMsg mpsCommandBuffer (mkSelector "prefetchHeapForWorkloadSize:") retVoid [argCULong size]
 
+-- | commandBuffer
+--
+-- The Metal Command Buffer that was used to initialize this object.
+--
+-- ObjC selector: @- commandBuffer@
+commandBuffer :: IsMPSCommandBuffer mpsCommandBuffer => mpsCommandBuffer -> IO RawId
+commandBuffer mpsCommandBuffer  =
+    fmap (RawId . castPtr) $ sendMsg mpsCommandBuffer (mkSelector "commandBuffer") (retPtr retVoid) []
+
+-- | rootCommandBuffer
+--
+-- The base MTLCommandBuffer underlying the MPSCommandBuffer
+--
+-- MPSCommandBuffers may wrap other MPSCommandBuffers, in the process              creating what is in effect a stack of predicate objects that may be              pushed or popped by making new MPSCommandBuffers or by calling -commandBuffer.              In some circumstances, it is preferable to use the root command buffer,              particularly when trying to identify the command buffer that will be commited              by -commitAndContinue.
+--
+-- ObjC selector: @- rootCommandBuffer@
+rootCommandBuffer :: IsMPSCommandBuffer mpsCommandBuffer => mpsCommandBuffer -> IO RawId
+rootCommandBuffer mpsCommandBuffer  =
+    fmap (RawId . castPtr) $ sendMsg mpsCommandBuffer (mkSelector "rootCommandBuffer") (retPtr retVoid) []
+
 -- | predicate
 --
 -- A GPU predicate object. Default: nil.
@@ -131,6 +159,32 @@ setPredicate :: (IsMPSCommandBuffer mpsCommandBuffer, IsMPSPredicate value) => m
 setPredicate mpsCommandBuffer  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mpsCommandBuffer (mkSelector "setPredicate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | heapProvider
+--
+-- A application supplied object to allocate MTLHeaps for MPS
+--
+-- By default this is nil, which will use MPS' device level global heap cache to              allocate the heaps. This is a reasonable choice. However, it may be inefficient              if you are keeping your own MTLHeap, since there will be two pessimistically              sized free stores which may be larger than is strictly necessary, and of course              fragmentation across multiple heaps. In such cases, the problem may be solved              either by using MPS' automatically managed heap (simple) or having MPS use              your heap. The heapProvider allows you to implement the second case.  To use              the MPS heap, simply make temporary MPSImages, vectors and matrices.
+--
+-- If multiple MPSCommandBuffers reference the same MTLCommandBuffer, changing              the heapProvider on one will change the heap provider for all of them.
+--
+-- ObjC selector: @- heapProvider@
+heapProvider :: IsMPSCommandBuffer mpsCommandBuffer => mpsCommandBuffer -> IO RawId
+heapProvider mpsCommandBuffer  =
+    fmap (RawId . castPtr) $ sendMsg mpsCommandBuffer (mkSelector "heapProvider") (retPtr retVoid) []
+
+-- | heapProvider
+--
+-- A application supplied object to allocate MTLHeaps for MPS
+--
+-- By default this is nil, which will use MPS' device level global heap cache to              allocate the heaps. This is a reasonable choice. However, it may be inefficient              if you are keeping your own MTLHeap, since there will be two pessimistically              sized free stores which may be larger than is strictly necessary, and of course              fragmentation across multiple heaps. In such cases, the problem may be solved              either by using MPS' automatically managed heap (simple) or having MPS use              your heap. The heapProvider allows you to implement the second case.  To use              the MPS heap, simply make temporary MPSImages, vectors and matrices.
+--
+-- If multiple MPSCommandBuffers reference the same MTLCommandBuffer, changing              the heapProvider on one will change the heap provider for all of them.
+--
+-- ObjC selector: @- setHeapProvider:@
+setHeapProvider :: IsMPSCommandBuffer mpsCommandBuffer => mpsCommandBuffer -> RawId -> IO ()
+setHeapProvider mpsCommandBuffer  value =
+    sendMsg mpsCommandBuffer (mkSelector "setHeapProvider:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -160,6 +214,14 @@ commitAndContinueSelector = mkSelector "commitAndContinue"
 prefetchHeapForWorkloadSizeSelector :: Selector
 prefetchHeapForWorkloadSizeSelector = mkSelector "prefetchHeapForWorkloadSize:"
 
+-- | @Selector@ for @commandBuffer@
+commandBufferSelector :: Selector
+commandBufferSelector = mkSelector "commandBuffer"
+
+-- | @Selector@ for @rootCommandBuffer@
+rootCommandBufferSelector :: Selector
+rootCommandBufferSelector = mkSelector "rootCommandBuffer"
+
 -- | @Selector@ for @predicate@
 predicateSelector :: Selector
 predicateSelector = mkSelector "predicate"
@@ -167,4 +229,12 @@ predicateSelector = mkSelector "predicate"
 -- | @Selector@ for @setPredicate:@
 setPredicateSelector :: Selector
 setPredicateSelector = mkSelector "setPredicate:"
+
+-- | @Selector@ for @heapProvider@
+heapProviderSelector :: Selector
+heapProviderSelector = mkSelector "heapProvider"
+
+-- | @Selector@ for @setHeapProvider:@
+setHeapProviderSelector :: Selector
+setHeapProviderSelector = mkSelector "setHeapProvider:"
 

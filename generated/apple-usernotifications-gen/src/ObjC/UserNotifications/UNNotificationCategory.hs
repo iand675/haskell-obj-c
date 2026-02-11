@@ -15,6 +15,8 @@ module ObjC.UserNotifications.UNNotificationCategory
   , actions
   , intentIdentifiers
   , options
+  , hiddenPreviewsBodyPlaceholder
+  , categorySummaryFormat
   , categoryWithIdentifier_actions_intentIdentifiers_optionsSelector
   , categoryWithIdentifier_actions_intentIdentifiers_hiddenPreviewsBodyPlaceholder_optionsSelector
   , categoryWithIdentifier_actions_intentIdentifiers_hiddenPreviewsBodyPlaceholder_categorySummaryFormat_optionsSelector
@@ -23,6 +25,8 @@ module ObjC.UserNotifications.UNNotificationCategory
   , actionsSelector
   , intentIdentifiersSelector
   , optionsSelector
+  , hiddenPreviewsBodyPlaceholderSelector
+  , categorySummaryFormatSelector
 
   -- * Enum types
   , UNNotificationCategoryOptions(UNNotificationCategoryOptions)
@@ -108,6 +112,18 @@ options :: IsUNNotificationCategory unNotificationCategory => unNotificationCate
 options unNotificationCategory  =
     fmap (coerce :: CULong -> UNNotificationCategoryOptions) $ sendMsg unNotificationCategory (mkSelector "options") retCULong []
 
+-- | @- hiddenPreviewsBodyPlaceholder@
+hiddenPreviewsBodyPlaceholder :: IsUNNotificationCategory unNotificationCategory => unNotificationCategory -> IO (Id NSString)
+hiddenPreviewsBodyPlaceholder unNotificationCategory  =
+    sendMsg unNotificationCategory (mkSelector "hiddenPreviewsBodyPlaceholder") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | A format string for a summary description when notifications from this category are grouped together. It should contain descriptive text and format arguments that will be replaced with the information from the notifications that have been grouped together. The arguments are replaced with the number of notifications and the list created by joining the argument in each grouped notification. For example: "%u new messages from %\@". The arguments list is optional, "%u new messages" is also accepted.
+--
+-- ObjC selector: @- categorySummaryFormat@
+categorySummaryFormat :: IsUNNotificationCategory unNotificationCategory => unNotificationCategory -> IO (Id NSString)
+categorySummaryFormat unNotificationCategory  =
+    sendMsg unNotificationCategory (mkSelector "categorySummaryFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -143,4 +159,12 @@ intentIdentifiersSelector = mkSelector "intentIdentifiers"
 -- | @Selector@ for @options@
 optionsSelector :: Selector
 optionsSelector = mkSelector "options"
+
+-- | @Selector@ for @hiddenPreviewsBodyPlaceholder@
+hiddenPreviewsBodyPlaceholderSelector :: Selector
+hiddenPreviewsBodyPlaceholderSelector = mkSelector "hiddenPreviewsBodyPlaceholder"
+
+-- | @Selector@ for @categorySummaryFormat@
+categorySummaryFormatSelector :: Selector
+categorySummaryFormatSelector = mkSelector "categorySummaryFormat"
 

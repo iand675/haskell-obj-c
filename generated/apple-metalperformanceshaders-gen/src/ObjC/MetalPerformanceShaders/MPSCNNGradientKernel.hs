@@ -41,6 +41,8 @@ module ObjC.MetalPerformanceShaders.MPSCNNGradientKernel
   , initWithCoder_device
   , encodeToCommandBuffer_sourceGradient_sourceImage_gradientState
   , encodeToCommandBuffer_sourceGradient_sourceImage_gradientState_destinationGradient
+  , encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates
+  , encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates_destinationGradients
   , kernelOffsetX
   , setKernelOffsetX
   , kernelOffsetY
@@ -49,6 +51,8 @@ module ObjC.MetalPerformanceShaders.MPSCNNGradientKernel
   , initWithCoder_deviceSelector
   , encodeToCommandBuffer_sourceGradient_sourceImage_gradientStateSelector
   , encodeToCommandBuffer_sourceGradient_sourceImage_gradientState_destinationGradientSelector
+  , encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStatesSelector
+  , encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates_destinationGradientsSelector
   , kernelOffsetXSelector
   , setKernelOffsetXSelector
   , kernelOffsetYSelector
@@ -148,6 +152,46 @@ encodeToCommandBuffer_sourceGradient_sourceImage_gradientState_destinationGradie
         withObjCPtr destinationGradient $ \raw_destinationGradient ->
             sendMsg mpscnnGradientKernel (mkSelector "encodeToCommandBuffer:sourceGradient:sourceImage:gradientState:destinationGradient:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceGradient :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_gradientState :: Ptr ()), argPtr (castPtr raw_destinationGradient :: Ptr ())]
 
+-- | Encode a gradient filter and return a gradient
+--
+-- During training, gradient filters are used to calculate the gradient              associated with the loss for each feature channel in the forward pass              source image. For those nodes that are trainable, these are then used              to refine the value used in the trainable parameter. They consume              a source gradient image which contains the gradients corresponding              with the forward pass destination image, and calculate the gradients              corresponding to the forward pass source image.
+--
+-- A gradient filter consumes a MPSNNGradientState object which captured              various forward pass properties such as offset and edgeMode at the time              the forward pass was encoded. These are transferred to the MPSCNNBinaryKernel              secondary image properties automatically when this method creates its              destination image.
+--
+-- @commandBuffer@ — The MTLCommandBuffer on which to encode
+--
+-- @sourceGradients@ — The gradient images from the "next" filter in the graph
+--
+-- @sourceImages@ — The images used as source image from the forward pass
+--
+-- @gradientStates@ — The MPSNNGradientState or MPSNNBinaryGradientState subclass produced by the                               forward pass
+--
+-- ObjC selector: @- encodeBatchToCommandBuffer:sourceGradients:sourceImages:gradientStates:@
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates :: IsMPSCNNGradientKernel mpscnnGradientKernel => mpscnnGradientKernel -> RawId -> RawId -> RawId -> RawId -> IO RawId
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates mpscnnGradientKernel  commandBuffer sourceGradients sourceImages gradientStates =
+    fmap (RawId . castPtr) $ sendMsg mpscnnGradientKernel (mkSelector "encodeBatchToCommandBuffer:sourceGradients:sourceImages:gradientStates:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceGradients) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr (unRawId gradientStates) :: Ptr ())]
+
+-- | Encode a gradient filter and return a gradient
+--
+-- During training, gradient filters are used to calculate the gradient              associated with the loss for each feature channel in the forward pass              source image. For those nodes that are trainable, these are then used              to refine the value used in the trainable parameter. They consume              a source gradient image which contains the gradients corresponding              with the forward pass destination image, and calculate the gradients              corresponding to the forward pass source image.
+--
+-- A gradient filter consumes a MPSNNGradientState object which captured              various forward pass properties such as offset and edgeMode at the time              the forward pass was encoded. These are transferred to the MPSCNNBinaryKernel              secondary image properties automatically when you use -[MPSCNNGradientKernel              destinationImageDescriptorForSourceImages:sourceStates:]. If you do not call              this method, then you are responsible for configuring all of the primary and              secondary image properties in MPSCNNBinaryKernel. Please see class description              for expected ordering of operations.
+--
+-- @commandBuffer@ — The MTLCommandBuffer on which to encode
+--
+-- @sourceGradients@ — The gradient images from the "next" filter in the graph
+--
+-- @sourceImages@ — The image used as source images from the forward pass
+--
+-- @gradientStates@ — An array of the MPSNNGradientState or MPSNNBinaryGradientState subclass                               produced by the forward pass
+--
+-- @destinationGradients@ — The MPSImages into which to write the filter result
+--
+-- ObjC selector: @- encodeBatchToCommandBuffer:sourceGradients:sourceImages:gradientStates:destinationGradients:@
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates_destinationGradients :: IsMPSCNNGradientKernel mpscnnGradientKernel => mpscnnGradientKernel -> RawId -> RawId -> RawId -> RawId -> RawId -> IO ()
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates_destinationGradients mpscnnGradientKernel  commandBuffer sourceGradients sourceImages gradientStates destinationGradients =
+    sendMsg mpscnnGradientKernel (mkSelector "encodeBatchToCommandBuffer:sourceGradients:sourceImages:gradientStates:destinationGradients:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceGradients) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr (unRawId gradientStates) :: Ptr ()), argPtr (castPtr (unRawId destinationGradients) :: Ptr ())]
+
 -- | kernelOffsetX
 --
 -- Offset in the kernel reference frame to position the kernel in the X dimension
@@ -211,6 +255,14 @@ encodeToCommandBuffer_sourceGradient_sourceImage_gradientStateSelector = mkSelec
 -- | @Selector@ for @encodeToCommandBuffer:sourceGradient:sourceImage:gradientState:destinationGradient:@
 encodeToCommandBuffer_sourceGradient_sourceImage_gradientState_destinationGradientSelector :: Selector
 encodeToCommandBuffer_sourceGradient_sourceImage_gradientState_destinationGradientSelector = mkSelector "encodeToCommandBuffer:sourceGradient:sourceImage:gradientState:destinationGradient:"
+
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceGradients:sourceImages:gradientStates:@
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStatesSelector :: Selector
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStatesSelector = mkSelector "encodeBatchToCommandBuffer:sourceGradients:sourceImages:gradientStates:"
+
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceGradients:sourceImages:gradientStates:destinationGradients:@
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates_destinationGradientsSelector :: Selector
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates_destinationGradientsSelector = mkSelector "encodeBatchToCommandBuffer:sourceGradients:sourceImages:gradientStates:destinationGradients:"
 
 -- | @Selector@ for @kernelOffsetX@
 kernelOffsetXSelector :: Selector

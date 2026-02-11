@@ -9,6 +9,7 @@ module ObjC.AVFoundation.AVAssetResourceLoader
   , init_
   , new
   , setDelegate_queue
+  , delegate
   , delegateQueue
   , sendsCommonMediaClientDataAsHTTPHeaders
   , setSendsCommonMediaClientDataAsHTTPHeaders
@@ -17,6 +18,7 @@ module ObjC.AVFoundation.AVAssetResourceLoader
   , initSelector
   , newSelector
   , setDelegate_queueSelector
+  , delegateSelector
   , delegateQueueSelector
   , sendsCommonMediaClientDataAsHTTPHeadersSelector
   , setSendsCommonMediaClientDataAsHTTPHeadersSelector
@@ -70,6 +72,17 @@ setDelegate_queue :: (IsAVAssetResourceLoader avAssetResourceLoader, IsNSObject 
 setDelegate_queue avAssetResourceLoader  delegate delegateQueue =
   withObjCPtr delegateQueue $ \raw_delegateQueue ->
       sendMsg avAssetResourceLoader (mkSelector "setDelegate:queue:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_delegateQueue :: Ptr ())]
+
+-- | delegate
+--
+-- The receiver's delegate.
+--
+-- The value of this property is an object conforming to the AVAssetResourceLoaderDelegate protocol. The delegate is set using the setDelegate:queue: method. The delegate is held using a zeroing-weak reference, so this property will have a value of nil after a delegate that was previously set has been deallocated.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsAVAssetResourceLoader avAssetResourceLoader => avAssetResourceLoader -> IO RawId
+delegate avAssetResourceLoader  =
+    fmap (RawId . castPtr) $ sendMsg avAssetResourceLoader (mkSelector "delegate") (retPtr retVoid) []
 
 -- | delegateQueue
 --
@@ -129,6 +142,10 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @setDelegate:queue:@
 setDelegate_queueSelector :: Selector
 setDelegate_queueSelector = mkSelector "setDelegate:queue:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @delegateQueue@
 delegateQueueSelector :: Selector

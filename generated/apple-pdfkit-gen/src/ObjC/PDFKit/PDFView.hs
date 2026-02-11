@@ -74,6 +74,8 @@ module ObjC.PDFKit.PDFView
   , setInterpolationQuality
   , pageShadowsEnabled
   , setPageShadowsEnabled
+  , delegate
+  , setDelegate
   , scaleFactor
   , setScaleFactor
   , minScaleFactor
@@ -167,6 +169,8 @@ module ObjC.PDFKit.PDFView
   , setInterpolationQualitySelector
   , pageShadowsEnabledSelector
   , setPageShadowsEnabledSelector
+  , delegateSelector
+  , setDelegateSelector
   , scaleFactorSelector
   , setScaleFactorSelector
   , minScaleFactorSelector
@@ -606,6 +610,16 @@ setPageShadowsEnabled :: IsPDFView pdfView => pdfView -> Bool -> IO ()
 setPageShadowsEnabled pdfView  value =
     sendMsg pdfView (mkSelector "setPageShadowsEnabled:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @- delegate@
+delegate :: IsPDFView pdfView => pdfView -> IO RawId
+delegate pdfView  =
+    fmap (RawId . castPtr) $ sendMsg pdfView (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsPDFView pdfView => pdfView -> RawId -> IO ()
+setDelegate pdfView  value =
+    sendMsg pdfView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- scaleFactor@
 scaleFactor :: IsPDFView pdfView => pdfView -> IO CDouble
 scaleFactor pdfView  =
@@ -1008,6 +1022,14 @@ pageShadowsEnabledSelector = mkSelector "pageShadowsEnabled"
 -- | @Selector@ for @setPageShadowsEnabled:@
 setPageShadowsEnabledSelector :: Selector
 setPageShadowsEnabledSelector = mkSelector "setPageShadowsEnabled:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @scaleFactor@
 scaleFactorSelector :: Selector

@@ -30,7 +30,7 @@ stack build
 
 ```haskell
 main :: IO ()
-main = withAutoreleasePool $ do
+main = do
   loadFramework "AppKit"
 
   app <- App.sharedApplication

@@ -26,6 +26,8 @@ module ObjC.SceneKit.SCNPhysicsWorld
   , setSpeed
   , timeStep
   , setTimeStep
+  , contactDelegate
+  , setContactDelegate
   , allBehaviors
   , addBehaviorSelector
   , removeBehaviorSelector
@@ -41,6 +43,8 @@ module ObjC.SceneKit.SCNPhysicsWorld
   , setSpeedSelector
   , timeStepSelector
   , setTimeStepSelector
+  , contactDelegateSelector
+  , setContactDelegateSelector
   , allBehaviorsSelector
 
 
@@ -142,6 +146,16 @@ setTimeStep :: IsSCNPhysicsWorld scnPhysicsWorld => scnPhysicsWorld -> CDouble -
 setTimeStep scnPhysicsWorld  value =
     sendMsg scnPhysicsWorld (mkSelector "setTimeStep:") retVoid [argCDouble value]
 
+-- | @- contactDelegate@
+contactDelegate :: IsSCNPhysicsWorld scnPhysicsWorld => scnPhysicsWorld -> IO RawId
+contactDelegate scnPhysicsWorld  =
+    fmap (RawId . castPtr) $ sendMsg scnPhysicsWorld (mkSelector "contactDelegate") (retPtr retVoid) []
+
+-- | @- setContactDelegate:@
+setContactDelegate :: IsSCNPhysicsWorld scnPhysicsWorld => scnPhysicsWorld -> RawId -> IO ()
+setContactDelegate scnPhysicsWorld  value =
+    sendMsg scnPhysicsWorld (mkSelector "setContactDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- allBehaviors@
 allBehaviors :: IsSCNPhysicsWorld scnPhysicsWorld => scnPhysicsWorld -> IO (Id NSArray)
 allBehaviors scnPhysicsWorld  =
@@ -206,6 +220,14 @@ timeStepSelector = mkSelector "timeStep"
 -- | @Selector@ for @setTimeStep:@
 setTimeStepSelector :: Selector
 setTimeStepSelector = mkSelector "setTimeStep:"
+
+-- | @Selector@ for @contactDelegate@
+contactDelegateSelector :: Selector
+contactDelegateSelector = mkSelector "contactDelegate"
+
+-- | @Selector@ for @setContactDelegate:@
+setContactDelegateSelector :: Selector
+setContactDelegateSelector = mkSelector "setContactDelegate:"
 
 -- | @Selector@ for @allBehaviors@
 allBehaviorsSelector :: Selector

@@ -144,6 +144,7 @@ module ObjC.AppKit.NSDocument
   , entireFileLoaded
   , autosavingIsImplicitlyCancellable
   , keepBackupFile
+  , backupFileURL
   , savePanelShowsFileFormatsControl
   , fileNameExtensionWasHiddenInLastRunSavePanel
   , fileTypeFromLastRunSavePanel
@@ -158,7 +159,10 @@ module ObjC.AppKit.NSDocument
   , locked
   , printInfo
   , setPrintInfo
+  , pdfPrintOperation
   , allowsDocumentSharing
+  , previewRepresentableActivityItems
+  , setPreviewRepresentableActivityItems
   , documentEdited
   , inViewingMode
   , undoManager
@@ -172,9 +176,14 @@ module ObjC.AppKit.NSDocument
   , readableTypes
   , writableTypes
   , usesUbiquitousStorage
+  , presentedItemURL
+  , observedPresentedItemUbiquityAttributes
+  , restorableStateKeyPaths
   , lastComponentOfFileName
   , setLastComponentOfFileName
   , objectSpecifier
+  , userActivity
+  , setUserActivity
   , shouldRunSavePanelWithAccessoryView
   , initSelector
   , initWithType_errorSelector
@@ -313,6 +322,7 @@ module ObjC.AppKit.NSDocument
   , entireFileLoadedSelector
   , autosavingIsImplicitlyCancellableSelector
   , keepBackupFileSelector
+  , backupFileURLSelector
   , savePanelShowsFileFormatsControlSelector
   , fileNameExtensionWasHiddenInLastRunSavePanelSelector
   , fileTypeFromLastRunSavePanelSelector
@@ -327,7 +337,10 @@ module ObjC.AppKit.NSDocument
   , lockedSelector
   , printInfoSelector
   , setPrintInfoSelector
+  , pdfPrintOperationSelector
   , allowsDocumentSharingSelector
+  , previewRepresentableActivityItemsSelector
+  , setPreviewRepresentableActivityItemsSelector
   , documentEditedSelector
   , inViewingModeSelector
   , undoManagerSelector
@@ -341,9 +354,14 @@ module ObjC.AppKit.NSDocument
   , readableTypesSelector
   , writableTypesSelector
   , usesUbiquitousStorageSelector
+  , presentedItemURLSelector
+  , observedPresentedItemUbiquityAttributesSelector
+  , restorableStateKeyPathsSelector
   , lastComponentOfFileNameSelector
   , setLastComponentOfFileNameSelector
   , objectSpecifierSelector
+  , userActivitySelector
+  , setUserActivitySelector
   , shouldRunSavePanelWithAccessoryViewSelector
 
   -- * Enum types
@@ -1200,6 +1218,11 @@ keepBackupFile :: IsNSDocument nsDocument => nsDocument -> IO Bool
 keepBackupFile nsDocument  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsDocument (mkSelector "keepBackupFile") retCULong []
 
+-- | @- backupFileURL@
+backupFileURL :: IsNSDocument nsDocument => nsDocument -> IO (Id NSURL)
+backupFileURL nsDocument  =
+    sendMsg nsDocument (mkSelector "backupFileURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- savePanelShowsFileFormatsControl@
 savePanelShowsFileFormatsControl :: IsNSDocument nsDocument => nsDocument -> IO Bool
 savePanelShowsFileFormatsControl nsDocument  =
@@ -1278,10 +1301,26 @@ setPrintInfo nsDocument  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsDocument (mkSelector "setPrintInfo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- PDFPrintOperation@
+pdfPrintOperation :: IsNSDocument nsDocument => nsDocument -> IO (Id NSPrintOperation)
+pdfPrintOperation nsDocument  =
+    sendMsg nsDocument (mkSelector "PDFPrintOperation") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- allowsDocumentSharing@
 allowsDocumentSharing :: IsNSDocument nsDocument => nsDocument -> IO Bool
 allowsDocumentSharing nsDocument  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsDocument (mkSelector "allowsDocumentSharing") retCULong []
+
+-- | @- previewRepresentableActivityItems@
+previewRepresentableActivityItems :: IsNSDocument nsDocument => nsDocument -> IO (Id NSArray)
+previewRepresentableActivityItems nsDocument  =
+    sendMsg nsDocument (mkSelector "previewRepresentableActivityItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setPreviewRepresentableActivityItems:@
+setPreviewRepresentableActivityItems :: (IsNSDocument nsDocument, IsNSArray value) => nsDocument -> value -> IO ()
+setPreviewRepresentableActivityItems nsDocument  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsDocument (mkSelector "setPreviewRepresentableActivityItems:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- documentEdited@
 documentEdited :: IsNSDocument nsDocument => nsDocument -> IO Bool
@@ -1355,6 +1394,23 @@ usesUbiquitousStorage  =
     cls' <- getRequiredClass "NSDocument"
     fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "usesUbiquitousStorage") retCULong []
 
+-- | @- presentedItemURL@
+presentedItemURL :: IsNSDocument nsDocument => nsDocument -> IO (Id NSURL)
+presentedItemURL nsDocument  =
+    sendMsg nsDocument (mkSelector "presentedItemURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- observedPresentedItemUbiquityAttributes@
+observedPresentedItemUbiquityAttributes :: IsNSDocument nsDocument => nsDocument -> IO (Id NSSet)
+observedPresentedItemUbiquityAttributes nsDocument  =
+    sendMsg nsDocument (mkSelector "observedPresentedItemUbiquityAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @+ restorableStateKeyPaths@
+restorableStateKeyPaths :: IO (Id NSArray)
+restorableStateKeyPaths  =
+  do
+    cls' <- getRequiredClass "NSDocument"
+    sendClassMsg cls' (mkSelector "restorableStateKeyPaths") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- lastComponentOfFileName@
 lastComponentOfFileName :: IsNSDocument nsDocument => nsDocument -> IO (Id NSString)
 lastComponentOfFileName nsDocument  =
@@ -1370,6 +1426,17 @@ setLastComponentOfFileName nsDocument  value =
 objectSpecifier :: IsNSDocument nsDocument => nsDocument -> IO (Id NSScriptObjectSpecifier)
 objectSpecifier nsDocument  =
     sendMsg nsDocument (mkSelector "objectSpecifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- userActivity@
+userActivity :: IsNSDocument nsDocument => nsDocument -> IO (Id NSUserActivity)
+userActivity nsDocument  =
+    sendMsg nsDocument (mkSelector "userActivity") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setUserActivity:@
+setUserActivity :: (IsNSDocument nsDocument, IsNSUserActivity value) => nsDocument -> value -> IO ()
+setUserActivity nsDocument  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsDocument (mkSelector "setUserActivity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- shouldRunSavePanelWithAccessoryView@
 shouldRunSavePanelWithAccessoryView :: IsNSDocument nsDocument => nsDocument -> IO Bool
@@ -1928,6 +1995,10 @@ autosavingIsImplicitlyCancellableSelector = mkSelector "autosavingIsImplicitlyCa
 keepBackupFileSelector :: Selector
 keepBackupFileSelector = mkSelector "keepBackupFile"
 
+-- | @Selector@ for @backupFileURL@
+backupFileURLSelector :: Selector
+backupFileURLSelector = mkSelector "backupFileURL"
+
 -- | @Selector@ for @savePanelShowsFileFormatsControl@
 savePanelShowsFileFormatsControlSelector :: Selector
 savePanelShowsFileFormatsControlSelector = mkSelector "savePanelShowsFileFormatsControl"
@@ -1984,9 +2055,21 @@ printInfoSelector = mkSelector "printInfo"
 setPrintInfoSelector :: Selector
 setPrintInfoSelector = mkSelector "setPrintInfo:"
 
+-- | @Selector@ for @PDFPrintOperation@
+pdfPrintOperationSelector :: Selector
+pdfPrintOperationSelector = mkSelector "PDFPrintOperation"
+
 -- | @Selector@ for @allowsDocumentSharing@
 allowsDocumentSharingSelector :: Selector
 allowsDocumentSharingSelector = mkSelector "allowsDocumentSharing"
+
+-- | @Selector@ for @previewRepresentableActivityItems@
+previewRepresentableActivityItemsSelector :: Selector
+previewRepresentableActivityItemsSelector = mkSelector "previewRepresentableActivityItems"
+
+-- | @Selector@ for @setPreviewRepresentableActivityItems:@
+setPreviewRepresentableActivityItemsSelector :: Selector
+setPreviewRepresentableActivityItemsSelector = mkSelector "setPreviewRepresentableActivityItems:"
 
 -- | @Selector@ for @documentEdited@
 documentEditedSelector :: Selector
@@ -2040,6 +2123,18 @@ writableTypesSelector = mkSelector "writableTypes"
 usesUbiquitousStorageSelector :: Selector
 usesUbiquitousStorageSelector = mkSelector "usesUbiquitousStorage"
 
+-- | @Selector@ for @presentedItemURL@
+presentedItemURLSelector :: Selector
+presentedItemURLSelector = mkSelector "presentedItemURL"
+
+-- | @Selector@ for @observedPresentedItemUbiquityAttributes@
+observedPresentedItemUbiquityAttributesSelector :: Selector
+observedPresentedItemUbiquityAttributesSelector = mkSelector "observedPresentedItemUbiquityAttributes"
+
+-- | @Selector@ for @restorableStateKeyPaths@
+restorableStateKeyPathsSelector :: Selector
+restorableStateKeyPathsSelector = mkSelector "restorableStateKeyPaths"
+
 -- | @Selector@ for @lastComponentOfFileName@
 lastComponentOfFileNameSelector :: Selector
 lastComponentOfFileNameSelector = mkSelector "lastComponentOfFileName"
@@ -2051,6 +2146,14 @@ setLastComponentOfFileNameSelector = mkSelector "setLastComponentOfFileName:"
 -- | @Selector@ for @objectSpecifier@
 objectSpecifierSelector :: Selector
 objectSpecifierSelector = mkSelector "objectSpecifier"
+
+-- | @Selector@ for @userActivity@
+userActivitySelector :: Selector
+userActivitySelector = mkSelector "userActivity"
+
+-- | @Selector@ for @setUserActivity:@
+setUserActivitySelector :: Selector
+setUserActivitySelector = mkSelector "setUserActivity:"
 
 -- | @Selector@ for @shouldRunSavePanelWithAccessoryView@
 shouldRunSavePanelWithAccessoryViewSelector :: Selector

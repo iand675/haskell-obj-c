@@ -6,9 +6,15 @@
 module ObjC.SceneKit.NSValue
   ( NSValue
   , IsNSValue(..)
+  , valueWithSCNVector3
+  , valueWithSCNVector4
+  , valueWithSCNMatrix4
   , scnVector3Value
   , scnVector4Value
   , scnMatrix4Value
+  , valueWithSCNVector3Selector
+  , valueWithSCNVector4Selector
+  , valueWithSCNMatrix4Selector
   , scnVector3ValueSelector
   , scnVector4ValueSelector
   , scnMatrix4ValueSelector
@@ -31,6 +37,27 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.SceneKit.Internal.Classes
 import ObjC.SceneKit.Internal.Structs
 
+-- | @+ valueWithSCNVector3:@
+valueWithSCNVector3 :: SCNVector3 -> IO RawId
+valueWithSCNVector3 v =
+  do
+    cls' <- getRequiredClass "NSValue"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "valueWithSCNVector3:") (retPtr retVoid) [argSCNVector3 v]
+
+-- | @+ valueWithSCNVector4:@
+valueWithSCNVector4 :: SCNVector4 -> IO RawId
+valueWithSCNVector4 v =
+  do
+    cls' <- getRequiredClass "NSValue"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "valueWithSCNVector4:") (retPtr retVoid) [argSCNVector4 v]
+
+-- | @+ valueWithSCNMatrix4:@
+valueWithSCNMatrix4 :: SCNMatrix4 -> IO RawId
+valueWithSCNMatrix4 v =
+  do
+    cls' <- getRequiredClass "NSValue"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "valueWithSCNMatrix4:") (retPtr retVoid) [argSCNMatrix4 v]
+
 -- | @- SCNVector3Value@
 scnVector3Value :: IsNSValue nsValue => nsValue -> IO SCNVector3
 scnVector3Value nsValue  =
@@ -49,6 +76,18 @@ scnMatrix4Value nsValue  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @valueWithSCNVector3:@
+valueWithSCNVector3Selector :: Selector
+valueWithSCNVector3Selector = mkSelector "valueWithSCNVector3:"
+
+-- | @Selector@ for @valueWithSCNVector4:@
+valueWithSCNVector4Selector :: Selector
+valueWithSCNVector4Selector = mkSelector "valueWithSCNVector4:"
+
+-- | @Selector@ for @valueWithSCNMatrix4:@
+valueWithSCNMatrix4Selector :: Selector
+valueWithSCNMatrix4Selector = mkSelector "valueWithSCNMatrix4:"
 
 -- | @Selector@ for @SCNVector3Value@
 scnVector3ValueSelector :: Selector

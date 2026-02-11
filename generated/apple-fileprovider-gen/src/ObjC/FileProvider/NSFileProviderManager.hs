@@ -50,6 +50,7 @@ module ObjC.FileProvider.NSFileProviderManager
   , requestModificationOfFields_forItemWithIdentifier_options_completionHandler
   , enumeratorForPendingItems
   , enumeratorForMaterializedItems
+  , defaultManager
   , providerIdentifier
   , documentStorageURL
   , initSelector
@@ -85,6 +86,7 @@ module ObjC.FileProvider.NSFileProviderManager
   , requestModificationOfFields_forItemWithIdentifier_options_completionHandlerSelector
   , enumeratorForPendingItemsSelector
   , enumeratorForMaterializedItemsSelector
+  , defaultManagerSelector
   , providerIdentifierSelector
   , documentStorageURLSelector
 
@@ -565,6 +567,15 @@ enumeratorForMaterializedItems :: IsNSFileProviderManager nsFileProviderManager 
 enumeratorForMaterializedItems nsFileProviderManager  =
     fmap (RawId . castPtr) $ sendMsg nsFileProviderManager (mkSelector "enumeratorForMaterializedItems") (retPtr retVoid) []
 
+-- | Return the manager responsible for the default domain.
+--
+-- ObjC selector: @+ defaultManager@
+defaultManager :: IO (Id NSFileProviderManager)
+defaultManager  =
+  do
+    cls' <- getRequiredClass "NSFileProviderManager"
+    sendClassMsg cls' (mkSelector "defaultManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | The purpose identifier of your file provider extension. A coordination using a file coordinator with this purpose identifier set will not trigger your file provider extension. You can use this to e.g. perform speculative work on behalf of the file provider from the main app.
 --
 -- ObjC selector: @- providerIdentifier@
@@ -716,6 +727,10 @@ enumeratorForPendingItemsSelector = mkSelector "enumeratorForPendingItems"
 -- | @Selector@ for @enumeratorForMaterializedItems@
 enumeratorForMaterializedItemsSelector :: Selector
 enumeratorForMaterializedItemsSelector = mkSelector "enumeratorForMaterializedItems"
+
+-- | @Selector@ for @defaultManager@
+defaultManagerSelector :: Selector
+defaultManagerSelector = mkSelector "defaultManager"
 
 -- | @Selector@ for @providerIdentifier@
 providerIdentifierSelector :: Selector

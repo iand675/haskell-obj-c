@@ -35,11 +35,15 @@ module ObjC.PushKit.PKPushRegistry
   , pushTokenForType
   , initWithQueue
   , init_
+  , delegate
+  , setDelegate
   , desiredPushTypes
   , setDesiredPushTypes
   , pushTokenForTypeSelector
   , initWithQueueSelector
   , initSelector
+  , delegateSelector
+  , setDelegateSelector
   , desiredPushTypesSelector
   , setDesiredPushTypesSelector
 
@@ -96,6 +100,28 @@ init_ :: IsPKPushRegistry pkPushRegistry => pkPushRegistry -> IO (Id PKPushRegis
 init_ pkPushRegistry  =
     sendMsg pkPushRegistry (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | The delegate object that receives notifications coming from the push registry object.
+--
+-- You must assign a valid object to this property before modifying the ``PushKit/PKPushRegistry/desiredPushTypes`` property. A valid delegate object is required to receive push tokens and payload data from incoming pushes.
+--
+-- For more information about the methods of the @PKPushRegistryDelegate@ protocol, see ``PushKit/PKPushRegistryDelegate``.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsPKPushRegistry pkPushRegistry => pkPushRegistry -> IO RawId
+delegate pkPushRegistry  =
+    fmap (RawId . castPtr) $ sendMsg pkPushRegistry (mkSelector "delegate") (retPtr retVoid) []
+
+-- | The delegate object that receives notifications coming from the push registry object.
+--
+-- You must assign a valid object to this property before modifying the ``PushKit/PKPushRegistry/desiredPushTypes`` property. A valid delegate object is required to receive push tokens and payload data from incoming pushes.
+--
+-- For more information about the methods of the @PKPushRegistryDelegate@ protocol, see ``PushKit/PKPushRegistryDelegate``.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsPKPushRegistry pkPushRegistry => pkPushRegistry -> RawId -> IO ()
+setDelegate pkPushRegistry  value =
+    sendMsg pkPushRegistry (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Registers the push types for this push registry object.
 --
 -- When you assign a value to this property, the push registry object makes a registration request with the PushKit server. This request is asynchronous, and the success or failure of the request is reported to your registery's delegate object. For a successful registration, PushKit delivers a push token to the delegate. Use that token to generate push requests from your server.
@@ -134,6 +160,14 @@ initWithQueueSelector = mkSelector "initWithQueue:"
 -- | @Selector@ for @init@
 initSelector :: Selector
 initSelector = mkSelector "init"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @desiredPushTypes@
 desiredPushTypesSelector :: Selector

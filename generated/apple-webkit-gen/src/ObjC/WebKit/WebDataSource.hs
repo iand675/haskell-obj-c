@@ -14,6 +14,7 @@ module ObjC.WebKit.WebDataSource
   , subresourceForURL
   , addSubresource
   , data_
+  , representation
   , webFrame
   , initialRequest
   , request
@@ -29,6 +30,7 @@ module ObjC.WebKit.WebDataSource
   , subresourceForURLSelector
   , addSubresourceSelector
   , dataSelector
+  , representationSelector
   , webFrameSelector
   , initialRequestSelector
   , requestSelector
@@ -107,6 +109,17 @@ addSubresource webDataSource  subresource =
 data_ :: IsWebDataSource webDataSource => webDataSource -> IO (Id NSData)
 data_ webDataSource  =
     sendMsg webDataSource (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | representation
+--
+-- The representation associated with this datasource.    Returns nil if the datasource hasn't created its representation.
+--
+-- A representation holds a type specific representation    of the datasource's data.  The representation class is determined by mapping    a MIME type to a class.  The representation is created once the MIME type    of the datasource content has been determined.
+--
+-- ObjC selector: @- representation@
+representation :: IsWebDataSource webDataSource => webDataSource -> IO RawId
+representation webDataSource  =
+    fmap (RawId . castPtr) $ sendMsg webDataSource (mkSelector "representation") (retPtr retVoid) []
 
 -- | webFrame
 --
@@ -228,6 +241,10 @@ addSubresourceSelector = mkSelector "addSubresource:"
 -- | @Selector@ for @data@
 dataSelector :: Selector
 dataSelector = mkSelector "data"
+
+-- | @Selector@ for @representation@
+representationSelector :: Selector
+representationSelector = mkSelector "representation"
 
 -- | @Selector@ for @webFrame@
 webFrameSelector :: Selector

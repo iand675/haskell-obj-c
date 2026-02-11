@@ -12,12 +12,14 @@ module ObjC.MapKit.MKClusterAnnotation
   , setTitle
   , subtitle
   , setSubtitle
+  , memberAnnotations
   , initSelector
   , initWithMemberAnnotationsSelector
   , titleSelector
   , setTitleSelector
   , subtitleSelector
   , setSubtitleSelector
+  , memberAnnotationsSelector
 
 
   ) where
@@ -70,6 +72,11 @@ setSubtitle mkClusterAnnotation  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mkClusterAnnotation (mkSelector "setSubtitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- memberAnnotations@
+memberAnnotations :: IsMKClusterAnnotation mkClusterAnnotation => mkClusterAnnotation -> IO (Id NSArray)
+memberAnnotations mkClusterAnnotation  =
+    sendMsg mkClusterAnnotation (mkSelector "memberAnnotations") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -97,4 +104,8 @@ subtitleSelector = mkSelector "subtitle"
 -- | @Selector@ for @setSubtitle:@
 setSubtitleSelector :: Selector
 setSubtitleSelector = mkSelector "setSubtitle:"
+
+-- | @Selector@ for @memberAnnotations@
+memberAnnotationsSelector :: Selector
+memberAnnotationsSelector = mkSelector "memberAnnotations"
 

@@ -9,9 +9,11 @@ module ObjC.MapKit.MKMapItemIdentifier
   , init_
   , new
   , initWithIdentifierString
+  , identifierString
   , initSelector
   , newSelector
   , initWithIdentifierStringSelector
+  , identifierStringSelector
 
 
   ) where
@@ -49,6 +51,11 @@ initWithIdentifierString mkMapItemIdentifier  string =
   withObjCPtr string $ \raw_string ->
       sendMsg mkMapItemIdentifier (mkSelector "initWithIdentifierString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= ownedObject . castPtr
 
+-- | @- identifierString@
+identifierString :: IsMKMapItemIdentifier mkMapItemIdentifier => mkMapItemIdentifier -> IO (Id NSString)
+identifierString mkMapItemIdentifier  =
+    sendMsg mkMapItemIdentifier (mkSelector "identifierString") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -64,4 +71,8 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @initWithIdentifierString:@
 initWithIdentifierStringSelector :: Selector
 initWithIdentifierStringSelector = mkSelector "initWithIdentifierString:"
+
+-- | @Selector@ for @identifierString@
+identifierStringSelector :: Selector
+identifierStringSelector = mkSelector "identifierString"
 

@@ -12,7 +12,9 @@ module ObjC.AVRouting.AVCustomRoutingEvent
   ( AVCustomRoutingEvent
   , IsAVCustomRoutingEvent(..)
   , reason
+  , route
   , reasonSelector
+  , routeSelector
 
   -- * Enum types
   , AVCustomRoutingEventReason(AVCustomRoutingEventReason)
@@ -45,6 +47,13 @@ reason :: IsAVCustomRoutingEvent avCustomRoutingEvent => avCustomRoutingEvent ->
 reason avCustomRoutingEvent  =
     fmap (coerce :: CLong -> AVCustomRoutingEventReason) $ sendMsg avCustomRoutingEvent (mkSelector "reason") retCLong []
 
+-- | A route for the event.
+--
+-- ObjC selector: @- route@
+route :: IsAVCustomRoutingEvent avCustomRoutingEvent => avCustomRoutingEvent -> IO (Id AVCustomDeviceRoute)
+route avCustomRoutingEvent  =
+    sendMsg avCustomRoutingEvent (mkSelector "route") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -52,4 +61,8 @@ reason avCustomRoutingEvent  =
 -- | @Selector@ for @reason@
 reasonSelector :: Selector
 reasonSelector = mkSelector "reason"
+
+-- | @Selector@ for @route@
+routeSelector :: Selector
+routeSelector = mkSelector "route"
 

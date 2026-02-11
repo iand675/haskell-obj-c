@@ -7,8 +7,14 @@ module ObjC.GameController.GCRacingWheelInputState
   ( GCRacingWheelInputState
   , IsGCRacingWheelInputState(..)
   , wheel
+  , acceleratorPedal
+  , brakePedal
+  , clutchPedal
   , shifter
   , wheelSelector
+  , acceleratorPedalSelector
+  , brakePedalSelector
+  , clutchPedalSelector
   , shifterSelector
 
 
@@ -36,6 +42,21 @@ wheel :: IsGCRacingWheelInputState gcRacingWheelInputState => gcRacingWheelInput
 wheel gcRacingWheelInputState  =
     sendMsg gcRacingWheelInputState (mkSelector "wheel") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- acceleratorPedal@
+acceleratorPedal :: IsGCRacingWheelInputState gcRacingWheelInputState => gcRacingWheelInputState -> IO RawId
+acceleratorPedal gcRacingWheelInputState  =
+    fmap (RawId . castPtr) $ sendMsg gcRacingWheelInputState (mkSelector "acceleratorPedal") (retPtr retVoid) []
+
+-- | @- brakePedal@
+brakePedal :: IsGCRacingWheelInputState gcRacingWheelInputState => gcRacingWheelInputState -> IO RawId
+brakePedal gcRacingWheelInputState  =
+    fmap (RawId . castPtr) $ sendMsg gcRacingWheelInputState (mkSelector "brakePedal") (retPtr retVoid) []
+
+-- | @- clutchPedal@
+clutchPedal :: IsGCRacingWheelInputState gcRacingWheelInputState => gcRacingWheelInputState -> IO RawId
+clutchPedal gcRacingWheelInputState  =
+    fmap (RawId . castPtr) $ sendMsg gcRacingWheelInputState (mkSelector "clutchPedal") (retPtr retVoid) []
+
 -- | The element representing an attached gear shifter accessory.
 --
 -- Note that this element only represents an external gear shifter accessory. Many racing wheels have a pair of built in paddle buttons that can be used for sequential gear shifting.  Those buttons are can be looked up with the @GCInputLeftPaddle@ and @GCInputRightPaddle@ input names.
@@ -52,6 +73,18 @@ shifter gcRacingWheelInputState  =
 -- | @Selector@ for @wheel@
 wheelSelector :: Selector
 wheelSelector = mkSelector "wheel"
+
+-- | @Selector@ for @acceleratorPedal@
+acceleratorPedalSelector :: Selector
+acceleratorPedalSelector = mkSelector "acceleratorPedal"
+
+-- | @Selector@ for @brakePedal@
+brakePedalSelector :: Selector
+brakePedalSelector = mkSelector "brakePedal"
+
+-- | @Selector@ for @clutchPedal@
+clutchPedalSelector :: Selector
+clutchPedalSelector = mkSelector "clutchPedal"
 
 -- | @Selector@ for @shifter@
 shifterSelector :: Selector

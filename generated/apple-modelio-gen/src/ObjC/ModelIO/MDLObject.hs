@@ -19,11 +19,16 @@ module ObjC.ModelIO.MDLObject
   , objectAtPath
   , enumerateChildObjectsOfClass_root_usingBlock_stopPointer
   , addChild
+  , components
   , parent
   , setParent
   , instance_
   , setInstance
   , path
+  , transform
+  , setTransform
+  , children
+  , setChildren
   , hidden
   , setHidden
   , setComponent_forProtocolSelector
@@ -33,11 +38,16 @@ module ObjC.ModelIO.MDLObject
   , objectAtPathSelector
   , enumerateChildObjectsOfClass_root_usingBlock_stopPointerSelector
   , addChildSelector
+  , componentsSelector
   , parentSelector
   , setParentSelector
   , instanceSelector
   , setInstanceSelector
   , pathSelector
+  , transformSelector
+  , setTransformSelector
+  , childrenSelector
+  , setChildrenSelector
   , hiddenSelector
   , setHiddenSelector
 
@@ -131,6 +141,15 @@ addChild mdlObject  child =
   withObjCPtr child $ \raw_child ->
       sendMsg mdlObject (mkSelector "addChild:") retVoid [argPtr (castPtr raw_child :: Ptr ())]
 
+-- | components
+--
+-- Allows applications to introspect the components on the objects.
+--
+-- ObjC selector: @- components@
+components :: IsMDLObject mdlObject => mdlObject -> IO (Id NSArray)
+components mdlObject  =
+    sendMsg mdlObject (mkSelector "components") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | parent
 --
 -- Parent object. Nil if no parent.
@@ -188,6 +207,58 @@ path :: IsMDLObject mdlObject => mdlObject -> IO (Id NSString)
 path mdlObject  =
     sendMsg mdlObject (mkSelector "path") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | transform
+--
+-- Short hand property for the MDLTransformComponent.
+--
+-- The default value is nil
+--
+-- See: MDLTransformComponent
+--
+-- ObjC selector: @- transform@
+transform :: IsMDLObject mdlObject => mdlObject -> IO RawId
+transform mdlObject  =
+    fmap (RawId . castPtr) $ sendMsg mdlObject (mkSelector "transform") (retPtr retVoid) []
+
+-- | transform
+--
+-- Short hand property for the MDLTransformComponent.
+--
+-- The default value is nil
+--
+-- See: MDLTransformComponent
+--
+-- ObjC selector: @- setTransform:@
+setTransform :: IsMDLObject mdlObject => mdlObject -> RawId -> IO ()
+setTransform mdlObject  value =
+    sendMsg mdlObject (mkSelector "setTransform:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | children
+--
+-- Short hand property for the MDLObjectContainerComponent.
+--
+-- The default value is an empty MDLObjectContainer
+--
+-- See: MDLObjectContainerComponent
+--
+-- ObjC selector: @- children@
+children :: IsMDLObject mdlObject => mdlObject -> IO RawId
+children mdlObject  =
+    fmap (RawId . castPtr) $ sendMsg mdlObject (mkSelector "children") (retPtr retVoid) []
+
+-- | children
+--
+-- Short hand property for the MDLObjectContainerComponent.
+--
+-- The default value is an empty MDLObjectContainer
+--
+-- See: MDLObjectContainerComponent
+--
+-- ObjC selector: @- setChildren:@
+setChildren :: IsMDLObject mdlObject => mdlObject -> RawId -> IO ()
+setChildren mdlObject  value =
+    sendMsg mdlObject (mkSelector "setChildren:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | hidden
 --
 -- Visibility of the node
@@ -242,6 +313,10 @@ enumerateChildObjectsOfClass_root_usingBlock_stopPointerSelector = mkSelector "e
 addChildSelector :: Selector
 addChildSelector = mkSelector "addChild:"
 
+-- | @Selector@ for @components@
+componentsSelector :: Selector
+componentsSelector = mkSelector "components"
+
 -- | @Selector@ for @parent@
 parentSelector :: Selector
 parentSelector = mkSelector "parent"
@@ -261,6 +336,22 @@ setInstanceSelector = mkSelector "setInstance:"
 -- | @Selector@ for @path@
 pathSelector :: Selector
 pathSelector = mkSelector "path"
+
+-- | @Selector@ for @transform@
+transformSelector :: Selector
+transformSelector = mkSelector "transform"
+
+-- | @Selector@ for @setTransform:@
+setTransformSelector :: Selector
+setTransformSelector = mkSelector "setTransform:"
+
+-- | @Selector@ for @children@
+childrenSelector :: Selector
+childrenSelector = mkSelector "children"
+
+-- | @Selector@ for @setChildren:@
+setChildrenSelector :: Selector
+setChildrenSelector = mkSelector "setChildren:"
 
 -- | @Selector@ for @hidden@
 hiddenSelector :: Selector

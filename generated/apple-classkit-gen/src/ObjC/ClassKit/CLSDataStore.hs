@@ -18,6 +18,8 @@ module ObjC.ClassKit.CLSDataStore
   , mainAppContext
   , activeContext
   , runningActivity
+  , delegate
+  , setDelegate
   , newSelector
   , initSelector
   , saveWithCompletionSelector
@@ -28,6 +30,8 @@ module ObjC.ClassKit.CLSDataStore
   , mainAppContextSelector
   , activeContextSelector
   , runningActivitySelector
+  , delegateSelector
+  , setDelegateSelector
 
 
   ) where
@@ -134,6 +138,20 @@ runningActivity :: IsCLSDataStore clsDataStore => clsDataStore -> IO (Id CLSActi
 runningActivity clsDataStore  =
     sendMsg clsDataStore (mkSelector "runningActivity") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The data store delegate allows for easy population of the app's context hierarchy.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsCLSDataStore clsDataStore => clsDataStore -> IO RawId
+delegate clsDataStore  =
+    fmap (RawId . castPtr) $ sendMsg clsDataStore (mkSelector "delegate") (retPtr retVoid) []
+
+-- | The data store delegate allows for easy population of the app's context hierarchy.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsCLSDataStore clsDataStore => clsDataStore -> RawId -> IO ()
+setDelegate clsDataStore  value =
+    sendMsg clsDataStore (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -177,4 +195,12 @@ activeContextSelector = mkSelector "activeContext"
 -- | @Selector@ for @runningActivity@
 runningActivitySelector :: Selector
 runningActivitySelector = mkSelector "runningActivity"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

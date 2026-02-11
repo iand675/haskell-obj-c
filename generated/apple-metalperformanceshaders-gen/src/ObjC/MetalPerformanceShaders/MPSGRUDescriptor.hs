@@ -33,11 +33,39 @@ module ObjC.MetalPerformanceShaders.MPSGRUDescriptor
   ( MPSGRUDescriptor
   , IsMPSGRUDescriptor(..)
   , createGRUDescriptorWithInputFeatureChannels_outputFeatureChannels
+  , inputGateInputWeights
+  , setInputGateInputWeights
+  , inputGateRecurrentWeights
+  , setInputGateRecurrentWeights
+  , recurrentGateInputWeights
+  , setRecurrentGateInputWeights
+  , recurrentGateRecurrentWeights
+  , setRecurrentGateRecurrentWeights
+  , outputGateInputWeights
+  , setOutputGateInputWeights
+  , outputGateRecurrentWeights
+  , setOutputGateRecurrentWeights
+  , outputGateInputGateWeights
+  , setOutputGateInputGateWeights
   , gatePnormValue
   , setGatePnormValue
   , flipOutputGates
   , setFlipOutputGates
   , createGRUDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector
+  , inputGateInputWeightsSelector
+  , setInputGateInputWeightsSelector
+  , inputGateRecurrentWeightsSelector
+  , setInputGateRecurrentWeightsSelector
+  , recurrentGateInputWeightsSelector
+  , setRecurrentGateInputWeightsSelector
+  , recurrentGateRecurrentWeightsSelector
+  , setRecurrentGateRecurrentWeightsSelector
+  , outputGateInputWeightsSelector
+  , setOutputGateInputWeightsSelector
+  , outputGateRecurrentWeightsSelector
+  , setOutputGateRecurrentWeightsSelector
+  , outputGateInputGateWeightsSelector
+  , setOutputGateInputGateWeightsSelector
   , gatePnormValueSelector
   , setGatePnormValueSelector
   , flipOutputGatesSelector
@@ -75,6 +103,132 @@ createGRUDescriptorWithInputFeatureChannels_outputFeatureChannels inputFeatureCh
   do
     cls' <- getRequiredClass "MPSGRUDescriptor"
     sendClassMsg cls' (mkSelector "createGRUDescriptorWithInputFeatureChannels:outputFeatureChannels:") (retPtr retVoid) [argCULong inputFeatureChannels, argCULong outputFeatureChannels] >>= retainedObject . castPtr
+
+-- | inputGateInputWeights
+--
+-- Contains weights 'Wz_ij', bias 'bz_i' and neuron 'gz' from the GRU formula.              If nil then assumed zero weights, bias and no neuron (identity mapping). Defaults to nil.
+--
+-- ObjC selector: @- inputGateInputWeights@
+inputGateInputWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> IO RawId
+inputGateInputWeights mpsgruDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpsgruDescriptor (mkSelector "inputGateInputWeights") (retPtr retVoid) []
+
+-- | inputGateInputWeights
+--
+-- Contains weights 'Wz_ij', bias 'bz_i' and neuron 'gz' from the GRU formula.              If nil then assumed zero weights, bias and no neuron (identity mapping). Defaults to nil.
+--
+-- ObjC selector: @- setInputGateInputWeights:@
+setInputGateInputWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> RawId -> IO ()
+setInputGateInputWeights mpsgruDescriptor  value =
+    sendMsg mpsgruDescriptor (mkSelector "setInputGateInputWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | inputGateRecurrentWeights
+--
+-- Contains weights 'Uz_ij' from the GRU formula.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- inputGateRecurrentWeights@
+inputGateRecurrentWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> IO RawId
+inputGateRecurrentWeights mpsgruDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpsgruDescriptor (mkSelector "inputGateRecurrentWeights") (retPtr retVoid) []
+
+-- | inputGateRecurrentWeights
+--
+-- Contains weights 'Uz_ij' from the GRU formula.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- setInputGateRecurrentWeights:@
+setInputGateRecurrentWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> RawId -> IO ()
+setInputGateRecurrentWeights mpsgruDescriptor  value =
+    sendMsg mpsgruDescriptor (mkSelector "setInputGateRecurrentWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | recurrentGateInputWeights
+--
+-- Contains weights 'Wr_ij', bias 'br_i' and neuron 'gr' from the GRU formula.              If nil then assumed zero weights, bias and no neuron (identity mapping).Defaults to nil.
+--
+-- ObjC selector: @- recurrentGateInputWeights@
+recurrentGateInputWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> IO RawId
+recurrentGateInputWeights mpsgruDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpsgruDescriptor (mkSelector "recurrentGateInputWeights") (retPtr retVoid) []
+
+-- | recurrentGateInputWeights
+--
+-- Contains weights 'Wr_ij', bias 'br_i' and neuron 'gr' from the GRU formula.              If nil then assumed zero weights, bias and no neuron (identity mapping).Defaults to nil.
+--
+-- ObjC selector: @- setRecurrentGateInputWeights:@
+setRecurrentGateInputWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> RawId -> IO ()
+setRecurrentGateInputWeights mpsgruDescriptor  value =
+    sendMsg mpsgruDescriptor (mkSelector "setRecurrentGateInputWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | recurrentGateRecurrentWeights
+--
+-- Contains weights 'Ur_ij' from the GRU formula.              If nil then assumed zero weights.Defaults to nil.
+--
+-- ObjC selector: @- recurrentGateRecurrentWeights@
+recurrentGateRecurrentWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> IO RawId
+recurrentGateRecurrentWeights mpsgruDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpsgruDescriptor (mkSelector "recurrentGateRecurrentWeights") (retPtr retVoid) []
+
+-- | recurrentGateRecurrentWeights
+--
+-- Contains weights 'Ur_ij' from the GRU formula.              If nil then assumed zero weights.Defaults to nil.
+--
+-- ObjC selector: @- setRecurrentGateRecurrentWeights:@
+setRecurrentGateRecurrentWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> RawId -> IO ()
+setRecurrentGateRecurrentWeights mpsgruDescriptor  value =
+    sendMsg mpsgruDescriptor (mkSelector "setRecurrentGateRecurrentWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | outputGateInputWeights
+--
+-- Contains weights 'Wh_ij', bias 'bh_i' and neuron 'gh' from the GRU formula.              If nil then assumed zero weights, bias and no neuron (identity mapping).Defaults to nil.
+--
+-- ObjC selector: @- outputGateInputWeights@
+outputGateInputWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> IO RawId
+outputGateInputWeights mpsgruDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpsgruDescriptor (mkSelector "outputGateInputWeights") (retPtr retVoid) []
+
+-- | outputGateInputWeights
+--
+-- Contains weights 'Wh_ij', bias 'bh_i' and neuron 'gh' from the GRU formula.              If nil then assumed zero weights, bias and no neuron (identity mapping).Defaults to nil.
+--
+-- ObjC selector: @- setOutputGateInputWeights:@
+setOutputGateInputWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> RawId -> IO ()
+setOutputGateInputWeights mpsgruDescriptor  value =
+    sendMsg mpsgruDescriptor (mkSelector "setOutputGateInputWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | outputGateRecurrentWeights
+--
+-- Contains weights 'Uh_ij' from the GRU formula.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- outputGateRecurrentWeights@
+outputGateRecurrentWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> IO RawId
+outputGateRecurrentWeights mpsgruDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpsgruDescriptor (mkSelector "outputGateRecurrentWeights") (retPtr retVoid) []
+
+-- | outputGateRecurrentWeights
+--
+-- Contains weights 'Uh_ij' from the GRU formula.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- setOutputGateRecurrentWeights:@
+setOutputGateRecurrentWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> RawId -> IO ()
+setOutputGateRecurrentWeights mpsgruDescriptor  value =
+    sendMsg mpsgruDescriptor (mkSelector "setOutputGateRecurrentWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | outputGateInputGateWeights
+--
+-- Contains weights 'Vh_ij' - can be used to implement the "Minimally Gated Unit".              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- outputGateInputGateWeights@
+outputGateInputGateWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> IO RawId
+outputGateInputGateWeights mpsgruDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpsgruDescriptor (mkSelector "outputGateInputGateWeights") (retPtr retVoid) []
+
+-- | outputGateInputGateWeights
+--
+-- Contains weights 'Vh_ij' - can be used to implement the "Minimally Gated Unit".              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- setOutputGateInputGateWeights:@
+setOutputGateInputGateWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> RawId -> IO ()
+setOutputGateInputGateWeights mpsgruDescriptor  value =
+    sendMsg mpsgruDescriptor (mkSelector "setOutputGateInputGateWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | gatePnormValue
 --
@@ -119,6 +273,62 @@ setFlipOutputGates mpsgruDescriptor  value =
 -- | @Selector@ for @createGRUDescriptorWithInputFeatureChannels:outputFeatureChannels:@
 createGRUDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector :: Selector
 createGRUDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector = mkSelector "createGRUDescriptorWithInputFeatureChannels:outputFeatureChannels:"
+
+-- | @Selector@ for @inputGateInputWeights@
+inputGateInputWeightsSelector :: Selector
+inputGateInputWeightsSelector = mkSelector "inputGateInputWeights"
+
+-- | @Selector@ for @setInputGateInputWeights:@
+setInputGateInputWeightsSelector :: Selector
+setInputGateInputWeightsSelector = mkSelector "setInputGateInputWeights:"
+
+-- | @Selector@ for @inputGateRecurrentWeights@
+inputGateRecurrentWeightsSelector :: Selector
+inputGateRecurrentWeightsSelector = mkSelector "inputGateRecurrentWeights"
+
+-- | @Selector@ for @setInputGateRecurrentWeights:@
+setInputGateRecurrentWeightsSelector :: Selector
+setInputGateRecurrentWeightsSelector = mkSelector "setInputGateRecurrentWeights:"
+
+-- | @Selector@ for @recurrentGateInputWeights@
+recurrentGateInputWeightsSelector :: Selector
+recurrentGateInputWeightsSelector = mkSelector "recurrentGateInputWeights"
+
+-- | @Selector@ for @setRecurrentGateInputWeights:@
+setRecurrentGateInputWeightsSelector :: Selector
+setRecurrentGateInputWeightsSelector = mkSelector "setRecurrentGateInputWeights:"
+
+-- | @Selector@ for @recurrentGateRecurrentWeights@
+recurrentGateRecurrentWeightsSelector :: Selector
+recurrentGateRecurrentWeightsSelector = mkSelector "recurrentGateRecurrentWeights"
+
+-- | @Selector@ for @setRecurrentGateRecurrentWeights:@
+setRecurrentGateRecurrentWeightsSelector :: Selector
+setRecurrentGateRecurrentWeightsSelector = mkSelector "setRecurrentGateRecurrentWeights:"
+
+-- | @Selector@ for @outputGateInputWeights@
+outputGateInputWeightsSelector :: Selector
+outputGateInputWeightsSelector = mkSelector "outputGateInputWeights"
+
+-- | @Selector@ for @setOutputGateInputWeights:@
+setOutputGateInputWeightsSelector :: Selector
+setOutputGateInputWeightsSelector = mkSelector "setOutputGateInputWeights:"
+
+-- | @Selector@ for @outputGateRecurrentWeights@
+outputGateRecurrentWeightsSelector :: Selector
+outputGateRecurrentWeightsSelector = mkSelector "outputGateRecurrentWeights"
+
+-- | @Selector@ for @setOutputGateRecurrentWeights:@
+setOutputGateRecurrentWeightsSelector :: Selector
+setOutputGateRecurrentWeightsSelector = mkSelector "setOutputGateRecurrentWeights:"
+
+-- | @Selector@ for @outputGateInputGateWeights@
+outputGateInputGateWeightsSelector :: Selector
+outputGateInputGateWeightsSelector = mkSelector "outputGateInputGateWeights"
+
+-- | @Selector@ for @setOutputGateInputGateWeights:@
+setOutputGateInputGateWeightsSelector :: Selector
+setOutputGateInputGateWeightsSelector = mkSelector "setOutputGateInputGateWeights:"
 
 -- | @Selector@ for @gatePnormValue@
 gatePnormValueSelector :: Selector

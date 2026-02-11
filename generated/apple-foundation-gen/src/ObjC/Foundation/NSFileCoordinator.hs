@@ -20,6 +20,7 @@ module ObjC.Foundation.NSFileCoordinator
   , itemAtURL_didMoveToURL
   , itemAtURL_didChangeUbiquityAttributes
   , cancel
+  , filePresenters
   , purposeIdentifier
   , setPurposeIdentifier
   , addFilePresenterSelector
@@ -35,6 +36,7 @@ module ObjC.Foundation.NSFileCoordinator
   , itemAtURL_didMoveToURLSelector
   , itemAtURL_didChangeUbiquityAttributesSelector
   , cancelSelector
+  , filePresentersSelector
   , purposeIdentifierSelector
   , setPurposeIdentifierSelector
 
@@ -158,6 +160,13 @@ cancel :: IsNSFileCoordinator nsFileCoordinator => nsFileCoordinator -> IO ()
 cancel nsFileCoordinator  =
     sendMsg nsFileCoordinator (mkSelector "cancel") retVoid []
 
+-- | @+ filePresenters@
+filePresenters :: IO (Id NSArray)
+filePresenters  =
+  do
+    cls' <- getRequiredClass "NSFileCoordinator"
+    sendClassMsg cls' (mkSelector "filePresenters") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- purposeIdentifier@
 purposeIdentifier :: IsNSFileCoordinator nsFileCoordinator => nsFileCoordinator -> IO (Id NSString)
 purposeIdentifier nsFileCoordinator  =
@@ -224,6 +233,10 @@ itemAtURL_didChangeUbiquityAttributesSelector = mkSelector "itemAtURL:didChangeU
 -- | @Selector@ for @cancel@
 cancelSelector :: Selector
 cancelSelector = mkSelector "cancel"
+
+-- | @Selector@ for @filePresenters@
+filePresentersSelector :: Selector
+filePresentersSelector = mkSelector "filePresenters"
 
 -- | @Selector@ for @purposeIdentifier@
 purposeIdentifierSelector :: Selector

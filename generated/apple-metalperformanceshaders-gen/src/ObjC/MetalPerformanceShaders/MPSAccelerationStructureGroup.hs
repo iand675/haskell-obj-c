@@ -12,8 +12,10 @@ module ObjC.MetalPerformanceShaders.MPSAccelerationStructureGroup
   , IsMPSAccelerationStructureGroup(..)
   , init_
   , initWithDevice
+  , device
   , initSelector
   , initWithDeviceSelector
+  , deviceSelector
 
 
   ) where
@@ -43,6 +45,13 @@ initWithDevice :: IsMPSAccelerationStructureGroup mpsAccelerationStructureGroup 
 initWithDevice mpsAccelerationStructureGroup  device =
     sendMsg mpsAccelerationStructureGroup (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
 
+-- | The Metal device this acceleration structure group was created with
+--
+-- ObjC selector: @- device@
+device :: IsMPSAccelerationStructureGroup mpsAccelerationStructureGroup => mpsAccelerationStructureGroup -> IO RawId
+device mpsAccelerationStructureGroup  =
+    fmap (RawId . castPtr) $ sendMsg mpsAccelerationStructureGroup (mkSelector "device") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -54,4 +63,8 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @initWithDevice:@
 initWithDeviceSelector :: Selector
 initWithDeviceSelector = mkSelector "initWithDevice:"
+
+-- | @Selector@ for @device@
+deviceSelector :: Selector
+deviceSelector = mkSelector "device"
 

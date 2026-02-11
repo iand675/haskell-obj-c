@@ -34,8 +34,10 @@
 module ObjC.GameController.GCStylus
   ( GCStylus
   , IsGCStylus(..)
+  , input
   , haptics
   , styli
+  , inputSelector
   , hapticsSelector
   , styliSelector
 
@@ -56,6 +58,15 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.GameController.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | Gets the input profile for the stylus.
+--
+-- The input profile is represented as an object conforming to the  @GCDevicePhysicalInput@ protocol.  Use this object to discover available  inputs on the stylus, including buttons and pressure sensors, and get  notified when the state of those inputs change.
+--
+-- ObjC selector: @- input@
+input :: IsGCStylus gcStylus => gcStylus -> IO RawId
+input gcStylus  =
+    fmap (RawId . castPtr) $ sendMsg gcStylus (mkSelector "input") (retPtr retVoid) []
 
 -- | Gets the haptics profile for the stylus, if supported.
 --
@@ -86,6 +97,10 @@ styli  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @input@
+inputSelector :: Selector
+inputSelector = mkSelector "input"
 
 -- | @Selector@ for @haptics@
 hapticsSelector :: Selector

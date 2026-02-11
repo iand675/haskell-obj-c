@@ -44,6 +44,10 @@ library:
   - ObjC.Accessibility.AXMathExpressionUnderOver
   - ObjC.Accessibility.AXNumericDataAxisDescriptor
   - ObjC.Accessibility.AXRequest
+  - ObjC.Accessibility.Delegate.AXChart
+  - ObjC.Accessibility.Delegate.AXCustomContentProvider
+  - ObjC.Accessibility.Delegate.AXDataAxisDescriptor
+  - ObjC.Accessibility.Delegate.AXMathExpressionProvider
   - ObjC.Accessibility.Enums
   - ObjC.Accessibility.Internal.Classes
   - ObjC.Accessibility.Internal.Enums

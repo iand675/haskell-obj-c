@@ -74,6 +74,11 @@ module ObjC.AppKit.NSWorkspace
   , desktopImageOptionsForScreen
   , sharedWorkspace
   , notificationCenter
+  , fileLabels
+  , fileLabelColors
+  , frontmostApplication
+  , menuBarOwningApplication
+  , runningApplications
   , voiceOverEnabled
   , switchControlEnabled
   , accessibilityDisplayShouldIncreaseContrast
@@ -148,6 +153,11 @@ module ObjC.AppKit.NSWorkspace
   , desktopImageOptionsForScreenSelector
   , sharedWorkspaceSelector
   , notificationCenterSelector
+  , fileLabelsSelector
+  , fileLabelColorsSelector
+  , frontmostApplicationSelector
+  , menuBarOwningApplicationSelector
+  , runningApplicationsSelector
   , voiceOverEnabledSelector
   , switchControlEnabledSelector
   , accessibilityDisplayShouldIncreaseContrastSelector
@@ -627,6 +637,33 @@ notificationCenter :: IsNSWorkspace nsWorkspace => nsWorkspace -> IO (Id NSNotif
 notificationCenter nsWorkspace  =
     sendMsg nsWorkspace (mkSelector "notificationCenter") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- fileLabels@
+fileLabels :: IsNSWorkspace nsWorkspace => nsWorkspace -> IO (Id NSArray)
+fileLabels nsWorkspace  =
+    sendMsg nsWorkspace (mkSelector "fileLabels") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- fileLabelColors@
+fileLabelColors :: IsNSWorkspace nsWorkspace => nsWorkspace -> IO (Id NSArray)
+fileLabelColors nsWorkspace  =
+    sendMsg nsWorkspace (mkSelector "fileLabelColors") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- frontmostApplication@
+frontmostApplication :: IsNSWorkspace nsWorkspace => nsWorkspace -> IO (Id NSRunningApplication)
+frontmostApplication nsWorkspace  =
+    sendMsg nsWorkspace (mkSelector "frontmostApplication") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- menuBarOwningApplication@
+menuBarOwningApplication :: IsNSWorkspace nsWorkspace => nsWorkspace -> IO (Id NSRunningApplication)
+menuBarOwningApplication nsWorkspace  =
+    sendMsg nsWorkspace (mkSelector "menuBarOwningApplication") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Returns: An array of @NSRunningApplication@s representing currently running applications. The order of the array is unspecified, but it is stable, meaning that the relative order of particular applications will not change across multiple calls to @runningApplications@. Similar to @NSRunningApplication@'s properties, this property will only change when the main run loop is run in a common mode.  Instead of polling, use key-value observing to be notified of changes to this array property.This property is thread safe, in that it may be called from background threads and the result is returned atomically.  This property is observable through KVO.
+--
+-- ObjC selector: @- runningApplications@
+runningApplications :: IsNSWorkspace nsWorkspace => nsWorkspace -> IO (Id NSArray)
+runningApplications nsWorkspace  =
+    sendMsg nsWorkspace (mkSelector "runningApplications") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- voiceOverEnabled@
 voiceOverEnabled :: IsNSWorkspace nsWorkspace => nsWorkspace -> IO Bool
 voiceOverEnabled nsWorkspace  =
@@ -933,6 +970,26 @@ sharedWorkspaceSelector = mkSelector "sharedWorkspace"
 -- | @Selector@ for @notificationCenter@
 notificationCenterSelector :: Selector
 notificationCenterSelector = mkSelector "notificationCenter"
+
+-- | @Selector@ for @fileLabels@
+fileLabelsSelector :: Selector
+fileLabelsSelector = mkSelector "fileLabels"
+
+-- | @Selector@ for @fileLabelColors@
+fileLabelColorsSelector :: Selector
+fileLabelColorsSelector = mkSelector "fileLabelColors"
+
+-- | @Selector@ for @frontmostApplication@
+frontmostApplicationSelector :: Selector
+frontmostApplicationSelector = mkSelector "frontmostApplication"
+
+-- | @Selector@ for @menuBarOwningApplication@
+menuBarOwningApplicationSelector :: Selector
+menuBarOwningApplicationSelector = mkSelector "menuBarOwningApplication"
+
+-- | @Selector@ for @runningApplications@
+runningApplicationsSelector :: Selector
+runningApplicationsSelector = mkSelector "runningApplications"
 
 -- | @Selector@ for @voiceOverEnabled@
 voiceOverEnabledSelector :: Selector

@@ -10,9 +10,11 @@ module ObjC.NearbyInteraction.NIAlgorithmConvergence
   , init_
   , new
   , status
+  , reasons
   , initSelector
   , newSelector
   , statusSelector
+  , reasonsSelector
 
   -- * Enum types
   , NIAlgorithmConvergenceStatus(NIAlgorithmConvergenceStatus)
@@ -57,6 +59,11 @@ status :: IsNIAlgorithmConvergence niAlgorithmConvergence => niAlgorithmConverge
 status niAlgorithmConvergence  =
     fmap (coerce :: CLong -> NIAlgorithmConvergenceStatus) $ sendMsg niAlgorithmConvergence (mkSelector "status") retCLong []
 
+-- | @- reasons@
+reasons :: IsNIAlgorithmConvergence niAlgorithmConvergence => niAlgorithmConvergence -> IO (Id NSArray)
+reasons niAlgorithmConvergence  =
+    sendMsg niAlgorithmConvergence (mkSelector "reasons") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -72,4 +79,8 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @status@
 statusSelector :: Selector
 statusSelector = mkSelector "status"
+
+-- | @Selector@ for @reasons@
+reasonsSelector :: Selector
+reasonsSelector = mkSelector "reasons"
 

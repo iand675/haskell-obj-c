@@ -8,6 +8,8 @@
 module ObjC.Metal.MTL4MachineLearningPipelineReflection
   ( MTL4MachineLearningPipelineReflection
   , IsMTL4MachineLearningPipelineReflection(..)
+  , bindings
+  , bindingsSelector
 
 
   ) where
@@ -27,7 +29,18 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.Metal.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | Describes every input and output of the pipeline.
+--
+-- ObjC selector: @- bindings@
+bindings :: IsMTL4MachineLearningPipelineReflection mtL4MachineLearningPipelineReflection => mtL4MachineLearningPipelineReflection -> IO (Id NSArray)
+bindings mtL4MachineLearningPipelineReflection  =
+    sendMsg mtL4MachineLearningPipelineReflection (mkSelector "bindings") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @bindings@
+bindingsSelector :: Selector
+bindingsSelector = mkSelector "bindings"
 

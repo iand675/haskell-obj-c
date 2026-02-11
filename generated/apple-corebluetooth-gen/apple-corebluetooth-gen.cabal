@@ -28,6 +28,8 @@ library
       ObjC.CoreBluetooth.CBPeripheralManager
       ObjC.CoreBluetooth.CBService
       ObjC.CoreBluetooth.CBUUID
+      ObjC.CoreBluetooth.Delegate.CBPeripheralDelegate
+      ObjC.CoreBluetooth.Delegate.CBPeripheralManagerDelegate
       ObjC.CoreBluetooth.Enums
       ObjC.CoreBluetooth.Internal.Classes
       ObjC.CoreBluetooth.Internal.Enums

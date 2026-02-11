@@ -28,6 +28,11 @@ library
       ObjC.BrowserEngineKit.BEWebAppManifest
       ObjC.BrowserEngineKit.BEWebContentFilter
       ObjC.BrowserEngineKit.BEWebContentProcess
+      ObjC.BrowserEngineKit.Delegate.BEAccessibilityTextMarkerSupport
+      ObjC.BrowserEngineKit.Delegate.BEExtensionProcess
+      ObjC.BrowserEngineKit.Delegate.BEProcessCapabilityGrant
+      ObjC.BrowserEngineKit.Delegate.BETextInputDelegate
+      ObjC.BrowserEngineKit.Delegate.BETextInteractionDelegate
       ObjC.BrowserEngineKit.Enums
       ObjC.BrowserEngineKit.Internal.Classes
       ObjC.BrowserEngineKit.Internal.Enums

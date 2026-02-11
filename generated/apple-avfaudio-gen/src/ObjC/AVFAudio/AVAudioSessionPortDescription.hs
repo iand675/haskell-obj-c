@@ -10,18 +10,26 @@ module ObjC.AVFAudio.AVAudioSessionPortDescription
   , IsAVAudioSessionPortDescription(..)
   , setPreferredDataSource_error
   , portType
+  , portName
+  , uid
   , hasHardwareVoiceCallProcessing
   , spatialAudioEnabled
+  , channels
   , dataSources
   , selectedDataSource
   , preferredDataSource
+  , bluetoothMicrophoneExtension
   , setPreferredDataSource_errorSelector
   , portTypeSelector
+  , portNameSelector
+  , uidSelector
   , hasHardwareVoiceCallProcessingSelector
   , spatialAudioEnabledSelector
+  , channelsSelector
   , dataSourcesSelector
   , selectedDataSourceSelector
   , preferredDataSourceSelector
+  , bluetoothMicrophoneExtensionSelector
 
 
   ) where
@@ -55,6 +63,20 @@ portType :: IsAVAudioSessionPortDescription avAudioSessionPortDescription => avA
 portType avAudioSessionPortDescription  =
     sendMsg avAudioSessionPortDescription (mkSelector "portType") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | A descriptive name for the associated hardware port
+--
+-- ObjC selector: @- portName@
+portName :: IsAVAudioSessionPortDescription avAudioSessionPortDescription => avAudioSessionPortDescription -> IO (Id NSString)
+portName avAudioSessionPortDescription  =
+    sendMsg avAudioSessionPortDescription (mkSelector "portName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | A system-assigned unique identifier for the associated hardware port
+--
+-- ObjC selector: @- UID@
+uid :: IsAVAudioSessionPortDescription avAudioSessionPortDescription => avAudioSessionPortDescription -> IO (Id NSString)
+uid avAudioSessionPortDescription  =
+    sendMsg avAudioSessionPortDescription (mkSelector "UID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | This property's value will be true if the associated hardware port has built-in	processing for two-way voice communication.
 --
 -- Applications that use their own proprietary voice processing algorithms should use this property	to decide when to disable processing.  On the other hand, if using Apple's Voice Processing I/O	unit (subtype kAudioUnitSubType_VoiceProcessingIO), the system will automatically manage this	for the application. In particular, ports of type AVAudioSessionPortBluetoothHFP and	AVAudioSessionPortCarAudio often have hardware voice processing.
@@ -74,6 +96,11 @@ hasHardwareVoiceCallProcessing avAudioSessionPortDescription  =
 spatialAudioEnabled :: IsAVAudioSessionPortDescription avAudioSessionPortDescription => avAudioSessionPortDescription -> IO Bool
 spatialAudioEnabled avAudioSessionPortDescription  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSessionPortDescription (mkSelector "spatialAudioEnabled") retCULong []
+
+-- | @- channels@
+channels :: IsAVAudioSessionPortDescription avAudioSessionPortDescription => avAudioSessionPortDescription -> IO (Id NSArray)
+channels avAudioSessionPortDescription  =
+    sendMsg avAudioSessionPortDescription (mkSelector "channels") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | Will be nil if there are no selectable data sources.
 --
@@ -96,6 +123,15 @@ preferredDataSource :: IsAVAudioSessionPortDescription avAudioSessionPortDescrip
 preferredDataSource avAudioSessionPortDescription  =
     sendMsg avAudioSessionPortDescription (mkSelector "preferredDataSource") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | An optional port extension that describes capabilities relevant to Bluetooth microphone ports.
+--
+-- This property is optional and will be @nil@ for all ports for which this capability set doesn't apply.
+--
+-- ObjC selector: @- bluetoothMicrophoneExtension@
+bluetoothMicrophoneExtension :: IsAVAudioSessionPortDescription avAudioSessionPortDescription => avAudioSessionPortDescription -> IO (Id AVAudioSessionPortExtensionBluetoothMicrophone)
+bluetoothMicrophoneExtension avAudioSessionPortDescription  =
+    sendMsg avAudioSessionPortDescription (mkSelector "bluetoothMicrophoneExtension") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -108,6 +144,14 @@ setPreferredDataSource_errorSelector = mkSelector "setPreferredDataSource:error:
 portTypeSelector :: Selector
 portTypeSelector = mkSelector "portType"
 
+-- | @Selector@ for @portName@
+portNameSelector :: Selector
+portNameSelector = mkSelector "portName"
+
+-- | @Selector@ for @UID@
+uidSelector :: Selector
+uidSelector = mkSelector "UID"
+
 -- | @Selector@ for @hasHardwareVoiceCallProcessing@
 hasHardwareVoiceCallProcessingSelector :: Selector
 hasHardwareVoiceCallProcessingSelector = mkSelector "hasHardwareVoiceCallProcessing"
@@ -115,6 +159,10 @@ hasHardwareVoiceCallProcessingSelector = mkSelector "hasHardwareVoiceCallProcess
 -- | @Selector@ for @spatialAudioEnabled@
 spatialAudioEnabledSelector :: Selector
 spatialAudioEnabledSelector = mkSelector "spatialAudioEnabled"
+
+-- | @Selector@ for @channels@
+channelsSelector :: Selector
+channelsSelector = mkSelector "channels"
 
 -- | @Selector@ for @dataSources@
 dataSourcesSelector :: Selector
@@ -127,4 +175,8 @@ selectedDataSourceSelector = mkSelector "selectedDataSource"
 -- | @Selector@ for @preferredDataSource@
 preferredDataSourceSelector :: Selector
 preferredDataSourceSelector = mkSelector "preferredDataSource"
+
+-- | @Selector@ for @bluetoothMicrophoneExtension@
+bluetoothMicrophoneExtensionSelector :: Selector
+bluetoothMicrophoneExtensionSelector = mkSelector "bluetoothMicrophoneExtension"
 

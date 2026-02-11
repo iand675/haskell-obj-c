@@ -78,24 +78,36 @@ module ObjC.MetalPerformanceShaders.MPSInstanceAccelerationStructure
   , IsMPSInstanceAccelerationStructure(..)
   , accelerationStructures
   , setAccelerationStructures
+  , instanceBuffer
+  , setInstanceBuffer
   , instanceBufferOffset
   , setInstanceBufferOffset
+  , transformBuffer
+  , setTransformBuffer
   , transformBufferOffset
   , setTransformBufferOffset
   , transformType
   , setTransformType
+  , maskBuffer
+  , setMaskBuffer
   , maskBufferOffset
   , setMaskBufferOffset
   , instanceCount
   , setInstanceCount
   , accelerationStructuresSelector
   , setAccelerationStructuresSelector
+  , instanceBufferSelector
+  , setInstanceBufferSelector
   , instanceBufferOffsetSelector
   , setInstanceBufferOffsetSelector
+  , transformBufferSelector
+  , setTransformBufferSelector
   , transformBufferOffsetSelector
   , setTransformBufferOffsetSelector
   , transformTypeSelector
   , setTransformTypeSelector
+  , maskBufferSelector
+  , setMaskBufferSelector
   , maskBufferOffsetSelector
   , setMaskBufferOffsetSelector
   , instanceCountSelector
@@ -139,6 +151,20 @@ setAccelerationStructures mpsInstanceAccelerationStructure  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mpsInstanceAccelerationStructure (mkSelector "setAccelerationStructures:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | Buffer containing the 32 bit unsigned integer index into the acceleration structure array for each instance
+--
+-- ObjC selector: @- instanceBuffer@
+instanceBuffer :: IsMPSInstanceAccelerationStructure mpsInstanceAccelerationStructure => mpsInstanceAccelerationStructure -> IO RawId
+instanceBuffer mpsInstanceAccelerationStructure  =
+    fmap (RawId . castPtr) $ sendMsg mpsInstanceAccelerationStructure (mkSelector "instanceBuffer") (retPtr retVoid) []
+
+-- | Buffer containing the 32 bit unsigned integer index into the acceleration structure array for each instance
+--
+-- ObjC selector: @- setInstanceBuffer:@
+setInstanceBuffer :: IsMPSInstanceAccelerationStructure mpsInstanceAccelerationStructure => mpsInstanceAccelerationStructure -> RawId -> IO ()
+setInstanceBuffer mpsInstanceAccelerationStructure  value =
+    sendMsg mpsInstanceAccelerationStructure (mkSelector "setInstanceBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Offset, in bytes, into the instance buffer. Defaults to 0 bytes. Must be aligned to 4 bytes.
 --
 -- ObjC selector: @- instanceBufferOffset@
@@ -152,6 +178,20 @@ instanceBufferOffset mpsInstanceAccelerationStructure  =
 setInstanceBufferOffset :: IsMPSInstanceAccelerationStructure mpsInstanceAccelerationStructure => mpsInstanceAccelerationStructure -> CULong -> IO ()
 setInstanceBufferOffset mpsInstanceAccelerationStructure  value =
     sendMsg mpsInstanceAccelerationStructure (mkSelector "setInstanceBufferOffset:") retVoid [argCULong value]
+
+-- | Buffer containing one column major matrix_float4x4 transformation matrix per instance
+--
+-- ObjC selector: @- transformBuffer@
+transformBuffer :: IsMPSInstanceAccelerationStructure mpsInstanceAccelerationStructure => mpsInstanceAccelerationStructure -> IO RawId
+transformBuffer mpsInstanceAccelerationStructure  =
+    fmap (RawId . castPtr) $ sendMsg mpsInstanceAccelerationStructure (mkSelector "transformBuffer") (retPtr retVoid) []
+
+-- | Buffer containing one column major matrix_float4x4 transformation matrix per instance
+--
+-- ObjC selector: @- setTransformBuffer:@
+setTransformBuffer :: IsMPSInstanceAccelerationStructure mpsInstanceAccelerationStructure => mpsInstanceAccelerationStructure -> RawId -> IO ()
+setTransformBuffer mpsInstanceAccelerationStructure  value =
+    sendMsg mpsInstanceAccelerationStructure (mkSelector "setTransformBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | Offset, in bytes, into the transform buffer. Defaults to 0 bytes. Must be aligned to the stride of the transform type.
 --
@@ -180,6 +220,20 @@ transformType mpsInstanceAccelerationStructure  =
 setTransformType :: IsMPSInstanceAccelerationStructure mpsInstanceAccelerationStructure => mpsInstanceAccelerationStructure -> MPSTransformType -> IO ()
 setTransformType mpsInstanceAccelerationStructure  value =
     sendMsg mpsInstanceAccelerationStructure (mkSelector "setTransformType:") retVoid [argCULong (coerce value)]
+
+-- | Mask buffer containing one uint32_t mask per instance. May be nil.
+--
+-- ObjC selector: @- maskBuffer@
+maskBuffer :: IsMPSInstanceAccelerationStructure mpsInstanceAccelerationStructure => mpsInstanceAccelerationStructure -> IO RawId
+maskBuffer mpsInstanceAccelerationStructure  =
+    fmap (RawId . castPtr) $ sendMsg mpsInstanceAccelerationStructure (mkSelector "maskBuffer") (retPtr retVoid) []
+
+-- | Mask buffer containing one uint32_t mask per instance. May be nil.
+--
+-- ObjC selector: @- setMaskBuffer:@
+setMaskBuffer :: IsMPSInstanceAccelerationStructure mpsInstanceAccelerationStructure => mpsInstanceAccelerationStructure -> RawId -> IO ()
+setMaskBuffer mpsInstanceAccelerationStructure  value =
+    sendMsg mpsInstanceAccelerationStructure (mkSelector "setMaskBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | Offset, in bytes, into the mask buffer. Defaults to 0 bytes. Must be aligned to 4 bytes.
 --
@@ -221,6 +275,14 @@ accelerationStructuresSelector = mkSelector "accelerationStructures"
 setAccelerationStructuresSelector :: Selector
 setAccelerationStructuresSelector = mkSelector "setAccelerationStructures:"
 
+-- | @Selector@ for @instanceBuffer@
+instanceBufferSelector :: Selector
+instanceBufferSelector = mkSelector "instanceBuffer"
+
+-- | @Selector@ for @setInstanceBuffer:@
+setInstanceBufferSelector :: Selector
+setInstanceBufferSelector = mkSelector "setInstanceBuffer:"
+
 -- | @Selector@ for @instanceBufferOffset@
 instanceBufferOffsetSelector :: Selector
 instanceBufferOffsetSelector = mkSelector "instanceBufferOffset"
@@ -228,6 +290,14 @@ instanceBufferOffsetSelector = mkSelector "instanceBufferOffset"
 -- | @Selector@ for @setInstanceBufferOffset:@
 setInstanceBufferOffsetSelector :: Selector
 setInstanceBufferOffsetSelector = mkSelector "setInstanceBufferOffset:"
+
+-- | @Selector@ for @transformBuffer@
+transformBufferSelector :: Selector
+transformBufferSelector = mkSelector "transformBuffer"
+
+-- | @Selector@ for @setTransformBuffer:@
+setTransformBufferSelector :: Selector
+setTransformBufferSelector = mkSelector "setTransformBuffer:"
 
 -- | @Selector@ for @transformBufferOffset@
 transformBufferOffsetSelector :: Selector
@@ -244,6 +314,14 @@ transformTypeSelector = mkSelector "transformType"
 -- | @Selector@ for @setTransformType:@
 setTransformTypeSelector :: Selector
 setTransformTypeSelector = mkSelector "setTransformType:"
+
+-- | @Selector@ for @maskBuffer@
+maskBufferSelector :: Selector
+maskBufferSelector = mkSelector "maskBuffer"
+
+-- | @Selector@ for @setMaskBuffer:@
+setMaskBufferSelector :: Selector
+setMaskBufferSelector = mkSelector "setMaskBuffer:"
 
 -- | @Selector@ for @maskBufferOffset@
 maskBufferOffsetSelector :: Selector

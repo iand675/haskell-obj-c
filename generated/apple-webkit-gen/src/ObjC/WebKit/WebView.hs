@@ -78,6 +78,16 @@ module ObjC.WebKit.WebView
   , toggleSmartInsertDelete
   , shouldCloseWithWindow
   , setShouldCloseWithWindow
+  , uiDelegate
+  , setUIDelegate
+  , resourceLoadDelegate
+  , setResourceLoadDelegate
+  , downloadDelegate
+  , setDownloadDelegate
+  , frameLoadDelegate
+  , setFrameLoadDelegate
+  , policyDelegate
+  , setPolicyDelegate
   , mainFrame
   , selectedFrame
   , backForwardList
@@ -126,6 +136,8 @@ module ObjC.WebKit.WebView
   , setContinuousSpellCheckingEnabled
   , spellCheckerDocumentTag
   , undoManager
+  , editingDelegate
+  , setEditingDelegate
   , canGoBack
   , canGoForward
   , canMakeTextLarger
@@ -202,6 +214,16 @@ module ObjC.WebKit.WebView
   , toggleSmartInsertDeleteSelector
   , shouldCloseWithWindowSelector
   , setShouldCloseWithWindowSelector
+  , uiDelegateSelector
+  , setUIDelegateSelector
+  , resourceLoadDelegateSelector
+  , setResourceLoadDelegateSelector
+  , downloadDelegateSelector
+  , setDownloadDelegateSelector
+  , frameLoadDelegateSelector
+  , setFrameLoadDelegateSelector
+  , policyDelegateSelector
+  , setPolicyDelegateSelector
   , mainFrameSelector
   , selectedFrameSelector
   , backForwardListSelector
@@ -250,6 +272,8 @@ module ObjC.WebKit.WebView
   , setContinuousSpellCheckingEnabledSelector
   , spellCheckerDocumentTagSelector
   , undoManagerSelector
+  , editingDelegateSelector
+  , setEditingDelegateSelector
   , canGoBackSelector
   , canGoForwardSelector
   , canMakeTextLargerSelector
@@ -862,6 +886,96 @@ setShouldCloseWithWindow :: IsWebView webView => webView -> Bool -> IO ()
 setShouldCloseWithWindow webView  value =
     sendMsg webView (mkSelector "setShouldCloseWithWindow:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | UIDelegate
+--
+-- The WebView's WebUIDelegate.
+--
+-- ObjC selector: @- UIDelegate@
+uiDelegate :: IsWebView webView => webView -> IO RawId
+uiDelegate webView  =
+    fmap (RawId . castPtr) $ sendMsg webView (mkSelector "UIDelegate") (retPtr retVoid) []
+
+-- | UIDelegate
+--
+-- The WebView's WebUIDelegate.
+--
+-- ObjC selector: @- setUIDelegate:@
+setUIDelegate :: IsWebView webView => webView -> RawId -> IO ()
+setUIDelegate webView  value =
+    sendMsg webView (mkSelector "setUIDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | resourceLoadDelegate
+--
+-- The WebView's WebResourceLoadDelegate.
+--
+-- ObjC selector: @- resourceLoadDelegate@
+resourceLoadDelegate :: IsWebView webView => webView -> IO RawId
+resourceLoadDelegate webView  =
+    fmap (RawId . castPtr) $ sendMsg webView (mkSelector "resourceLoadDelegate") (retPtr retVoid) []
+
+-- | resourceLoadDelegate
+--
+-- The WebView's WebResourceLoadDelegate.
+--
+-- ObjC selector: @- setResourceLoadDelegate:@
+setResourceLoadDelegate :: IsWebView webView => webView -> RawId -> IO ()
+setResourceLoadDelegate webView  value =
+    sendMsg webView (mkSelector "setResourceLoadDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | downloadDelegate
+--
+-- The WebView's WebDownloadDelegate.
+--
+-- ObjC selector: @- downloadDelegate@
+downloadDelegate :: IsWebView webView => webView -> IO RawId
+downloadDelegate webView  =
+    fmap (RawId . castPtr) $ sendMsg webView (mkSelector "downloadDelegate") (retPtr retVoid) []
+
+-- | downloadDelegate
+--
+-- The WebView's WebDownloadDelegate.
+--
+-- ObjC selector: @- setDownloadDelegate:@
+setDownloadDelegate :: IsWebView webView => webView -> RawId -> IO ()
+setDownloadDelegate webView  value =
+    sendMsg webView (mkSelector "setDownloadDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | frameLoadDelegate
+--
+-- The WebView's WebFrameLoadDelegate delegate.
+--
+-- ObjC selector: @- frameLoadDelegate@
+frameLoadDelegate :: IsWebView webView => webView -> IO RawId
+frameLoadDelegate webView  =
+    fmap (RawId . castPtr) $ sendMsg webView (mkSelector "frameLoadDelegate") (retPtr retVoid) []
+
+-- | frameLoadDelegate
+--
+-- The WebView's WebFrameLoadDelegate delegate.
+--
+-- ObjC selector: @- setFrameLoadDelegate:@
+setFrameLoadDelegate :: IsWebView webView => webView -> RawId -> IO ()
+setFrameLoadDelegate webView  value =
+    sendMsg webView (mkSelector "setFrameLoadDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | policyDelegate
+--
+-- The WebView's WebPolicyDelegate.
+--
+-- ObjC selector: @- policyDelegate@
+policyDelegate :: IsWebView webView => webView -> IO RawId
+policyDelegate webView  =
+    fmap (RawId . castPtr) $ sendMsg webView (mkSelector "policyDelegate") (retPtr retVoid) []
+
+-- | policyDelegate
+--
+-- The WebView's WebPolicyDelegate.
+--
+-- ObjC selector: @- setPolicyDelegate:@
+setPolicyDelegate :: IsWebView webView => webView -> RawId -> IO ()
+setPolicyDelegate webView  value =
+    sendMsg webView (mkSelector "setPolicyDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | mainFrame
 --
 -- The top level frame.
@@ -1288,6 +1402,16 @@ undoManager :: IsWebView webView => webView -> IO (Id NSUndoManager)
 undoManager webView  =
     sendMsg webView (mkSelector "undoManager") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- editingDelegate@
+editingDelegate :: IsWebView webView => webView -> IO RawId
+editingDelegate webView  =
+    fmap (RawId . castPtr) $ sendMsg webView (mkSelector "editingDelegate") (retPtr retVoid) []
+
+-- | @- setEditingDelegate:@
+setEditingDelegate :: IsWebView webView => webView -> RawId -> IO ()
+setEditingDelegate webView  value =
+    sendMsg webView (mkSelector "setEditingDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- canGoBack@
 canGoBack :: IsWebView webView => webView -> IO Bool
 canGoBack webView  =
@@ -1601,6 +1725,46 @@ shouldCloseWithWindowSelector = mkSelector "shouldCloseWithWindow"
 setShouldCloseWithWindowSelector :: Selector
 setShouldCloseWithWindowSelector = mkSelector "setShouldCloseWithWindow:"
 
+-- | @Selector@ for @UIDelegate@
+uiDelegateSelector :: Selector
+uiDelegateSelector = mkSelector "UIDelegate"
+
+-- | @Selector@ for @setUIDelegate:@
+setUIDelegateSelector :: Selector
+setUIDelegateSelector = mkSelector "setUIDelegate:"
+
+-- | @Selector@ for @resourceLoadDelegate@
+resourceLoadDelegateSelector :: Selector
+resourceLoadDelegateSelector = mkSelector "resourceLoadDelegate"
+
+-- | @Selector@ for @setResourceLoadDelegate:@
+setResourceLoadDelegateSelector :: Selector
+setResourceLoadDelegateSelector = mkSelector "setResourceLoadDelegate:"
+
+-- | @Selector@ for @downloadDelegate@
+downloadDelegateSelector :: Selector
+downloadDelegateSelector = mkSelector "downloadDelegate"
+
+-- | @Selector@ for @setDownloadDelegate:@
+setDownloadDelegateSelector :: Selector
+setDownloadDelegateSelector = mkSelector "setDownloadDelegate:"
+
+-- | @Selector@ for @frameLoadDelegate@
+frameLoadDelegateSelector :: Selector
+frameLoadDelegateSelector = mkSelector "frameLoadDelegate"
+
+-- | @Selector@ for @setFrameLoadDelegate:@
+setFrameLoadDelegateSelector :: Selector
+setFrameLoadDelegateSelector = mkSelector "setFrameLoadDelegate:"
+
+-- | @Selector@ for @policyDelegate@
+policyDelegateSelector :: Selector
+policyDelegateSelector = mkSelector "policyDelegate"
+
+-- | @Selector@ for @setPolicyDelegate:@
+setPolicyDelegateSelector :: Selector
+setPolicyDelegateSelector = mkSelector "setPolicyDelegate:"
+
 -- | @Selector@ for @mainFrame@
 mainFrameSelector :: Selector
 mainFrameSelector = mkSelector "mainFrame"
@@ -1792,6 +1956,14 @@ spellCheckerDocumentTagSelector = mkSelector "spellCheckerDocumentTag"
 -- | @Selector@ for @undoManager@
 undoManagerSelector :: Selector
 undoManagerSelector = mkSelector "undoManager"
+
+-- | @Selector@ for @editingDelegate@
+editingDelegateSelector :: Selector
+editingDelegateSelector = mkSelector "editingDelegate"
+
+-- | @Selector@ for @setEditingDelegate:@
+setEditingDelegateSelector :: Selector
+setEditingDelegateSelector = mkSelector "setEditingDelegate:"
 
 -- | @Selector@ for @canGoBack@
 canGoBackSelector :: Selector

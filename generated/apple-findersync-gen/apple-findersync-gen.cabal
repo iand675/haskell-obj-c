@@ -12,6 +12,7 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.FinderSync.Delegate.FIFinderSync
       ObjC.FinderSync.Enums
       ObjC.FinderSync.FIFinderSync
       ObjC.FinderSync.FIFinderSyncController

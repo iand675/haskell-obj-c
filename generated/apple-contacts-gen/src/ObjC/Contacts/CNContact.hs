@@ -40,6 +40,7 @@ module ObjC.Contacts.CNContact
   , phoneticGivenName
   , phoneticMiddleName
   , phoneticFamilyName
+  , phoneticOrganizationName
   , note
   , imageData
   , thumbnailImageData
@@ -81,6 +82,7 @@ module ObjC.Contacts.CNContact
   , phoneticGivenNameSelector
   , phoneticMiddleNameSelector
   , phoneticFamilyNameSelector
+  , phoneticOrganizationNameSelector
   , noteSelector
   , imageDataSelector
   , thumbnailImageDataSelector
@@ -319,6 +321,11 @@ phoneticFamilyName :: IsCNContact cnContact => cnContact -> IO (Id NSString)
 phoneticFamilyName cnContact  =
     sendMsg cnContact (mkSelector "phoneticFamilyName") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- phoneticOrganizationName@
+phoneticOrganizationName :: IsCNContact cnContact => cnContact -> IO RawId
+phoneticOrganizationName cnContact  =
+    fmap (RawId . castPtr) $ sendMsg cnContact (mkSelector "phoneticOrganizationName") (retPtr retVoid) []
+
 -- | @- note@
 note :: IsCNContact cnContact => cnContact -> IO (Id NSString)
 note cnContact  =
@@ -506,6 +513,10 @@ phoneticMiddleNameSelector = mkSelector "phoneticMiddleName"
 -- | @Selector@ for @phoneticFamilyName@
 phoneticFamilyNameSelector :: Selector
 phoneticFamilyNameSelector = mkSelector "phoneticFamilyName"
+
+-- | @Selector@ for @phoneticOrganizationName@
+phoneticOrganizationNameSelector :: Selector
+phoneticOrganizationNameSelector = mkSelector "phoneticOrganizationName"
 
 -- | @Selector@ for @note@
 noteSelector :: Selector

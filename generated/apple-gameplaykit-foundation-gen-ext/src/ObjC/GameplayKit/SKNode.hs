@@ -9,9 +9,13 @@ module ObjC.GameplayKit.SKNode
   , obstaclesFromSpriteTextures_accuracy
   , obstaclesFromNodeBounds
   , obstaclesFromNodePhysicsBodies
+  , entity
+  , setEntity
   , obstaclesFromSpriteTextures_accuracySelector
   , obstaclesFromNodeBoundsSelector
   , obstaclesFromNodePhysicsBodiesSelector
+  , entitySelector
+  , setEntitySelector
 
 
   ) where
@@ -67,6 +71,24 @@ obstaclesFromNodePhysicsBodies nodes =
     withObjCPtr nodes $ \raw_nodes ->
       sendClassMsg cls' (mkSelector "obstaclesFromNodePhysicsBodies:") (retPtr retVoid) [argPtr (castPtr raw_nodes :: Ptr ())] >>= retainedObject . castPtr
 
+-- | The GKEntity associated with the node via a GKSKNodeComponent.
+--
+-- See: GKEntity
+--
+-- ObjC selector: @- entity@
+entity :: IsSKNode skNode => skNode -> IO RawId
+entity skNode  =
+    fmap (RawId . castPtr) $ sendMsg skNode (mkSelector "entity") (retPtr retVoid) []
+
+-- | The GKEntity associated with the node via a GKSKNodeComponent.
+--
+-- See: GKEntity
+--
+-- ObjC selector: @- setEntity:@
+setEntity :: IsSKNode skNode => skNode -> RawId -> IO ()
+setEntity skNode  value =
+    sendMsg skNode (mkSelector "setEntity:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -82,4 +104,12 @@ obstaclesFromNodeBoundsSelector = mkSelector "obstaclesFromNodeBounds:"
 -- | @Selector@ for @obstaclesFromNodePhysicsBodies:@
 obstaclesFromNodePhysicsBodiesSelector :: Selector
 obstaclesFromNodePhysicsBodiesSelector = mkSelector "obstaclesFromNodePhysicsBodies:"
+
+-- | @Selector@ for @entity@
+entitySelector :: Selector
+entitySelector = mkSelector "entity"
+
+-- | @Selector@ for @setEntity:@
+setEntitySelector :: Selector
+setEntitySelector = mkSelector "setEntity:"
 

@@ -11,6 +11,7 @@ module ObjC.ITunesLibrary.ITLibAlbum
   , title
   , sortTitle
   , compilation
+  , artist
   , discCount
   , discNumber
   , rating
@@ -23,6 +24,7 @@ module ObjC.ITunesLibrary.ITLibAlbum
   , titleSelector
   , sortTitleSelector
   , compilationSelector
+  , artistSelector
   , discCountSelector
   , discNumberSelector
   , ratingSelector
@@ -71,6 +73,13 @@ sortTitle itLibAlbum  =
 compilation :: IsITLibAlbum itLibAlbum => itLibAlbum -> IO Bool
 compilation itLibAlbum  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg itLibAlbum (mkSelector "compilation") retCULong []
+
+-- | Deprecated. Will be removed in future versions.
+--
+-- ObjC selector: @- artist@
+artist :: IsITLibAlbum itLibAlbum => itLibAlbum -> IO RawId
+artist itLibAlbum  =
+    fmap (RawId . castPtr) $ sendMsg itLibAlbum (mkSelector "artist") (retPtr retVoid) []
 
 -- | The number of discs in this album.
 --
@@ -150,6 +159,10 @@ sortTitleSelector = mkSelector "sortTitle"
 -- | @Selector@ for @compilation@
 compilationSelector :: Selector
 compilationSelector = mkSelector "compilation"
+
+-- | @Selector@ for @artist@
+artistSelector :: Selector
+artistSelector = mkSelector "artist"
 
 -- | @Selector@ for @discCount@
 discCountSelector :: Selector

@@ -41,6 +41,7 @@ module ObjC.AppKit.NSObject
   , optionDescriptionsForBinding
   , validateMenuItem
   , view_stringForToolTip_point_userData
+  , layer_shouldInheritContentsScale_fromWindow
   , namesOfPromisedFilesDroppedAtDestination
   , draggingSourceOperationMaskForLocal
   , draggedImage_beganAt
@@ -102,6 +103,7 @@ module ObjC.AppKit.NSObject
   , optionDescriptionsForBindingSelector
   , validateMenuItemSelector
   , view_stringForToolTip_point_userDataSelector
+  , layer_shouldInheritContentsScale_fromWindowSelector
   , namesOfPromisedFilesDroppedAtDestinationSelector
   , draggingSourceOperationMaskForLocalSelector
   , draggedImage_beganAtSelector
@@ -385,6 +387,12 @@ view_stringForToolTip_point_userData :: (IsNSObject nsObject, IsNSView view) => 
 view_stringForToolTip_point_userData nsObject  view tag point data_ =
   withObjCPtr view $ \raw_view ->
       sendMsg nsObject (mkSelector "view:stringForToolTip:point:userData:") (retPtr retVoid) [argPtr (castPtr raw_view :: Ptr ()), argCLong tag, argNSPoint point, argPtr data_] >>= retainedObject . castPtr
+
+-- | @- layer:shouldInheritContentsScale:fromWindow:@
+layer_shouldInheritContentsScale_fromWindow :: (IsNSObject nsObject, IsNSWindow window) => nsObject -> RawId -> CDouble -> window -> IO Bool
+layer_shouldInheritContentsScale_fromWindow nsObject  layer newScale window =
+  withObjCPtr window $ \raw_window ->
+      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "layer:shouldInheritContentsScale:fromWindow:") retCULong [argPtr (castPtr (unRawId layer) :: Ptr ()), argCDouble newScale, argPtr (castPtr raw_window :: Ptr ())]
 
 -- | @- namesOfPromisedFilesDroppedAtDestination:@
 namesOfPromisedFilesDroppedAtDestination :: (IsNSObject nsObject, IsNSURL dropDestination) => nsObject -> dropDestination -> IO (Id NSArray)
@@ -677,6 +685,10 @@ validateMenuItemSelector = mkSelector "validateMenuItem:"
 -- | @Selector@ for @view:stringForToolTip:point:userData:@
 view_stringForToolTip_point_userDataSelector :: Selector
 view_stringForToolTip_point_userDataSelector = mkSelector "view:stringForToolTip:point:userData:"
+
+-- | @Selector@ for @layer:shouldInheritContentsScale:fromWindow:@
+layer_shouldInheritContentsScale_fromWindowSelector :: Selector
+layer_shouldInheritContentsScale_fromWindowSelector = mkSelector "layer:shouldInheritContentsScale:fromWindow:"
 
 -- | @Selector@ for @namesOfPromisedFilesDroppedAtDestination:@
 namesOfPromisedFilesDroppedAtDestinationSelector :: Selector

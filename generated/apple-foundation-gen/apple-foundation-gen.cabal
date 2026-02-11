@@ -12,6 +12,42 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.Foundation.Delegate.NSCacheDelegate
+      ObjC.Foundation.Delegate.NSCoding
+      ObjC.Foundation.Delegate.NSConnectionDelegate
+      ObjC.Foundation.Delegate.NSCopying
+      ObjC.Foundation.Delegate.NSDiscardableContent
+      ObjC.Foundation.Delegate.NSFastEnumeration
+      ObjC.Foundation.Delegate.NSFileManagerDelegate
+      ObjC.Foundation.Delegate.NSFilePresenter
+      ObjC.Foundation.Delegate.NSItemProviderWriting
+      ObjC.Foundation.Delegate.NSKeyedArchiverDelegate
+      ObjC.Foundation.Delegate.NSKeyedUnarchiverDelegate
+      ObjC.Foundation.Delegate.NSLocking
+      ObjC.Foundation.Delegate.NSMetadataQueryDelegate
+      ObjC.Foundation.Delegate.NSMutableCopying
+      ObjC.Foundation.Delegate.NSNetServiceBrowserDelegate
+      ObjC.Foundation.Delegate.NSNetServiceDelegate
+      ObjC.Foundation.Delegate.NSPortDelegate
+      ObjC.Foundation.Delegate.NSSpellServerDelegate
+      ObjC.Foundation.Delegate.NSURLAuthenticationChallengeSender
+      ObjC.Foundation.Delegate.NSURLConnectionDataDelegate
+      ObjC.Foundation.Delegate.NSURLConnectionDelegate
+      ObjC.Foundation.Delegate.NSURLConnectionDownloadDelegate
+      ObjC.Foundation.Delegate.NSURLDownloadDelegate
+      ObjC.Foundation.Delegate.NSURLHandleClient
+      ObjC.Foundation.Delegate.NSURLProtocolClient
+      ObjC.Foundation.Delegate.NSURLSessionDataDelegate
+      ObjC.Foundation.Delegate.NSURLSessionDelegate
+      ObjC.Foundation.Delegate.NSURLSessionDownloadDelegate
+      ObjC.Foundation.Delegate.NSURLSessionStreamDelegate
+      ObjC.Foundation.Delegate.NSURLSessionTaskDelegate
+      ObjC.Foundation.Delegate.NSURLSessionWebSocketDelegate
+      ObjC.Foundation.Delegate.NSUserActivityDelegate
+      ObjC.Foundation.Delegate.NSUserNotificationCenterDelegate
+      ObjC.Foundation.Delegate.NSXMLParserDelegate
+      ObjC.Foundation.Delegate.NSXPCListenerDelegate
+      ObjC.Foundation.Delegate.NSXPCProxyCreating
       ObjC.Foundation.Enums
       ObjC.Foundation.Internal.Classes
       ObjC.Foundation.Internal.Enums

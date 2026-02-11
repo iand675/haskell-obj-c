@@ -17,6 +17,9 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.PDFKit.Delegate.PDFDocumentDelegate
+  - ObjC.PDFKit.Delegate.PDFPageOverlayViewProvider
+  - ObjC.PDFKit.Delegate.PDFViewDelegate
   - ObjC.PDFKit.Enums
   - ObjC.PDFKit.Internal.Classes
   - ObjC.PDFKit.Internal.Enums

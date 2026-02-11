@@ -8,11 +8,13 @@ module ObjC.HealthKit.HKObject
   , IsHKObject(..)
   , init_
   , uuid
+  , source
   , sourceRevision
   , device
   , metadata
   , initSelector
   , uuidSelector
+  , sourceSelector
   , sourceRevisionSelector
   , deviceSelector
   , metadataSelector
@@ -48,6 +50,11 @@ init_ hkObject  =
 uuid :: IsHKObject hkObject => hkObject -> IO (Id NSUUID)
 uuid hkObject  =
     sendMsg hkObject (mkSelector "UUID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- source@
+source :: IsHKObject hkObject => hkObject -> IO (Id HKSource)
+source hkObject  =
+    sendMsg hkObject (mkSelector "source") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | sourceRevision
 --
@@ -89,6 +96,10 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @UUID@
 uuidSelector :: Selector
 uuidSelector = mkSelector "UUID"
+
+-- | @Selector@ for @source@
+sourceSelector :: Selector
+sourceSelector = mkSelector "source"
 
 -- | @Selector@ for @sourceRevision@
 sourceRevisionSelector :: Selector

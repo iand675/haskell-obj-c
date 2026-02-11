@@ -27,10 +27,20 @@ module ObjC.AppKit.NSLevelIndicator
   , setNumberOfTickMarks
   , numberOfMajorTickMarks
   , setNumberOfMajorTickMarks
+  , fillColor
+  , setFillColor
+  , warningFillColor
+  , setWarningFillColor
+  , criticalFillColor
+  , setCriticalFillColor
   , drawsTieredCapacityLevels
   , setDrawsTieredCapacityLevels
   , placeholderVisibility
   , setPlaceholderVisibility
+  , ratingImage
+  , setRatingImage
+  , ratingPlaceholderImage
+  , setRatingPlaceholderImage
   , tickMarkValueAtIndexSelector
   , rectOfTickMarkAtIndexSelector
   , levelIndicatorStyleSelector
@@ -51,10 +61,20 @@ module ObjC.AppKit.NSLevelIndicator
   , setNumberOfTickMarksSelector
   , numberOfMajorTickMarksSelector
   , setNumberOfMajorTickMarksSelector
+  , fillColorSelector
+  , setFillColorSelector
+  , warningFillColorSelector
+  , setWarningFillColorSelector
+  , criticalFillColorSelector
+  , setCriticalFillColorSelector
   , drawsTieredCapacityLevelsSelector
   , setDrawsTieredCapacityLevelsSelector
   , placeholderVisibilitySelector
   , setPlaceholderVisibilitySelector
+  , ratingImageSelector
+  , setRatingImageSelector
+  , ratingPlaceholderImageSelector
+  , setRatingPlaceholderImageSelector
 
   -- * Enum types
   , NSLevelIndicatorPlaceholderVisibility(NSLevelIndicatorPlaceholderVisibility)
@@ -191,6 +211,51 @@ setNumberOfMajorTickMarks :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndic
 setNumberOfMajorTickMarks nsLevelIndicator  value =
     sendMsg nsLevelIndicator (mkSelector "setNumberOfMajorTickMarks:") retVoid [argCLong value]
 
+-- | Sets the fill color used by Continuous and Discrete Capacity indicators when drawing the "normal" state, and by the Rating indicator when drawing stars. The default value is a system-defined color which may vary between level indicator styles and OS releases.
+--
+-- ObjC selector: @- fillColor@
+fillColor :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO (Id NSColor)
+fillColor nsLevelIndicator  =
+    sendMsg nsLevelIndicator (mkSelector "fillColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Sets the fill color used by Continuous and Discrete Capacity indicators when drawing the "normal" state, and by the Rating indicator when drawing stars. The default value is a system-defined color which may vary between level indicator styles and OS releases.
+--
+-- ObjC selector: @- setFillColor:@
+setFillColor :: (IsNSLevelIndicator nsLevelIndicator, IsNSColor value) => nsLevelIndicator -> value -> IO ()
+setFillColor nsLevelIndicator  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsLevelIndicator (mkSelector "setFillColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | Sets the fill color used by Continuous and Discrete Capacity indicators when drawing values above the "warning" threshold. The default value is a system-defined color which may vary between level indicator styles and OS releases.
+--
+-- ObjC selector: @- warningFillColor@
+warningFillColor :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO (Id NSColor)
+warningFillColor nsLevelIndicator  =
+    sendMsg nsLevelIndicator (mkSelector "warningFillColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Sets the fill color used by Continuous and Discrete Capacity indicators when drawing values above the "warning" threshold. The default value is a system-defined color which may vary between level indicator styles and OS releases.
+--
+-- ObjC selector: @- setWarningFillColor:@
+setWarningFillColor :: (IsNSLevelIndicator nsLevelIndicator, IsNSColor value) => nsLevelIndicator -> value -> IO ()
+setWarningFillColor nsLevelIndicator  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsLevelIndicator (mkSelector "setWarningFillColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | Sets the fill color used by Continuous and Discrete Capacity indicators when drawing values above the "critical" threshold. The default value is a system-defined color which may vary between level indicator styles and OS releases.
+--
+-- ObjC selector: @- criticalFillColor@
+criticalFillColor :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO (Id NSColor)
+criticalFillColor nsLevelIndicator  =
+    sendMsg nsLevelIndicator (mkSelector "criticalFillColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Sets the fill color used by Continuous and Discrete Capacity indicators when drawing values above the "critical" threshold. The default value is a system-defined color which may vary between level indicator styles and OS releases.
+--
+-- ObjC selector: @- setCriticalFillColor:@
+setCriticalFillColor :: (IsNSLevelIndicator nsLevelIndicator, IsNSColor value) => nsLevelIndicator -> value -> IO ()
+setCriticalFillColor nsLevelIndicator  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsLevelIndicator (mkSelector "setCriticalFillColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- drawsTieredCapacityLevels@
 drawsTieredCapacityLevels :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO Bool
 drawsTieredCapacityLevels nsLevelIndicator  =
@@ -214,6 +279,44 @@ placeholderVisibility nsLevelIndicator  =
 setPlaceholderVisibility :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> NSLevelIndicatorPlaceholderVisibility -> IO ()
 setPlaceholderVisibility nsLevelIndicator  value =
     sendMsg nsLevelIndicator (mkSelector "setPlaceholderVisibility:") retVoid [argCLong (coerce value)]
+
+-- | If non-nil, sets the image used by the Rating indicator style in place of the default star image. The default value is nil.
+--
+-- ObjC selector: @- ratingImage@
+ratingImage :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO (Id NSImage)
+ratingImage nsLevelIndicator  =
+    sendMsg nsLevelIndicator (mkSelector "ratingImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | If non-nil, sets the image used by the Rating indicator style in place of the default star image. The default value is nil.
+--
+-- ObjC selector: @- setRatingImage:@
+setRatingImage :: (IsNSLevelIndicator nsLevelIndicator, IsNSImage value) => nsLevelIndicator -> value -> IO ()
+setRatingImage nsLevelIndicator  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsLevelIndicator (mkSelector "setRatingImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | If non-nil, sets the image used by the Rating indicator style in place of the default faded placeholder image. The default value is nil.
+--
+-- If the custom placeholder is a template image, its fill opacity can be adjusted by modifying the opacity of the template image.
+--
+-- If both a ratingImage and ratingPlaceholderImage are set, each rating position is sized such that either image will fit without scaling (i.e. sized to the maximum width and height of both images).
+--
+-- ObjC selector: @- ratingPlaceholderImage@
+ratingPlaceholderImage :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO (Id NSImage)
+ratingPlaceholderImage nsLevelIndicator  =
+    sendMsg nsLevelIndicator (mkSelector "ratingPlaceholderImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | If non-nil, sets the image used by the Rating indicator style in place of the default faded placeholder image. The default value is nil.
+--
+-- If the custom placeholder is a template image, its fill opacity can be adjusted by modifying the opacity of the template image.
+--
+-- If both a ratingImage and ratingPlaceholderImage are set, each rating position is sized such that either image will fit without scaling (i.e. sized to the maximum width and height of both images).
+--
+-- ObjC selector: @- setRatingPlaceholderImage:@
+setRatingPlaceholderImage :: (IsNSLevelIndicator nsLevelIndicator, IsNSImage value) => nsLevelIndicator -> value -> IO ()
+setRatingPlaceholderImage nsLevelIndicator  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsLevelIndicator (mkSelector "setRatingPlaceholderImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -299,6 +402,30 @@ numberOfMajorTickMarksSelector = mkSelector "numberOfMajorTickMarks"
 setNumberOfMajorTickMarksSelector :: Selector
 setNumberOfMajorTickMarksSelector = mkSelector "setNumberOfMajorTickMarks:"
 
+-- | @Selector@ for @fillColor@
+fillColorSelector :: Selector
+fillColorSelector = mkSelector "fillColor"
+
+-- | @Selector@ for @setFillColor:@
+setFillColorSelector :: Selector
+setFillColorSelector = mkSelector "setFillColor:"
+
+-- | @Selector@ for @warningFillColor@
+warningFillColorSelector :: Selector
+warningFillColorSelector = mkSelector "warningFillColor"
+
+-- | @Selector@ for @setWarningFillColor:@
+setWarningFillColorSelector :: Selector
+setWarningFillColorSelector = mkSelector "setWarningFillColor:"
+
+-- | @Selector@ for @criticalFillColor@
+criticalFillColorSelector :: Selector
+criticalFillColorSelector = mkSelector "criticalFillColor"
+
+-- | @Selector@ for @setCriticalFillColor:@
+setCriticalFillColorSelector :: Selector
+setCriticalFillColorSelector = mkSelector "setCriticalFillColor:"
+
 -- | @Selector@ for @drawsTieredCapacityLevels@
 drawsTieredCapacityLevelsSelector :: Selector
 drawsTieredCapacityLevelsSelector = mkSelector "drawsTieredCapacityLevels"
@@ -314,4 +441,20 @@ placeholderVisibilitySelector = mkSelector "placeholderVisibility"
 -- | @Selector@ for @setPlaceholderVisibility:@
 setPlaceholderVisibilitySelector :: Selector
 setPlaceholderVisibilitySelector = mkSelector "setPlaceholderVisibility:"
+
+-- | @Selector@ for @ratingImage@
+ratingImageSelector :: Selector
+ratingImageSelector = mkSelector "ratingImage"
+
+-- | @Selector@ for @setRatingImage:@
+setRatingImageSelector :: Selector
+setRatingImageSelector = mkSelector "setRatingImage:"
+
+-- | @Selector@ for @ratingPlaceholderImage@
+ratingPlaceholderImageSelector :: Selector
+ratingPlaceholderImageSelector = mkSelector "ratingPlaceholderImage"
+
+-- | @Selector@ for @setRatingPlaceholderImage:@
+setRatingPlaceholderImageSelector :: Selector
+setRatingPlaceholderImageSelector = mkSelector "setRatingPlaceholderImage:"
 

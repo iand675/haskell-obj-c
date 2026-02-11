@@ -10,10 +10,12 @@ module ObjC.LocalAuthentication.LADomainStateCompanion
   , stateHashForCompanionType
   , new
   , init_
+  , availableCompanionTypes
   , stateHash
   , stateHashForCompanionTypeSelector
   , newSelector
   , initSelector
+  , availableCompanionTypesSelector
   , stateHashSelector
 
   -- * Enum types
@@ -63,6 +65,13 @@ init_ :: IsLADomainStateCompanion laDomainStateCompanion => laDomainStateCompani
 init_ laDomainStateCompanion  =
     sendMsg laDomainStateCompanion (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | Indicates types of companions paired with the device. The elements are NSNumber-wrapped instances of @`LACompanionType`.@
+--
+-- ObjC selector: @- availableCompanionTypes@
+availableCompanionTypes :: IsLADomainStateCompanion laDomainStateCompanion => laDomainStateCompanion -> IO (Id NSSet)
+availableCompanionTypes laDomainStateCompanion  =
+    sendMsg laDomainStateCompanion (mkSelector "availableCompanionTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Contains combined state hash data for all available companion types. . Returns @nil@ if no companion devices are paired.
 --
 -- As long as database of paired companion devices doesn't change,              @stateHash@ stays the same for the same set of @availableCompanions@.
@@ -93,6 +102,10 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @init@
 initSelector :: Selector
 initSelector = mkSelector "init"
+
+-- | @Selector@ for @availableCompanionTypes@
+availableCompanionTypesSelector :: Selector
+availableCompanionTypesSelector = mkSelector "availableCompanionTypes"
 
 -- | @Selector@ for @stateHash@
 stateHashSelector :: Selector

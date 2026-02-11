@@ -20,6 +20,8 @@ module ObjC.AVFoundation.AVMovie
   , writeMovieHeaderToURL_fileType_options_error
   , isCompatibleWithFileType
   , url
+  , data_
+  , defaultMediaDataStorage
   , tracks
   , canContainMovieFragments
   , containsMovieFragments
@@ -36,6 +38,8 @@ module ObjC.AVFoundation.AVMovie
   , writeMovieHeaderToURL_fileType_options_errorSelector
   , isCompatibleWithFileTypeSelector
   , urlSelector
+  , dataSelector
+  , defaultMediaDataStorageSelector
   , tracksSelector
   , canContainMovieFragmentsSelector
   , containsMovieFragmentsSelector
@@ -282,6 +286,26 @@ url :: IsAVMovie avMovie => avMovie -> IO (Id NSURL)
 url avMovie  =
     sendMsg avMovie (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | data
+--
+-- The data block with which the instance of AVMovie was initialized; may be nil.
+--
+-- ObjC selector: @- data@
+data_ :: IsAVMovie avMovie => avMovie -> IO (Id NSData)
+data_ avMovie  =
+    sendMsg avMovie (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | defaultMediaDataStorage
+--
+-- The default storage container for media data added to a movie.
+--
+-- The value of this property is an AVMediaDataStorage object that indicates where sample data that is added to a movie should be written by default.
+--
+-- ObjC selector: @- defaultMediaDataStorage@
+defaultMediaDataStorage :: IsAVMovie avMovie => avMovie -> IO (Id AVMediaDataStorage)
+defaultMediaDataStorage avMovie  =
+    sendMsg avMovie (mkSelector "defaultMediaDataStorage") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | tracks
 --
 -- The tracks in a movie.
@@ -370,6 +394,14 @@ isCompatibleWithFileTypeSelector = mkSelector "isCompatibleWithFileType:"
 -- | @Selector@ for @URL@
 urlSelector :: Selector
 urlSelector = mkSelector "URL"
+
+-- | @Selector@ for @data@
+dataSelector :: Selector
+dataSelector = mkSelector "data"
+
+-- | @Selector@ for @defaultMediaDataStorage@
+defaultMediaDataStorageSelector :: Selector
+defaultMediaDataStorageSelector = mkSelector "defaultMediaDataStorage"
 
 -- | @Selector@ for @tracks@
 tracksSelector :: Selector

@@ -303,6 +303,29 @@ library:
   - ObjC.AVFoundation.AVVideoOutputSpecification
   - ObjC.AVFoundation.AVVideoPerformanceMetrics
   - ObjC.AVFoundation.AVZoomRange
+  - ObjC.AVFoundation.Delegate.AVAssetDownloadDelegate
+  - ObjC.AVFoundation.Delegate.AVAssetReaderCaptionValidationHandling
+  - ObjC.AVFoundation.Delegate.AVAssetResourceLoaderDelegate
+  - ObjC.AVFoundation.Delegate.AVCaptureDataOutputSynchronizerDelegate
+  - ObjC.AVFoundation.Delegate.AVCaptureFileOutputDelegate
+  - ObjC.AVFoundation.Delegate.AVCaptureFileOutputRecordingDelegate
+  - ObjC.AVFoundation.Delegate.AVCaptureMetadataOutputObjectsDelegate
+  - ObjC.AVFoundation.Delegate.AVCapturePhotoCaptureDelegate
+  - ObjC.AVFoundation.Delegate.AVCapturePhotoFileDataRepresentationCustomizer
+  - ObjC.AVFoundation.Delegate.AVCaptureSessionControlsDelegate
+  - ObjC.AVFoundation.Delegate.AVCaptureSessionDeferredStartDelegate
+  - ObjC.AVFoundation.Delegate.AVCaptureTimecodeGeneratorDelegate
+  - ObjC.AVFoundation.Delegate.AVContentKeyRecipient
+  - ObjC.AVFoundation.Delegate.AVContentKeySessionDelegate
+  - ObjC.AVFoundation.Delegate.AVExternalSyncDeviceDelegate
+  - ObjC.AVFoundation.Delegate.AVFragmentMinding
+  - ObjC.AVFoundation.Delegate.AVMetricEventStreamSubscriber
+  - ObjC.AVFoundation.Delegate.AVPlayerItemMetadataCollectorPushDelegate
+  - ObjC.AVFoundation.Delegate.AVPlayerItemMetadataOutputPushDelegate
+  - ObjC.AVFoundation.Delegate.AVPlayerItemOutputPullDelegate
+  - ObjC.AVFoundation.Delegate.AVPlayerPlaybackCoordinatorDelegate
+  - ObjC.AVFoundation.Delegate.AVVideoCompositionInstruction
+  - ObjC.AVFoundation.Delegate.AVVideoCompositionValidationHandling
   - ObjC.AVFoundation.Enums
   - ObjC.AVFoundation.Internal.Classes
   - ObjC.AVFoundation.Internal.Enums

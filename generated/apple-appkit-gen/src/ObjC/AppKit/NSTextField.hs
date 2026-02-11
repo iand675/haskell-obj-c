@@ -18,6 +18,10 @@ module ObjC.AppKit.NSTextField
   , wrappingLabelWithString
   , labelWithAttributedString
   , textFieldWithString
+  , placeholderString
+  , setPlaceholderString
+  , placeholderAttributedString
+  , setPlaceholderAttributedString
   , backgroundColor
   , setBackgroundColor
   , drawsBackground
@@ -32,6 +36,8 @@ module ObjC.AppKit.NSTextField
   , setEditable
   , selectable
   , setSelectable
+  , delegate
+  , setDelegate
   , acceptsFirstResponder
   , bezelStyle
   , setBezelStyle
@@ -47,6 +53,10 @@ module ObjC.AppKit.NSTextField
   , setAllowsWritingTools
   , allowsWritingToolsAffordance
   , setAllowsWritingToolsAffordance
+  , placeholderStrings
+  , setPlaceholderStrings
+  , placeholderAttributedStrings
+  , setPlaceholderAttributedStrings
   , resolvesNaturalAlignmentWithBaseWritingDirection
   , setResolvesNaturalAlignmentWithBaseWritingDirection
   , allowsEditingTextAttributes
@@ -68,6 +78,10 @@ module ObjC.AppKit.NSTextField
   , wrappingLabelWithStringSelector
   , labelWithAttributedStringSelector
   , textFieldWithStringSelector
+  , placeholderStringSelector
+  , setPlaceholderStringSelector
+  , placeholderAttributedStringSelector
+  , setPlaceholderAttributedStringSelector
   , backgroundColorSelector
   , setBackgroundColorSelector
   , drawsBackgroundSelector
@@ -82,6 +96,8 @@ module ObjC.AppKit.NSTextField
   , setEditableSelector
   , selectableSelector
   , setSelectableSelector
+  , delegateSelector
+  , setDelegateSelector
   , acceptsFirstResponderSelector
   , bezelStyleSelector
   , setBezelStyleSelector
@@ -97,6 +113,10 @@ module ObjC.AppKit.NSTextField
   , setAllowsWritingToolsSelector
   , allowsWritingToolsAffordanceSelector
   , setAllowsWritingToolsAffordanceSelector
+  , placeholderStringsSelector
+  , setPlaceholderStringsSelector
+  , placeholderAttributedStringsSelector
+  , setPlaceholderAttributedStringsSelector
   , resolvesNaturalAlignmentWithBaseWritingDirectionSelector
   , setResolvesNaturalAlignmentWithBaseWritingDirectionSelector
   , allowsEditingTextAttributesSelector
@@ -233,6 +253,28 @@ textFieldWithString stringValue =
     withObjCPtr stringValue $ \raw_stringValue ->
       sendClassMsg cls' (mkSelector "textFieldWithString:") (retPtr retVoid) [argPtr (castPtr raw_stringValue :: Ptr ())] >>= retainedObject . castPtr
 
+-- | @- placeholderString@
+placeholderString :: IsNSTextField nsTextField => nsTextField -> IO (Id NSString)
+placeholderString nsTextField  =
+    sendMsg nsTextField (mkSelector "placeholderString") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setPlaceholderString:@
+setPlaceholderString :: (IsNSTextField nsTextField, IsNSString value) => nsTextField -> value -> IO ()
+setPlaceholderString nsTextField  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsTextField (mkSelector "setPlaceholderString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- placeholderAttributedString@
+placeholderAttributedString :: IsNSTextField nsTextField => nsTextField -> IO (Id NSAttributedString)
+placeholderAttributedString nsTextField  =
+    sendMsg nsTextField (mkSelector "placeholderAttributedString") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setPlaceholderAttributedString:@
+setPlaceholderAttributedString :: (IsNSTextField nsTextField, IsNSAttributedString value) => nsTextField -> value -> IO ()
+setPlaceholderAttributedString nsTextField  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsTextField (mkSelector "setPlaceholderAttributedString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- backgroundColor@
 backgroundColor :: IsNSTextField nsTextField => nsTextField -> IO (Id NSColor)
 backgroundColor nsTextField  =
@@ -304,6 +346,16 @@ selectable nsTextField  =
 setSelectable :: IsNSTextField nsTextField => nsTextField -> Bool -> IO ()
 setSelectable nsTextField  value =
     sendMsg nsTextField (mkSelector "setSelectable:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | @- delegate@
+delegate :: IsNSTextField nsTextField => nsTextField -> IO RawId
+delegate nsTextField  =
+    fmap (RawId . castPtr) $ sendMsg nsTextField (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSTextField nsTextField => nsTextField -> RawId -> IO ()
+setDelegate nsTextField  value =
+    sendMsg nsTextField (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- acceptsFirstResponder@
 acceptsFirstResponder :: IsNSTextField nsTextField => nsTextField -> IO Bool
@@ -379,6 +431,28 @@ allowsWritingToolsAffordance nsTextField  =
 setAllowsWritingToolsAffordance :: IsNSTextField nsTextField => nsTextField -> Bool -> IO ()
 setAllowsWritingToolsAffordance nsTextField  value =
     sendMsg nsTextField (mkSelector "setAllowsWritingToolsAffordance:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | @- placeholderStrings@
+placeholderStrings :: IsNSTextField nsTextField => nsTextField -> IO (Id NSArray)
+placeholderStrings nsTextField  =
+    sendMsg nsTextField (mkSelector "placeholderStrings") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setPlaceholderStrings:@
+setPlaceholderStrings :: (IsNSTextField nsTextField, IsNSArray value) => nsTextField -> value -> IO ()
+setPlaceholderStrings nsTextField  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsTextField (mkSelector "setPlaceholderStrings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- placeholderAttributedStrings@
+placeholderAttributedStrings :: IsNSTextField nsTextField => nsTextField -> IO (Id NSArray)
+placeholderAttributedStrings nsTextField  =
+    sendMsg nsTextField (mkSelector "placeholderAttributedStrings") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setPlaceholderAttributedStrings:@
+setPlaceholderAttributedStrings :: (IsNSTextField nsTextField, IsNSArray value) => nsTextField -> value -> IO ()
+setPlaceholderAttributedStrings nsTextField  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsTextField (mkSelector "setPlaceholderAttributedStrings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | Specifies the behavior for resolving ``NSTextAlignment.natural`` to the visual alignment.
 --
@@ -486,6 +560,22 @@ labelWithAttributedStringSelector = mkSelector "labelWithAttributedString:"
 textFieldWithStringSelector :: Selector
 textFieldWithStringSelector = mkSelector "textFieldWithString:"
 
+-- | @Selector@ for @placeholderString@
+placeholderStringSelector :: Selector
+placeholderStringSelector = mkSelector "placeholderString"
+
+-- | @Selector@ for @setPlaceholderString:@
+setPlaceholderStringSelector :: Selector
+setPlaceholderStringSelector = mkSelector "setPlaceholderString:"
+
+-- | @Selector@ for @placeholderAttributedString@
+placeholderAttributedStringSelector :: Selector
+placeholderAttributedStringSelector = mkSelector "placeholderAttributedString"
+
+-- | @Selector@ for @setPlaceholderAttributedString:@
+setPlaceholderAttributedStringSelector :: Selector
+setPlaceholderAttributedStringSelector = mkSelector "setPlaceholderAttributedString:"
+
 -- | @Selector@ for @backgroundColor@
 backgroundColorSelector :: Selector
 backgroundColorSelector = mkSelector "backgroundColor"
@@ -541,6 +631,14 @@ selectableSelector = mkSelector "selectable"
 -- | @Selector@ for @setSelectable:@
 setSelectableSelector :: Selector
 setSelectableSelector = mkSelector "setSelectable:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @acceptsFirstResponder@
 acceptsFirstResponderSelector :: Selector
@@ -601,6 +699,22 @@ allowsWritingToolsAffordanceSelector = mkSelector "allowsWritingToolsAffordance"
 -- | @Selector@ for @setAllowsWritingToolsAffordance:@
 setAllowsWritingToolsAffordanceSelector :: Selector
 setAllowsWritingToolsAffordanceSelector = mkSelector "setAllowsWritingToolsAffordance:"
+
+-- | @Selector@ for @placeholderStrings@
+placeholderStringsSelector :: Selector
+placeholderStringsSelector = mkSelector "placeholderStrings"
+
+-- | @Selector@ for @setPlaceholderStrings:@
+setPlaceholderStringsSelector :: Selector
+setPlaceholderStringsSelector = mkSelector "setPlaceholderStrings:"
+
+-- | @Selector@ for @placeholderAttributedStrings@
+placeholderAttributedStringsSelector :: Selector
+placeholderAttributedStringsSelector = mkSelector "placeholderAttributedStrings"
+
+-- | @Selector@ for @setPlaceholderAttributedStrings:@
+setPlaceholderAttributedStringsSelector :: Selector
+setPlaceholderAttributedStringsSelector = mkSelector "setPlaceholderAttributedStrings:"
 
 -- | @Selector@ for @resolvesNaturalAlignmentWithBaseWritingDirection@
 resolvesNaturalAlignmentWithBaseWritingDirectionSelector :: Selector

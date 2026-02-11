@@ -11,6 +11,8 @@
 module ObjC.Quartz.IKDeviceBrowserView
   ( IKDeviceBrowserView
   , IsIKDeviceBrowserView(..)
+  , delegate
+  , setDelegate
   , displaysLocalCameras
   , setDisplaysLocalCameras
   , displaysNetworkCameras
@@ -21,6 +23,8 @@ module ObjC.Quartz.IKDeviceBrowserView
   , setDisplaysNetworkScanners
   , mode
   , setMode
+  , delegateSelector
+  , setDelegateSelector
   , displaysLocalCamerasSelector
   , setDisplaysLocalCamerasSelector
   , displaysNetworkCamerasSelector
@@ -56,6 +60,24 @@ import ObjC.Quartz.Internal.Classes
 import ObjC.Quartz.Internal.Enums
 import ObjC.AppKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | delegate
+--
+-- delegate of the IKDeviceBrowserView.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsIKDeviceBrowserView ikDeviceBrowserView => ikDeviceBrowserView -> IO RawId
+delegate ikDeviceBrowserView  =
+    fmap (RawId . castPtr) $ sendMsg ikDeviceBrowserView (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- delegate of the IKDeviceBrowserView.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsIKDeviceBrowserView ikDeviceBrowserView => ikDeviceBrowserView -> RawId -> IO ()
+setDelegate ikDeviceBrowserView  value =
+    sendMsg ikDeviceBrowserView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | displaysLocalCameras
 --
@@ -150,6 +172,14 @@ setMode ikDeviceBrowserView  value =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @displaysLocalCameras@
 displaysLocalCamerasSelector :: Selector

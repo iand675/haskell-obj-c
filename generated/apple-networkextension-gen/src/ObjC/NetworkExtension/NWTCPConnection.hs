@@ -20,6 +20,12 @@ module ObjC.NetworkExtension.NWTCPConnection
   , state
   , viable
   , hasBetterPath
+  , endpoint
+  , connectedPath
+  , localAddress
+  , remoteAddress
+  , txtRecord
+  , error_
   , initWithUpgradeForConnectionSelector
   , cancelSelector
   , readLength_completionHandlerSelector
@@ -29,6 +35,12 @@ module ObjC.NetworkExtension.NWTCPConnection
   , stateSelector
   , viableSelector
   , hasBetterPathSelector
+  , endpointSelector
+  , connectedPathSelector
+  , localAddressSelector
+  , remoteAddressSelector
+  , txtRecordSelector
+  , errorSelector
 
   -- * Enum types
   , NWTCPConnectionState(NWTCPConnectionState)
@@ -170,6 +182,62 @@ hasBetterPath :: IsNWTCPConnection nwtcpConnection => nwtcpConnection -> IO Bool
 hasBetterPath nwtcpConnection  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg nwtcpConnection (mkSelector "hasBetterPath") retCULong []
 
+-- | endpoint
+--
+-- The destination endpoint with which this connection was created.
+--
+-- ObjC selector: @- endpoint@
+endpoint :: IsNWTCPConnection nwtcpConnection => nwtcpConnection -> IO (Id NWEndpoint)
+endpoint nwtcpConnection  =
+    sendMsg nwtcpConnection (mkSelector "endpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | connectedPath
+--
+-- The network path over which the connection was established. The caller can query		additional properties from the NWPath object for more information.
+--
+-- Note that this contains a snapshot of information at the time of connection establishment 		for this connection only. As a result, some underlying properties might change in time and 		might not reflect the path for other connections that might be established at different times.
+--
+-- ObjC selector: @- connectedPath@
+connectedPath :: IsNWTCPConnection nwtcpConnection => nwtcpConnection -> IO (Id NWPath)
+connectedPath nwtcpConnection  =
+    sendMsg nwtcpConnection (mkSelector "connectedPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | localAddress
+--
+-- The IP address endpoint from which the connection was connected.
+--
+-- ObjC selector: @- localAddress@
+localAddress :: IsNWTCPConnection nwtcpConnection => nwtcpConnection -> IO (Id NWEndpoint)
+localAddress nwtcpConnection  =
+    sendMsg nwtcpConnection (mkSelector "localAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | remoteAddress
+--
+-- The IP address endpoint to which the connection was connected.
+--
+-- ObjC selector: @- remoteAddress@
+remoteAddress :: IsNWTCPConnection nwtcpConnection => nwtcpConnection -> IO (Id NWEndpoint)
+remoteAddress nwtcpConnection  =
+    sendMsg nwtcpConnection (mkSelector "remoteAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | txtRecord
+--
+-- When the connection is connected to a Bonjour service endpoint, the TXT record associated 		with the Bonjour service is available via this property. Beware that the value comes from 		the network. Care must be taken when parsing this potentially malicious value.
+--
+-- ObjC selector: @- txtRecord@
+txtRecord :: IsNWTCPConnection nwtcpConnection => nwtcpConnection -> IO (Id NSData)
+txtRecord nwtcpConnection  =
+    sendMsg nwtcpConnection (mkSelector "txtRecord") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | error
+--
+-- The connection-wide error property indicates any fatal error that occurred while 		processing the connection or performing data reading or writing.
+--
+-- ObjC selector: @- error@
+error_ :: IsNWTCPConnection nwtcpConnection => nwtcpConnection -> IO (Id NSError)
+error_ nwtcpConnection  =
+    sendMsg nwtcpConnection (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -209,4 +277,28 @@ viableSelector = mkSelector "viable"
 -- | @Selector@ for @hasBetterPath@
 hasBetterPathSelector :: Selector
 hasBetterPathSelector = mkSelector "hasBetterPath"
+
+-- | @Selector@ for @endpoint@
+endpointSelector :: Selector
+endpointSelector = mkSelector "endpoint"
+
+-- | @Selector@ for @connectedPath@
+connectedPathSelector :: Selector
+connectedPathSelector = mkSelector "connectedPath"
+
+-- | @Selector@ for @localAddress@
+localAddressSelector :: Selector
+localAddressSelector = mkSelector "localAddress"
+
+-- | @Selector@ for @remoteAddress@
+remoteAddressSelector :: Selector
+remoteAddressSelector = mkSelector "remoteAddress"
+
+-- | @Selector@ for @txtRecord@
+txtRecordSelector :: Selector
+txtRecordSelector = mkSelector "txtRecord"
+
+-- | @Selector@ for @error@
+errorSelector :: Selector
+errorSelector = mkSelector "error"
 

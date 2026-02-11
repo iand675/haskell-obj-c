@@ -15,9 +15,21 @@ module ObjC.NetworkExtension.NEIPv6Settings
   , initWithAddresses_networkPrefixLengths
   , settingsWithAutomaticAddressing
   , settingsWithLinkLocalAddressing
+  , addresses
+  , networkPrefixLengths
+  , includedRoutes
+  , setIncludedRoutes
+  , excludedRoutes
+  , setExcludedRoutes
   , initWithAddresses_networkPrefixLengthsSelector
   , settingsWithAutomaticAddressingSelector
   , settingsWithLinkLocalAddressingSelector
+  , addressesSelector
+  , networkPrefixLengthsSelector
+  , includedRoutesSelector
+  , setIncludedRoutesSelector
+  , excludedRoutesSelector
+  , setExcludedRoutesSelector
 
 
   ) where
@@ -76,6 +88,62 @@ settingsWithLinkLocalAddressing  =
     cls' <- getRequiredClass "NEIPv6Settings"
     sendClassMsg cls' (mkSelector "settingsWithLinkLocalAddressing") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | addresses
+--
+-- An array of IPv6 addresses represented strings. These addresses will be set on the virtual interface used by the VPN tunnel.
+--
+-- ObjC selector: @- addresses@
+addresses :: IsNEIPv6Settings neiPv6Settings => neiPv6Settings -> IO (Id NSArray)
+addresses neiPv6Settings  =
+    sendMsg neiPv6Settings (mkSelector "addresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | networkPrefixLengths
+--
+-- An array of NSNumber objects each representing the length in bits of the network prefix of the corresponding address in the addresses property.
+--
+-- ObjC selector: @- networkPrefixLengths@
+networkPrefixLengths :: IsNEIPv6Settings neiPv6Settings => neiPv6Settings -> IO (Id NSArray)
+networkPrefixLengths neiPv6Settings  =
+    sendMsg neiPv6Settings (mkSelector "networkPrefixLengths") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | includedRoutes
+--
+-- An array of NEIPv6Route objects. Traffic matching these routes will be routed through the virtual interface used by the VPN tunnel.
+--
+-- ObjC selector: @- includedRoutes@
+includedRoutes :: IsNEIPv6Settings neiPv6Settings => neiPv6Settings -> IO (Id NSArray)
+includedRoutes neiPv6Settings  =
+    sendMsg neiPv6Settings (mkSelector "includedRoutes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | includedRoutes
+--
+-- An array of NEIPv6Route objects. Traffic matching these routes will be routed through the virtual interface used by the VPN tunnel.
+--
+-- ObjC selector: @- setIncludedRoutes:@
+setIncludedRoutes :: (IsNEIPv6Settings neiPv6Settings, IsNSArray value) => neiPv6Settings -> value -> IO ()
+setIncludedRoutes neiPv6Settings  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neiPv6Settings (mkSelector "setIncludedRoutes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | excludedRoutes
+--
+-- An array of NEIPv6Route objects. Traffic matching these routes will be routed through the current primary physical interface of the device.
+--
+-- ObjC selector: @- excludedRoutes@
+excludedRoutes :: IsNEIPv6Settings neiPv6Settings => neiPv6Settings -> IO (Id NSArray)
+excludedRoutes neiPv6Settings  =
+    sendMsg neiPv6Settings (mkSelector "excludedRoutes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | excludedRoutes
+--
+-- An array of NEIPv6Route objects. Traffic matching these routes will be routed through the current primary physical interface of the device.
+--
+-- ObjC selector: @- setExcludedRoutes:@
+setExcludedRoutes :: (IsNEIPv6Settings neiPv6Settings, IsNSArray value) => neiPv6Settings -> value -> IO ()
+setExcludedRoutes neiPv6Settings  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neiPv6Settings (mkSelector "setExcludedRoutes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -91,4 +159,28 @@ settingsWithAutomaticAddressingSelector = mkSelector "settingsWithAutomaticAddre
 -- | @Selector@ for @settingsWithLinkLocalAddressing@
 settingsWithLinkLocalAddressingSelector :: Selector
 settingsWithLinkLocalAddressingSelector = mkSelector "settingsWithLinkLocalAddressing"
+
+-- | @Selector@ for @addresses@
+addressesSelector :: Selector
+addressesSelector = mkSelector "addresses"
+
+-- | @Selector@ for @networkPrefixLengths@
+networkPrefixLengthsSelector :: Selector
+networkPrefixLengthsSelector = mkSelector "networkPrefixLengths"
+
+-- | @Selector@ for @includedRoutes@
+includedRoutesSelector :: Selector
+includedRoutesSelector = mkSelector "includedRoutes"
+
+-- | @Selector@ for @setIncludedRoutes:@
+setIncludedRoutesSelector :: Selector
+setIncludedRoutesSelector = mkSelector "setIncludedRoutes:"
+
+-- | @Selector@ for @excludedRoutes@
+excludedRoutesSelector :: Selector
+excludedRoutesSelector = mkSelector "excludedRoutes"
+
+-- | @Selector@ for @setExcludedRoutes:@
+setExcludedRoutesSelector :: Selector
+setExcludedRoutesSelector = mkSelector "setExcludedRoutes:"
 

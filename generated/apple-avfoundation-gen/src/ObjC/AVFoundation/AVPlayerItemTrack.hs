@@ -16,10 +16,14 @@ module ObjC.AVFoundation.AVPlayerItemTrack
   , enabled
   , setEnabled
   , currentVideoFrameRate
+  , videoFieldMode
+  , setVideoFieldMode
   , assetTrackSelector
   , enabledSelector
   , setEnabledSelector
   , currentVideoFrameRateSelector
+  , videoFieldModeSelector
+  , setVideoFieldModeSelector
 
 
   ) where
@@ -85,6 +89,33 @@ currentVideoFrameRate :: IsAVPlayerItemTrack avPlayerItemTrack => avPlayerItemTr
 currentVideoFrameRate avPlayerItemTrack  =
     sendMsg avPlayerItemTrack (mkSelector "currentVideoFrameRate") retCFloat []
 
+-- | videoFieldMode
+--
+-- If the media type of the assetTrack is AVMediaTypeVideo, specifies the handling of video frames that contain multiple fields.
+--
+-- A value of nil indicates default processing of video frames. If you want video fields to be deinterlaced, set videoFieldMode to AVPlayerItemTrackVideoFieldModeDeinterlaceFields. 				You can test whether video being played has multiple fields by examining the underlying AVAssetTrack's format descriptions. See -[AVAssetTrack formatDescriptions] and, for video format descriptions, kCMFormatDescriptionExtension_FieldCount.
+--
+-- Before macOS 13, iOS 16, tvOS 16, and watchOS 9, this property must be accessed on the main thread/queue.
+--
+-- ObjC selector: @- videoFieldMode@
+videoFieldMode :: IsAVPlayerItemTrack avPlayerItemTrack => avPlayerItemTrack -> IO (Id NSString)
+videoFieldMode avPlayerItemTrack  =
+    sendMsg avPlayerItemTrack (mkSelector "videoFieldMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | videoFieldMode
+--
+-- If the media type of the assetTrack is AVMediaTypeVideo, specifies the handling of video frames that contain multiple fields.
+--
+-- A value of nil indicates default processing of video frames. If you want video fields to be deinterlaced, set videoFieldMode to AVPlayerItemTrackVideoFieldModeDeinterlaceFields. 				You can test whether video being played has multiple fields by examining the underlying AVAssetTrack's format descriptions. See -[AVAssetTrack formatDescriptions] and, for video format descriptions, kCMFormatDescriptionExtension_FieldCount.
+--
+-- Before macOS 13, iOS 16, tvOS 16, and watchOS 9, this property must be accessed on the main thread/queue.
+--
+-- ObjC selector: @- setVideoFieldMode:@
+setVideoFieldMode :: (IsAVPlayerItemTrack avPlayerItemTrack, IsNSString value) => avPlayerItemTrack -> value -> IO ()
+setVideoFieldMode avPlayerItemTrack  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avPlayerItemTrack (mkSelector "setVideoFieldMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -104,4 +135,12 @@ setEnabledSelector = mkSelector "setEnabled:"
 -- | @Selector@ for @currentVideoFrameRate@
 currentVideoFrameRateSelector :: Selector
 currentVideoFrameRateSelector = mkSelector "currentVideoFrameRate"
+
+-- | @Selector@ for @videoFieldMode@
+videoFieldModeSelector :: Selector
+videoFieldModeSelector = mkSelector "videoFieldMode"
+
+-- | @Selector@ for @setVideoFieldMode:@
+setVideoFieldModeSelector :: Selector
+setVideoFieldModeSelector = mkSelector "setVideoFieldMode:"
 

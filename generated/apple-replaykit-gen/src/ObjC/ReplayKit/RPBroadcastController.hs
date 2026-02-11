@@ -18,6 +18,9 @@ module ObjC.ReplayKit.RPBroadcastController
   , paused
   , broadcastURL
   , serviceInfo
+  , delegate
+  , setDelegate
+  , broadcastExtensionBundleID
   , startBroadcastWithHandlerSelector
   , pauseBroadcastSelector
   , resumeBroadcastSelector
@@ -26,6 +29,9 @@ module ObjC.ReplayKit.RPBroadcastController
   , pausedSelector
   , broadcastURLSelector
   , serviceInfoSelector
+  , delegateSelector
+  , setDelegateSelector
+  , broadcastExtensionBundleIDSelector
 
 
   ) where
@@ -85,6 +91,21 @@ serviceInfo :: IsRPBroadcastController rpBroadcastController => rpBroadcastContr
 serviceInfo rpBroadcastController  =
     sendMsg rpBroadcastController (mkSelector "serviceInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- delegate@
+delegate :: IsRPBroadcastController rpBroadcastController => rpBroadcastController -> IO RawId
+delegate rpBroadcastController  =
+    fmap (RawId . castPtr) $ sendMsg rpBroadcastController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsRPBroadcastController rpBroadcastController => rpBroadcastController -> RawId -> IO ()
+setDelegate rpBroadcastController  value =
+    sendMsg rpBroadcastController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- broadcastExtensionBundleID@
+broadcastExtensionBundleID :: IsRPBroadcastController rpBroadcastController => rpBroadcastController -> IO (Id NSString)
+broadcastExtensionBundleID rpBroadcastController  =
+    sendMsg rpBroadcastController (mkSelector "broadcastExtensionBundleID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -120,4 +141,16 @@ broadcastURLSelector = mkSelector "broadcastURL"
 -- | @Selector@ for @serviceInfo@
 serviceInfoSelector :: Selector
 serviceInfoSelector = mkSelector "serviceInfo"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @broadcastExtensionBundleID@
+broadcastExtensionBundleIDSelector :: Selector
+broadcastExtensionBundleIDSelector = mkSelector "broadcastExtensionBundleID"
 

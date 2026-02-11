@@ -16,12 +16,16 @@ module ObjC.AppKit.NSSearchField
   , setRecentSearches
   , recentsAutosaveName
   , setRecentsAutosaveName
+  , searchMenuTemplate
+  , setSearchMenuTemplate
   , sendsWholeSearchString
   , setSendsWholeSearchString
   , maximumRecents
   , setMaximumRecents
   , sendsSearchStringImmediately
   , setSendsSearchStringImmediately
+  , delegate
+  , setDelegate
   , centersPlaceholder
   , setCentersPlaceholder
   , rectForSearchTextWhenCenteredSelector
@@ -34,12 +38,16 @@ module ObjC.AppKit.NSSearchField
   , setRecentSearchesSelector
   , recentsAutosaveNameSelector
   , setRecentsAutosaveNameSelector
+  , searchMenuTemplateSelector
+  , setSearchMenuTemplateSelector
   , sendsWholeSearchStringSelector
   , setSendsWholeSearchStringSelector
   , maximumRecentsSelector
   , setMaximumRecentsSelector
   , sendsSearchStringImmediatelySelector
   , setSendsSearchStringImmediatelySelector
+  , delegateSelector
+  , setDelegateSelector
   , centersPlaceholderSelector
   , setCentersPlaceholderSelector
 
@@ -114,6 +122,17 @@ setRecentsAutosaveName nsSearchField  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsSearchField (mkSelector "setRecentsAutosaveName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- searchMenuTemplate@
+searchMenuTemplate :: IsNSSearchField nsSearchField => nsSearchField -> IO (Id NSMenu)
+searchMenuTemplate nsSearchField  =
+    sendMsg nsSearchField (mkSelector "searchMenuTemplate") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setSearchMenuTemplate:@
+setSearchMenuTemplate :: (IsNSSearchField nsSearchField, IsNSMenu value) => nsSearchField -> value -> IO ()
+setSearchMenuTemplate nsSearchField  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsSearchField (mkSelector "setSearchMenuTemplate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- sendsWholeSearchString@
 sendsWholeSearchString :: IsNSSearchField nsSearchField => nsSearchField -> IO Bool
 sendsWholeSearchString nsSearchField  =
@@ -143,6 +162,16 @@ sendsSearchStringImmediately nsSearchField  =
 setSendsSearchStringImmediately :: IsNSSearchField nsSearchField => nsSearchField -> Bool -> IO ()
 setSendsSearchStringImmediately nsSearchField  value =
     sendMsg nsSearchField (mkSelector "setSendsSearchStringImmediately:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | @- delegate@
+delegate :: IsNSSearchField nsSearchField => nsSearchField -> IO RawId
+delegate nsSearchField  =
+    fmap (RawId . castPtr) $ sendMsg nsSearchField (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSSearchField nsSearchField => nsSearchField -> RawId -> IO ()
+setDelegate nsSearchField  value =
+    sendMsg nsSearchField (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- centersPlaceholder@
 centersPlaceholder :: IsNSSearchField nsSearchField => nsSearchField -> IO Bool
@@ -198,6 +227,14 @@ recentsAutosaveNameSelector = mkSelector "recentsAutosaveName"
 setRecentsAutosaveNameSelector :: Selector
 setRecentsAutosaveNameSelector = mkSelector "setRecentsAutosaveName:"
 
+-- | @Selector@ for @searchMenuTemplate@
+searchMenuTemplateSelector :: Selector
+searchMenuTemplateSelector = mkSelector "searchMenuTemplate"
+
+-- | @Selector@ for @setSearchMenuTemplate:@
+setSearchMenuTemplateSelector :: Selector
+setSearchMenuTemplateSelector = mkSelector "setSearchMenuTemplate:"
+
 -- | @Selector@ for @sendsWholeSearchString@
 sendsWholeSearchStringSelector :: Selector
 sendsWholeSearchStringSelector = mkSelector "sendsWholeSearchString"
@@ -221,6 +258,14 @@ sendsSearchStringImmediatelySelector = mkSelector "sendsSearchStringImmediately"
 -- | @Selector@ for @setSendsSearchStringImmediately:@
 setSendsSearchStringImmediatelySelector :: Selector
 setSendsSearchStringImmediatelySelector = mkSelector "setSendsSearchStringImmediately:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @centersPlaceholder@
 centersPlaceholderSelector :: Selector

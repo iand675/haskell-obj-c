@@ -6,7 +6,9 @@
 module ObjC.Metal.MTLSharedTextureHandle
   ( MTLSharedTextureHandle
   , IsMTLSharedTextureHandle(..)
+  , device
   , label
+  , deviceSelector
   , labelSelector
 
 
@@ -27,6 +29,17 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.Metal.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | device
+--
+-- The device this texture was created against.
+--
+-- This shared texture handle can only be used with this device.
+--
+-- ObjC selector: @- device@
+device :: IsMTLSharedTextureHandle mtlSharedTextureHandle => mtlSharedTextureHandle -> IO RawId
+device mtlSharedTextureHandle  =
+    fmap (RawId . castPtr) $ sendMsg mtlSharedTextureHandle (mkSelector "device") (retPtr retVoid) []
+
 -- | label
 --
 -- A copy of the original texture's label property, if any
@@ -39,6 +52,10 @@ label mtlSharedTextureHandle  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @device@
+deviceSelector :: Selector
+deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @label@
 labelSelector :: Selector

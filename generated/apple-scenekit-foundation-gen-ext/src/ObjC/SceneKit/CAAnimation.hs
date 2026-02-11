@@ -8,18 +8,24 @@
 module ObjC.SceneKit.CAAnimation
   ( CAAnimation
   , IsCAAnimation(..)
+  , animationWithSCNAnimation
   , usesSceneTimeBase
   , setUsesSceneTimeBase
   , fadeInDuration
   , setFadeInDuration
   , fadeOutDuration
   , setFadeOutDuration
+  , animationEvents
+  , setAnimationEvents
+  , animationWithSCNAnimationSelector
   , usesSceneTimeBaseSelector
   , setUsesSceneTimeBaseSelector
   , fadeInDurationSelector
   , setFadeInDurationSelector
   , fadeOutDurationSelector
   , setFadeOutDurationSelector
+  , animationEventsSelector
+  , setAnimationEventsSelector
 
 
   ) where
@@ -38,6 +44,18 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.SceneKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | Bridge with SCNAnimation
+--
+-- Initializes a CoreAnimation animation from a SCNAnimation
+--
+-- ObjC selector: @+ animationWithSCNAnimation:@
+animationWithSCNAnimation :: IsSCNAnimation animation => animation -> IO RawId
+animationWithSCNAnimation animation =
+  do
+    cls' <- getRequiredClass "CAAnimation"
+    withObjCPtr animation $ \raw_animation ->
+      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "animationWithSCNAnimation:") (retPtr retVoid) [argPtr (castPtr raw_animation :: Ptr ())]
 
 -- | usesSceneTimeBase
 --
@@ -105,9 +123,32 @@ setFadeOutDuration :: IsCAAnimation caAnimation => caAnimation -> CDouble -> IO 
 setFadeOutDuration caAnimation  value =
     sendMsg caAnimation (mkSelector "setFadeOutDuration:") retVoid [argCDouble value]
 
+-- | animationEvents
+--
+-- Specifies the animation events attached to the receiver.
+--
+-- ObjC selector: @- animationEvents@
+animationEvents :: IsCAAnimation caAnimation => caAnimation -> IO (Id NSArray)
+animationEvents caAnimation  =
+    sendMsg caAnimation (mkSelector "animationEvents") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | animationEvents
+--
+-- Specifies the animation events attached to the receiver.
+--
+-- ObjC selector: @- setAnimationEvents:@
+setAnimationEvents :: (IsCAAnimation caAnimation, IsNSArray value) => caAnimation -> value -> IO ()
+setAnimationEvents caAnimation  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg caAnimation (mkSelector "setAnimationEvents:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @animationWithSCNAnimation:@
+animationWithSCNAnimationSelector :: Selector
+animationWithSCNAnimationSelector = mkSelector "animationWithSCNAnimation:"
 
 -- | @Selector@ for @usesSceneTimeBase@
 usesSceneTimeBaseSelector :: Selector
@@ -132,4 +173,12 @@ fadeOutDurationSelector = mkSelector "fadeOutDuration"
 -- | @Selector@ for @setFadeOutDuration:@
 setFadeOutDurationSelector :: Selector
 setFadeOutDurationSelector = mkSelector "setFadeOutDuration:"
+
+-- | @Selector@ for @animationEvents@
+animationEventsSelector :: Selector
+animationEventsSelector = mkSelector "animationEvents"
+
+-- | @Selector@ for @setAnimationEvents:@
+setAnimationEventsSelector :: Selector
+setAnimationEventsSelector = mkSelector "setAnimationEvents:"
 

@@ -16,6 +16,8 @@ module ObjC.Contacts.CNContactFetchRequest
   , initWithKeysToFetch
   , predicate
   , setPredicate
+  , keysToFetch
+  , setKeysToFetch
   , mutableObjects
   , setMutableObjects
   , unifyResults
@@ -27,6 +29,8 @@ module ObjC.Contacts.CNContactFetchRequest
   , initWithKeysToFetchSelector
   , predicateSelector
   , setPredicateSelector
+  , keysToFetchSelector
+  , setKeysToFetchSelector
   , mutableObjectsSelector
   , setMutableObjectsSelector
   , unifyResultsSelector
@@ -99,6 +103,25 @@ setPredicate :: (IsCNContactFetchRequest cnContactFetchRequest, IsNSPredicate va
 setPredicate cnContactFetchRequest  value =
   withObjCPtr value $ \raw_value ->
       sendMsg cnContactFetchRequest (mkSelector "setPredicate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The properties to fetch in the returned contacts.
+--
+-- Should only fetch the properties that will be used. Can combine contact keys and contact key descriptors.
+--
+-- ObjC selector: @- keysToFetch@
+keysToFetch :: IsCNContactFetchRequest cnContactFetchRequest => cnContactFetchRequest -> IO (Id NSArray)
+keysToFetch cnContactFetchRequest  =
+    sendMsg cnContactFetchRequest (mkSelector "keysToFetch") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The properties to fetch in the returned contacts.
+--
+-- Should only fetch the properties that will be used. Can combine contact keys and contact key descriptors.
+--
+-- ObjC selector: @- setKeysToFetch:@
+setKeysToFetch :: (IsCNContactFetchRequest cnContactFetchRequest, IsNSArray value) => cnContactFetchRequest -> value -> IO ()
+setKeysToFetch cnContactFetchRequest  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg cnContactFetchRequest (mkSelector "setKeysToFetch:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | To return mutable contacts.
 --
@@ -181,6 +204,14 @@ predicateSelector = mkSelector "predicate"
 -- | @Selector@ for @setPredicate:@
 setPredicateSelector :: Selector
 setPredicateSelector = mkSelector "setPredicate:"
+
+-- | @Selector@ for @keysToFetch@
+keysToFetchSelector :: Selector
+keysToFetchSelector = mkSelector "keysToFetch"
+
+-- | @Selector@ for @setKeysToFetch:@
+setKeysToFetchSelector :: Selector
+setKeysToFetchSelector = mkSelector "setKeysToFetch:"
 
 -- | @Selector@ for @mutableObjects@
 mutableObjectsSelector :: Selector

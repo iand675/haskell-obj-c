@@ -17,6 +17,8 @@ module ObjC.Speech.SFSpeechRecognitionRequest
   , setShouldReportPartialResults
   , contextualStrings
   , setContextualStrings
+  , interactionIdentifier
+  , setInteractionIdentifier
   , requiresOnDeviceRecognition
   , setRequiresOnDeviceRecognition
   , addsPunctuation
@@ -29,6 +31,8 @@ module ObjC.Speech.SFSpeechRecognitionRequest
   , setShouldReportPartialResultsSelector
   , contextualStringsSelector
   , setContextualStringsSelector
+  , interactionIdentifierSelector
+  , setInteractionIdentifierSelector
   , requiresOnDeviceRecognitionSelector
   , setRequiresOnDeviceRecognitionSelector
   , addsPunctuationSelector
@@ -124,6 +128,24 @@ setContextualStrings sfSpeechRecognitionRequest  value =
   withObjCPtr value $ \raw_value ->
       sendMsg sfSpeechRecognitionRequest (mkSelector "setContextualStrings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | An identifier string that you use to describe the type of interaction associated with the speech recognition request.
+--
+-- If different parts of your app have different speech recognition needs, you can use this property to identify the part of your app that is making each request. For example, if one part of your app lets users speak phone numbers and another part lets users speak street addresses, consistently identifying the part of the app that makes a recognition request may help improve the accuracy of the results.
+--
+-- ObjC selector: @- interactionIdentifier@
+interactionIdentifier :: IsSFSpeechRecognitionRequest sfSpeechRecognitionRequest => sfSpeechRecognitionRequest -> IO RawId
+interactionIdentifier sfSpeechRecognitionRequest  =
+    fmap (RawId . castPtr) $ sendMsg sfSpeechRecognitionRequest (mkSelector "interactionIdentifier") (retPtr retVoid) []
+
+-- | An identifier string that you use to describe the type of interaction associated with the speech recognition request.
+--
+-- If different parts of your app have different speech recognition needs, you can use this property to identify the part of your app that is making each request. For example, if one part of your app lets users speak phone numbers and another part lets users speak street addresses, consistently identifying the part of the app that makes a recognition request may help improve the accuracy of the results.
+--
+-- ObjC selector: @- setInteractionIdentifier:@
+setInteractionIdentifier :: IsSFSpeechRecognitionRequest sfSpeechRecognitionRequest => sfSpeechRecognitionRequest -> RawId -> IO ()
+setInteractionIdentifier sfSpeechRecognitionRequest  value =
+    sendMsg sfSpeechRecognitionRequest (mkSelector "setInteractionIdentifier:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | A Boolean value that determines whether a request must keep its audio data on the device.
 --
 -- Set this property to @true@ to prevent an ``SFSpeechRecognitionRequest`` from sending audio over the network. However, on-device requests won't be as accurate.
@@ -202,6 +224,14 @@ contextualStringsSelector = mkSelector "contextualStrings"
 -- | @Selector@ for @setContextualStrings:@
 setContextualStringsSelector :: Selector
 setContextualStringsSelector = mkSelector "setContextualStrings:"
+
+-- | @Selector@ for @interactionIdentifier@
+interactionIdentifierSelector :: Selector
+interactionIdentifierSelector = mkSelector "interactionIdentifier"
+
+-- | @Selector@ for @setInteractionIdentifier:@
+setInteractionIdentifierSelector :: Selector
+setInteractionIdentifierSelector = mkSelector "setInteractionIdentifier:"
 
 -- | @Selector@ for @requiresOnDeviceRecognition@
 requiresOnDeviceRecognitionSelector :: Selector

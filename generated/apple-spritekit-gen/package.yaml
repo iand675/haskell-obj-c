@@ -21,6 +21,10 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.SpriteKit.Delegate.SKPhysicsContactDelegate
+  - ObjC.SpriteKit.Delegate.SKSceneDelegate
+  - ObjC.SpriteKit.Delegate.SKViewDelegate
+  - ObjC.SpriteKit.Delegate.SKWarpable
   - ObjC.SpriteKit.Enums
   - ObjC.SpriteKit.Internal.Classes
   - ObjC.SpriteKit.Internal.Enums

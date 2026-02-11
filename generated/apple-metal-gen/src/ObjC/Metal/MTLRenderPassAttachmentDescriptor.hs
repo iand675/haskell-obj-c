@@ -7,12 +7,16 @@
 module ObjC.Metal.MTLRenderPassAttachmentDescriptor
   ( MTLRenderPassAttachmentDescriptor
   , IsMTLRenderPassAttachmentDescriptor(..)
+  , texture
+  , setTexture
   , level
   , setLevel
   , slice
   , setSlice
   , depthPlane
   , setDepthPlane
+  , resolveTexture
+  , setResolveTexture
   , resolveLevel
   , setResolveLevel
   , resolveSlice
@@ -25,12 +29,16 @@ module ObjC.Metal.MTLRenderPassAttachmentDescriptor
   , setStoreAction
   , storeActionOptions
   , setStoreActionOptions
+  , textureSelector
+  , setTextureSelector
   , levelSelector
   , setLevelSelector
   , sliceSelector
   , setSliceSelector
   , depthPlaneSelector
   , setDepthPlaneSelector
+  , resolveTextureSelector
+  , setResolveTextureSelector
   , resolveLevelSelector
   , setResolveLevelSelector
   , resolveSliceSelector
@@ -77,6 +85,24 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.Metal.Internal.Classes
 import ObjC.Metal.Internal.Enums
 import ObjC.Foundation.Internal.Classes
+
+-- | texture
+--
+-- The MTLTexture object for this attachment.
+--
+-- ObjC selector: @- texture@
+texture :: IsMTLRenderPassAttachmentDescriptor mtlRenderPassAttachmentDescriptor => mtlRenderPassAttachmentDescriptor -> IO RawId
+texture mtlRenderPassAttachmentDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlRenderPassAttachmentDescriptor (mkSelector "texture") (retPtr retVoid) []
+
+-- | texture
+--
+-- The MTLTexture object for this attachment.
+--
+-- ObjC selector: @- setTexture:@
+setTexture :: IsMTLRenderPassAttachmentDescriptor mtlRenderPassAttachmentDescriptor => mtlRenderPassAttachmentDescriptor -> RawId -> IO ()
+setTexture mtlRenderPassAttachmentDescriptor  value =
+    sendMsg mtlRenderPassAttachmentDescriptor (mkSelector "setTexture:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | level
 --
@@ -131,6 +157,24 @@ depthPlane mtlRenderPassAttachmentDescriptor  =
 setDepthPlane :: IsMTLRenderPassAttachmentDescriptor mtlRenderPassAttachmentDescriptor => mtlRenderPassAttachmentDescriptor -> CULong -> IO ()
 setDepthPlane mtlRenderPassAttachmentDescriptor  value =
     sendMsg mtlRenderPassAttachmentDescriptor (mkSelector "setDepthPlane:") retVoid [argCULong value]
+
+-- | resolveTexture
+--
+-- The texture used for multisample resolve operations.  Only used (and required) if the store action is set to MTLStoreActionMultisampleResolve.
+--
+-- ObjC selector: @- resolveTexture@
+resolveTexture :: IsMTLRenderPassAttachmentDescriptor mtlRenderPassAttachmentDescriptor => mtlRenderPassAttachmentDescriptor -> IO RawId
+resolveTexture mtlRenderPassAttachmentDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlRenderPassAttachmentDescriptor (mkSelector "resolveTexture") (retPtr retVoid) []
+
+-- | resolveTexture
+--
+-- The texture used for multisample resolve operations.  Only used (and required) if the store action is set to MTLStoreActionMultisampleResolve.
+--
+-- ObjC selector: @- setResolveTexture:@
+setResolveTexture :: IsMTLRenderPassAttachmentDescriptor mtlRenderPassAttachmentDescriptor => mtlRenderPassAttachmentDescriptor -> RawId -> IO ()
+setResolveTexture mtlRenderPassAttachmentDescriptor  value =
+    sendMsg mtlRenderPassAttachmentDescriptor (mkSelector "setResolveTexture:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | resolveLevel
 --
@@ -244,6 +288,14 @@ setStoreActionOptions mtlRenderPassAttachmentDescriptor  value =
 -- Selectors
 -- ---------------------------------------------------------------------------
 
+-- | @Selector@ for @texture@
+textureSelector :: Selector
+textureSelector = mkSelector "texture"
+
+-- | @Selector@ for @setTexture:@
+setTextureSelector :: Selector
+setTextureSelector = mkSelector "setTexture:"
+
 -- | @Selector@ for @level@
 levelSelector :: Selector
 levelSelector = mkSelector "level"
@@ -267,6 +319,14 @@ depthPlaneSelector = mkSelector "depthPlane"
 -- | @Selector@ for @setDepthPlane:@
 setDepthPlaneSelector :: Selector
 setDepthPlaneSelector = mkSelector "setDepthPlane:"
+
+-- | @Selector@ for @resolveTexture@
+resolveTextureSelector :: Selector
+resolveTextureSelector = mkSelector "resolveTexture"
+
+-- | @Selector@ for @setResolveTexture:@
+setResolveTextureSelector :: Selector
+setResolveTextureSelector = mkSelector "setResolveTexture:"
 
 -- | @Selector@ for @resolveLevel@
 resolveLevelSelector :: Selector

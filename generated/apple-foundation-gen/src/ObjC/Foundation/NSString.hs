@@ -151,6 +151,7 @@ module ObjC.Foundation.NSString
   , stringByExpandingTildeInPath
   , stringByStandardizingPath
   , stringByResolvingSymlinksInPath
+  , fileSystemRepresentation
   , doubleValue
   , floatValue
   , intValue
@@ -163,8 +164,10 @@ module ObjC.Foundation.NSString
   , localizedUppercaseString
   , localizedLowercaseString
   , localizedCapitalizedString
+  , utF8String
   , fastestEncoding
   , smallestEncoding
+  , availableStringEncodings
   , defaultCStringEncoding
   , decomposedStringWithCanonicalMapping
   , precomposedStringWithCanonicalMapping
@@ -315,6 +318,7 @@ module ObjC.Foundation.NSString
   , stringByExpandingTildeInPathSelector
   , stringByStandardizingPathSelector
   , stringByResolvingSymlinksInPathSelector
+  , fileSystemRepresentationSelector
   , doubleValueSelector
   , floatValueSelector
   , intValueSelector
@@ -327,8 +331,10 @@ module ObjC.Foundation.NSString
   , localizedUppercaseStringSelector
   , localizedLowercaseStringSelector
   , localizedCapitalizedStringSelector
+  , utF8StringSelector
   , fastestEncodingSelector
   , smallestEncodingSelector
+  , availableStringEncodingsSelector
   , defaultCStringEncodingSelector
   , decomposedStringWithCanonicalMappingSelector
   , precomposedStringWithCanonicalMappingSelector
@@ -1258,6 +1264,11 @@ stringByResolvingSymlinksInPath :: IsNSString nsString => nsString -> IO (Id NSS
 stringByResolvingSymlinksInPath nsString  =
     sendMsg nsString (mkSelector "stringByResolvingSymlinksInPath") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- fileSystemRepresentation@
+fileSystemRepresentation :: IsNSString nsString => nsString -> IO (Ptr CChar)
+fileSystemRepresentation nsString  =
+    fmap castPtr $ sendMsg nsString (mkSelector "fileSystemRepresentation") (retPtr retVoid) []
+
 -- | @- doubleValue@
 doubleValue :: IsNSString nsString => nsString -> IO CDouble
 doubleValue nsString  =
@@ -1318,6 +1329,11 @@ localizedCapitalizedString :: IsNSString nsString => nsString -> IO (Id NSString
 localizedCapitalizedString nsString  =
     sendMsg nsString (mkSelector "localizedCapitalizedString") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- UTF8String@
+utF8String :: IsNSString nsString => nsString -> IO (Ptr CChar)
+utF8String nsString  =
+    fmap castPtr $ sendMsg nsString (mkSelector "UTF8String") (retPtr retVoid) []
+
 -- | @- fastestEncoding@
 fastestEncoding :: IsNSString nsString => nsString -> IO CULong
 fastestEncoding nsString  =
@@ -1327,6 +1343,13 @@ fastestEncoding nsString  =
 smallestEncoding :: IsNSString nsString => nsString -> IO CULong
 smallestEncoding nsString  =
     sendMsg nsString (mkSelector "smallestEncoding") retCULong []
+
+-- | @+ availableStringEncodings@
+availableStringEncodings :: IO (Const (Ptr CULong))
+availableStringEncodings  =
+  do
+    cls' <- getRequiredClass "NSString"
+    fmap Const $ fmap castPtr $ sendClassMsg cls' (mkSelector "availableStringEncodings") (retPtr retVoid) []
 
 -- | @+ defaultCStringEncoding@
 defaultCStringEncoding :: IO CULong
@@ -1948,6 +1971,10 @@ stringByStandardizingPathSelector = mkSelector "stringByStandardizingPath"
 stringByResolvingSymlinksInPathSelector :: Selector
 stringByResolvingSymlinksInPathSelector = mkSelector "stringByResolvingSymlinksInPath"
 
+-- | @Selector@ for @fileSystemRepresentation@
+fileSystemRepresentationSelector :: Selector
+fileSystemRepresentationSelector = mkSelector "fileSystemRepresentation"
+
 -- | @Selector@ for @doubleValue@
 doubleValueSelector :: Selector
 doubleValueSelector = mkSelector "doubleValue"
@@ -1996,6 +2023,10 @@ localizedLowercaseStringSelector = mkSelector "localizedLowercaseString"
 localizedCapitalizedStringSelector :: Selector
 localizedCapitalizedStringSelector = mkSelector "localizedCapitalizedString"
 
+-- | @Selector@ for @UTF8String@
+utF8StringSelector :: Selector
+utF8StringSelector = mkSelector "UTF8String"
+
 -- | @Selector@ for @fastestEncoding@
 fastestEncodingSelector :: Selector
 fastestEncodingSelector = mkSelector "fastestEncoding"
@@ -2003,6 +2034,10 @@ fastestEncodingSelector = mkSelector "fastestEncoding"
 -- | @Selector@ for @smallestEncoding@
 smallestEncodingSelector :: Selector
 smallestEncodingSelector = mkSelector "smallestEncoding"
+
+-- | @Selector@ for @availableStringEncodings@
+availableStringEncodingsSelector :: Selector
+availableStringEncodingsSelector = mkSelector "availableStringEncodings"
 
 -- | @Selector@ for @defaultCStringEncoding@
 defaultCStringEncodingSelector :: Selector

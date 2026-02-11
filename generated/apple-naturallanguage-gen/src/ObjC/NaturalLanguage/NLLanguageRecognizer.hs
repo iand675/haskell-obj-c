@@ -12,6 +12,8 @@ module ObjC.NaturalLanguage.NLLanguageRecognizer
   , reset
   , languageHypothesesWithMaximum
   , dominantLanguage
+  , languageHints
+  , setLanguageHints
   , languageConstraints
   , setLanguageConstraints
   , dominantLanguageForStringSelector
@@ -20,6 +22,8 @@ module ObjC.NaturalLanguage.NLLanguageRecognizer
   , resetSelector
   , languageHypothesesWithMaximumSelector
   , dominantLanguageSelector
+  , languageHintsSelector
+  , setLanguageHintsSelector
   , languageConstraintsSelector
   , setLanguageConstraintsSelector
 
@@ -75,6 +79,17 @@ dominantLanguage :: IsNLLanguageRecognizer nlLanguageRecognizer => nlLanguageRec
 dominantLanguage nlLanguageRecognizer  =
     sendMsg nlLanguageRecognizer (mkSelector "dominantLanguage") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- languageHints@
+languageHints :: IsNLLanguageRecognizer nlLanguageRecognizer => nlLanguageRecognizer -> IO (Id NSDictionary)
+languageHints nlLanguageRecognizer  =
+    sendMsg nlLanguageRecognizer (mkSelector "languageHints") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setLanguageHints:@
+setLanguageHints :: (IsNLLanguageRecognizer nlLanguageRecognizer, IsNSDictionary value) => nlLanguageRecognizer -> value -> IO ()
+setLanguageHints nlLanguageRecognizer  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nlLanguageRecognizer (mkSelector "setLanguageHints:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- languageConstraints@
 languageConstraints :: IsNLLanguageRecognizer nlLanguageRecognizer => nlLanguageRecognizer -> IO (Id NSArray)
 languageConstraints nlLanguageRecognizer  =
@@ -113,6 +128,14 @@ languageHypothesesWithMaximumSelector = mkSelector "languageHypothesesWithMaximu
 -- | @Selector@ for @dominantLanguage@
 dominantLanguageSelector :: Selector
 dominantLanguageSelector = mkSelector "dominantLanguage"
+
+-- | @Selector@ for @languageHints@
+languageHintsSelector :: Selector
+languageHintsSelector = mkSelector "languageHints"
+
+-- | @Selector@ for @setLanguageHints:@
+setLanguageHintsSelector :: Selector
+setLanguageHintsSelector = mkSelector "setLanguageHints:"
 
 -- | @Selector@ for @languageConstraints@
 languageConstraintsSelector :: Selector

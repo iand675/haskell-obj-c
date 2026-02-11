@@ -9,9 +9,15 @@ module ObjC.SystemExtensions.OSSystemExtensionRequest
   , activationRequestForExtension_queue
   , deactivationRequestForExtension_queue
   , propertiesRequestForExtension_queue
+  , delegate
+  , setDelegate
+  , identifier
   , activationRequestForExtension_queueSelector
   , deactivationRequestForExtension_queueSelector
   , propertiesRequestForExtension_queueSelector
+  , delegateSelector
+  , setDelegateSelector
+  , identifierSelector
 
 
   ) where
@@ -92,6 +98,27 @@ propertiesRequestForExtension_queue identifier queue =
       withObjCPtr queue $ \raw_queue ->
         sendClassMsg cls' (mkSelector "propertiesRequestForExtension:queue:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= retainedObject . castPtr
 
+-- | A delegate to receive updates about the progress of a request
+--
+-- ObjC selector: @- delegate@
+delegate :: IsOSSystemExtensionRequest osSystemExtensionRequest => osSystemExtensionRequest -> IO RawId
+delegate osSystemExtensionRequest  =
+    fmap (RawId . castPtr) $ sendMsg osSystemExtensionRequest (mkSelector "delegate") (retPtr retVoid) []
+
+-- | A delegate to receive updates about the progress of a request
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsOSSystemExtensionRequest osSystemExtensionRequest => osSystemExtensionRequest -> RawId -> IO ()
+setDelegate osSystemExtensionRequest  value =
+    sendMsg osSystemExtensionRequest (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | The bundle identifier of the target extension
+--
+-- ObjC selector: @- identifier@
+identifier :: IsOSSystemExtensionRequest osSystemExtensionRequest => osSystemExtensionRequest -> IO (Id NSString)
+identifier osSystemExtensionRequest  =
+    sendMsg osSystemExtensionRequest (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -107,4 +134,16 @@ deactivationRequestForExtension_queueSelector = mkSelector "deactivationRequestF
 -- | @Selector@ for @propertiesRequestForExtension:queue:@
 propertiesRequestForExtension_queueSelector :: Selector
 propertiesRequestForExtension_queueSelector = mkSelector "propertiesRequestForExtension:queue:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @identifier@
+identifierSelector :: Selector
+identifierSelector = mkSelector "identifier"
 

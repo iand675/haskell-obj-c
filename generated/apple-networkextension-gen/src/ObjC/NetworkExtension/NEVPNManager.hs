@@ -19,10 +19,17 @@ module ObjC.NetworkExtension.NEVPNManager
   , removeFromPreferencesWithCompletionHandler
   , saveToPreferencesWithCompletionHandler
   , setAuthorization
+  , onDemandRules
+  , setOnDemandRules
   , onDemandEnabled
   , setOnDemandEnabled
+  , localizedDescription
+  , setLocalizedDescription
   , protocol
   , setProtocol
+  , protocolConfiguration
+  , setProtocolConfiguration
+  , connection
   , enabled
   , setEnabled
   , sharedManagerSelector
@@ -30,10 +37,17 @@ module ObjC.NetworkExtension.NEVPNManager
   , removeFromPreferencesWithCompletionHandlerSelector
   , saveToPreferencesWithCompletionHandlerSelector
   , setAuthorizationSelector
+  , onDemandRulesSelector
+  , setOnDemandRulesSelector
   , onDemandEnabledSelector
   , setOnDemandEnabledSelector
+  , localizedDescriptionSelector
+  , setLocalizedDescriptionSelector
   , protocolSelector
   , setProtocolSelector
+  , protocolConfigurationSelector
+  , setProtocolConfigurationSelector
+  , connectionSelector
   , enabledSelector
   , setEnabledSelector
 
@@ -110,6 +124,25 @@ setAuthorization :: IsNEVPNManager nevpnManager => nevpnManager -> RawId -> IO (
 setAuthorization nevpnManager  authorization =
     sendMsg nevpnManager (mkSelector "setAuthorization:") retVoid [argPtr (castPtr (unRawId authorization) :: Ptr ())]
 
+-- | onDemandRules
+--
+-- An array of NEOnDemandRule objects.
+--
+-- ObjC selector: @- onDemandRules@
+onDemandRules :: IsNEVPNManager nevpnManager => nevpnManager -> IO (Id NSArray)
+onDemandRules nevpnManager  =
+    sendMsg nevpnManager (mkSelector "onDemandRules") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | onDemandRules
+--
+-- An array of NEOnDemandRule objects.
+--
+-- ObjC selector: @- setOnDemandRules:@
+setOnDemandRules :: (IsNEVPNManager nevpnManager, IsNSArray value) => nevpnManager -> value -> IO ()
+setOnDemandRules nevpnManager  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nevpnManager (mkSelector "setOnDemandRules:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | onDemandEnabled
 --
 -- Toggles VPN On Demand.
@@ -127,6 +160,25 @@ onDemandEnabled nevpnManager  =
 setOnDemandEnabled :: IsNEVPNManager nevpnManager => nevpnManager -> Bool -> IO ()
 setOnDemandEnabled nevpnManager  value =
     sendMsg nevpnManager (mkSelector "setOnDemandEnabled:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | localizedDescription
+--
+-- A string containing a description of the VPN.
+--
+-- ObjC selector: @- localizedDescription@
+localizedDescription :: IsNEVPNManager nevpnManager => nevpnManager -> IO (Id NSString)
+localizedDescription nevpnManager  =
+    sendMsg nevpnManager (mkSelector "localizedDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | localizedDescription
+--
+-- A string containing a description of the VPN.
+--
+-- ObjC selector: @- setLocalizedDescription:@
+setLocalizedDescription :: (IsNEVPNManager nevpnManager, IsNSString value) => nevpnManager -> value -> IO ()
+setLocalizedDescription nevpnManager  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nevpnManager (mkSelector "setLocalizedDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | protocol
 --
@@ -146,6 +198,34 @@ setProtocol :: (IsNEVPNManager nevpnManager, IsNEVPNProtocol value) => nevpnMana
 setProtocol nevpnManager  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nevpnManager (mkSelector "setProtocol:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | protocolConfiguration
+--
+-- An NEVPNProtocol object containing the protocol-specific portion of the VPN configuration.
+--
+-- ObjC selector: @- protocolConfiguration@
+protocolConfiguration :: IsNEVPNManager nevpnManager => nevpnManager -> IO (Id NEVPNProtocol)
+protocolConfiguration nevpnManager  =
+    sendMsg nevpnManager (mkSelector "protocolConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | protocolConfiguration
+--
+-- An NEVPNProtocol object containing the protocol-specific portion of the VPN configuration.
+--
+-- ObjC selector: @- setProtocolConfiguration:@
+setProtocolConfiguration :: (IsNEVPNManager nevpnManager, IsNEVPNProtocol value) => nevpnManager -> value -> IO ()
+setProtocolConfiguration nevpnManager  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nevpnManager (mkSelector "setProtocolConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | connection
+--
+-- The NEVPNConnection object used for controlling the VPN tunnel.
+--
+-- ObjC selector: @- connection@
+connection :: IsNEVPNManager nevpnManager => nevpnManager -> IO (Id NEVPNConnection)
+connection nevpnManager  =
+    sendMsg nevpnManager (mkSelector "connection") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | enabled
 --
@@ -189,6 +269,14 @@ saveToPreferencesWithCompletionHandlerSelector = mkSelector "saveToPreferencesWi
 setAuthorizationSelector :: Selector
 setAuthorizationSelector = mkSelector "setAuthorization:"
 
+-- | @Selector@ for @onDemandRules@
+onDemandRulesSelector :: Selector
+onDemandRulesSelector = mkSelector "onDemandRules"
+
+-- | @Selector@ for @setOnDemandRules:@
+setOnDemandRulesSelector :: Selector
+setOnDemandRulesSelector = mkSelector "setOnDemandRules:"
+
 -- | @Selector@ for @onDemandEnabled@
 onDemandEnabledSelector :: Selector
 onDemandEnabledSelector = mkSelector "onDemandEnabled"
@@ -197,6 +285,14 @@ onDemandEnabledSelector = mkSelector "onDemandEnabled"
 setOnDemandEnabledSelector :: Selector
 setOnDemandEnabledSelector = mkSelector "setOnDemandEnabled:"
 
+-- | @Selector@ for @localizedDescription@
+localizedDescriptionSelector :: Selector
+localizedDescriptionSelector = mkSelector "localizedDescription"
+
+-- | @Selector@ for @setLocalizedDescription:@
+setLocalizedDescriptionSelector :: Selector
+setLocalizedDescriptionSelector = mkSelector "setLocalizedDescription:"
+
 -- | @Selector@ for @protocol@
 protocolSelector :: Selector
 protocolSelector = mkSelector "protocol"
@@ -204,6 +300,18 @@ protocolSelector = mkSelector "protocol"
 -- | @Selector@ for @setProtocol:@
 setProtocolSelector :: Selector
 setProtocolSelector = mkSelector "setProtocol:"
+
+-- | @Selector@ for @protocolConfiguration@
+protocolConfigurationSelector :: Selector
+protocolConfigurationSelector = mkSelector "protocolConfiguration"
+
+-- | @Selector@ for @setProtocolConfiguration:@
+setProtocolConfigurationSelector :: Selector
+setProtocolConfigurationSelector = mkSelector "setProtocolConfiguration:"
+
+-- | @Selector@ for @connection@
+connectionSelector :: Selector
+connectionSelector = mkSelector "connection"
 
 -- | @Selector@ for @enabled@
 enabledSelector :: Selector

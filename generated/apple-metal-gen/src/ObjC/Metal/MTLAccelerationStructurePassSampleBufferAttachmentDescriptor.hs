@@ -6,10 +6,14 @@
 module ObjC.Metal.MTLAccelerationStructurePassSampleBufferAttachmentDescriptor
   ( MTLAccelerationStructurePassSampleBufferAttachmentDescriptor
   , IsMTLAccelerationStructurePassSampleBufferAttachmentDescriptor(..)
+  , sampleBuffer
+  , setSampleBuffer
   , startOfEncoderSampleIndex
   , setStartOfEncoderSampleIndex
   , endOfEncoderSampleIndex
   , setEndOfEncoderSampleIndex
+  , sampleBufferSelector
+  , setSampleBufferSelector
   , startOfEncoderSampleIndexSelector
   , setStartOfEncoderSampleIndexSelector
   , endOfEncoderSampleIndexSelector
@@ -32,6 +36,24 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.Metal.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | sampleBuffer
+--
+-- The sample buffer to store samples for the acceleration structure pass defined samples.If sampleBuffer is non-nil, the sample indices will be used to store samples intothe sample buffer.  If no sample buffer is provided, no samples will be taken.If any of the sample indices are specified as MTLCounterDontSample, no samplewill be taken for that action.
+--
+-- ObjC selector: @- sampleBuffer@
+sampleBuffer :: IsMTLAccelerationStructurePassSampleBufferAttachmentDescriptor mtlAccelerationStructurePassSampleBufferAttachmentDescriptor => mtlAccelerationStructurePassSampleBufferAttachmentDescriptor -> IO RawId
+sampleBuffer mtlAccelerationStructurePassSampleBufferAttachmentDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlAccelerationStructurePassSampleBufferAttachmentDescriptor (mkSelector "sampleBuffer") (retPtr retVoid) []
+
+-- | sampleBuffer
+--
+-- The sample buffer to store samples for the acceleration structure pass defined samples.If sampleBuffer is non-nil, the sample indices will be used to store samples intothe sample buffer.  If no sample buffer is provided, no samples will be taken.If any of the sample indices are specified as MTLCounterDontSample, no samplewill be taken for that action.
+--
+-- ObjC selector: @- setSampleBuffer:@
+setSampleBuffer :: IsMTLAccelerationStructurePassSampleBufferAttachmentDescriptor mtlAccelerationStructurePassSampleBufferAttachmentDescriptor => mtlAccelerationStructurePassSampleBufferAttachmentDescriptor -> RawId -> IO ()
+setSampleBuffer mtlAccelerationStructurePassSampleBufferAttachmentDescriptor  value =
+    sendMsg mtlAccelerationStructurePassSampleBufferAttachmentDescriptor (mkSelector "setSampleBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | startOfEncoderSampleIndex
 --
@@ -80,6 +102,14 @@ setEndOfEncoderSampleIndex mtlAccelerationStructurePassSampleBufferAttachmentDes
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @sampleBuffer@
+sampleBufferSelector :: Selector
+sampleBufferSelector = mkSelector "sampleBuffer"
+
+-- | @Selector@ for @setSampleBuffer:@
+setSampleBufferSelector :: Selector
+setSampleBufferSelector = mkSelector "setSampleBuffer:"
 
 -- | @Selector@ for @startOfEncoderSampleIndex@
 startOfEncoderSampleIndexSelector :: Selector

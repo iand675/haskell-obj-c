@@ -7,7 +7,9 @@ module ObjC.AVFoundation.AVMovieTrack
   ( AVMovieTrack
   , IsAVMovieTrack(..)
   , alternateGroupID
+  , mediaDataStorage
   , alternateGroupIDSelector
+  , mediaDataStorageSelector
 
 
   ) where
@@ -32,6 +34,17 @@ alternateGroupID :: IsAVMovieTrack avMovieTrack => avMovieTrack -> IO CLong
 alternateGroupID avMovieTrack  =
     sendMsg avMovieTrack (mkSelector "alternateGroupID") retCLong []
 
+-- | mediaDataStorage
+--
+-- The storage container for media data added to a track.
+--
+-- The value of this property is an AVMediaDataStorage object that indicates the location at which media data inserted or appended to the track will be written.
+--
+-- ObjC selector: @- mediaDataStorage@
+mediaDataStorage :: IsAVMovieTrack avMovieTrack => avMovieTrack -> IO (Id AVMediaDataStorage)
+mediaDataStorage avMovieTrack  =
+    sendMsg avMovieTrack (mkSelector "mediaDataStorage") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -39,4 +52,8 @@ alternateGroupID avMovieTrack  =
 -- | @Selector@ for @alternateGroupID@
 alternateGroupIDSelector :: Selector
 alternateGroupIDSelector = mkSelector "alternateGroupID"
+
+-- | @Selector@ for @mediaDataStorage@
+mediaDataStorageSelector :: Selector
+mediaDataStorageSelector = mkSelector "mediaDataStorage"
 

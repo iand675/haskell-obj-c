@@ -14,6 +14,8 @@ module ObjC.IOBluetooth.IOBluetoothDevice
   , IsIOBluetoothDevice(..)
   , registerForConnectNotifications_selector
   , registerForDisconnectNotification_selector
+  , deviceWithAddress
+  , withAddress
   , deviceWithAddressString
   , withDeviceRef
   , getDeviceRef
@@ -31,6 +33,7 @@ module ObjC.IOBluetooth.IOBluetoothDevice
   , getName
   , getNameOrAddress
   , getLastNameUpdate
+  , getAddress
   , getAddressString
   , getPageScanRepetitionMode
   , getPageScanPeriodMode
@@ -85,6 +88,8 @@ module ObjC.IOBluetooth.IOBluetoothDevice
   , handsFreeDevice
   , registerForConnectNotifications_selectorSelector
   , registerForDisconnectNotification_selectorSelector
+  , deviceWithAddressSelector
+  , withAddressSelector
   , deviceWithAddressStringSelector
   , withDeviceRefSelector
   , getDeviceRefSelector
@@ -102,6 +107,7 @@ module ObjC.IOBluetooth.IOBluetoothDevice
   , getNameSelector
   , getNameOrAddressSelector
   , getLastNameUpdateSelector
+  , getAddressSelector
   , getAddressStringSelector
   , getPageScanRepetitionModeSelector
   , getPageScanPeriodModeSelector
@@ -208,6 +214,30 @@ registerForConnectNotifications_selector observer inSelector =
 registerForDisconnectNotification_selector :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> RawId -> Selector -> IO (Id IOBluetoothUserNotification)
 registerForDisconnectNotification_selector ioBluetoothDevice  observer inSelector =
     sendMsg ioBluetoothDevice (mkSelector "registerForDisconnectNotification:selector:") (retPtr retVoid) [argPtr (castPtr (unRawId observer) :: Ptr ()), argPtr (unSelector inSelector)] >>= retainedObject . castPtr
+
+-- | deviceWithAddress:
+--
+-- Returns the IOBluetoothDevice object for the given BluetoothDeviceAddress
+--
+-- Within a single application, there will be only one instance of IOBluetoothDevice for a                given remote device address.
+--
+-- @address@ — Pointer to a BluetoothDeviceAddress for which an IOBluetoothDevice instance is desired
+--
+-- Returns: Returns the IOBluetoothDevice object for the given BluetoothDeviceAddress
+--
+-- ObjC selector: @+ deviceWithAddress:@
+deviceWithAddress :: Const RawId -> IO (Id IOBluetoothDevice)
+deviceWithAddress address =
+  do
+    cls' <- getRequiredClass "IOBluetoothDevice"
+    sendClassMsg cls' (mkSelector "deviceWithAddress:") (retPtr retVoid) [argPtr (castPtr (unRawId (unConst address)) :: Ptr ())] >>= retainedObject . castPtr
+
+-- | @+ withAddress:@
+withAddress :: Const RawId -> IO (Id IOBluetoothDevice)
+withAddress address =
+  do
+    cls' <- getRequiredClass "IOBluetoothDevice"
+    sendClassMsg cls' (mkSelector "withAddress:") (retPtr retVoid) [argPtr (castPtr (unRawId (unConst address)) :: Ptr ())] >>= retainedObject . castPtr
 
 -- | deviceWithAddressString:
 --
@@ -438,6 +468,17 @@ getNameOrAddress ioBluetoothDevice  =
 getLastNameUpdate :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Id NSDate)
 getLastNameUpdate ioBluetoothDevice  =
     sendMsg ioBluetoothDevice (mkSelector "getLastNameUpdate") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | getAddress
+--
+-- Get the Bluetooth device address for the target device.
+--
+-- Returns: Returns a pointer to the Bluetooth device address of the target device.
+--
+-- ObjC selector: @- getAddress@
+getAddress :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Const RawId)
+getAddress ioBluetoothDevice  =
+    fmap Const $ fmap (RawId . castPtr) $ sendMsg ioBluetoothDevice (mkSelector "getAddress") (retPtr retVoid) []
 
 -- | @- getAddressString@
 getAddressString :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Id NSString)
@@ -1168,6 +1209,14 @@ registerForConnectNotifications_selectorSelector = mkSelector "registerForConnec
 registerForDisconnectNotification_selectorSelector :: Selector
 registerForDisconnectNotification_selectorSelector = mkSelector "registerForDisconnectNotification:selector:"
 
+-- | @Selector@ for @deviceWithAddress:@
+deviceWithAddressSelector :: Selector
+deviceWithAddressSelector = mkSelector "deviceWithAddress:"
+
+-- | @Selector@ for @withAddress:@
+withAddressSelector :: Selector
+withAddressSelector = mkSelector "withAddress:"
+
 -- | @Selector@ for @deviceWithAddressString:@
 deviceWithAddressStringSelector :: Selector
 deviceWithAddressStringSelector = mkSelector "deviceWithAddressString:"
@@ -1235,6 +1284,10 @@ getNameOrAddressSelector = mkSelector "getNameOrAddress"
 -- | @Selector@ for @getLastNameUpdate@
 getLastNameUpdateSelector :: Selector
 getLastNameUpdateSelector = mkSelector "getLastNameUpdate"
+
+-- | @Selector@ for @getAddress@
+getAddressSelector :: Selector
+getAddressSelector = mkSelector "getAddress"
 
 -- | @Selector@ for @getAddressString@
 getAddressStringSelector :: Selector

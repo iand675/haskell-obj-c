@@ -13,11 +13,13 @@ module ObjC.HealthKit.HKPHQ9Assessment
   , assessmentWithDate_answers_metadata
   , init_
   , new
+  , answers
   , risk
   , assessmentWithDate_answersSelector
   , assessmentWithDate_answers_metadataSelector
   , initSelector
   , newSelector
+  , answersSelector
   , riskSelector
 
   -- * Enum types
@@ -81,6 +83,13 @@ new  =
     cls' <- getRequiredClass "HKPHQ9Assessment"
     sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | Answers on the PHQ-9 assessment. There are exactly 9 answers, one for each multiple choice question. Each answer is of type @HKPHQ9AssessmentAnswer@. If the 9th question was unanswered,  the answer is @HKPHQ9AssessmentAnswerPreferNotToAnswer@.
+--
+-- ObjC selector: @- answers@
+answers :: IsHKPHQ9Assessment hkphQ9Assessment => hkphQ9Assessment -> IO (Id NSArray)
+answers hkphQ9Assessment  =
+    sendMsg hkphQ9Assessment (mkSelector "answers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | risk
 --
 -- The risk determined by the score on a PHQ-9 assessment.
@@ -109,6 +118,10 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @new@
 newSelector :: Selector
 newSelector = mkSelector "new"
+
+-- | @Selector@ for @answers@
+answersSelector :: Selector
+answersSelector = mkSelector "answers"
 
 -- | @Selector@ for @risk@
 riskSelector :: Selector

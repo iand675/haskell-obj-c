@@ -15,6 +15,7 @@ module ObjC.AppKit.NSTextSelectionNavigation
   , textSelectionForSelectionGranularity_enclosingTextSelection
   , resolvedInsertionLocationForTextSelection_writingDirection
   , deletionRangesForTextSelection_direction_destination_allowsDecomposition
+  , textSelectionDataSource
   , allowsNonContiguousRanges
   , setAllowsNonContiguousRanges
   , rotatesCoordinateSystemForLayoutOrientation
@@ -27,6 +28,7 @@ module ObjC.AppKit.NSTextSelectionNavigation
   , textSelectionForSelectionGranularity_enclosingTextSelectionSelector
   , resolvedInsertionLocationForTextSelection_writingDirectionSelector
   , deletionRangesForTextSelection_direction_destination_allowsDecompositionSelector
+  , textSelectionDataSourceSelector
   , allowsNonContiguousRangesSelector
   , setAllowsNonContiguousRangesSelector
   , rotatesCoordinateSystemForLayoutOrientationSelector
@@ -126,6 +128,11 @@ deletionRangesForTextSelection_direction_destination_allowsDecomposition nsTextS
   withObjCPtr textSelection $ \raw_textSelection ->
       sendMsg nsTextSelectionNavigation (mkSelector "deletionRangesForTextSelection:direction:destination:allowsDecomposition:") (retPtr retVoid) [argPtr (castPtr raw_textSelection :: Ptr ()), argCLong (coerce direction), argCLong (coerce destination), argCULong (if allowsDecomposition then 1 else 0)] >>= retainedObject . castPtr
 
+-- | @- textSelectionDataSource@
+textSelectionDataSource :: IsNSTextSelectionNavigation nsTextSelectionNavigation => nsTextSelectionNavigation -> IO RawId
+textSelectionDataSource nsTextSelectionNavigation  =
+    fmap (RawId . castPtr) $ sendMsg nsTextSelectionNavigation (mkSelector "textSelectionDataSource") (retPtr retVoid) []
+
 -- | @- allowsNonContiguousRanges@
 allowsNonContiguousRanges :: IsNSTextSelectionNavigation nsTextSelectionNavigation => nsTextSelectionNavigation -> IO Bool
 allowsNonContiguousRanges nsTextSelectionNavigation  =
@@ -181,6 +188,10 @@ resolvedInsertionLocationForTextSelection_writingDirectionSelector = mkSelector 
 -- | @Selector@ for @deletionRangesForTextSelection:direction:destination:allowsDecomposition:@
 deletionRangesForTextSelection_direction_destination_allowsDecompositionSelector :: Selector
 deletionRangesForTextSelection_direction_destination_allowsDecompositionSelector = mkSelector "deletionRangesForTextSelection:direction:destination:allowsDecomposition:"
+
+-- | @Selector@ for @textSelectionDataSource@
+textSelectionDataSourceSelector :: Selector
+textSelectionDataSourceSelector = mkSelector "textSelectionDataSource"
 
 -- | @Selector@ for @allowsNonContiguousRanges@
 allowsNonContiguousRangesSelector :: Selector

@@ -25,6 +25,7 @@ module ObjC.MetalPerformanceShaders.MPSMatrix
   , init_
   , synchronizeOnCommandBuffer
   , resourceSize
+  , device
   , rows
   , columns
   , matrices
@@ -32,12 +33,14 @@ module ObjC.MetalPerformanceShaders.MPSMatrix
   , rowBytes
   , matrixBytes
   , offset
+  , data_
   , initWithBuffer_descriptorSelector
   , initWithBuffer_offset_descriptorSelector
   , initWithDevice_descriptorSelector
   , initSelector
   , synchronizeOnCommandBufferSelector
   , resourceSizeSelector
+  , deviceSelector
   , rowsSelector
   , columnsSelector
   , matricesSelector
@@ -45,6 +48,7 @@ module ObjC.MetalPerformanceShaders.MPSMatrix
   , rowBytesSelector
   , matrixBytesSelector
   , offsetSelector
+  , dataSelector
 
   -- * Enum types
   , MPSDataType(MPSDataType)
@@ -173,6 +177,15 @@ resourceSize :: IsMPSMatrix mpsMatrix => mpsMatrix -> IO CULong
 resourceSize mpsMatrix  =
     sendMsg mpsMatrix (mkSelector "resourceSize") retCULong []
 
+-- | device
+--
+-- The device on which the MPSMatrix will be used.
+--
+-- ObjC selector: @- device@
+device :: IsMPSMatrix mpsMatrix => mpsMatrix -> IO RawId
+device mpsMatrix  =
+    fmap (RawId . castPtr) $ sendMsg mpsMatrix (mkSelector "device") (retPtr retVoid) []
+
 -- | rows
 --
 -- The number of rows in a matrix in the MPSMatrix.
@@ -236,6 +249,15 @@ offset :: IsMPSMatrix mpsMatrix => mpsMatrix -> IO CULong
 offset mpsMatrix  =
     sendMsg mpsMatrix (mkSelector "offset") retCULong []
 
+-- | data
+--
+-- An MTLBuffer to store the data.
+--
+-- ObjC selector: @- data@
+data_ :: IsMPSMatrix mpsMatrix => mpsMatrix -> IO RawId
+data_ mpsMatrix  =
+    fmap (RawId . castPtr) $ sendMsg mpsMatrix (mkSelector "data") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -264,6 +286,10 @@ synchronizeOnCommandBufferSelector = mkSelector "synchronizeOnCommandBuffer:"
 resourceSizeSelector :: Selector
 resourceSizeSelector = mkSelector "resourceSize"
 
+-- | @Selector@ for @device@
+deviceSelector :: Selector
+deviceSelector = mkSelector "device"
+
 -- | @Selector@ for @rows@
 rowsSelector :: Selector
 rowsSelector = mkSelector "rows"
@@ -291,4 +317,8 @@ matrixBytesSelector = mkSelector "matrixBytes"
 -- | @Selector@ for @offset@
 offsetSelector :: Selector
 offsetSelector = mkSelector "offset"
+
+-- | @Selector@ for @data@
+dataSelector :: Selector
+dataSelector = mkSelector "data"
 

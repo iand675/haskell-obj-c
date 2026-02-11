@@ -9,6 +9,8 @@ module ObjC.AppKit.NSSpeechRecognizer
   , init_
   , startListening
   , stopListening
+  , delegate
+  , setDelegate
   , commands
   , setCommands
   , displayedCommandsTitle
@@ -20,6 +22,8 @@ module ObjC.AppKit.NSSpeechRecognizer
   , initSelector
   , startListeningSelector
   , stopListeningSelector
+  , delegateSelector
+  , setDelegateSelector
   , commandsSelector
   , setCommandsSelector
   , displayedCommandsTitleSelector
@@ -61,6 +65,16 @@ startListening nsSpeechRecognizer  =
 stopListening :: IsNSSpeechRecognizer nsSpeechRecognizer => nsSpeechRecognizer -> IO ()
 stopListening nsSpeechRecognizer  =
     sendMsg nsSpeechRecognizer (mkSelector "stopListening") retVoid []
+
+-- | @- delegate@
+delegate :: IsNSSpeechRecognizer nsSpeechRecognizer => nsSpeechRecognizer -> IO RawId
+delegate nsSpeechRecognizer  =
+    fmap (RawId . castPtr) $ sendMsg nsSpeechRecognizer (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSSpeechRecognizer nsSpeechRecognizer => nsSpeechRecognizer -> RawId -> IO ()
+setDelegate nsSpeechRecognizer  value =
+    sendMsg nsSpeechRecognizer (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- commands@
 commands :: IsNSSpeechRecognizer nsSpeechRecognizer => nsSpeechRecognizer -> IO (Id NSArray)
@@ -119,6 +133,14 @@ startListeningSelector = mkSelector "startListening"
 -- | @Selector@ for @stopListening@
 stopListeningSelector :: Selector
 stopListeningSelector = mkSelector "stopListening"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @commands@
 commandsSelector :: Selector

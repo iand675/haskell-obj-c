@@ -8,8 +8,12 @@ module ObjC.StoreKit.SKRequest
   , IsSKRequest(..)
   , cancel
   , start
+  , delegate
+  , setDelegate
   , cancelSelector
   , startSelector
+  , delegateSelector
+  , setDelegateSelector
 
 
   ) where
@@ -39,6 +43,16 @@ start :: IsSKRequest skRequest => skRequest -> IO ()
 start skRequest  =
     sendMsg skRequest (mkSelector "start") retVoid []
 
+-- | @- delegate@
+delegate :: IsSKRequest skRequest => skRequest -> IO RawId
+delegate skRequest  =
+    fmap (RawId . castPtr) $ sendMsg skRequest (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsSKRequest skRequest => skRequest -> RawId -> IO ()
+setDelegate skRequest  value =
+    sendMsg skRequest (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -50,4 +64,12 @@ cancelSelector = mkSelector "cancel"
 -- | @Selector@ for @start@
 startSelector :: Selector
 startSelector = mkSelector "start"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

@@ -36,6 +36,8 @@ module ObjC.AppKit.NSDatePickerCell
   , setMinDate
   , maxDate
   , setMaxDate
+  , delegate
+  , setDelegate
   , initTextCellSelector
   , initWithCoderSelector
   , initImageCellSelector
@@ -65,6 +67,8 @@ module ObjC.AppKit.NSDatePickerCell
   , setMinDateSelector
   , maxDateSelector
   , setMaxDateSelector
+  , delegateSelector
+  , setDelegateSelector
 
   -- * Enum types
   , NSDatePickerElementFlags(NSDatePickerElementFlags)
@@ -256,6 +260,16 @@ setMaxDate nsDatePickerCell  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsDatePickerCell (mkSelector "setMaxDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> IO RawId
+delegate nsDatePickerCell  =
+    fmap (RawId . castPtr) $ sendMsg nsDatePickerCell (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> RawId -> IO ()
+setDelegate nsDatePickerCell  value =
+    sendMsg nsDatePickerCell (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -375,4 +389,12 @@ maxDateSelector = mkSelector "maxDate"
 -- | @Selector@ for @setMaxDate:@
 setMaxDateSelector :: Selector
 setMaxDateSelector = mkSelector "setMaxDate:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

@@ -21,6 +21,8 @@ module ObjC.AVFoundation.AVCapturePhotoSettings
   , photoSettingsFromPhotoSettings
   , uniqueID
   , format
+  , rawFileFormat
+  , setRawFileFormat
   , processedFileType
   , rawPhotoPixelFormatType
   , rawFileType
@@ -36,6 +38,8 @@ module ObjC.AVFoundation.AVCapturePhotoSettings
   , setAutoVirtualDeviceFusionEnabled
   , autoDualCameraFusionEnabled
   , setAutoDualCameraFusionEnabled
+  , virtualDeviceConstituentPhotoDeliveryEnabledDevices
+  , setVirtualDeviceConstituentPhotoDeliveryEnabledDevices
   , dualCameraDualPhotoDeliveryEnabled
   , setDualCameraDualPhotoDeliveryEnabled
   , highResolutionPhotoEnabled
@@ -52,15 +56,27 @@ module ObjC.AVFoundation.AVCapturePhotoSettings
   , setPortraitEffectsMatteDeliveryEnabled
   , embedsPortraitEffectsMatteInPhoto
   , setEmbedsPortraitEffectsMatteInPhoto
+  , enabledSemanticSegmentationMatteTypes
+  , setEnabledSemanticSegmentationMatteTypes
   , embedsSemanticSegmentationMattesInPhoto
   , setEmbedsSemanticSegmentationMattesInPhoto
   , metadata
   , setMetadata
+  , livePhotoMovieFileURL
+  , setLivePhotoMovieFileURL
   , livePhotoVideoCodecType
   , setLivePhotoVideoCodecType
+  , livePhotoMovieMetadata
+  , setLivePhotoMovieMetadata
+  , availablePreviewPhotoPixelFormatTypes
+  , previewPhotoFormat
+  , setPreviewPhotoFormat
   , availableEmbeddedThumbnailPhotoCodecTypes
   , embeddedThumbnailPhotoFormat
   , setEmbeddedThumbnailPhotoFormat
+  , availableRawEmbeddedThumbnailPhotoCodecTypes
+  , rawEmbeddedThumbnailPhotoFormat
+  , setRawEmbeddedThumbnailPhotoFormat
   , autoContentAwareDistortionCorrectionEnabled
   , setAutoContentAwareDistortionCorrectionEnabled
   , constantColorEnabled
@@ -77,6 +93,8 @@ module ObjC.AVFoundation.AVCapturePhotoSettings
   , photoSettingsFromPhotoSettingsSelector
   , uniqueIDSelector
   , formatSelector
+  , rawFileFormatSelector
+  , setRawFileFormatSelector
   , processedFileTypeSelector
   , rawPhotoPixelFormatTypeSelector
   , rawFileTypeSelector
@@ -92,6 +110,8 @@ module ObjC.AVFoundation.AVCapturePhotoSettings
   , setAutoVirtualDeviceFusionEnabledSelector
   , autoDualCameraFusionEnabledSelector
   , setAutoDualCameraFusionEnabledSelector
+  , virtualDeviceConstituentPhotoDeliveryEnabledDevicesSelector
+  , setVirtualDeviceConstituentPhotoDeliveryEnabledDevicesSelector
   , dualCameraDualPhotoDeliveryEnabledSelector
   , setDualCameraDualPhotoDeliveryEnabledSelector
   , highResolutionPhotoEnabledSelector
@@ -108,15 +128,27 @@ module ObjC.AVFoundation.AVCapturePhotoSettings
   , setPortraitEffectsMatteDeliveryEnabledSelector
   , embedsPortraitEffectsMatteInPhotoSelector
   , setEmbedsPortraitEffectsMatteInPhotoSelector
+  , enabledSemanticSegmentationMatteTypesSelector
+  , setEnabledSemanticSegmentationMatteTypesSelector
   , embedsSemanticSegmentationMattesInPhotoSelector
   , setEmbedsSemanticSegmentationMattesInPhotoSelector
   , metadataSelector
   , setMetadataSelector
+  , livePhotoMovieFileURLSelector
+  , setLivePhotoMovieFileURLSelector
   , livePhotoVideoCodecTypeSelector
   , setLivePhotoVideoCodecTypeSelector
+  , livePhotoMovieMetadataSelector
+  , setLivePhotoMovieMetadataSelector
+  , availablePreviewPhotoPixelFormatTypesSelector
+  , previewPhotoFormatSelector
+  , setPreviewPhotoFormatSelector
   , availableEmbeddedThumbnailPhotoCodecTypesSelector
   , embeddedThumbnailPhotoFormatSelector
   , setEmbeddedThumbnailPhotoFormatSelector
+  , availableRawEmbeddedThumbnailPhotoCodecTypesSelector
+  , rawEmbeddedThumbnailPhotoFormatSelector
+  , setRawEmbeddedThumbnailPhotoFormatSelector
   , autoContentAwareDistortionCorrectionEnabledSelector
   , setAutoContentAwareDistortionCorrectionEnabledSelector
   , constantColorEnabledSelector
@@ -290,6 +322,29 @@ format :: IsAVCapturePhotoSettings avCapturePhotoSettings => avCapturePhotoSetti
 format avCapturePhotoSettings  =
     sendMsg avCapturePhotoSettings (mkSelector "format") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | rawFileFormat
+--
+-- A dictionary of AVVideoSettings keys specifying the RAW file format to be used for the RAW photo.
+--
+-- One can specify desired format properties of the RAW file that will be created. Currently only the key AVVideoAppleProRAWBitDepthKey is allowed and the value to which it can be set should be from 8-16.  The AVVideoCodecKey must be present in the receiver's -availableRawPhotoCodecTypes array as well as in -supportedRawPhotoCodecTypesForRawPhotoPixelFormatType:fileType:. AVVideoQualityKey (NSNumber in range [0.0,1.0]) can be optionally set and a value between [0.0,1.0] will use lossy compression with lower values being more lossy resulting in smaller file sizes but lower image quality, while a value of 1.0 will use lossless compression resulting in the largest file size but also the best quality.
+--
+-- ObjC selector: @- rawFileFormat@
+rawFileFormat :: IsAVCapturePhotoSettings avCapturePhotoSettings => avCapturePhotoSettings -> IO (Id NSDictionary)
+rawFileFormat avCapturePhotoSettings  =
+    sendMsg avCapturePhotoSettings (mkSelector "rawFileFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | rawFileFormat
+--
+-- A dictionary of AVVideoSettings keys specifying the RAW file format to be used for the RAW photo.
+--
+-- One can specify desired format properties of the RAW file that will be created. Currently only the key AVVideoAppleProRAWBitDepthKey is allowed and the value to which it can be set should be from 8-16.  The AVVideoCodecKey must be present in the receiver's -availableRawPhotoCodecTypes array as well as in -supportedRawPhotoCodecTypesForRawPhotoPixelFormatType:fileType:. AVVideoQualityKey (NSNumber in range [0.0,1.0]) can be optionally set and a value between [0.0,1.0] will use lossy compression with lower values being more lossy resulting in smaller file sizes but lower image quality, while a value of 1.0 will use lossless compression resulting in the largest file size but also the best quality.
+--
+-- ObjC selector: @- setRawFileFormat:@
+setRawFileFormat :: (IsAVCapturePhotoSettings avCapturePhotoSettings, IsNSDictionary value) => avCapturePhotoSettings -> value -> IO ()
+setRawFileFormat avCapturePhotoSettings  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avCapturePhotoSettings (mkSelector "setRawFileFormat:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | processedFileType
 --
 -- The file container for which the processed photo is formatted to be stored.
@@ -458,6 +513,29 @@ autoDualCameraFusionEnabled avCapturePhotoSettings  =
 setAutoDualCameraFusionEnabled :: IsAVCapturePhotoSettings avCapturePhotoSettings => avCapturePhotoSettings -> Bool -> IO ()
 setAutoDualCameraFusionEnabled avCapturePhotoSettings  value =
     sendMsg avCapturePhotoSettings (mkSelector "setAutoDualCameraFusionEnabled:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | virtualDeviceConstituentPhotoDeliveryEnabledDevices
+--
+-- Specifies the constituent devices for which the virtual device should deliver photos.
+--
+-- Default is empty array. To opt in for constituent device photo delivery, you may set this property to any subset of 2 or more of the devices in virtualDevice.constituentDevices. Your captureOutput:didFinishProcessingPhoto:error: callback will be called n times -- one for each of the devices you include in the array. You may only set this property to a non-nil array if you've set your AVCapturePhotoOutput's virtualDeviceConstituentPhotoDeliveryEnabled property to YES, and your delegate responds to the captureOutput:didFinishProcessingPhoto:error: selector.
+--
+-- ObjC selector: @- virtualDeviceConstituentPhotoDeliveryEnabledDevices@
+virtualDeviceConstituentPhotoDeliveryEnabledDevices :: IsAVCapturePhotoSettings avCapturePhotoSettings => avCapturePhotoSettings -> IO (Id NSArray)
+virtualDeviceConstituentPhotoDeliveryEnabledDevices avCapturePhotoSettings  =
+    sendMsg avCapturePhotoSettings (mkSelector "virtualDeviceConstituentPhotoDeliveryEnabledDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | virtualDeviceConstituentPhotoDeliveryEnabledDevices
+--
+-- Specifies the constituent devices for which the virtual device should deliver photos.
+--
+-- Default is empty array. To opt in for constituent device photo delivery, you may set this property to any subset of 2 or more of the devices in virtualDevice.constituentDevices. Your captureOutput:didFinishProcessingPhoto:error: callback will be called n times -- one for each of the devices you include in the array. You may only set this property to a non-nil array if you've set your AVCapturePhotoOutput's virtualDeviceConstituentPhotoDeliveryEnabled property to YES, and your delegate responds to the captureOutput:didFinishProcessingPhoto:error: selector.
+--
+-- ObjC selector: @- setVirtualDeviceConstituentPhotoDeliveryEnabledDevices:@
+setVirtualDeviceConstituentPhotoDeliveryEnabledDevices :: (IsAVCapturePhotoSettings avCapturePhotoSettings, IsNSArray value) => avCapturePhotoSettings -> value -> IO ()
+setVirtualDeviceConstituentPhotoDeliveryEnabledDevices avCapturePhotoSettings  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avCapturePhotoSettings (mkSelector "setVirtualDeviceConstituentPhotoDeliveryEnabledDevices:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | dualCameraDualPhotoDeliveryEnabled
 --
@@ -647,6 +725,29 @@ setEmbedsPortraitEffectsMatteInPhoto :: IsAVCapturePhotoSettings avCapturePhotoS
 setEmbedsPortraitEffectsMatteInPhoto avCapturePhotoSettings  value =
     sendMsg avCapturePhotoSettings (mkSelector "setEmbedsPortraitEffectsMatteInPhoto:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | enabledSemanticSegmentationMatteTypes
+--
+-- Specifies which types of AVSemanticSegmentationMatte should be captured along with the photo.
+--
+-- Default is empty array. You may set this property to an array of AVSemanticSegmentationMatteTypes you'd like to capture. Throws an exception if -[AVCapturePhotoOutput enabledSemanticSegmentationMatteTypes] does not contain any of the AVSemanticSegmentationMatteTypes specified. In other words, when setting up a capture session, you opt in for the superset of segmentation matte types you might like to receive, and then on a shot-by-shot basis, you may opt in to all or a subset of the previously specified types by setting this property. An exception is also thrown during -[AVCapturePhotoOutput capturePhotoWithSettings:delegate:] if your delegate does not respond to the captureOutput:didFinishProcessingPhoto:error: selector. Setting this property to YES does not guarantee that the specified mattes will be present in the resulting AVCapturePhoto. If the photo's content lacks any persons, for instance, no hair, skin, or teeth mattes are generated, and the -[AVCapturePhoto semanticSegmentationMatteForType:] property returns nil. Note that setting this property to YES may add significant processing time to the delivery of your didFinishProcessingPhoto: callback.
+--
+-- ObjC selector: @- enabledSemanticSegmentationMatteTypes@
+enabledSemanticSegmentationMatteTypes :: IsAVCapturePhotoSettings avCapturePhotoSettings => avCapturePhotoSettings -> IO (Id NSArray)
+enabledSemanticSegmentationMatteTypes avCapturePhotoSettings  =
+    sendMsg avCapturePhotoSettings (mkSelector "enabledSemanticSegmentationMatteTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | enabledSemanticSegmentationMatteTypes
+--
+-- Specifies which types of AVSemanticSegmentationMatte should be captured along with the photo.
+--
+-- Default is empty array. You may set this property to an array of AVSemanticSegmentationMatteTypes you'd like to capture. Throws an exception if -[AVCapturePhotoOutput enabledSemanticSegmentationMatteTypes] does not contain any of the AVSemanticSegmentationMatteTypes specified. In other words, when setting up a capture session, you opt in for the superset of segmentation matte types you might like to receive, and then on a shot-by-shot basis, you may opt in to all or a subset of the previously specified types by setting this property. An exception is also thrown during -[AVCapturePhotoOutput capturePhotoWithSettings:delegate:] if your delegate does not respond to the captureOutput:didFinishProcessingPhoto:error: selector. Setting this property to YES does not guarantee that the specified mattes will be present in the resulting AVCapturePhoto. If the photo's content lacks any persons, for instance, no hair, skin, or teeth mattes are generated, and the -[AVCapturePhoto semanticSegmentationMatteForType:] property returns nil. Note that setting this property to YES may add significant processing time to the delivery of your didFinishProcessingPhoto: callback.
+--
+-- ObjC selector: @- setEnabledSemanticSegmentationMatteTypes:@
+setEnabledSemanticSegmentationMatteTypes :: (IsAVCapturePhotoSettings avCapturePhotoSettings, IsNSArray value) => avCapturePhotoSettings -> value -> IO ()
+setEnabledSemanticSegmentationMatteTypes avCapturePhotoSettings  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avCapturePhotoSettings (mkSelector "setEnabledSemanticSegmentationMatteTypes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | embedsSemanticSegmentationMattesInPhoto
 --
 -- Specifies whether enabledSemanticSegmentationMatteTypes captured with this photo should be written to the photo's file structure.
@@ -692,6 +793,29 @@ setMetadata avCapturePhotoSettings  value =
   withObjCPtr value $ \raw_value ->
       sendMsg avCapturePhotoSettings (mkSelector "setMetadata:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | livePhotoMovieFileURL
+--
+-- Specifies that a Live Photo movie be captured to complement the still photo.
+--
+-- A Live Photo movie is a short movie (with audio, if you've added an audio input to your session) containing the moments right before and after the still photo. A QuickTime movie file will be written to disk at the URL specified if it is a valid file URL accessible to your app's sandbox. You may only set this property if AVCapturePhotoOutput's livePhotoCaptureSupported property is YES. When you specify a Live Photo, your AVCapturePhotoCaptureDelegate object must implement -captureOutput:didFinishProcessingLivePhotoToMovieFileAtURL:duration:photoDisplayTime:resolvedSettings:error:.
+--
+-- ObjC selector: @- livePhotoMovieFileURL@
+livePhotoMovieFileURL :: IsAVCapturePhotoSettings avCapturePhotoSettings => avCapturePhotoSettings -> IO (Id NSURL)
+livePhotoMovieFileURL avCapturePhotoSettings  =
+    sendMsg avCapturePhotoSettings (mkSelector "livePhotoMovieFileURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | livePhotoMovieFileURL
+--
+-- Specifies that a Live Photo movie be captured to complement the still photo.
+--
+-- A Live Photo movie is a short movie (with audio, if you've added an audio input to your session) containing the moments right before and after the still photo. A QuickTime movie file will be written to disk at the URL specified if it is a valid file URL accessible to your app's sandbox. You may only set this property if AVCapturePhotoOutput's livePhotoCaptureSupported property is YES. When you specify a Live Photo, your AVCapturePhotoCaptureDelegate object must implement -captureOutput:didFinishProcessingLivePhotoToMovieFileAtURL:duration:photoDisplayTime:resolvedSettings:error:.
+--
+-- ObjC selector: @- setLivePhotoMovieFileURL:@
+setLivePhotoMovieFileURL :: (IsAVCapturePhotoSettings avCapturePhotoSettings, IsNSURL value) => avCapturePhotoSettings -> value -> IO ()
+setLivePhotoMovieFileURL avCapturePhotoSettings  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avCapturePhotoSettings (mkSelector "setLivePhotoMovieFileURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | livePhotoVideoCodecType
 --
 -- Specifies the video codec type to use when compressing video for the Live Photo movie complement.
@@ -714,6 +838,63 @@ setLivePhotoVideoCodecType :: (IsAVCapturePhotoSettings avCapturePhotoSettings, 
 setLivePhotoVideoCodecType avCapturePhotoSettings  value =
   withObjCPtr value $ \raw_value ->
       sendMsg avCapturePhotoSettings (mkSelector "setLivePhotoVideoCodecType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | livePhotoMovieMetadata
+--
+-- Movie-level metadata to be written to the Live Photo movie.
+--
+-- An array of AVMetadataItems to be inserted into the top level of the Live Photo movie. The receiver makes immutable copies of the AVMetadataItems in the array. Live Photo movies always contain a AVMetadataQuickTimeMetadataKeyContentIdentifier which allow them to be paired with a similar identifier in the MakerNote of the photo complement. AVCapturePhotoSettings generates a unique content identifier for you. If you provide a metadata array containing an AVMetadataItem with keyspace = AVMetadataKeySpaceQuickTimeMetadata and key = AVMetadataQuickTimeMetadataKeyContentIdentifier, an NSInvalidArgumentException is thrown.
+--
+-- ObjC selector: @- livePhotoMovieMetadata@
+livePhotoMovieMetadata :: IsAVCapturePhotoSettings avCapturePhotoSettings => avCapturePhotoSettings -> IO (Id NSArray)
+livePhotoMovieMetadata avCapturePhotoSettings  =
+    sendMsg avCapturePhotoSettings (mkSelector "livePhotoMovieMetadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | livePhotoMovieMetadata
+--
+-- Movie-level metadata to be written to the Live Photo movie.
+--
+-- An array of AVMetadataItems to be inserted into the top level of the Live Photo movie. The receiver makes immutable copies of the AVMetadataItems in the array. Live Photo movies always contain a AVMetadataQuickTimeMetadataKeyContentIdentifier which allow them to be paired with a similar identifier in the MakerNote of the photo complement. AVCapturePhotoSettings generates a unique content identifier for you. If you provide a metadata array containing an AVMetadataItem with keyspace = AVMetadataKeySpaceQuickTimeMetadata and key = AVMetadataQuickTimeMetadataKeyContentIdentifier, an NSInvalidArgumentException is thrown.
+--
+-- ObjC selector: @- setLivePhotoMovieMetadata:@
+setLivePhotoMovieMetadata :: (IsAVCapturePhotoSettings avCapturePhotoSettings, IsNSArray value) => avCapturePhotoSettings -> value -> IO ()
+setLivePhotoMovieMetadata avCapturePhotoSettings  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avCapturePhotoSettings (mkSelector "setLivePhotoMovieMetadata:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | availablePreviewPhotoPixelFormatTypes
+--
+-- An array of available kCVPixelBufferPixelFormatTypeKeys that may be used when specifying a previewPhotoFormat.
+--
+-- The array is sorted such that the preview format requiring the fewest conversions is presented first.
+--
+-- ObjC selector: @- availablePreviewPhotoPixelFormatTypes@
+availablePreviewPhotoPixelFormatTypes :: IsAVCapturePhotoSettings avCapturePhotoSettings => avCapturePhotoSettings -> IO (Id NSArray)
+availablePreviewPhotoPixelFormatTypes avCapturePhotoSettings  =
+    sendMsg avCapturePhotoSettings (mkSelector "availablePreviewPhotoPixelFormatTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | previewPhotoFormat
+--
+-- A dictionary of Core Video pixel buffer attributes specifying the preview photo format to be delivered along with the RAW or processed photo.
+--
+-- A dictionary of pixel buffer attributes specifying a smaller version of the RAW or processed photo for preview purposes. The kCVPixelBufferPixelFormatTypeKey is required and must be present in the receiver's -availablePreviewPhotoPixelFormatTypes array. Optional keys are { kCVPixelBufferWidthKey | kCVPixelBufferHeightKey }. If you wish to specify dimensions, you must add both width and height. Width and height are only honored up to the display dimensions. If you specify a width and height whose aspect ratio differs from the RAW or processed photo, the larger of the two dimensions is honored and aspect ratio of the RAW or processed photo is always preserved.
+--
+-- ObjC selector: @- previewPhotoFormat@
+previewPhotoFormat :: IsAVCapturePhotoSettings avCapturePhotoSettings => avCapturePhotoSettings -> IO (Id NSDictionary)
+previewPhotoFormat avCapturePhotoSettings  =
+    sendMsg avCapturePhotoSettings (mkSelector "previewPhotoFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | previewPhotoFormat
+--
+-- A dictionary of Core Video pixel buffer attributes specifying the preview photo format to be delivered along with the RAW or processed photo.
+--
+-- A dictionary of pixel buffer attributes specifying a smaller version of the RAW or processed photo for preview purposes. The kCVPixelBufferPixelFormatTypeKey is required and must be present in the receiver's -availablePreviewPhotoPixelFormatTypes array. Optional keys are { kCVPixelBufferWidthKey | kCVPixelBufferHeightKey }. If you wish to specify dimensions, you must add both width and height. Width and height are only honored up to the display dimensions. If you specify a width and height whose aspect ratio differs from the RAW or processed photo, the larger of the two dimensions is honored and aspect ratio of the RAW or processed photo is always preserved.
+--
+-- ObjC selector: @- setPreviewPhotoFormat:@
+setPreviewPhotoFormat :: (IsAVCapturePhotoSettings avCapturePhotoSettings, IsNSDictionary value) => avCapturePhotoSettings -> value -> IO ()
+setPreviewPhotoFormat avCapturePhotoSettings  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avCapturePhotoSettings (mkSelector "setPreviewPhotoFormat:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | availableEmbeddedThumbnailPhotoCodecTypes
 --
@@ -748,6 +929,40 @@ setEmbeddedThumbnailPhotoFormat :: (IsAVCapturePhotoSettings avCapturePhotoSetti
 setEmbeddedThumbnailPhotoFormat avCapturePhotoSettings  value =
   withObjCPtr value $ \raw_value ->
       sendMsg avCapturePhotoSettings (mkSelector "setEmbeddedThumbnailPhotoFormat:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | availableRawEmbeddedThumbnailPhotoCodecTypes
+--
+-- An array of available AVVideoCodecKeys that may be used when specifying a rawEmbeddedThumbnailPhotoFormat.
+--
+-- The array is sorted such that the thumbnail codec type that is most backward compatible is listed first.
+--
+-- ObjC selector: @- availableRawEmbeddedThumbnailPhotoCodecTypes@
+availableRawEmbeddedThumbnailPhotoCodecTypes :: IsAVCapturePhotoSettings avCapturePhotoSettings => avCapturePhotoSettings -> IO (Id NSArray)
+availableRawEmbeddedThumbnailPhotoCodecTypes avCapturePhotoSettings  =
+    sendMsg avCapturePhotoSettings (mkSelector "availableRawEmbeddedThumbnailPhotoCodecTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | rawEmbeddedThumbnailPhotoFormat
+--
+-- A dictionary of AVVideoSettings keys specifying the thumbnail format to be written to the RAW photo in a RAW photo request.
+--
+-- A dictionary of AVVideoSettings keys specifying a thumbnail (usually smaller) version of the RAW photo to be embedded in that image's DNG before calling back the AVCapturePhotoCaptureDelegate. The AVVideoCodecKey is required and must be present in the receiver's -availableRawEmbeddedThumbnailPhotoCodecTypes array. Optional keys are { AVVideoWidthKey | AVVideoHeightKey }. If you wish to specify dimensions, you must specify both width and height. If you specify a width and height whose aspect ratio differs from the RAW or processed photo, the larger of the two dimensions is honored and aspect ratio of the RAW or processed photo is always preserved. For apps linked on or after iOS 12, the raw thumbnail format must be specified using the -rawEmbeddedThumbnailPhotoFormat API rather than -embeddedThumbnailPhotoFormat. Beginning in iOS 12, DNG files may contain thumbnails up to the full resolution of the RAW image.
+--
+-- ObjC selector: @- rawEmbeddedThumbnailPhotoFormat@
+rawEmbeddedThumbnailPhotoFormat :: IsAVCapturePhotoSettings avCapturePhotoSettings => avCapturePhotoSettings -> IO (Id NSDictionary)
+rawEmbeddedThumbnailPhotoFormat avCapturePhotoSettings  =
+    sendMsg avCapturePhotoSettings (mkSelector "rawEmbeddedThumbnailPhotoFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | rawEmbeddedThumbnailPhotoFormat
+--
+-- A dictionary of AVVideoSettings keys specifying the thumbnail format to be written to the RAW photo in a RAW photo request.
+--
+-- A dictionary of AVVideoSettings keys specifying a thumbnail (usually smaller) version of the RAW photo to be embedded in that image's DNG before calling back the AVCapturePhotoCaptureDelegate. The AVVideoCodecKey is required and must be present in the receiver's -availableRawEmbeddedThumbnailPhotoCodecTypes array. Optional keys are { AVVideoWidthKey | AVVideoHeightKey }. If you wish to specify dimensions, you must specify both width and height. If you specify a width and height whose aspect ratio differs from the RAW or processed photo, the larger of the two dimensions is honored and aspect ratio of the RAW or processed photo is always preserved. For apps linked on or after iOS 12, the raw thumbnail format must be specified using the -rawEmbeddedThumbnailPhotoFormat API rather than -embeddedThumbnailPhotoFormat. Beginning in iOS 12, DNG files may contain thumbnails up to the full resolution of the RAW image.
+--
+-- ObjC selector: @- setRawEmbeddedThumbnailPhotoFormat:@
+setRawEmbeddedThumbnailPhotoFormat :: (IsAVCapturePhotoSettings avCapturePhotoSettings, IsNSDictionary value) => avCapturePhotoSettings -> value -> IO ()
+setRawEmbeddedThumbnailPhotoFormat avCapturePhotoSettings  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avCapturePhotoSettings (mkSelector "setRawEmbeddedThumbnailPhotoFormat:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | autoContentAwareDistortionCorrectionEnabled
 --
@@ -873,6 +1088,14 @@ uniqueIDSelector = mkSelector "uniqueID"
 formatSelector :: Selector
 formatSelector = mkSelector "format"
 
+-- | @Selector@ for @rawFileFormat@
+rawFileFormatSelector :: Selector
+rawFileFormatSelector = mkSelector "rawFileFormat"
+
+-- | @Selector@ for @setRawFileFormat:@
+setRawFileFormatSelector :: Selector
+setRawFileFormatSelector = mkSelector "setRawFileFormat:"
+
 -- | @Selector@ for @processedFileType@
 processedFileTypeSelector :: Selector
 processedFileTypeSelector = mkSelector "processedFileType"
@@ -932,6 +1155,14 @@ autoDualCameraFusionEnabledSelector = mkSelector "autoDualCameraFusionEnabled"
 -- | @Selector@ for @setAutoDualCameraFusionEnabled:@
 setAutoDualCameraFusionEnabledSelector :: Selector
 setAutoDualCameraFusionEnabledSelector = mkSelector "setAutoDualCameraFusionEnabled:"
+
+-- | @Selector@ for @virtualDeviceConstituentPhotoDeliveryEnabledDevices@
+virtualDeviceConstituentPhotoDeliveryEnabledDevicesSelector :: Selector
+virtualDeviceConstituentPhotoDeliveryEnabledDevicesSelector = mkSelector "virtualDeviceConstituentPhotoDeliveryEnabledDevices"
+
+-- | @Selector@ for @setVirtualDeviceConstituentPhotoDeliveryEnabledDevices:@
+setVirtualDeviceConstituentPhotoDeliveryEnabledDevicesSelector :: Selector
+setVirtualDeviceConstituentPhotoDeliveryEnabledDevicesSelector = mkSelector "setVirtualDeviceConstituentPhotoDeliveryEnabledDevices:"
 
 -- | @Selector@ for @dualCameraDualPhotoDeliveryEnabled@
 dualCameraDualPhotoDeliveryEnabledSelector :: Selector
@@ -997,6 +1228,14 @@ embedsPortraitEffectsMatteInPhotoSelector = mkSelector "embedsPortraitEffectsMat
 setEmbedsPortraitEffectsMatteInPhotoSelector :: Selector
 setEmbedsPortraitEffectsMatteInPhotoSelector = mkSelector "setEmbedsPortraitEffectsMatteInPhoto:"
 
+-- | @Selector@ for @enabledSemanticSegmentationMatteTypes@
+enabledSemanticSegmentationMatteTypesSelector :: Selector
+enabledSemanticSegmentationMatteTypesSelector = mkSelector "enabledSemanticSegmentationMatteTypes"
+
+-- | @Selector@ for @setEnabledSemanticSegmentationMatteTypes:@
+setEnabledSemanticSegmentationMatteTypesSelector :: Selector
+setEnabledSemanticSegmentationMatteTypesSelector = mkSelector "setEnabledSemanticSegmentationMatteTypes:"
+
 -- | @Selector@ for @embedsSemanticSegmentationMattesInPhoto@
 embedsSemanticSegmentationMattesInPhotoSelector :: Selector
 embedsSemanticSegmentationMattesInPhotoSelector = mkSelector "embedsSemanticSegmentationMattesInPhoto"
@@ -1013,6 +1252,14 @@ metadataSelector = mkSelector "metadata"
 setMetadataSelector :: Selector
 setMetadataSelector = mkSelector "setMetadata:"
 
+-- | @Selector@ for @livePhotoMovieFileURL@
+livePhotoMovieFileURLSelector :: Selector
+livePhotoMovieFileURLSelector = mkSelector "livePhotoMovieFileURL"
+
+-- | @Selector@ for @setLivePhotoMovieFileURL:@
+setLivePhotoMovieFileURLSelector :: Selector
+setLivePhotoMovieFileURLSelector = mkSelector "setLivePhotoMovieFileURL:"
+
 -- | @Selector@ for @livePhotoVideoCodecType@
 livePhotoVideoCodecTypeSelector :: Selector
 livePhotoVideoCodecTypeSelector = mkSelector "livePhotoVideoCodecType"
@@ -1020,6 +1267,26 @@ livePhotoVideoCodecTypeSelector = mkSelector "livePhotoVideoCodecType"
 -- | @Selector@ for @setLivePhotoVideoCodecType:@
 setLivePhotoVideoCodecTypeSelector :: Selector
 setLivePhotoVideoCodecTypeSelector = mkSelector "setLivePhotoVideoCodecType:"
+
+-- | @Selector@ for @livePhotoMovieMetadata@
+livePhotoMovieMetadataSelector :: Selector
+livePhotoMovieMetadataSelector = mkSelector "livePhotoMovieMetadata"
+
+-- | @Selector@ for @setLivePhotoMovieMetadata:@
+setLivePhotoMovieMetadataSelector :: Selector
+setLivePhotoMovieMetadataSelector = mkSelector "setLivePhotoMovieMetadata:"
+
+-- | @Selector@ for @availablePreviewPhotoPixelFormatTypes@
+availablePreviewPhotoPixelFormatTypesSelector :: Selector
+availablePreviewPhotoPixelFormatTypesSelector = mkSelector "availablePreviewPhotoPixelFormatTypes"
+
+-- | @Selector@ for @previewPhotoFormat@
+previewPhotoFormatSelector :: Selector
+previewPhotoFormatSelector = mkSelector "previewPhotoFormat"
+
+-- | @Selector@ for @setPreviewPhotoFormat:@
+setPreviewPhotoFormatSelector :: Selector
+setPreviewPhotoFormatSelector = mkSelector "setPreviewPhotoFormat:"
 
 -- | @Selector@ for @availableEmbeddedThumbnailPhotoCodecTypes@
 availableEmbeddedThumbnailPhotoCodecTypesSelector :: Selector
@@ -1032,6 +1299,18 @@ embeddedThumbnailPhotoFormatSelector = mkSelector "embeddedThumbnailPhotoFormat"
 -- | @Selector@ for @setEmbeddedThumbnailPhotoFormat:@
 setEmbeddedThumbnailPhotoFormatSelector :: Selector
 setEmbeddedThumbnailPhotoFormatSelector = mkSelector "setEmbeddedThumbnailPhotoFormat:"
+
+-- | @Selector@ for @availableRawEmbeddedThumbnailPhotoCodecTypes@
+availableRawEmbeddedThumbnailPhotoCodecTypesSelector :: Selector
+availableRawEmbeddedThumbnailPhotoCodecTypesSelector = mkSelector "availableRawEmbeddedThumbnailPhotoCodecTypes"
+
+-- | @Selector@ for @rawEmbeddedThumbnailPhotoFormat@
+rawEmbeddedThumbnailPhotoFormatSelector :: Selector
+rawEmbeddedThumbnailPhotoFormatSelector = mkSelector "rawEmbeddedThumbnailPhotoFormat"
+
+-- | @Selector@ for @setRawEmbeddedThumbnailPhotoFormat:@
+setRawEmbeddedThumbnailPhotoFormatSelector :: Selector
+setRawEmbeddedThumbnailPhotoFormatSelector = mkSelector "setRawEmbeddedThumbnailPhotoFormat:"
 
 -- | @Selector@ for @autoContentAwareDistortionCorrectionEnabled@
 autoContentAwareDistortionCorrectionEnabledSelector :: Selector

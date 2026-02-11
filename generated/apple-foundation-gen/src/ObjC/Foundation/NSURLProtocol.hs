@@ -23,6 +23,7 @@ module ObjC.Foundation.NSURLProtocol
   , unregisterClass
   , canInitWithTask
   , initWithTask_cachedResponse_client
+  , client
   , request
   , cachedResponse
   , task
@@ -39,6 +40,7 @@ module ObjC.Foundation.NSURLProtocol
   , unregisterClassSelector
   , canInitWithTaskSelector
   , initWithTask_cachedResponse_clientSelector
+  , clientSelector
   , requestSelector
   , cachedResponseSelector
   , taskSelector
@@ -260,6 +262,15 @@ initWithTask_cachedResponse_client nsurlProtocol  task cachedResponse client =
     withObjCPtr cachedResponse $ \raw_cachedResponse ->
         sendMsg nsurlProtocol (mkSelector "initWithTask:cachedResponse:client:") (retPtr retVoid) [argPtr (castPtr raw_task :: Ptr ()), argPtr (castPtr raw_cachedResponse :: Ptr ()), argPtr (castPtr (unRawId client) :: Ptr ())] >>= ownedObject . castPtr
 
+-- | Returns the NSURLProtocolClient of the receiver.
+--
+-- Returns: The NSURLProtocolClient of the receiver.
+--
+-- ObjC selector: @- client@
+client :: IsNSURLProtocol nsurlProtocol => nsurlProtocol -> IO RawId
+client nsurlProtocol  =
+    fmap (RawId . castPtr) $ sendMsg nsurlProtocol (mkSelector "client") (retPtr retVoid) []
+
 -- | Returns the NSURLRequest of the receiver.
 --
 -- Returns: The NSURLRequest of the receiver.
@@ -338,6 +349,10 @@ canInitWithTaskSelector = mkSelector "canInitWithTask:"
 -- | @Selector@ for @initWithTask:cachedResponse:client:@
 initWithTask_cachedResponse_clientSelector :: Selector
 initWithTask_cachedResponse_clientSelector = mkSelector "initWithTask:cachedResponse:client:"
+
+-- | @Selector@ for @client@
+clientSelector :: Selector
+clientSelector = mkSelector "client"
 
 -- | @Selector@ for @request@
 requestSelector :: Selector

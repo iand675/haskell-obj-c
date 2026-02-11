@@ -10,8 +10,12 @@ module ObjC.CoreML.MLComputePlanDeviceUsage
   , IsMLComputePlanDeviceUsage(..)
   , init_
   , new
+  , supportedComputeDevices
+  , preferredComputeDevice
   , initSelector
   , newSelector
+  , supportedComputeDevicesSelector
+  , preferredComputeDeviceSelector
 
 
   ) where
@@ -43,6 +47,20 @@ new  =
     cls' <- getRequiredClass "MLComputePlanDeviceUsage"
     sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | The compute devices that can execute the layer/operation.
+--
+-- ObjC selector: @- supportedComputeDevices@
+supportedComputeDevices :: IsMLComputePlanDeviceUsage mlComputePlanDeviceUsage => mlComputePlanDeviceUsage -> IO (Id NSArray)
+supportedComputeDevices mlComputePlanDeviceUsage  =
+    sendMsg mlComputePlanDeviceUsage (mkSelector "supportedComputeDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The compute device that the framework prefers to execute the layer/operation.
+--
+-- ObjC selector: @- preferredComputeDevice@
+preferredComputeDevice :: IsMLComputePlanDeviceUsage mlComputePlanDeviceUsage => mlComputePlanDeviceUsage -> IO RawId
+preferredComputeDevice mlComputePlanDeviceUsage  =
+    fmap (RawId . castPtr) $ sendMsg mlComputePlanDeviceUsage (mkSelector "preferredComputeDevice") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -54,4 +72,12 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @new@
 newSelector :: Selector
 newSelector = mkSelector "new"
+
+-- | @Selector@ for @supportedComputeDevices@
+supportedComputeDevicesSelector :: Selector
+supportedComputeDevicesSelector = mkSelector "supportedComputeDevices"
+
+-- | @Selector@ for @preferredComputeDevice@
+preferredComputeDeviceSelector :: Selector
+preferredComputeDeviceSelector = mkSelector "preferredComputeDevice"
 

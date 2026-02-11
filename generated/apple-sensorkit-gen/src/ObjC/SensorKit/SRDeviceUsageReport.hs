@@ -13,6 +13,7 @@ module ObjC.SensorKit.SRDeviceUsageReport
   , totalScreenWakes
   , totalUnlocks
   , totalUnlockDuration
+  , version
   , durationSelector
   , applicationUsageByCategorySelector
   , notificationUsageByCategorySelector
@@ -20,6 +21,7 @@ module ObjC.SensorKit.SRDeviceUsageReport
   , totalScreenWakesSelector
   , totalUnlocksSelector
   , totalUnlockDurationSelector
+  , versionSelector
 
 
   ) where
@@ -94,6 +96,13 @@ totalUnlockDuration :: IsSRDeviceUsageReport srDeviceUsageReport => srDeviceUsag
 totalUnlockDuration srDeviceUsageReport  =
     sendMsg srDeviceUsageReport (mkSelector "totalUnlockDuration") retCDouble []
 
+-- | Version of the algorithm used to produce the report
+--
+-- ObjC selector: @- version@
+version :: IsSRDeviceUsageReport srDeviceUsageReport => srDeviceUsageReport -> IO (Id NSString)
+version srDeviceUsageReport  =
+    sendMsg srDeviceUsageReport (mkSelector "version") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -125,4 +134,8 @@ totalUnlocksSelector = mkSelector "totalUnlocks"
 -- | @Selector@ for @totalUnlockDuration@
 totalUnlockDurationSelector :: Selector
 totalUnlockDurationSelector = mkSelector "totalUnlockDuration"
+
+-- | @Selector@ for @version@
+versionSelector :: Selector
+versionSelector = mkSelector "version"
 

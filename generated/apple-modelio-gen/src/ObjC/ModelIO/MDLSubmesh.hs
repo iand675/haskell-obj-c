@@ -16,6 +16,7 @@ module ObjC.ModelIO.MDLSubmesh
   , initWithName_indexBuffer_indexCount_indexType_geometryType_material_topology
   , initWithMDLSubmesh_indexType_geometryType
   , indexBufferAsIndexType
+  , indexBuffer
   , indexCount
   , indexType
   , geometryType
@@ -30,6 +31,7 @@ module ObjC.ModelIO.MDLSubmesh
   , initWithName_indexBuffer_indexCount_indexType_geometryType_material_topologySelector
   , initWithMDLSubmesh_indexType_geometryTypeSelector
   , indexBufferAsIndexTypeSelector
+  , indexBufferSelector
   , indexCountSelector
   , indexTypeSelector
   , geometryTypeSelector
@@ -126,6 +128,15 @@ initWithMDLSubmesh_indexType_geometryType mdlSubmesh  submesh indexType geometry
 indexBufferAsIndexType :: IsMDLSubmesh mdlSubmesh => mdlSubmesh -> MDLIndexBitDepth -> IO RawId
 indexBufferAsIndexType mdlSubmesh  indexType =
     fmap (RawId . castPtr) $ sendMsg mdlSubmesh (mkSelector "indexBufferAsIndexType:") (retPtr retVoid) [argCULong (coerce indexType)]
+
+-- | indexBuffer
+--
+-- Index data referencing vertex data in parent mesh
+--
+-- ObjC selector: @- indexBuffer@
+indexBuffer :: IsMDLSubmesh mdlSubmesh => mdlSubmesh -> IO RawId
+indexBuffer mdlSubmesh  =
+    fmap (RawId . castPtr) $ sendMsg mdlSubmesh (mkSelector "indexBuffer") (retPtr retVoid) []
 
 -- | indexCount
 --
@@ -240,6 +251,10 @@ initWithMDLSubmesh_indexType_geometryTypeSelector = mkSelector "initWithMDLSubme
 -- | @Selector@ for @indexBufferAsIndexType:@
 indexBufferAsIndexTypeSelector :: Selector
 indexBufferAsIndexTypeSelector = mkSelector "indexBufferAsIndexType:"
+
+-- | @Selector@ for @indexBuffer@
+indexBufferSelector :: Selector
+indexBufferSelector = mkSelector "indexBuffer"
 
 -- | @Selector@ for @indexCount@
 indexCountSelector :: Selector

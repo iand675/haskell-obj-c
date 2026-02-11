@@ -14,6 +14,12 @@ module ObjC.Metal.MTLMeshRenderPipelineDescriptor
   , reset
   , label
   , setLabel
+  , objectFunction
+  , setObjectFunction
+  , meshFunction
+  , setMeshFunction
+  , fragmentFunction
+  , setFragmentFunction
   , maxTotalThreadsPerObjectThreadgroup
   , setMaxTotalThreadsPerObjectThreadgroup
   , maxTotalThreadsPerMeshThreadgroup
@@ -46,6 +52,8 @@ module ObjC.Metal.MTLMeshRenderPipelineDescriptor
   , setStencilAttachmentPixelFormat
   , supportIndirectCommandBuffers
   , setSupportIndirectCommandBuffers
+  , binaryArchives
+  , setBinaryArchives
   , objectLinkedFunctions
   , setObjectLinkedFunctions
   , meshLinkedFunctions
@@ -57,6 +65,12 @@ module ObjC.Metal.MTLMeshRenderPipelineDescriptor
   , resetSelector
   , labelSelector
   , setLabelSelector
+  , objectFunctionSelector
+  , setObjectFunctionSelector
+  , meshFunctionSelector
+  , setMeshFunctionSelector
+  , fragmentFunctionSelector
+  , setFragmentFunctionSelector
   , maxTotalThreadsPerObjectThreadgroupSelector
   , setMaxTotalThreadsPerObjectThreadgroupSelector
   , maxTotalThreadsPerMeshThreadgroupSelector
@@ -89,6 +103,8 @@ module ObjC.Metal.MTLMeshRenderPipelineDescriptor
   , setStencilAttachmentPixelFormatSelector
   , supportIndirectCommandBuffersSelector
   , setSupportIndirectCommandBuffersSelector
+  , binaryArchivesSelector
+  , setBinaryArchivesSelector
   , objectLinkedFunctionsSelector
   , setObjectLinkedFunctionsSelector
   , meshLinkedFunctionsSelector
@@ -290,6 +306,60 @@ setLabel :: (IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor, 
 setLabel mtlMeshRenderPipelineDescriptor  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | objectFunction
+--
+-- Optional shader function responsible for determining how many threadgroups of the mesh shader to run, can optionally provide payload data for the mesh stage. If this is nil, no payload data is available to the mesh function, and the draw command determines how many threadgroups of the mesh stage to run. The default value is nil.
+--
+-- ObjC selector: @- objectFunction@
+objectFunction :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO RawId
+objectFunction mtlMeshRenderPipelineDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "objectFunction") (retPtr retVoid) []
+
+-- | objectFunction
+--
+-- Optional shader function responsible for determining how many threadgroups of the mesh shader to run, can optionally provide payload data for the mesh stage. If this is nil, no payload data is available to the mesh function, and the draw command determines how many threadgroups of the mesh stage to run. The default value is nil.
+--
+-- ObjC selector: @- setObjectFunction:@
+setObjectFunction :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> RawId -> IO ()
+setObjectFunction mtlMeshRenderPipelineDescriptor  value =
+    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setObjectFunction:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | meshFunction
+--
+-- Shader function responsible for exporting a chunk of geometry per threadgroup for the rasterizer. The default value is nil.
+--
+-- ObjC selector: @- meshFunction@
+meshFunction :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO RawId
+meshFunction mtlMeshRenderPipelineDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "meshFunction") (retPtr retVoid) []
+
+-- | meshFunction
+--
+-- Shader function responsible for exporting a chunk of geometry per threadgroup for the rasterizer. The default value is nil.
+--
+-- ObjC selector: @- setMeshFunction:@
+setMeshFunction :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> RawId -> IO ()
+setMeshFunction mtlMeshRenderPipelineDescriptor  value =
+    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setMeshFunction:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | fragmentFunction
+--
+-- Like a classical render pipeline, this fragments covered by the rasterized geometry are shaded with this function. The default value is nil. To create a pipeline, you must either set fragmentFunction to non-nil, or set rasterizationEnabled to NO.
+--
+-- ObjC selector: @- fragmentFunction@
+fragmentFunction :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO RawId
+fragmentFunction mtlMeshRenderPipelineDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "fragmentFunction") (retPtr retVoid) []
+
+-- | fragmentFunction
+--
+-- Like a classical render pipeline, this fragments covered by the rasterized geometry are shaded with this function. The default value is nil. To create a pipeline, you must either set fragmentFunction to non-nil, or set rasterizationEnabled to NO.
+--
+-- ObjC selector: @- setFragmentFunction:@
+setFragmentFunction :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> RawId -> IO ()
+setFragmentFunction mtlMeshRenderPipelineDescriptor  value =
+    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setFragmentFunction:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | maxTotalThreadsPerObjectThreadgroup
 --
@@ -613,6 +683,33 @@ setSupportIndirectCommandBuffers :: IsMTLMeshRenderPipelineDescriptor mtlMeshRen
 setSupportIndirectCommandBuffers mtlMeshRenderPipelineDescriptor  value =
     sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setSupportIndirectCommandBuffers:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | binaryArchives
+--
+-- The set of MTLBinaryArchive to search for compiled code when creating the pipeline state.
+--
+-- Accelerate pipeline state creation by providing archives of compiled code such that no compilation needs to happen on the fast path.
+--
+-- See: MTLBinaryArchive
+--
+-- ObjC selector: @- binaryArchives@
+binaryArchives :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO (Id NSArray)
+binaryArchives mtlMeshRenderPipelineDescriptor  =
+    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "binaryArchives") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | binaryArchives
+--
+-- The set of MTLBinaryArchive to search for compiled code when creating the pipeline state.
+--
+-- Accelerate pipeline state creation by providing archives of compiled code such that no compilation needs to happen on the fast path.
+--
+-- See: MTLBinaryArchive
+--
+-- ObjC selector: @- setBinaryArchives:@
+setBinaryArchives :: (IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor, IsNSArray value) => mtlMeshRenderPipelineDescriptor -> value -> IO ()
+setBinaryArchives mtlMeshRenderPipelineDescriptor  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setBinaryArchives:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | objectLinkedFunctions
 --
 -- The set of functions to be linked with the pipeline state and accessed from the object function.
@@ -719,6 +816,30 @@ labelSelector = mkSelector "label"
 -- | @Selector@ for @setLabel:@
 setLabelSelector :: Selector
 setLabelSelector = mkSelector "setLabel:"
+
+-- | @Selector@ for @objectFunction@
+objectFunctionSelector :: Selector
+objectFunctionSelector = mkSelector "objectFunction"
+
+-- | @Selector@ for @setObjectFunction:@
+setObjectFunctionSelector :: Selector
+setObjectFunctionSelector = mkSelector "setObjectFunction:"
+
+-- | @Selector@ for @meshFunction@
+meshFunctionSelector :: Selector
+meshFunctionSelector = mkSelector "meshFunction"
+
+-- | @Selector@ for @setMeshFunction:@
+setMeshFunctionSelector :: Selector
+setMeshFunctionSelector = mkSelector "setMeshFunction:"
+
+-- | @Selector@ for @fragmentFunction@
+fragmentFunctionSelector :: Selector
+fragmentFunctionSelector = mkSelector "fragmentFunction"
+
+-- | @Selector@ for @setFragmentFunction:@
+setFragmentFunctionSelector :: Selector
+setFragmentFunctionSelector = mkSelector "setFragmentFunction:"
 
 -- | @Selector@ for @maxTotalThreadsPerObjectThreadgroup@
 maxTotalThreadsPerObjectThreadgroupSelector :: Selector
@@ -847,6 +968,14 @@ supportIndirectCommandBuffersSelector = mkSelector "supportIndirectCommandBuffer
 -- | @Selector@ for @setSupportIndirectCommandBuffers:@
 setSupportIndirectCommandBuffersSelector :: Selector
 setSupportIndirectCommandBuffersSelector = mkSelector "setSupportIndirectCommandBuffers:"
+
+-- | @Selector@ for @binaryArchives@
+binaryArchivesSelector :: Selector
+binaryArchivesSelector = mkSelector "binaryArchives"
+
+-- | @Selector@ for @setBinaryArchives:@
+setBinaryArchivesSelector :: Selector
+setBinaryArchivesSelector = mkSelector "setBinaryArchives:"
 
 -- | @Selector@ for @objectLinkedFunctions@
 objectLinkedFunctionsSelector :: Selector

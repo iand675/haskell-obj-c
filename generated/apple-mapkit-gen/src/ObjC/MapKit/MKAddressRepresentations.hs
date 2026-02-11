@@ -14,6 +14,7 @@ module ObjC.MapKit.MKAddressRepresentations
   , cityName
   , cityWithContext
   , regionName
+  , regionCode
   , initSelector
   , newSelector
   , fullAddressIncludingRegion_singleLineSelector
@@ -21,6 +22,7 @@ module ObjC.MapKit.MKAddressRepresentations
   , cityNameSelector
   , cityWithContextSelector
   , regionNameSelector
+  , regionCodeSelector
 
   -- * Enum types
   , MKAddressRepresentationsContextStyle(MKAddressRepresentationsContextStyle)
@@ -83,6 +85,11 @@ regionName :: IsMKAddressRepresentations mkAddressRepresentations => mkAddressRe
 regionName mkAddressRepresentations  =
     sendMsg mkAddressRepresentations (mkSelector "regionName") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- regionCode@
+regionCode :: IsMKAddressRepresentations mkAddressRepresentations => mkAddressRepresentations -> IO (Id NSString)
+regionCode mkAddressRepresentations  =
+    sendMsg mkAddressRepresentations (mkSelector "regionCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -114,4 +121,8 @@ cityWithContextSelector = mkSelector "cityWithContext"
 -- | @Selector@ for @regionName@
 regionNameSelector :: Selector
 regionNameSelector = mkSelector "regionName"
+
+-- | @Selector@ for @regionCode@
+regionCodeSelector :: Selector
+regionCodeSelector = mkSelector "regionCode"
 

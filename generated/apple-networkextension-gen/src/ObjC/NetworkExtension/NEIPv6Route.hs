@@ -13,7 +13,15 @@ module ObjC.NetworkExtension.NEIPv6Route
   ( NEIPv6Route
   , IsNEIPv6Route(..)
   , initWithDestinationAddress_networkPrefixLength
+  , destinationAddress
+  , destinationNetworkPrefixLength
+  , gatewayAddress
+  , setGatewayAddress
   , initWithDestinationAddress_networkPrefixLengthSelector
+  , destinationAddressSelector
+  , destinationNetworkPrefixLengthSelector
+  , gatewayAddressSelector
+  , setGatewayAddressSelector
 
 
   ) where
@@ -50,6 +58,43 @@ initWithDestinationAddress_networkPrefixLength neiPv6Route  address networkPrefi
     withObjCPtr networkPrefixLength $ \raw_networkPrefixLength ->
         sendMsg neiPv6Route (mkSelector "initWithDestinationAddress:networkPrefixLength:") (retPtr retVoid) [argPtr (castPtr raw_address :: Ptr ()), argPtr (castPtr raw_networkPrefixLength :: Ptr ())] >>= ownedObject . castPtr
 
+-- | destinationAddress
+--
+-- An IPv6 address represented as a string.
+--
+-- ObjC selector: @- destinationAddress@
+destinationAddress :: IsNEIPv6Route neiPv6Route => neiPv6Route -> IO (Id NSString)
+destinationAddress neiPv6Route  =
+    sendMsg neiPv6Route (mkSelector "destinationAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | destinationNetworkPrefixLength
+--
+-- A number containing the length in bits of the network prefix of the destination network. This prefix in combination with the destinationAddress property is used to determine the destination network of the route.
+--
+-- ObjC selector: @- destinationNetworkPrefixLength@
+destinationNetworkPrefixLength :: IsNEIPv6Route neiPv6Route => neiPv6Route -> IO (Id NSNumber)
+destinationNetworkPrefixLength neiPv6Route  =
+    sendMsg neiPv6Route (mkSelector "destinationNetworkPrefixLength") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | gatewayAddress
+--
+-- The IPv6 address of the route's gateway. If this property is nil then the route's gateway will be set to the tunnel's virtual interface.
+--
+-- ObjC selector: @- gatewayAddress@
+gatewayAddress :: IsNEIPv6Route neiPv6Route => neiPv6Route -> IO (Id NSString)
+gatewayAddress neiPv6Route  =
+    sendMsg neiPv6Route (mkSelector "gatewayAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | gatewayAddress
+--
+-- The IPv6 address of the route's gateway. If this property is nil then the route's gateway will be set to the tunnel's virtual interface.
+--
+-- ObjC selector: @- setGatewayAddress:@
+setGatewayAddress :: (IsNEIPv6Route neiPv6Route, IsNSString value) => neiPv6Route -> value -> IO ()
+setGatewayAddress neiPv6Route  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neiPv6Route (mkSelector "setGatewayAddress:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -57,4 +102,20 @@ initWithDestinationAddress_networkPrefixLength neiPv6Route  address networkPrefi
 -- | @Selector@ for @initWithDestinationAddress:networkPrefixLength:@
 initWithDestinationAddress_networkPrefixLengthSelector :: Selector
 initWithDestinationAddress_networkPrefixLengthSelector = mkSelector "initWithDestinationAddress:networkPrefixLength:"
+
+-- | @Selector@ for @destinationAddress@
+destinationAddressSelector :: Selector
+destinationAddressSelector = mkSelector "destinationAddress"
+
+-- | @Selector@ for @destinationNetworkPrefixLength@
+destinationNetworkPrefixLengthSelector :: Selector
+destinationNetworkPrefixLengthSelector = mkSelector "destinationNetworkPrefixLength"
+
+-- | @Selector@ for @gatewayAddress@
+gatewayAddressSelector :: Selector
+gatewayAddressSelector = mkSelector "gatewayAddress"
+
+-- | @Selector@ for @setGatewayAddress:@
+setGatewayAddressSelector :: Selector
+setGatewayAddressSelector = mkSelector "setGatewayAddress:"
 

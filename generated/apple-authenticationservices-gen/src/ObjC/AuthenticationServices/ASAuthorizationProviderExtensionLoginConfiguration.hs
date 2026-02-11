@@ -33,6 +33,10 @@ module ObjC.AuthenticationServices.ASAuthorizationProviderExtensionLoginConfigur
   , setTokenEndpointURL
   , jwksEndpointURL
   , setJwksEndpointURL
+  , jwksTrustedRootCertificates
+  , setJwksTrustedRootCertificates
+  , deviceContext
+  , setDeviceContext
   , userSecureEnclaveKeyBiometricPolicy
   , setUserSecureEnclaveKeyBiometricPolicy
   , nonceEndpointURL
@@ -45,20 +49,62 @@ module ObjC.AuthenticationServices.ASAuthorizationProviderExtensionLoginConfigur
   , setCustomNonceRequestValues
   , additionalScopes
   , setAdditionalScopes
+  , additionalAuthorizationScopes
+  , setAdditionalAuthorizationScopes
   , includePreviousRefreshTokenInLoginRequest
   , setIncludePreviousRefreshTokenInLoginRequest
   , previousRefreshTokenClaimName
   , setPreviousRefreshTokenClaimName
+  , customRequestJWTParameterName
+  , setCustomRequestJWTParameterName
   , customLoginRequestValues
   , setCustomLoginRequestValues
+  , uniqueIdentifierClaimName
+  , setUniqueIdentifierClaimName
+  , groupRequestClaimName
+  , setGroupRequestClaimName
+  , groupResponseClaimName
+  , setGroupResponseClaimName
   , kerberosTicketMappings
   , setKerberosTicketMappings
+  , refreshEndpointURL
+  , setRefreshEndpointURL
+  , customRefreshRequestValues
+  , setCustomRefreshRequestValues
   , federationType
   , setFederationType
+  , federationRequestURN
+  , setFederationRequestURN
+  , federationMEXURL
+  , setFederationMEXURL
+  , federationUserPreauthenticationURL
+  , setFederationUserPreauthenticationURL
+  , federationMEXURLKeypath
+  , setFederationMEXURLKeypath
+  , federationPredicate
+  , setFederationPredicate
+  , customFederationUserPreauthenticationRequestValues
+  , setCustomFederationUserPreauthenticationRequestValues
   , loginRequestEncryptionPublicKey
   , setLoginRequestEncryptionPublicKey
+  , loginRequestEncryptionAPVPrefix
+  , setLoginRequestEncryptionAPVPrefix
   , loginRequestEncryptionAlgorithm
   , setLoginRequestEncryptionAlgorithm
+  , loginRequestHPKEPreSharedKey
+  , setLoginRequestHPKEPreSharedKey
+  , loginRequestHPKEPreSharedKeyID
+  , setLoginRequestHPKEPreSharedKeyID
+  , keyEndpointURL
+  , setKeyEndpointURL
+  , customKeyExchangeRequestValues
+  , setCustomKeyExchangeRequestValues
+  , customKeyRequestValues
+  , setCustomKeyRequestValues
+  , hpkePreSharedKey
+  , setHpkePreSharedKey
+  , hpkePreSharedKeyID
+  , setHpkePreSharedKeyID
   , hpkeAuthPublicKey
   , setHpkeAuthPublicKey
   , newSelector
@@ -87,6 +133,10 @@ module ObjC.AuthenticationServices.ASAuthorizationProviderExtensionLoginConfigur
   , setTokenEndpointURLSelector
   , jwksEndpointURLSelector
   , setJwksEndpointURLSelector
+  , jwksTrustedRootCertificatesSelector
+  , setJwksTrustedRootCertificatesSelector
+  , deviceContextSelector
+  , setDeviceContextSelector
   , userSecureEnclaveKeyBiometricPolicySelector
   , setUserSecureEnclaveKeyBiometricPolicySelector
   , nonceEndpointURLSelector
@@ -99,20 +149,62 @@ module ObjC.AuthenticationServices.ASAuthorizationProviderExtensionLoginConfigur
   , setCustomNonceRequestValuesSelector
   , additionalScopesSelector
   , setAdditionalScopesSelector
+  , additionalAuthorizationScopesSelector
+  , setAdditionalAuthorizationScopesSelector
   , includePreviousRefreshTokenInLoginRequestSelector
   , setIncludePreviousRefreshTokenInLoginRequestSelector
   , previousRefreshTokenClaimNameSelector
   , setPreviousRefreshTokenClaimNameSelector
+  , customRequestJWTParameterNameSelector
+  , setCustomRequestJWTParameterNameSelector
   , customLoginRequestValuesSelector
   , setCustomLoginRequestValuesSelector
+  , uniqueIdentifierClaimNameSelector
+  , setUniqueIdentifierClaimNameSelector
+  , groupRequestClaimNameSelector
+  , setGroupRequestClaimNameSelector
+  , groupResponseClaimNameSelector
+  , setGroupResponseClaimNameSelector
   , kerberosTicketMappingsSelector
   , setKerberosTicketMappingsSelector
+  , refreshEndpointURLSelector
+  , setRefreshEndpointURLSelector
+  , customRefreshRequestValuesSelector
+  , setCustomRefreshRequestValuesSelector
   , federationTypeSelector
   , setFederationTypeSelector
+  , federationRequestURNSelector
+  , setFederationRequestURNSelector
+  , federationMEXURLSelector
+  , setFederationMEXURLSelector
+  , federationUserPreauthenticationURLSelector
+  , setFederationUserPreauthenticationURLSelector
+  , federationMEXURLKeypathSelector
+  , setFederationMEXURLKeypathSelector
+  , federationPredicateSelector
+  , setFederationPredicateSelector
+  , customFederationUserPreauthenticationRequestValuesSelector
+  , setCustomFederationUserPreauthenticationRequestValuesSelector
   , loginRequestEncryptionPublicKeySelector
   , setLoginRequestEncryptionPublicKeySelector
+  , loginRequestEncryptionAPVPrefixSelector
+  , setLoginRequestEncryptionAPVPrefixSelector
   , loginRequestEncryptionAlgorithmSelector
   , setLoginRequestEncryptionAlgorithmSelector
+  , loginRequestHPKEPreSharedKeySelector
+  , setLoginRequestHPKEPreSharedKeySelector
+  , loginRequestHPKEPreSharedKeyIDSelector
+  , setLoginRequestHPKEPreSharedKeyIDSelector
+  , keyEndpointURLSelector
+  , setKeyEndpointURLSelector
+  , customKeyExchangeRequestValuesSelector
+  , setCustomKeyExchangeRequestValuesSelector
+  , customKeyRequestValuesSelector
+  , setCustomKeyRequestValuesSelector
+  , hpkePreSharedKeySelector
+  , setHpkePreSharedKeySelector
+  , hpkePreSharedKeyIDSelector
+  , setHpkePreSharedKeyIDSelector
   , hpkeAuthPublicKeySelector
   , setHpkeAuthPublicKeySelector
 
@@ -445,6 +537,40 @@ setJwksEndpointURL asAuthorizationProviderExtensionLoginConfiguration  value =
   withObjCPtr value $ \raw_value ->
       sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setJwksEndpointURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | The root certificates to use for trust evaluation of jwks keys.
+--
+-- if set, certificates will be required in jwks responses and evaluated using the supplied certificates.  If the jwks certificates are missing or fail trust evaluation the login will fail.
+--
+-- ObjC selector: @- jwksTrustedRootCertificates@
+jwksTrustedRootCertificates :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSArray)
+jwksTrustedRootCertificates asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "jwksTrustedRootCertificates") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The root certificates to use for trust evaluation of jwks keys.
+--
+-- if set, certificates will be required in jwks responses and evaluated using the supplied certificates.  If the jwks certificates are missing or fail trust evaluation the login will fail.
+--
+-- ObjC selector: @- setJwksTrustedRootCertificates:@
+setJwksTrustedRootCertificates :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSArray value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setJwksTrustedRootCertificates asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setJwksTrustedRootCertificates:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The device context for storing device meta data.
+--
+-- ObjC selector: @- deviceContext@
+deviceContext :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSData)
+deviceContext asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "deviceContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The device context for storing device meta data.
+--
+-- ObjC selector: @- setDeviceContext:@
+setDeviceContext :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSData value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setDeviceContext asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setDeviceContext:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | The biometric policy for User Secure Enclave Key authentication.
 --
 -- ObjC selector: @- userSecureEnclaveKeyBiometricPolicy@
@@ -534,6 +660,21 @@ setAdditionalScopes asAuthorizationProviderExtensionLoginConfiguration  value =
   withObjCPtr value $ \raw_value ->
       sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setAdditionalScopes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | Additional authorization scopes.
+--
+-- ObjC selector: @- additionalAuthorizationScopes@
+additionalAuthorizationScopes :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSString)
+additionalAuthorizationScopes asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "additionalAuthorizationScopes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Additional authorization scopes.
+--
+-- ObjC selector: @- setAdditionalAuthorizationScopes:@
+setAdditionalAuthorizationScopes :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSString value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setAdditionalAuthorizationScopes asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setAdditionalAuthorizationScopes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | If true and there is a refresh token for the user in the SSO tokens, it will be included in the login request.
 --
 -- ObjC selector: @- includePreviousRefreshTokenInLoginRequest@
@@ -563,6 +704,21 @@ setPreviousRefreshTokenClaimName asAuthorizationProviderExtensionLoginConfigurat
   withObjCPtr value $ \raw_value ->
       sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setPreviousRefreshTokenClaimName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | The request parameter name for the JWT.  The default is "assertion".
+--
+-- ObjC selector: @- customRequestJWTParameterName@
+customRequestJWTParameterName :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSString)
+customRequestJWTParameterName asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "customRequestJWTParameterName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The request parameter name for the JWT.  The default is "assertion".
+--
+-- ObjC selector: @- setCustomRequestJWTParameterName:@
+setCustomRequestJWTParameterName :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSString value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setCustomRequestJWTParameterName asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setCustomRequestJWTParameterName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | Custom values added to the login POST request body.
 --
 -- ObjC selector: @- customLoginRequestValues@
@@ -577,6 +733,51 @@ setCustomLoginRequestValues :: (IsASAuthorizationProviderExtensionLoginConfigura
 setCustomLoginRequestValues asAuthorizationProviderExtensionLoginConfiguration  value =
   withObjCPtr value $ \raw_value ->
       sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setCustomLoginRequestValues:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The claim name for the user unique identifier in the id token. Defaults to "sub".
+--
+-- ObjC selector: @- uniqueIdentifierClaimName@
+uniqueIdentifierClaimName :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSString)
+uniqueIdentifierClaimName asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "uniqueIdentifierClaimName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The claim name for the user unique identifier in the id token. Defaults to "sub".
+--
+-- ObjC selector: @- setUniqueIdentifierClaimName:@
+setUniqueIdentifierClaimName :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSString value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setUniqueIdentifierClaimName asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setUniqueIdentifierClaimName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The claim name for group membership request.
+--
+-- ObjC selector: @- groupRequestClaimName@
+groupRequestClaimName :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSString)
+groupRequestClaimName asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "groupRequestClaimName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The claim name for group membership request.
+--
+-- ObjC selector: @- setGroupRequestClaimName:@
+setGroupRequestClaimName :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSString value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setGroupRequestClaimName asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setGroupRequestClaimName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The claim name for group responses in the id_token.
+--
+-- ObjC selector: @- groupResponseClaimName@
+groupResponseClaimName :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSString)
+groupResponseClaimName asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "groupResponseClaimName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The claim name for group responses in the id_token.
+--
+-- ObjC selector: @- setGroupResponseClaimName:@
+setGroupResponseClaimName :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSString value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setGroupResponseClaimName asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setGroupResponseClaimName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | The Kerberos ticket mappings to use.
 --
@@ -593,6 +794,36 @@ setKerberosTicketMappings asAuthorizationProviderExtensionLoginConfiguration  va
   withObjCPtr value $ \raw_value ->
       sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setKerberosTicketMappings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | Token Refresh Endpoint URL for login request.  Defaults to the tokenEndpointURL.
+--
+-- ObjC selector: @- refreshEndpointURL@
+refreshEndpointURL :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSURL)
+refreshEndpointURL asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "refreshEndpointURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Token Refresh Endpoint URL for login request.  Defaults to the tokenEndpointURL.
+--
+-- ObjC selector: @- setRefreshEndpointURL:@
+setRefreshEndpointURL :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSURL value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setRefreshEndpointURL asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setRefreshEndpointURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | Custom values added to the refresh POST request body.
+--
+-- ObjC selector: @- customRefreshRequestValues@
+customRefreshRequestValues :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSArray)
+customRefreshRequestValues asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "customRefreshRequestValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Custom values added to the refresh POST request body.
+--
+-- ObjC selector: @- setCustomRefreshRequestValues:@
+setCustomRefreshRequestValues :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSArray value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setCustomRefreshRequestValues asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setCustomRefreshRequestValues:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | The federation method to use.
 --
 -- ObjC selector: @- federationType@
@@ -606,6 +837,96 @@ federationType asAuthorizationProviderExtensionLoginConfiguration  =
 setFederationType :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> ASAuthorizationProviderExtensionFederationType -> IO ()
 setFederationType asAuthorizationProviderExtensionLoginConfiguration  value =
     sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setFederationType:") retVoid [argCLong (coerce value)]
+
+-- | The URN to request when performing a federated login.
+--
+-- ObjC selector: @- federationRequestURN@
+federationRequestURN :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSString)
+federationRequestURN asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "federationRequestURN") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The URN to request when performing a federated login.
+--
+-- ObjC selector: @- setFederationRequestURN:@
+setFederationRequestURN :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSString value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setFederationRequestURN asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setFederationRequestURN:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The federation MEX URL to use.  This can be overwritten when using dynamic federation.
+--
+-- ObjC selector: @- federationMEXURL@
+federationMEXURL :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSURL)
+federationMEXURL asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "federationMEXURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The federation MEX URL to use.  This can be overwritten when using dynamic federation.
+--
+-- ObjC selector: @- setFederationMEXURL:@
+setFederationMEXURL :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSURL value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setFederationMEXURL asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setFederationMEXURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The URL to use when performing dynamic federation.
+--
+-- ObjC selector: @- federationUserPreauthenticationURL@
+federationUserPreauthenticationURL :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSURL)
+federationUserPreauthenticationURL asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "federationUserPreauthenticationURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The URL to use when performing dynamic federation.
+--
+-- ObjC selector: @- setFederationUserPreauthenticationURL:@
+setFederationUserPreauthenticationURL :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSURL value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setFederationUserPreauthenticationURL asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setFederationUserPreauthenticationURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The claim in the preauthentication response that contains the MEX URL.
+--
+-- ObjC selector: @- federationMEXURLKeypath@
+federationMEXURLKeypath :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSString)
+federationMEXURLKeypath asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "federationMEXURLKeypath") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The claim in the preauthentication response that contains the MEX URL.
+--
+-- ObjC selector: @- setFederationMEXURLKeypath:@
+setFederationMEXURLKeypath :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSString value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setFederationMEXURLKeypath asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setFederationMEXURLKeypath:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The predicate to apply to the preauthentication response to perform federation or not.
+--
+-- ObjC selector: @- federationPredicate@
+federationPredicate :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSString)
+federationPredicate asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "federationPredicate") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The predicate to apply to the preauthentication response to perform federation or not.
+--
+-- ObjC selector: @- setFederationPredicate:@
+setFederationPredicate :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSString value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setFederationPredicate asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setFederationPredicate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The custom query string values to add when making the preauthenticaion request.
+--
+-- ObjC selector: @- customFederationUserPreauthenticationRequestValues@
+customFederationUserPreauthenticationRequestValues :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSArray)
+customFederationUserPreauthenticationRequestValues asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "customFederationUserPreauthenticationRequestValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The custom query string values to add when making the preauthenticaion request.
+--
+-- ObjC selector: @- setCustomFederationUserPreauthenticationRequestValues:@
+setCustomFederationUserPreauthenticationRequestValues :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSArray value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setCustomFederationUserPreauthenticationRequestValues asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setCustomFederationUserPreauthenticationRequestValues:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | The public key to use for encrypting the embedded login assertion.
 --
@@ -625,6 +946,21 @@ setLoginRequestEncryptionPublicKey :: IsASAuthorizationProviderExtensionLoginCon
 setLoginRequestEncryptionPublicKey asAuthorizationProviderExtensionLoginConfiguration  value =
     sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setLoginRequestEncryptionPublicKey:") retVoid [argPtr value]
 
+-- | The APV prefix used for encrypted embedded login assertions.
+--
+-- ObjC selector: @- loginRequestEncryptionAPVPrefix@
+loginRequestEncryptionAPVPrefix :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSData)
+loginRequestEncryptionAPVPrefix asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "loginRequestEncryptionAPVPrefix") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The APV prefix used for encrypted embedded login assertions.
+--
+-- ObjC selector: @- setLoginRequestEncryptionAPVPrefix:@
+setLoginRequestEncryptionAPVPrefix :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSData value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setLoginRequestEncryptionAPVPrefix asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setLoginRequestEncryptionAPVPrefix:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | The encryption algorithm to use for the embedded login assertion.
 --
 -- ObjC selector: @- loginRequestEncryptionAlgorithm@
@@ -639,6 +975,111 @@ setLoginRequestEncryptionAlgorithm :: (IsASAuthorizationProviderExtensionLoginCo
 setLoginRequestEncryptionAlgorithm asAuthorizationProviderExtensionLoginConfiguration  value =
   withObjCPtr value $ \raw_value ->
       sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setLoginRequestEncryptionAlgorithm:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The PreSharedKey to be used for HKPE for embedded login assertions. Setting this value will change the mode to PSK if the loginRequestHPKEPreSharedKeyID is also set. Must be at least 32 bytes.
+--
+-- ObjC selector: @- loginRequestHPKEPreSharedKey@
+loginRequestHPKEPreSharedKey :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSData)
+loginRequestHPKEPreSharedKey asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "loginRequestHPKEPreSharedKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The PreSharedKey to be used for HKPE for embedded login assertions. Setting this value will change the mode to PSK if the loginRequestHPKEPreSharedKeyID is also set. Must be at least 32 bytes.
+--
+-- ObjC selector: @- setLoginRequestHPKEPreSharedKey:@
+setLoginRequestHPKEPreSharedKey :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSData value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setLoginRequestHPKEPreSharedKey asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setLoginRequestHPKEPreSharedKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The PreSharedKey Id to be used for HPKE PSK for embedded login assertions.  This is required if the loginRequestHPKEPreSharedKey is set.
+--
+-- ObjC selector: @- loginRequestHPKEPreSharedKeyID@
+loginRequestHPKEPreSharedKeyID :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSData)
+loginRequestHPKEPreSharedKeyID asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "loginRequestHPKEPreSharedKeyID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The PreSharedKey Id to be used for HPKE PSK for embedded login assertions.  This is required if the loginRequestHPKEPreSharedKey is set.
+--
+-- ObjC selector: @- setLoginRequestHPKEPreSharedKeyID:@
+setLoginRequestHPKEPreSharedKeyID :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSData value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setLoginRequestHPKEPreSharedKeyID asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setLoginRequestHPKEPreSharedKeyID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The url endpoint for key service, defaults to token tokenEndpointURL.
+--
+-- ObjC selector: @- keyEndpointURL@
+keyEndpointURL :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSURL)
+keyEndpointURL asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "keyEndpointURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The url endpoint for key service, defaults to token tokenEndpointURL.
+--
+-- ObjC selector: @- setKeyEndpointURL:@
+setKeyEndpointURL :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSURL value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setKeyEndpointURL asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setKeyEndpointURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | Custom values added to the key exchange POST request body.
+--
+-- ObjC selector: @- customKeyExchangeRequestValues@
+customKeyExchangeRequestValues :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSArray)
+customKeyExchangeRequestValues asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "customKeyExchangeRequestValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Custom values added to the key exchange POST request body.
+--
+-- ObjC selector: @- setCustomKeyExchangeRequestValues:@
+setCustomKeyExchangeRequestValues :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSArray value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setCustomKeyExchangeRequestValues asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setCustomKeyExchangeRequestValues:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | Custom values added to the key request POST request body.
+--
+-- ObjC selector: @- customKeyRequestValues@
+customKeyRequestValues :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSArray)
+customKeyRequestValues asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "customKeyRequestValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Custom values added to the key request POST request body.
+--
+-- ObjC selector: @- setCustomKeyRequestValues:@
+setCustomKeyRequestValues :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSArray value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setCustomKeyRequestValues asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setCustomKeyRequestValues:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The PreSharedKey to be used for HKPE. Setting this value will change the mode to PSK or AuthPSK if the hpkeAuthPublicKey is also set. Must be at least 32 bytes.
+--
+-- ObjC selector: @- hpkePreSharedKey@
+hpkePreSharedKey :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSData)
+hpkePreSharedKey asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "hpkePreSharedKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The PreSharedKey to be used for HKPE. Setting this value will change the mode to PSK or AuthPSK if the hpkeAuthPublicKey is also set. Must be at least 32 bytes.
+--
+-- ObjC selector: @- setHpkePreSharedKey:@
+setHpkePreSharedKey :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSData value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setHpkePreSharedKey asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setHpkePreSharedKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The PreSharedKey Id to be used for HPKE PSK or AuthPSK mode.  This is requred if the hpkePreSharedKey is set.
+--
+-- ObjC selector: @- hpkePreSharedKeyID@
+hpkePreSharedKeyID :: IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration => asAuthorizationProviderExtensionLoginConfiguration -> IO (Id NSData)
+hpkePreSharedKeyID asAuthorizationProviderExtensionLoginConfiguration  =
+    sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "hpkePreSharedKeyID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The PreSharedKey Id to be used for HPKE PSK or AuthPSK mode.  This is requred if the hpkePreSharedKey is set.
+--
+-- ObjC selector: @- setHpkePreSharedKeyID:@
+setHpkePreSharedKeyID :: (IsASAuthorizationProviderExtensionLoginConfiguration asAuthorizationProviderExtensionLoginConfiguration, IsNSData value) => asAuthorizationProviderExtensionLoginConfiguration -> value -> IO ()
+setHpkePreSharedKeyID asAuthorizationProviderExtensionLoginConfiguration  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAuthorizationProviderExtensionLoginConfiguration (mkSelector "setHpkePreSharedKeyID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | The Authentication public key to be used for HPKE.  Setting this value with changet the mode to Auth or AuthPSK if the hpkePreSharedKey is also set.  This public key is used to authenticate HPKE responses.
 --
@@ -762,6 +1203,22 @@ jwksEndpointURLSelector = mkSelector "jwksEndpointURL"
 setJwksEndpointURLSelector :: Selector
 setJwksEndpointURLSelector = mkSelector "setJwksEndpointURL:"
 
+-- | @Selector@ for @jwksTrustedRootCertificates@
+jwksTrustedRootCertificatesSelector :: Selector
+jwksTrustedRootCertificatesSelector = mkSelector "jwksTrustedRootCertificates"
+
+-- | @Selector@ for @setJwksTrustedRootCertificates:@
+setJwksTrustedRootCertificatesSelector :: Selector
+setJwksTrustedRootCertificatesSelector = mkSelector "setJwksTrustedRootCertificates:"
+
+-- | @Selector@ for @deviceContext@
+deviceContextSelector :: Selector
+deviceContextSelector = mkSelector "deviceContext"
+
+-- | @Selector@ for @setDeviceContext:@
+setDeviceContextSelector :: Selector
+setDeviceContextSelector = mkSelector "setDeviceContext:"
+
 -- | @Selector@ for @userSecureEnclaveKeyBiometricPolicy@
 userSecureEnclaveKeyBiometricPolicySelector :: Selector
 userSecureEnclaveKeyBiometricPolicySelector = mkSelector "userSecureEnclaveKeyBiometricPolicy"
@@ -810,6 +1267,14 @@ additionalScopesSelector = mkSelector "additionalScopes"
 setAdditionalScopesSelector :: Selector
 setAdditionalScopesSelector = mkSelector "setAdditionalScopes:"
 
+-- | @Selector@ for @additionalAuthorizationScopes@
+additionalAuthorizationScopesSelector :: Selector
+additionalAuthorizationScopesSelector = mkSelector "additionalAuthorizationScopes"
+
+-- | @Selector@ for @setAdditionalAuthorizationScopes:@
+setAdditionalAuthorizationScopesSelector :: Selector
+setAdditionalAuthorizationScopesSelector = mkSelector "setAdditionalAuthorizationScopes:"
+
 -- | @Selector@ for @includePreviousRefreshTokenInLoginRequest@
 includePreviousRefreshTokenInLoginRequestSelector :: Selector
 includePreviousRefreshTokenInLoginRequestSelector = mkSelector "includePreviousRefreshTokenInLoginRequest"
@@ -826,6 +1291,14 @@ previousRefreshTokenClaimNameSelector = mkSelector "previousRefreshTokenClaimNam
 setPreviousRefreshTokenClaimNameSelector :: Selector
 setPreviousRefreshTokenClaimNameSelector = mkSelector "setPreviousRefreshTokenClaimName:"
 
+-- | @Selector@ for @customRequestJWTParameterName@
+customRequestJWTParameterNameSelector :: Selector
+customRequestJWTParameterNameSelector = mkSelector "customRequestJWTParameterName"
+
+-- | @Selector@ for @setCustomRequestJWTParameterName:@
+setCustomRequestJWTParameterNameSelector :: Selector
+setCustomRequestJWTParameterNameSelector = mkSelector "setCustomRequestJWTParameterName:"
+
 -- | @Selector@ for @customLoginRequestValues@
 customLoginRequestValuesSelector :: Selector
 customLoginRequestValuesSelector = mkSelector "customLoginRequestValues"
@@ -833,6 +1306,30 @@ customLoginRequestValuesSelector = mkSelector "customLoginRequestValues"
 -- | @Selector@ for @setCustomLoginRequestValues:@
 setCustomLoginRequestValuesSelector :: Selector
 setCustomLoginRequestValuesSelector = mkSelector "setCustomLoginRequestValues:"
+
+-- | @Selector@ for @uniqueIdentifierClaimName@
+uniqueIdentifierClaimNameSelector :: Selector
+uniqueIdentifierClaimNameSelector = mkSelector "uniqueIdentifierClaimName"
+
+-- | @Selector@ for @setUniqueIdentifierClaimName:@
+setUniqueIdentifierClaimNameSelector :: Selector
+setUniqueIdentifierClaimNameSelector = mkSelector "setUniqueIdentifierClaimName:"
+
+-- | @Selector@ for @groupRequestClaimName@
+groupRequestClaimNameSelector :: Selector
+groupRequestClaimNameSelector = mkSelector "groupRequestClaimName"
+
+-- | @Selector@ for @setGroupRequestClaimName:@
+setGroupRequestClaimNameSelector :: Selector
+setGroupRequestClaimNameSelector = mkSelector "setGroupRequestClaimName:"
+
+-- | @Selector@ for @groupResponseClaimName@
+groupResponseClaimNameSelector :: Selector
+groupResponseClaimNameSelector = mkSelector "groupResponseClaimName"
+
+-- | @Selector@ for @setGroupResponseClaimName:@
+setGroupResponseClaimNameSelector :: Selector
+setGroupResponseClaimNameSelector = mkSelector "setGroupResponseClaimName:"
 
 -- | @Selector@ for @kerberosTicketMappings@
 kerberosTicketMappingsSelector :: Selector
@@ -842,6 +1339,22 @@ kerberosTicketMappingsSelector = mkSelector "kerberosTicketMappings"
 setKerberosTicketMappingsSelector :: Selector
 setKerberosTicketMappingsSelector = mkSelector "setKerberosTicketMappings:"
 
+-- | @Selector@ for @refreshEndpointURL@
+refreshEndpointURLSelector :: Selector
+refreshEndpointURLSelector = mkSelector "refreshEndpointURL"
+
+-- | @Selector@ for @setRefreshEndpointURL:@
+setRefreshEndpointURLSelector :: Selector
+setRefreshEndpointURLSelector = mkSelector "setRefreshEndpointURL:"
+
+-- | @Selector@ for @customRefreshRequestValues@
+customRefreshRequestValuesSelector :: Selector
+customRefreshRequestValuesSelector = mkSelector "customRefreshRequestValues"
+
+-- | @Selector@ for @setCustomRefreshRequestValues:@
+setCustomRefreshRequestValuesSelector :: Selector
+setCustomRefreshRequestValuesSelector = mkSelector "setCustomRefreshRequestValues:"
+
 -- | @Selector@ for @federationType@
 federationTypeSelector :: Selector
 federationTypeSelector = mkSelector "federationType"
@@ -849,6 +1362,54 @@ federationTypeSelector = mkSelector "federationType"
 -- | @Selector@ for @setFederationType:@
 setFederationTypeSelector :: Selector
 setFederationTypeSelector = mkSelector "setFederationType:"
+
+-- | @Selector@ for @federationRequestURN@
+federationRequestURNSelector :: Selector
+federationRequestURNSelector = mkSelector "federationRequestURN"
+
+-- | @Selector@ for @setFederationRequestURN:@
+setFederationRequestURNSelector :: Selector
+setFederationRequestURNSelector = mkSelector "setFederationRequestURN:"
+
+-- | @Selector@ for @federationMEXURL@
+federationMEXURLSelector :: Selector
+federationMEXURLSelector = mkSelector "federationMEXURL"
+
+-- | @Selector@ for @setFederationMEXURL:@
+setFederationMEXURLSelector :: Selector
+setFederationMEXURLSelector = mkSelector "setFederationMEXURL:"
+
+-- | @Selector@ for @federationUserPreauthenticationURL@
+federationUserPreauthenticationURLSelector :: Selector
+federationUserPreauthenticationURLSelector = mkSelector "federationUserPreauthenticationURL"
+
+-- | @Selector@ for @setFederationUserPreauthenticationURL:@
+setFederationUserPreauthenticationURLSelector :: Selector
+setFederationUserPreauthenticationURLSelector = mkSelector "setFederationUserPreauthenticationURL:"
+
+-- | @Selector@ for @federationMEXURLKeypath@
+federationMEXURLKeypathSelector :: Selector
+federationMEXURLKeypathSelector = mkSelector "federationMEXURLKeypath"
+
+-- | @Selector@ for @setFederationMEXURLKeypath:@
+setFederationMEXURLKeypathSelector :: Selector
+setFederationMEXURLKeypathSelector = mkSelector "setFederationMEXURLKeypath:"
+
+-- | @Selector@ for @federationPredicate@
+federationPredicateSelector :: Selector
+federationPredicateSelector = mkSelector "federationPredicate"
+
+-- | @Selector@ for @setFederationPredicate:@
+setFederationPredicateSelector :: Selector
+setFederationPredicateSelector = mkSelector "setFederationPredicate:"
+
+-- | @Selector@ for @customFederationUserPreauthenticationRequestValues@
+customFederationUserPreauthenticationRequestValuesSelector :: Selector
+customFederationUserPreauthenticationRequestValuesSelector = mkSelector "customFederationUserPreauthenticationRequestValues"
+
+-- | @Selector@ for @setCustomFederationUserPreauthenticationRequestValues:@
+setCustomFederationUserPreauthenticationRequestValuesSelector :: Selector
+setCustomFederationUserPreauthenticationRequestValuesSelector = mkSelector "setCustomFederationUserPreauthenticationRequestValues:"
 
 -- | @Selector@ for @loginRequestEncryptionPublicKey@
 loginRequestEncryptionPublicKeySelector :: Selector
@@ -858,6 +1419,14 @@ loginRequestEncryptionPublicKeySelector = mkSelector "loginRequestEncryptionPubl
 setLoginRequestEncryptionPublicKeySelector :: Selector
 setLoginRequestEncryptionPublicKeySelector = mkSelector "setLoginRequestEncryptionPublicKey:"
 
+-- | @Selector@ for @loginRequestEncryptionAPVPrefix@
+loginRequestEncryptionAPVPrefixSelector :: Selector
+loginRequestEncryptionAPVPrefixSelector = mkSelector "loginRequestEncryptionAPVPrefix"
+
+-- | @Selector@ for @setLoginRequestEncryptionAPVPrefix:@
+setLoginRequestEncryptionAPVPrefixSelector :: Selector
+setLoginRequestEncryptionAPVPrefixSelector = mkSelector "setLoginRequestEncryptionAPVPrefix:"
+
 -- | @Selector@ for @loginRequestEncryptionAlgorithm@
 loginRequestEncryptionAlgorithmSelector :: Selector
 loginRequestEncryptionAlgorithmSelector = mkSelector "loginRequestEncryptionAlgorithm"
@@ -865,6 +1434,62 @@ loginRequestEncryptionAlgorithmSelector = mkSelector "loginRequestEncryptionAlgo
 -- | @Selector@ for @setLoginRequestEncryptionAlgorithm:@
 setLoginRequestEncryptionAlgorithmSelector :: Selector
 setLoginRequestEncryptionAlgorithmSelector = mkSelector "setLoginRequestEncryptionAlgorithm:"
+
+-- | @Selector@ for @loginRequestHPKEPreSharedKey@
+loginRequestHPKEPreSharedKeySelector :: Selector
+loginRequestHPKEPreSharedKeySelector = mkSelector "loginRequestHPKEPreSharedKey"
+
+-- | @Selector@ for @setLoginRequestHPKEPreSharedKey:@
+setLoginRequestHPKEPreSharedKeySelector :: Selector
+setLoginRequestHPKEPreSharedKeySelector = mkSelector "setLoginRequestHPKEPreSharedKey:"
+
+-- | @Selector@ for @loginRequestHPKEPreSharedKeyID@
+loginRequestHPKEPreSharedKeyIDSelector :: Selector
+loginRequestHPKEPreSharedKeyIDSelector = mkSelector "loginRequestHPKEPreSharedKeyID"
+
+-- | @Selector@ for @setLoginRequestHPKEPreSharedKeyID:@
+setLoginRequestHPKEPreSharedKeyIDSelector :: Selector
+setLoginRequestHPKEPreSharedKeyIDSelector = mkSelector "setLoginRequestHPKEPreSharedKeyID:"
+
+-- | @Selector@ for @keyEndpointURL@
+keyEndpointURLSelector :: Selector
+keyEndpointURLSelector = mkSelector "keyEndpointURL"
+
+-- | @Selector@ for @setKeyEndpointURL:@
+setKeyEndpointURLSelector :: Selector
+setKeyEndpointURLSelector = mkSelector "setKeyEndpointURL:"
+
+-- | @Selector@ for @customKeyExchangeRequestValues@
+customKeyExchangeRequestValuesSelector :: Selector
+customKeyExchangeRequestValuesSelector = mkSelector "customKeyExchangeRequestValues"
+
+-- | @Selector@ for @setCustomKeyExchangeRequestValues:@
+setCustomKeyExchangeRequestValuesSelector :: Selector
+setCustomKeyExchangeRequestValuesSelector = mkSelector "setCustomKeyExchangeRequestValues:"
+
+-- | @Selector@ for @customKeyRequestValues@
+customKeyRequestValuesSelector :: Selector
+customKeyRequestValuesSelector = mkSelector "customKeyRequestValues"
+
+-- | @Selector@ for @setCustomKeyRequestValues:@
+setCustomKeyRequestValuesSelector :: Selector
+setCustomKeyRequestValuesSelector = mkSelector "setCustomKeyRequestValues:"
+
+-- | @Selector@ for @hpkePreSharedKey@
+hpkePreSharedKeySelector :: Selector
+hpkePreSharedKeySelector = mkSelector "hpkePreSharedKey"
+
+-- | @Selector@ for @setHpkePreSharedKey:@
+setHpkePreSharedKeySelector :: Selector
+setHpkePreSharedKeySelector = mkSelector "setHpkePreSharedKey:"
+
+-- | @Selector@ for @hpkePreSharedKeyID@
+hpkePreSharedKeyIDSelector :: Selector
+hpkePreSharedKeyIDSelector = mkSelector "hpkePreSharedKeyID"
+
+-- | @Selector@ for @setHpkePreSharedKeyID:@
+setHpkePreSharedKeyIDSelector :: Selector
+setHpkePreSharedKeyIDSelector = mkSelector "setHpkePreSharedKeyID:"
 
 -- | @Selector@ for @hpkeAuthPublicKey@
 hpkeAuthPublicKeySelector :: Selector

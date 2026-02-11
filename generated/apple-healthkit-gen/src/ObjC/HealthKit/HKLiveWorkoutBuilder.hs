@@ -7,19 +7,25 @@ module ObjC.HealthKit.HKLiveWorkoutBuilder
   ( HKLiveWorkoutBuilder
   , IsHKLiveWorkoutBuilder(..)
   , initWithHealthStore_configuration_device
+  , delegate
+  , setDelegate
   , workoutSession
   , shouldCollectWorkoutEvents
   , setShouldCollectWorkoutEvents
   , dataSource
   , setDataSource
   , elapsedTime
+  , currentWorkoutActivity
   , initWithHealthStore_configuration_deviceSelector
+  , delegateSelector
+  , setDelegateSelector
   , workoutSessionSelector
   , shouldCollectWorkoutEventsSelector
   , setShouldCollectWorkoutEventsSelector
   , dataSourceSelector
   , setDataSourceSelector
   , elapsedTimeSelector
+  , currentWorkoutActivitySelector
 
 
   ) where
@@ -46,6 +52,24 @@ initWithHealthStore_configuration_device hkLiveWorkoutBuilder  healthStore confi
     withObjCPtr configuration $ \raw_configuration ->
       withObjCPtr device $ \raw_device ->
           sendMsg hkLiveWorkoutBuilder (mkSelector "initWithHealthStore:configuration:device:") (retPtr retVoid) [argPtr (castPtr raw_healthStore :: Ptr ()), argPtr (castPtr raw_configuration :: Ptr ()), argPtr (castPtr raw_device :: Ptr ())] >>= ownedObject . castPtr
+
+-- | delegate
+--
+-- The delegate object which will be notified of changes to collected data and elapsed workout time.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsHKLiveWorkoutBuilder hkLiveWorkoutBuilder => hkLiveWorkoutBuilder -> IO RawId
+delegate hkLiveWorkoutBuilder  =
+    fmap (RawId . castPtr) $ sendMsg hkLiveWorkoutBuilder (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- The delegate object which will be notified of changes to collected data and elapsed workout time.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsHKLiveWorkoutBuilder hkLiveWorkoutBuilder => hkLiveWorkoutBuilder -> RawId -> IO ()
+setDelegate hkLiveWorkoutBuilder  value =
+    sendMsg hkLiveWorkoutBuilder (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | workoutSession
 --
@@ -106,6 +130,17 @@ elapsedTime :: IsHKLiveWorkoutBuilder hkLiveWorkoutBuilder => hkLiveWorkoutBuild
 elapsedTime hkLiveWorkoutBuilder  =
     sendMsg hkLiveWorkoutBuilder (mkSelector "elapsedTime") retCDouble []
 
+-- | currentWorkoutActivity
+--
+-- The latest activity that has been added to this builder.
+--
+-- When an activity is in progress it will be returned by this property. The end date of this activity will always                be nil. When the activity is ended, the property would be set to nil until a new activity begins.
+--
+-- ObjC selector: @- currentWorkoutActivity@
+currentWorkoutActivity :: IsHKLiveWorkoutBuilder hkLiveWorkoutBuilder => hkLiveWorkoutBuilder -> IO (Id HKWorkoutActivity)
+currentWorkoutActivity hkLiveWorkoutBuilder  =
+    sendMsg hkLiveWorkoutBuilder (mkSelector "currentWorkoutActivity") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -113,6 +148,14 @@ elapsedTime hkLiveWorkoutBuilder  =
 -- | @Selector@ for @initWithHealthStore:configuration:device:@
 initWithHealthStore_configuration_deviceSelector :: Selector
 initWithHealthStore_configuration_deviceSelector = mkSelector "initWithHealthStore:configuration:device:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @workoutSession@
 workoutSessionSelector :: Selector
@@ -137,4 +180,8 @@ setDataSourceSelector = mkSelector "setDataSource:"
 -- | @Selector@ for @elapsedTime@
 elapsedTimeSelector :: Selector
 elapsedTimeSelector = mkSelector "elapsedTime"
+
+-- | @Selector@ for @currentWorkoutActivity@
+currentWorkoutActivitySelector :: Selector
+currentWorkoutActivitySelector = mkSelector "currentWorkoutActivity"
 

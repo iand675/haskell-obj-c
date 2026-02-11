@@ -20,6 +20,8 @@ module ObjC.PDFKit.PDFSelection
   , drawForPage_active
   , drawForPage_withBox_active
   , pages
+  , color
+  , setColor
   , string
   , attributedString
   , initWithDocumentSelector
@@ -35,6 +37,8 @@ module ObjC.PDFKit.PDFSelection
   , drawForPage_activeSelector
   , drawForPage_withBox_activeSelector
   , pagesSelector
+  , colorSelector
+  , setColorSelector
   , stringSelector
   , attributedStringSelector
 
@@ -138,6 +142,16 @@ pages :: IsPDFSelection pdfSelection => pdfSelection -> IO (Id NSArray)
 pages pdfSelection  =
     sendMsg pdfSelection (mkSelector "pages") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- color@
+color :: IsPDFSelection pdfSelection => pdfSelection -> IO RawId
+color pdfSelection  =
+    fmap (RawId . castPtr) $ sendMsg pdfSelection (mkSelector "color") (retPtr retVoid) []
+
+-- | @- setColor:@
+setColor :: IsPDFSelection pdfSelection => pdfSelection -> RawId -> IO ()
+setColor pdfSelection  value =
+    sendMsg pdfSelection (mkSelector "setColor:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- string@
 string :: IsPDFSelection pdfSelection => pdfSelection -> IO (Id NSString)
 string pdfSelection  =
@@ -203,6 +217,14 @@ drawForPage_withBox_activeSelector = mkSelector "drawForPage:withBox:active:"
 -- | @Selector@ for @pages@
 pagesSelector :: Selector
 pagesSelector = mkSelector "pages"
+
+-- | @Selector@ for @color@
+colorSelector :: Selector
+colorSelector = mkSelector "color"
+
+-- | @Selector@ for @setColor:@
+setColorSelector :: Selector
+setColorSelector = mkSelector "setColor:"
 
 -- | @Selector@ for @string@
 stringSelector :: Selector

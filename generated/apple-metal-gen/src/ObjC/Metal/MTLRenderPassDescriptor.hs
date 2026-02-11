@@ -12,11 +12,15 @@ module ObjC.Metal.MTLRenderPassDescriptor
   ( MTLRenderPassDescriptor
   , IsMTLRenderPassDescriptor(..)
   , renderPassDescriptor
+  , setSamplePositions_count
+  , getSamplePositions_count
   , colorAttachments
   , depthAttachment
   , setDepthAttachment
   , stencilAttachment
   , setStencilAttachment
+  , visibilityResultBuffer
+  , setVisibilityResultBuffer
   , renderTargetArrayLength
   , setRenderTargetArrayLength
   , imageblockSampleLength
@@ -33,17 +37,23 @@ module ObjC.Metal.MTLRenderPassDescriptor
   , setRenderTargetWidth
   , renderTargetHeight
   , setRenderTargetHeight
+  , rasterizationRateMap
+  , setRasterizationRateMap
   , sampleBufferAttachments
   , visibilityResultType
   , setVisibilityResultType
   , supportColorAttachmentMapping
   , setSupportColorAttachmentMapping
   , renderPassDescriptorSelector
+  , setSamplePositions_countSelector
+  , getSamplePositions_countSelector
   , colorAttachmentsSelector
   , depthAttachmentSelector
   , setDepthAttachmentSelector
   , stencilAttachmentSelector
   , setStencilAttachmentSelector
+  , visibilityResultBufferSelector
+  , setVisibilityResultBufferSelector
   , renderTargetArrayLengthSelector
   , setRenderTargetArrayLengthSelector
   , imageblockSampleLengthSelector
@@ -60,6 +70,8 @@ module ObjC.Metal.MTLRenderPassDescriptor
   , setRenderTargetWidthSelector
   , renderTargetHeightSelector
   , setRenderTargetHeightSelector
+  , rasterizationRateMapSelector
+  , setRasterizationRateMapSelector
   , sampleBufferAttachmentsSelector
   , visibilityResultTypeSelector
   , setVisibilityResultTypeSelector
@@ -100,6 +112,34 @@ renderPassDescriptor  =
     cls' <- getRequiredClass "MTLRenderPassDescriptor"
     sendClassMsg cls' (mkSelector "renderPassDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | setSamplePositions:count:
+--
+-- Configure the custom sample positions, to be used in MSAA rendering (i.e. when sample count > 1).
+--
+-- @positions@ — The source array for custom sample position data.
+--
+-- @count@ — Specifies the length of the positions array, and must be a valid sample count or 0 (to disable custom sample positions).
+--
+-- ObjC selector: @- setSamplePositions:count:@
+setSamplePositions_count :: IsMTLRenderPassDescriptor mtlRenderPassDescriptor => mtlRenderPassDescriptor -> Const RawId -> CULong -> IO ()
+setSamplePositions_count mtlRenderPassDescriptor  positions count =
+    sendMsg mtlRenderPassDescriptor (mkSelector "setSamplePositions:count:") retVoid [argPtr (castPtr (unRawId (unConst positions)) :: Ptr ()), argCULong count]
+
+-- | getSamplePositions:count:
+--
+-- Retrieve the previously configured custom sample positions. The positions input array will only be modified when count specifies a length sufficient for the number of previously configured positions.
+--
+-- @positions@ — The destination array for custom sample position data.
+--
+-- @count@ — Specifies the length of the positions array, which must be large enough to hold all configured sample positions.
+--
+-- Returns: The number of previously configured custom sample positions.
+--
+-- ObjC selector: @- getSamplePositions:count:@
+getSamplePositions_count :: IsMTLRenderPassDescriptor mtlRenderPassDescriptor => mtlRenderPassDescriptor -> RawId -> CULong -> IO CULong
+getSamplePositions_count mtlRenderPassDescriptor  positions count =
+    sendMsg mtlRenderPassDescriptor (mkSelector "getSamplePositions:count:") retCULong [argPtr (castPtr (unRawId positions) :: Ptr ()), argCULong count]
+
 -- | @- colorAttachments@
 colorAttachments :: IsMTLRenderPassDescriptor mtlRenderPassDescriptor => mtlRenderPassDescriptor -> IO (Id MTLRenderPassColorAttachmentDescriptorArray)
 colorAttachments mtlRenderPassDescriptor  =
@@ -126,6 +166,24 @@ setStencilAttachment :: (IsMTLRenderPassDescriptor mtlRenderPassDescriptor, IsMT
 setStencilAttachment mtlRenderPassDescriptor  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mtlRenderPassDescriptor (mkSelector "setStencilAttachment:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | visibilityResultBuffer:
+--
+-- Buffer into which samples passing the depth and stencil tests are counted.
+--
+-- ObjC selector: @- visibilityResultBuffer@
+visibilityResultBuffer :: IsMTLRenderPassDescriptor mtlRenderPassDescriptor => mtlRenderPassDescriptor -> IO RawId
+visibilityResultBuffer mtlRenderPassDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlRenderPassDescriptor (mkSelector "visibilityResultBuffer") (retPtr retVoid) []
+
+-- | visibilityResultBuffer:
+--
+-- Buffer into which samples passing the depth and stencil tests are counted.
+--
+-- ObjC selector: @- setVisibilityResultBuffer:@
+setVisibilityResultBuffer :: IsMTLRenderPassDescriptor mtlRenderPassDescriptor => mtlRenderPassDescriptor -> RawId -> IO ()
+setVisibilityResultBuffer mtlRenderPassDescriptor  value =
+    sendMsg mtlRenderPassDescriptor (mkSelector "setVisibilityResultBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | renderTargetArrayLength:
 --
@@ -287,6 +345,28 @@ setRenderTargetHeight :: IsMTLRenderPassDescriptor mtlRenderPassDescriptor => mt
 setRenderTargetHeight mtlRenderPassDescriptor  value =
     sendMsg mtlRenderPassDescriptor (mkSelector "setRenderTargetHeight:") retVoid [argCULong value]
 
+-- | rasterizationRateMap
+--
+-- The variable rasterization rate map to use when rendering this pass, or nil to not use variable rasterization rate.
+--
+-- The default value is nil. Enabling variable rasterization rate allows for decreasing the rasterization rate in unimportant regions of screen space.
+--
+-- ObjC selector: @- rasterizationRateMap@
+rasterizationRateMap :: IsMTLRenderPassDescriptor mtlRenderPassDescriptor => mtlRenderPassDescriptor -> IO RawId
+rasterizationRateMap mtlRenderPassDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlRenderPassDescriptor (mkSelector "rasterizationRateMap") (retPtr retVoid) []
+
+-- | rasterizationRateMap
+--
+-- The variable rasterization rate map to use when rendering this pass, or nil to not use variable rasterization rate.
+--
+-- The default value is nil. Enabling variable rasterization rate allows for decreasing the rasterization rate in unimportant regions of screen space.
+--
+-- ObjC selector: @- setRasterizationRateMap:@
+setRasterizationRateMap :: IsMTLRenderPassDescriptor mtlRenderPassDescriptor => mtlRenderPassDescriptor -> RawId -> IO ()
+setRasterizationRateMap mtlRenderPassDescriptor  value =
+    sendMsg mtlRenderPassDescriptor (mkSelector "setRasterizationRateMap:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | sampleBufferAttachments
 --
 -- An array of sample buffers and associated sample indices.
@@ -332,6 +412,14 @@ setSupportColorAttachmentMapping mtlRenderPassDescriptor  value =
 renderPassDescriptorSelector :: Selector
 renderPassDescriptorSelector = mkSelector "renderPassDescriptor"
 
+-- | @Selector@ for @setSamplePositions:count:@
+setSamplePositions_countSelector :: Selector
+setSamplePositions_countSelector = mkSelector "setSamplePositions:count:"
+
+-- | @Selector@ for @getSamplePositions:count:@
+getSamplePositions_countSelector :: Selector
+getSamplePositions_countSelector = mkSelector "getSamplePositions:count:"
+
 -- | @Selector@ for @colorAttachments@
 colorAttachmentsSelector :: Selector
 colorAttachmentsSelector = mkSelector "colorAttachments"
@@ -351,6 +439,14 @@ stencilAttachmentSelector = mkSelector "stencilAttachment"
 -- | @Selector@ for @setStencilAttachment:@
 setStencilAttachmentSelector :: Selector
 setStencilAttachmentSelector = mkSelector "setStencilAttachment:"
+
+-- | @Selector@ for @visibilityResultBuffer@
+visibilityResultBufferSelector :: Selector
+visibilityResultBufferSelector = mkSelector "visibilityResultBuffer"
+
+-- | @Selector@ for @setVisibilityResultBuffer:@
+setVisibilityResultBufferSelector :: Selector
+setVisibilityResultBufferSelector = mkSelector "setVisibilityResultBuffer:"
 
 -- | @Selector@ for @renderTargetArrayLength@
 renderTargetArrayLengthSelector :: Selector
@@ -415,6 +511,14 @@ renderTargetHeightSelector = mkSelector "renderTargetHeight"
 -- | @Selector@ for @setRenderTargetHeight:@
 setRenderTargetHeightSelector :: Selector
 setRenderTargetHeightSelector = mkSelector "setRenderTargetHeight:"
+
+-- | @Selector@ for @rasterizationRateMap@
+rasterizationRateMapSelector :: Selector
+rasterizationRateMapSelector = mkSelector "rasterizationRateMap"
+
+-- | @Selector@ for @setRasterizationRateMap:@
+setRasterizationRateMapSelector :: Selector
+setRasterizationRateMapSelector = mkSelector "setRasterizationRateMap:"
 
 -- | @Selector@ for @sampleBufferAttachments@
 sampleBufferAttachmentsSelector :: Selector

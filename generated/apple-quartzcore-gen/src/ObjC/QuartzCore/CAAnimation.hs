@@ -13,6 +13,8 @@ module ObjC.QuartzCore.CAAnimation
   , shouldArchiveValueForKey
   , timingFunction
   , setTimingFunction
+  , delegate
+  , setDelegate
   , removedOnCompletion
   , setRemovedOnCompletion
   , preferredFrameRateRange
@@ -22,6 +24,8 @@ module ObjC.QuartzCore.CAAnimation
   , shouldArchiveValueForKeySelector
   , timingFunctionSelector
   , setTimingFunctionSelector
+  , delegateSelector
+  , setDelegateSelector
   , removedOnCompletionSelector
   , setRemovedOnCompletionSelector
   , preferredFrameRateRangeSelector
@@ -78,6 +82,16 @@ setTimingFunction caAnimation  value =
   withObjCPtr value $ \raw_value ->
       sendMsg caAnimation (mkSelector "setTimingFunction:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsCAAnimation caAnimation => caAnimation -> IO RawId
+delegate caAnimation  =
+    fmap (RawId . castPtr) $ sendMsg caAnimation (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsCAAnimation caAnimation => caAnimation -> RawId -> IO ()
+setDelegate caAnimation  value =
+    sendMsg caAnimation (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- removedOnCompletion@
 removedOnCompletion :: IsCAAnimation caAnimation => caAnimation -> IO Bool
 removedOnCompletion caAnimation  =
@@ -121,6 +135,14 @@ timingFunctionSelector = mkSelector "timingFunction"
 -- | @Selector@ for @setTimingFunction:@
 setTimingFunctionSelector :: Selector
 setTimingFunctionSelector = mkSelector "setTimingFunction:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @removedOnCompletion@
 removedOnCompletionSelector :: Selector

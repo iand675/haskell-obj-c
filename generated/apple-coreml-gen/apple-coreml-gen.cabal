@@ -12,6 +12,9 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.CoreML.Delegate.MLBatchProvider
+      ObjC.CoreML.Delegate.MLCustomLayer
+      ObjC.CoreML.Delegate.MLCustomModel
       ObjC.CoreML.Enums
       ObjC.CoreML.Internal.Classes
       ObjC.CoreML.Internal.Enums

@@ -10,8 +10,12 @@ module ObjC.Metal.MTL4LibraryFunctionDescriptor
   , IsMTL4LibraryFunctionDescriptor(..)
   , name
   , setName
+  , library
+  , setLibrary
   , nameSelector
   , setNameSelector
+  , librarySelector
+  , setLibrarySelector
 
 
   ) where
@@ -46,6 +50,20 @@ setName mtL4LibraryFunctionDescriptor  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mtL4LibraryFunctionDescriptor (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | Returns a reference to the library containing the function.
+--
+-- ObjC selector: @- library@
+library :: IsMTL4LibraryFunctionDescriptor mtL4LibraryFunctionDescriptor => mtL4LibraryFunctionDescriptor -> IO RawId
+library mtL4LibraryFunctionDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtL4LibraryFunctionDescriptor (mkSelector "library") (retPtr retVoid) []
+
+-- | Returns a reference to the library containing the function.
+--
+-- ObjC selector: @- setLibrary:@
+setLibrary :: IsMTL4LibraryFunctionDescriptor mtL4LibraryFunctionDescriptor => mtL4LibraryFunctionDescriptor -> RawId -> IO ()
+setLibrary mtL4LibraryFunctionDescriptor  value =
+    sendMsg mtL4LibraryFunctionDescriptor (mkSelector "setLibrary:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -57,4 +75,12 @@ nameSelector = mkSelector "name"
 -- | @Selector@ for @setName:@
 setNameSelector :: Selector
 setNameSelector = mkSelector "setName:"
+
+-- | @Selector@ for @library@
+librarySelector :: Selector
+librarySelector = mkSelector "library"
+
+-- | @Selector@ for @setLibrary:@
+setLibrarySelector :: Selector
+setLibrarySelector = mkSelector "setLibrary:"
 

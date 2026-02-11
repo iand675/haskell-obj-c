@@ -16,6 +16,7 @@ module ObjC.AVFoundation.AVCaptureTimecodeGenerator
   , startSynchronizationWithTimecodeSource
   , availableSources
   , currentSource
+  , delegate
   , delegateCallbackQueue
   , synchronizationTimeout
   , setSynchronizationTimeout
@@ -27,6 +28,7 @@ module ObjC.AVFoundation.AVCaptureTimecodeGenerator
   , startSynchronizationWithTimecodeSourceSelector
   , availableSourcesSelector
   , currentSourceSelector
+  , delegateSelector
   , delegateCallbackQueueSelector
   , synchronizationTimeoutSelector
   , setSynchronizationTimeoutSelector
@@ -96,6 +98,15 @@ availableSources avCaptureTimecodeGenerator  =
 currentSource :: IsAVCaptureTimecodeGenerator avCaptureTimecodeGenerator => avCaptureTimecodeGenerator -> IO (Id AVCaptureTimecodeSource)
 currentSource avCaptureTimecodeGenerator  =
     sendMsg avCaptureTimecodeGenerator (mkSelector "currentSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The delegate that receives timecode updates from the timecode generator.
+--
+-- You can use your ``delegate`` to receive real-time timecode updates. Implement the ``timecodeGenerator:didReceiveUpdate:`` method in your delegate to handle updates.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsAVCaptureTimecodeGenerator avCaptureTimecodeGenerator => avCaptureTimecodeGenerator -> IO RawId
+delegate avCaptureTimecodeGenerator  =
+    fmap (RawId . castPtr) $ sendMsg avCaptureTimecodeGenerator (mkSelector "delegate") (retPtr retVoid) []
 
 -- | The dispatch queue on which delegate callbacks are invoked.
 --
@@ -183,6 +194,10 @@ availableSourcesSelector = mkSelector "availableSources"
 -- | @Selector@ for @currentSource@
 currentSourceSelector :: Selector
 currentSourceSelector = mkSelector "currentSource"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @delegateCallbackQueue@
 delegateCallbackQueueSelector :: Selector

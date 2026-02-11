@@ -6,8 +6,10 @@
 module ObjC.QuartzCore.CAMetalDisplayLinkUpdate
   ( CAMetalDisplayLinkUpdate
   , IsCAMetalDisplayLinkUpdate(..)
+  , drawable
   , targetTimestamp
   , targetPresentationTimestamp
+  , drawableSelector
   , targetTimestampSelector
   , targetPresentationTimestampSelector
 
@@ -29,6 +31,11 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.QuartzCore.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | @- drawable@
+drawable :: IsCAMetalDisplayLinkUpdate caMetalDisplayLinkUpdate => caMetalDisplayLinkUpdate -> IO RawId
+drawable caMetalDisplayLinkUpdate  =
+    fmap (RawId . castPtr) $ sendMsg caMetalDisplayLinkUpdate (mkSelector "drawable") (retPtr retVoid) []
+
 -- | @- targetTimestamp@
 targetTimestamp :: IsCAMetalDisplayLinkUpdate caMetalDisplayLinkUpdate => caMetalDisplayLinkUpdate -> IO CDouble
 targetTimestamp caMetalDisplayLinkUpdate  =
@@ -42,6 +49,10 @@ targetPresentationTimestamp caMetalDisplayLinkUpdate  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @drawable@
+drawableSelector :: Selector
+drawableSelector = mkSelector "drawable"
 
 -- | @Selector@ for @targetTimestamp@
 targetTimestampSelector :: Selector

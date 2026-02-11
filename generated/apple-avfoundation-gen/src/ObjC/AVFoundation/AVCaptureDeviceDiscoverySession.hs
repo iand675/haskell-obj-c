@@ -17,10 +17,12 @@ module ObjC.AVFoundation.AVCaptureDeviceDiscoverySession
   , new
   , discoverySessionWithDeviceTypes_mediaType_position
   , devices
+  , supportedMultiCamDeviceSets
   , initSelector
   , newSelector
   , discoverySessionWithDeviceTypes_mediaType_positionSelector
   , devicesSelector
+  , supportedMultiCamDeviceSetsSelector
 
   -- * Enum types
   , AVCaptureDevicePosition(AVCaptureDevicePosition)
@@ -92,6 +94,17 @@ devices :: IsAVCaptureDeviceDiscoverySession avCaptureDeviceDiscoverySession => 
 devices avCaptureDeviceDiscoverySession  =
     sendMsg avCaptureDeviceDiscoverySession (mkSelector "devices") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | supportedMultiCamDeviceSets
+--
+-- An array of sets of AVCaptureDevices that are allowed to be used simultaneously in an AVCaptureMultiCamSession.
+--
+-- When using an AVCaptureMultiCamSession, multiple cameras may be used as device inputs to the session, so long as they are included in one of the supportedMultiCamDeviceSets. Starting in Mac Catalyst 14.0, clients can key value observe the value of this property to be notified when the device sets change.
+--
+-- ObjC selector: @- supportedMultiCamDeviceSets@
+supportedMultiCamDeviceSets :: IsAVCaptureDeviceDiscoverySession avCaptureDeviceDiscoverySession => avCaptureDeviceDiscoverySession -> IO (Id NSArray)
+supportedMultiCamDeviceSets avCaptureDeviceDiscoverySession  =
+    sendMsg avCaptureDeviceDiscoverySession (mkSelector "supportedMultiCamDeviceSets") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -111,4 +124,8 @@ discoverySessionWithDeviceTypes_mediaType_positionSelector = mkSelector "discove
 -- | @Selector@ for @devices@
 devicesSelector :: Selector
 devicesSelector = mkSelector "devices"
+
+-- | @Selector@ for @supportedMultiCamDeviceSets@
+supportedMultiCamDeviceSetsSelector :: Selector
+supportedMultiCamDeviceSetsSelector = mkSelector "supportedMultiCamDeviceSets"
 

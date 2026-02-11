@@ -27,6 +27,7 @@ module ObjC.AppKit.NSGraphicsContext
   , drawingToScreen
   , cgContext
   , flipped
+  , graphicsPort
   , ciContext
   , shouldAntialias
   , setShouldAntialias
@@ -56,6 +57,7 @@ module ObjC.AppKit.NSGraphicsContext
   , drawingToScreenSelector
   , cgContextSelector
   , flippedSelector
+  , graphicsPortSelector
   , ciContextSelector
   , shouldAntialiasSelector
   , setShouldAntialiasSelector
@@ -258,6 +260,11 @@ flipped :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> IO Bool
 flipped nsGraphicsContext  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsGraphicsContext (mkSelector "flipped") retCULong []
 
+-- | @- graphicsPort@
+graphicsPort :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> IO (Ptr ())
+graphicsPort nsGraphicsContext  =
+    fmap castPtr $ sendMsg nsGraphicsContext (mkSelector "graphicsPort") (retPtr retVoid) []
+
 -- | @- CIContext@
 ciContext :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> IO (Id CIContext)
 ciContext nsGraphicsContext  =
@@ -388,6 +395,10 @@ cgContextSelector = mkSelector "CGContext"
 -- | @Selector@ for @flipped@
 flippedSelector :: Selector
 flippedSelector = mkSelector "flipped"
+
+-- | @Selector@ for @graphicsPort@
+graphicsPortSelector :: Selector
+graphicsPortSelector = mkSelector "graphicsPort"
 
 -- | @Selector@ for @CIContext@
 ciContextSelector :: Selector

@@ -16,6 +16,8 @@ module ObjC.MetalPerformanceShaders.MPSNNLossGradient
   , initWithDevice
   , initWithDevice_lossDescriptor
   , initWithCoder_device
+  , encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStates
+  , encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStates_destinationGradients
   , lossType
   , reductionType
   , reduceAcrossBatch
@@ -33,6 +35,8 @@ module ObjC.MetalPerformanceShaders.MPSNNLossGradient
   , initWithDeviceSelector
   , initWithDevice_lossDescriptorSelector
   , initWithCoder_deviceSelector
+  , encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStatesSelector
+  , encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStates_destinationGradientsSelector
   , lossTypeSelector
   , reductionTypeSelector
   , reduceAcrossBatchSelector
@@ -112,6 +116,46 @@ initWithCoder_device :: (IsMPSNNLossGradient mpsnnLossGradient, IsNSCoder aDecod
 initWithCoder_device mpsnnLossGradient  aDecoder device =
   withObjCPtr aDecoder $ \raw_aDecoder ->
       sendMsg mpsnnLossGradient (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+
+-- | Encode the loss gradient filter and return a gradient
+--
+-- @commandBuffer@ — The MTLCommandBuffer on which to encode
+--
+-- @sourceGradients@ — The gradient images from the "next" filter in the graph
+--
+-- @sourceImages@ — The images used as source image from the forward pass
+--
+-- @labels@ — The source images that contains the labels (targets).
+--
+-- @weights@ — The object containing weights for the labels. Optional.
+--
+-- @sourceStates@ — Optional gradient state - carries dynamical property values from the forward pass                                  (weight, labelSmoothing, epsilon, delta).
+--
+-- ObjC selector: @- encodeBatchToCommandBuffer:sourceGradients:sourceImages:labels:weights:sourceStates:@
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStates :: IsMPSNNLossGradient mpsnnLossGradient => mpsnnLossGradient -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> IO RawId
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStates mpsnnLossGradient  commandBuffer sourceGradients sourceImages labels weights sourceStates =
+    fmap (RawId . castPtr) $ sendMsg mpsnnLossGradient (mkSelector "encodeBatchToCommandBuffer:sourceGradients:sourceImages:labels:weights:sourceStates:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceGradients) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr (unRawId labels) :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ()), argPtr (castPtr (unRawId sourceStates) :: Ptr ())]
+
+-- | Encode the loss gradient filter and return a gradient
+--
+-- @commandBuffer@ — The MTLCommandBuffer on which to encode
+--
+-- @sourceGradients@ — The gradient images from the "next" filter in the graph
+--
+-- @sourceImages@ — The image used as source images from the forward pass
+--
+-- @labels@ — The source images that contains the labels (targets).
+--
+-- @weights@ — The object containing weights for the labels. Optional.
+--
+-- @sourceStates@ — Optional gradient state - carries dynamical property values from the forward pass                                  (weight, labelSmoothing, epsilon, delta).
+--
+-- @destinationGradients@ — The MPSImages into which to write the filter result
+--
+-- ObjC selector: @- encodeBatchToCommandBuffer:sourceGradients:sourceImages:labels:weights:sourceStates:destinationGradients:@
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStates_destinationGradients :: IsMPSNNLossGradient mpsnnLossGradient => mpsnnLossGradient -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> IO ()
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStates_destinationGradients mpsnnLossGradient  commandBuffer sourceGradients sourceImages labels weights sourceStates destinationGradients =
+    sendMsg mpsnnLossGradient (mkSelector "encodeBatchToCommandBuffer:sourceGradients:sourceImages:labels:weights:sourceStates:destinationGradients:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceGradients) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr (unRawId labels) :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ()), argPtr (castPtr (unRawId sourceStates) :: Ptr ()), argPtr (castPtr (unRawId destinationGradients) :: Ptr ())]
 
 -- | See MPSCNNLossDescriptor for information about the following properties.
 --
@@ -208,6 +252,14 @@ initWithDevice_lossDescriptorSelector = mkSelector "initWithDevice:lossDescripto
 -- | @Selector@ for @initWithCoder:device:@
 initWithCoder_deviceSelector :: Selector
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
+
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceGradients:sourceImages:labels:weights:sourceStates:@
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStatesSelector :: Selector
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStatesSelector = mkSelector "encodeBatchToCommandBuffer:sourceGradients:sourceImages:labels:weights:sourceStates:"
+
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceGradients:sourceImages:labels:weights:sourceStates:destinationGradients:@
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStates_destinationGradientsSelector :: Selector
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStates_destinationGradientsSelector = mkSelector "encodeBatchToCommandBuffer:sourceGradients:sourceImages:labels:weights:sourceStates:destinationGradients:"
 
 -- | @Selector@ for @lossType@
 lossTypeSelector :: Selector

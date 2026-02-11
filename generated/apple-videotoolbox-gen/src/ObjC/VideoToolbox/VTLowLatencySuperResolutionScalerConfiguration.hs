@@ -18,6 +18,7 @@ module ObjC.VideoToolbox.VTLowLatencySuperResolutionScalerConfiguration
   , supportedScaleFactorsForFrameWidth_frameHeight
   , frameWidth
   , frameHeight
+  , frameSupportedPixelFormats
   , sourcePixelBufferAttributes
   , destinationPixelBufferAttributes
   , scaleFactor
@@ -28,6 +29,7 @@ module ObjC.VideoToolbox.VTLowLatencySuperResolutionScalerConfiguration
   , supportedScaleFactorsForFrameWidth_frameHeightSelector
   , frameWidthSelector
   , frameHeightSelector
+  , frameSupportedPixelFormatsSelector
   , sourcePixelBufferAttributesSelector
   , destinationPixelBufferAttributesSelector
   , scaleFactorSelector
@@ -95,6 +97,13 @@ frameHeight :: IsVTLowLatencySuperResolutionScalerConfiguration vtLowLatencySupe
 frameHeight vtLowLatencySuperResolutionScalerConfiguration  =
     sendMsg vtLowLatencySuperResolutionScalerConfiguration (mkSelector "frameHeight") retCLong []
 
+-- | Available supported pixel formats for source frames for current configuration.
+--
+-- ObjC selector: @- frameSupportedPixelFormats@
+frameSupportedPixelFormats :: IsVTLowLatencySuperResolutionScalerConfiguration vtLowLatencySuperResolutionScalerConfiguration => vtLowLatencySuperResolutionScalerConfiguration -> IO (Id NSArray)
+frameSupportedPixelFormats vtLowLatencySuperResolutionScalerConfiguration  =
+    sendMsg vtLowLatencySuperResolutionScalerConfiguration (mkSelector "frameSupportedPixelFormats") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Pixel buffer attributes dictionary that describes requirements for pixel buffers which represent source frames and reference frames.
 --
 -- Use ``CVPixelBufferCreateResolvedAttributesDictionary`` to combine this dictionary with your pixel buffer attributes dictionary.
@@ -156,6 +165,10 @@ frameWidthSelector = mkSelector "frameWidth"
 -- | @Selector@ for @frameHeight@
 frameHeightSelector :: Selector
 frameHeightSelector = mkSelector "frameHeight"
+
+-- | @Selector@ for @frameSupportedPixelFormats@
+frameSupportedPixelFormatsSelector :: Selector
+frameSupportedPixelFormatsSelector = mkSelector "frameSupportedPixelFormats"
 
 -- | @Selector@ for @sourcePixelBufferAttributes@
 sourcePixelBufferAttributesSelector :: Selector

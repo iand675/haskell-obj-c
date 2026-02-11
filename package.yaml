@@ -20,6 +20,9 @@ dependencies:
 - libffi
 - bytestring
 - template-haskell
+- containers
+- unordered-containers
+- hashable
 
 ghc-options:
 - -Wall
@@ -57,6 +60,9 @@ library:
   - ObjC.Runtime.Framework
   - ObjC.Runtime.NSString
   - ObjC.Runtime.DynClass
+  - ObjC.Runtime.StableIvar
+  - ObjC.Runtime.ActionTarget
+  - ObjC.Runtime.DelegateProxy
   - ObjC.Runtime.TH
   - ObjC.Runtime.Block
 

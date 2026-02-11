@@ -14,6 +14,21 @@ library
   exposed-modules:
       ObjC.Matter.AttestationInfo
       ObjC.Matter.CSRInfo
+      ObjC.Matter.Delegate.MTRCommissionableBrowserDelegate
+      ObjC.Matter.Delegate.MTRCommissioningDelegate
+      ObjC.Matter.Delegate.MTRDeviceControllerClientProtocol
+      ObjC.Matter.Delegate.MTRDeviceControllerDelegate
+      ObjC.Matter.Delegate.MTRDeviceDelegate
+      ObjC.Matter.Delegate.MTRDevicePairingDelegate
+      ObjC.Matter.Delegate.MTRKeypair
+      ObjC.Matter.Delegate.MTROTAProviderDelegate
+      ObjC.Matter.Delegate.MTROperationalCertificateIssuer
+      ObjC.Matter.Delegate.MTRStorage
+      ObjC.Matter.Delegate.MTRXPCClientProtocol_MTRDevice
+      ObjC.Matter.Delegate.MTRXPCClientProtocol_MTRDeviceController
+      ObjC.Matter.Delegate.MTRXPCServerProtocol
+      ObjC.Matter.Delegate.MTRXPCServerProtocol_MTRDevice
+      ObjC.Matter.Delegate.MTRXPCServerProtocol_MTRDeviceController
       ObjC.Matter.Enums
       ObjC.Matter.Internal.Classes
       ObjC.Matter.Internal.Enums

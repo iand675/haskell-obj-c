@@ -14,18 +14,42 @@ module ObjC.AppKit.NSSharingService
   , init_
   , canPerformWithItems
   , performWithItems
+  , delegate
+  , setDelegate
   , title
   , image
   , alternateImage
+  , menuItemTitle
+  , setMenuItemTitle
+  , recipients
+  , setRecipients
+  , subject
+  , setSubject
+  , messageBody
+  , permanentLink
+  , accountName
+  , attachmentFileURLs
   , sharingServicesForItemsSelector
   , sharingServiceNamedSelector
   , initWithTitle_image_alternateImage_handlerSelector
   , initSelector
   , canPerformWithItemsSelector
   , performWithItemsSelector
+  , delegateSelector
+  , setDelegateSelector
   , titleSelector
   , imageSelector
   , alternateImageSelector
+  , menuItemTitleSelector
+  , setMenuItemTitleSelector
+  , recipientsSelector
+  , setRecipientsSelector
+  , subjectSelector
+  , setSubjectSelector
+  , messageBodySelector
+  , permanentLinkSelector
+  , accountNameSelector
+  , attachmentFileURLsSelector
 
 
   ) where
@@ -102,6 +126,16 @@ performWithItems nsSharingService  items =
   withObjCPtr items $ \raw_items ->
       sendMsg nsSharingService (mkSelector "performWithItems:") retVoid [argPtr (castPtr raw_items :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsNSSharingService nsSharingService => nsSharingService -> IO RawId
+delegate nsSharingService  =
+    fmap (RawId . castPtr) $ sendMsg nsSharingService (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSSharingService nsSharingService => nsSharingService -> RawId -> IO ()
+setDelegate nsSharingService  value =
+    sendMsg nsSharingService (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- title@
 title :: IsNSSharingService nsSharingService => nsSharingService -> IO (Id NSString)
 title nsSharingService  =
@@ -116,6 +150,75 @@ image nsSharingService  =
 alternateImage :: IsNSSharingService nsSharingService => nsSharingService -> IO (Id NSImage)
 alternateImage nsSharingService  =
     sendMsg nsSharingService (mkSelector "alternateImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Title of the service in the Share menu. Can be modified.
+--
+-- ObjC selector: @- menuItemTitle@
+menuItemTitle :: IsNSSharingService nsSharingService => nsSharingService -> IO (Id NSString)
+menuItemTitle nsSharingService  =
+    sendMsg nsSharingService (mkSelector "menuItemTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Title of the service in the Share menu. Can be modified.
+--
+-- ObjC selector: @- setMenuItemTitle:@
+setMenuItemTitle :: (IsNSSharingService nsSharingService, IsNSString value) => nsSharingService -> value -> IO ()
+setMenuItemTitle nsSharingService  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsSharingService (mkSelector "setMenuItemTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | NSArray of NSString objects representing handles (example: email adresses)
+--
+-- ObjC selector: @- recipients@
+recipients :: IsNSSharingService nsSharingService => nsSharingService -> IO (Id NSArray)
+recipients nsSharingService  =
+    sendMsg nsSharingService (mkSelector "recipients") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | NSArray of NSString objects representing handles (example: email adresses)
+--
+-- ObjC selector: @- setRecipients:@
+setRecipients :: (IsNSSharingService nsSharingService, IsNSArray value) => nsSharingService -> value -> IO ()
+setRecipients nsSharingService  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsSharingService (mkSelector "setRecipients:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- subject@
+subject :: IsNSSharingService nsSharingService => nsSharingService -> IO (Id NSString)
+subject nsSharingService  =
+    sendMsg nsSharingService (mkSelector "subject") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setSubject:@
+setSubject :: (IsNSSharingService nsSharingService, IsNSString value) => nsSharingService -> value -> IO ()
+setSubject nsSharingService  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsSharingService (mkSelector "setSubject:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | Message body as string
+--
+-- ObjC selector: @- messageBody@
+messageBody :: IsNSSharingService nsSharingService => nsSharingService -> IO (Id NSString)
+messageBody nsSharingService  =
+    sendMsg nsSharingService (mkSelector "messageBody") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | URL to access the post on Facebook, Twitter, Sina Weibo, etc. (also known as permalink)
+--
+-- ObjC selector: @- permanentLink@
+permanentLink :: IsNSSharingService nsSharingService => nsSharingService -> IO (Id NSURL)
+permanentLink nsSharingService  =
+    sendMsg nsSharingService (mkSelector "permanentLink") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Account name used for sending on Twitter or Sina Weibo
+--
+-- ObjC selector: @- accountName@
+accountName :: IsNSSharingService nsSharingService => nsSharingService -> IO (Id NSString)
+accountName nsSharingService  =
+    sendMsg nsSharingService (mkSelector "accountName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | NSArray of NSURL objects representing the files that were shared
+--
+-- ObjC selector: @- attachmentFileURLs@
+attachmentFileURLs :: IsNSSharingService nsSharingService => nsSharingService -> IO (Id NSArray)
+attachmentFileURLs nsSharingService  =
+    sendMsg nsSharingService (mkSelector "attachmentFileURLs") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -145,6 +248,14 @@ canPerformWithItemsSelector = mkSelector "canPerformWithItems:"
 performWithItemsSelector :: Selector
 performWithItemsSelector = mkSelector "performWithItems:"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @title@
 titleSelector :: Selector
 titleSelector = mkSelector "title"
@@ -156,4 +267,44 @@ imageSelector = mkSelector "image"
 -- | @Selector@ for @alternateImage@
 alternateImageSelector :: Selector
 alternateImageSelector = mkSelector "alternateImage"
+
+-- | @Selector@ for @menuItemTitle@
+menuItemTitleSelector :: Selector
+menuItemTitleSelector = mkSelector "menuItemTitle"
+
+-- | @Selector@ for @setMenuItemTitle:@
+setMenuItemTitleSelector :: Selector
+setMenuItemTitleSelector = mkSelector "setMenuItemTitle:"
+
+-- | @Selector@ for @recipients@
+recipientsSelector :: Selector
+recipientsSelector = mkSelector "recipients"
+
+-- | @Selector@ for @setRecipients:@
+setRecipientsSelector :: Selector
+setRecipientsSelector = mkSelector "setRecipients:"
+
+-- | @Selector@ for @subject@
+subjectSelector :: Selector
+subjectSelector = mkSelector "subject"
+
+-- | @Selector@ for @setSubject:@
+setSubjectSelector :: Selector
+setSubjectSelector = mkSelector "setSubject:"
+
+-- | @Selector@ for @messageBody@
+messageBodySelector :: Selector
+messageBodySelector = mkSelector "messageBody"
+
+-- | @Selector@ for @permanentLink@
+permanentLinkSelector :: Selector
+permanentLinkSelector = mkSelector "permanentLink"
+
+-- | @Selector@ for @accountName@
+accountNameSelector :: Selector
+accountNameSelector = mkSelector "accountName"
+
+-- | @Selector@ for @attachmentFileURLs@
+attachmentFileURLsSelector :: Selector
+attachmentFileURLsSelector = mkSelector "attachmentFileURLs"
 

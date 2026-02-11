@@ -19,12 +19,22 @@ module ObjC.SceneKit.SCNProgram
   , setVertexShader
   , fragmentShader
   , setFragmentShader
+  , tessellationControlShader
+  , setTessellationControlShader
+  , tessellationEvaluationShader
+  , setTessellationEvaluationShader
+  , geometryShader
+  , setGeometryShader
   , vertexFunctionName
   , setVertexFunctionName
   , fragmentFunctionName
   , setFragmentFunctionName
   , opaque
   , setOpaque
+  , delegate
+  , setDelegate
+  , library
+  , setLibrary
   , programSelector
   , handleBindingOfBufferNamed_frequency_usingBlockSelector
   , setSemantic_forSymbol_optionsSelector
@@ -33,12 +43,22 @@ module ObjC.SceneKit.SCNProgram
   , setVertexShaderSelector
   , fragmentShaderSelector
   , setFragmentShaderSelector
+  , tessellationControlShaderSelector
+  , setTessellationControlShaderSelector
+  , tessellationEvaluationShaderSelector
+  , setTessellationEvaluationShaderSelector
+  , geometryShaderSelector
+  , setGeometryShaderSelector
   , vertexFunctionNameSelector
   , setVertexFunctionNameSelector
   , fragmentFunctionNameSelector
   , setFragmentFunctionNameSelector
   , opaqueSelector
   , setOpaqueSelector
+  , delegateSelector
+  , setDelegateSelector
+  , librarySelector
+  , setLibrarySelector
 
   -- * Enum types
   , SCNBufferFrequency(SCNBufferFrequency)
@@ -163,6 +183,63 @@ setFragmentShader scnProgram  value =
   withObjCPtr value $ \raw_value ->
       sendMsg scnProgram (mkSelector "setFragmentShader:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | tessellationControlShader
+--
+-- Determines the receiver's tessellation control shader. Tessellation shaders require OpenGL Core Profile.
+--
+-- ObjC selector: @- tessellationControlShader@
+tessellationControlShader :: IsSCNProgram scnProgram => scnProgram -> IO (Id NSString)
+tessellationControlShader scnProgram  =
+    sendMsg scnProgram (mkSelector "tessellationControlShader") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | tessellationControlShader
+--
+-- Determines the receiver's tessellation control shader. Tessellation shaders require OpenGL Core Profile.
+--
+-- ObjC selector: @- setTessellationControlShader:@
+setTessellationControlShader :: (IsSCNProgram scnProgram, IsNSString value) => scnProgram -> value -> IO ()
+setTessellationControlShader scnProgram  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg scnProgram (mkSelector "setTessellationControlShader:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | tessellationEvaluationShader
+--
+-- Determines the receiver's tessellation evaluation shader. Tessellation shaders require OpenGL Core Profile.
+--
+-- ObjC selector: @- tessellationEvaluationShader@
+tessellationEvaluationShader :: IsSCNProgram scnProgram => scnProgram -> IO (Id NSString)
+tessellationEvaluationShader scnProgram  =
+    sendMsg scnProgram (mkSelector "tessellationEvaluationShader") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | tessellationEvaluationShader
+--
+-- Determines the receiver's tessellation evaluation shader. Tessellation shaders require OpenGL Core Profile.
+--
+-- ObjC selector: @- setTessellationEvaluationShader:@
+setTessellationEvaluationShader :: (IsSCNProgram scnProgram, IsNSString value) => scnProgram -> value -> IO ()
+setTessellationEvaluationShader scnProgram  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg scnProgram (mkSelector "setTessellationEvaluationShader:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | geometryShader
+--
+-- Determines the receiver's geometry shader. Geometry shaders require OpenGL Core Profile.
+--
+-- ObjC selector: @- geometryShader@
+geometryShader :: IsSCNProgram scnProgram => scnProgram -> IO (Id NSString)
+geometryShader scnProgram  =
+    sendMsg scnProgram (mkSelector "geometryShader") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | geometryShader
+--
+-- Determines the receiver's geometry shader. Geometry shaders require OpenGL Core Profile.
+--
+-- ObjC selector: @- setGeometryShader:@
+setGeometryShader :: (IsSCNProgram scnProgram, IsNSString value) => scnProgram -> value -> IO ()
+setGeometryShader scnProgram  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg scnProgram (mkSelector "setGeometryShader:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | vertexFunctionName
 --
 -- Determines the receiver's vertex function name.
@@ -227,6 +304,46 @@ setOpaque :: IsSCNProgram scnProgram => scnProgram -> Bool -> IO ()
 setOpaque scnProgram  value =
     sendMsg scnProgram (mkSelector "setOpaque:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | delegate
+--
+-- Determines the receiver's delegate
+--
+-- ObjC selector: @- delegate@
+delegate :: IsSCNProgram scnProgram => scnProgram -> IO RawId
+delegate scnProgram  =
+    fmap (RawId . castPtr) $ sendMsg scnProgram (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- Determines the receiver's delegate
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsSCNProgram scnProgram => scnProgram -> RawId -> IO ()
+setDelegate scnProgram  value =
+    sendMsg scnProgram (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | library
+--
+-- Specifies the Metal library to use to locate the function names specified above.
+--
+-- If set to nil the default library is used. Defaults to nil.
+--
+-- ObjC selector: @- library@
+library :: IsSCNProgram scnProgram => scnProgram -> IO RawId
+library scnProgram  =
+    fmap (RawId . castPtr) $ sendMsg scnProgram (mkSelector "library") (retPtr retVoid) []
+
+-- | library
+--
+-- Specifies the Metal library to use to locate the function names specified above.
+--
+-- If set to nil the default library is used. Defaults to nil.
+--
+-- ObjC selector: @- setLibrary:@
+setLibrary :: IsSCNProgram scnProgram => scnProgram -> RawId -> IO ()
+setLibrary scnProgram  value =
+    sendMsg scnProgram (mkSelector "setLibrary:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -263,6 +380,30 @@ fragmentShaderSelector = mkSelector "fragmentShader"
 setFragmentShaderSelector :: Selector
 setFragmentShaderSelector = mkSelector "setFragmentShader:"
 
+-- | @Selector@ for @tessellationControlShader@
+tessellationControlShaderSelector :: Selector
+tessellationControlShaderSelector = mkSelector "tessellationControlShader"
+
+-- | @Selector@ for @setTessellationControlShader:@
+setTessellationControlShaderSelector :: Selector
+setTessellationControlShaderSelector = mkSelector "setTessellationControlShader:"
+
+-- | @Selector@ for @tessellationEvaluationShader@
+tessellationEvaluationShaderSelector :: Selector
+tessellationEvaluationShaderSelector = mkSelector "tessellationEvaluationShader"
+
+-- | @Selector@ for @setTessellationEvaluationShader:@
+setTessellationEvaluationShaderSelector :: Selector
+setTessellationEvaluationShaderSelector = mkSelector "setTessellationEvaluationShader:"
+
+-- | @Selector@ for @geometryShader@
+geometryShaderSelector :: Selector
+geometryShaderSelector = mkSelector "geometryShader"
+
+-- | @Selector@ for @setGeometryShader:@
+setGeometryShaderSelector :: Selector
+setGeometryShaderSelector = mkSelector "setGeometryShader:"
+
 -- | @Selector@ for @vertexFunctionName@
 vertexFunctionNameSelector :: Selector
 vertexFunctionNameSelector = mkSelector "vertexFunctionName"
@@ -286,4 +427,20 @@ opaqueSelector = mkSelector "opaque"
 -- | @Selector@ for @setOpaque:@
 setOpaqueSelector :: Selector
 setOpaqueSelector = mkSelector "setOpaque:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
+-- | @Selector@ for @library@
+librarySelector :: Selector
+librarySelector = mkSelector "library"
+
+-- | @Selector@ for @setLibrary:@
+setLibrarySelector :: Selector
+setLibrarySelector = mkSelector "setLibrary:"
 

@@ -13,6 +13,8 @@ module ObjC.QuickLookUI.QLPreviewView
   , initWithFrame
   , refreshPreviewItem
   , close
+  , previewItem
+  , setPreviewItem
   , displayState
   , setDisplayState
   , shouldCloseWithWindow
@@ -23,6 +25,8 @@ module ObjC.QuickLookUI.QLPreviewView
   , initWithFrameSelector
   , refreshPreviewItemSelector
   , closeSelector
+  , previewItemSelector
+  , setPreviewItemSelector
   , displayStateSelector
   , setDisplayStateSelector
   , shouldCloseWithWindowSelector
@@ -98,6 +102,24 @@ refreshPreviewItem qlPreviewView  =
 close :: IsQLPreviewView qlPreviewView => qlPreviewView -> IO ()
 close qlPreviewView  =
     sendMsg qlPreviewView (mkSelector "close") retVoid []
+
+-- | The item to preview.
+--
+-- Quick Look requires Items you wish to conform to the <doc://com.apple.documentation/documentation/quicklook/qlpreviewitem> protocol. When you set this property, the ``QuickLookUI/QLPreviewView`` loads the preview asynchronously. Due to this asynchronous behavior, don’t assume that the preview is ready immediately after assigning it to this property.
+--
+-- ObjC selector: @- previewItem@
+previewItem :: IsQLPreviewView qlPreviewView => qlPreviewView -> IO RawId
+previewItem qlPreviewView  =
+    fmap (RawId . castPtr) $ sendMsg qlPreviewView (mkSelector "previewItem") (retPtr retVoid) []
+
+-- | The item to preview.
+--
+-- Quick Look requires Items you wish to conform to the <doc://com.apple.documentation/documentation/quicklook/qlpreviewitem> protocol. When you set this property, the ``QuickLookUI/QLPreviewView`` loads the preview asynchronously. Due to this asynchronous behavior, don’t assume that the preview is ready immediately after assigning it to this property.
+--
+-- ObjC selector: @- setPreviewItem:@
+setPreviewItem :: IsQLPreviewView qlPreviewView => qlPreviewView -> RawId -> IO ()
+setPreviewItem qlPreviewView  value =
+    sendMsg qlPreviewView (mkSelector "setPreviewItem:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | The current display state of the <doc://com.apple.documentation/documentation/quicklookui/qlpreviewview/1504747-previewitem>.
 --
@@ -176,6 +198,14 @@ refreshPreviewItemSelector = mkSelector "refreshPreviewItem"
 -- | @Selector@ for @close@
 closeSelector :: Selector
 closeSelector = mkSelector "close"
+
+-- | @Selector@ for @previewItem@
+previewItemSelector :: Selector
+previewItemSelector = mkSelector "previewItem"
+
+-- | @Selector@ for @setPreviewItem:@
+setPreviewItemSelector :: Selector
+setPreviewItemSelector = mkSelector "setPreviewItem:"
 
 -- | @Selector@ for @displayState@
 displayStateSelector :: Selector

@@ -129,7 +129,8 @@ generateContent fwMap allKnown hierarchy cls modName framework depFws originFw =
         , ktAvailableFrameworks = ktAvailableFrameworks allKnown
         }
       originFilter m = methodOriginFramework m == Just originFw
-      allMethods = filter originFilter (allClassMethods importable cls)
+      allKnownClasses = ktClasses allKnown
+      allMethods = filter originFilter (allClassMethods importable allKnownClasses cls)
       allMethodTypes = concatMap
         (\m -> methodReturnType m : fmap snd (methodParams m)) allMethods
       -- NSString special handling
@@ -156,18 +157,18 @@ generateContent fwMap allKnown hierarchy cls modName framework depFws originFw =
         | otherwise = []
   in concat
     [ nsStringPragmas
-    , generateHeader modName cls restrictedKnown importable originFilter allMethodTypes framework depFws
+    , generateHeader modName cls restrictedKnown importable allKnownClasses originFilter allMethodTypes framework depFws
     , [""]
-    , generateImports fwMap restrictedKnown hierarchy cls framework importable depFws originFilter allMethodTypes
+    , generateImports fwMap restrictedKnown hierarchy cls framework importable allKnownClasses depFws originFilter allMethodTypes
     , nsStringImports
     , [""]
-    , generateMethods restrictedKnown hierarchy cls importable originFilter
+    , generateMethods restrictedKnown hierarchy cls importable allKnownClasses originFilter
     , nsStringInstance
     , ["-- ---------------------------------------------------------------------------"]
     , ["-- Selectors"]
     , ["-- ---------------------------------------------------------------------------"]
     , [""]
-    , generateSelectors restrictedKnown cls importable originFilter
+    , generateSelectors restrictedKnown cls importable allKnownClasses originFilter
     ]
 
 -- ---------------------------------------------------------------------------
@@ -175,10 +176,10 @@ generateContent fwMap allKnown hierarchy cls modName framework depFws originFw =
 -- ---------------------------------------------------------------------------
 
 generateHeader
-  :: Text -> ObjCClass -> KnownTypes -> Set Text
+  :: Text -> ObjCClass -> KnownTypes -> Set Text -> Set Text
   -> (ObjCMethod -> Bool) -> [ObjCType]
   -> Text -> Set Text -> [Text]
-generateHeader modName cls known importable originFilter allMethodTypes framework depFws =
+generateHeader modName cls known importable allKnownClasses originFilter allMethodTypes framework depFws =
   let enumMap = ktEnums known
       enumRefs = referencedEnumNames enumMap allMethodTypes
       availableEnumRefs = Set.filter (isEnumAvailable enumMap framework depFws) enumRefs
@@ -195,7 +196,7 @@ generateHeader modName cls known importable originFilter allMethodTypes framewor
   [ "module " <> modName
   , "  ( " <> className cls
   , "  , Is" <> className cls <> "(..)"
-  , exportMethods known importable cls originFilter
+  , exportMethods known importable allKnownClasses cls originFilter
   , exportEnums enumMap availableEnumRefs
   , "  ) where"
   ]
@@ -215,19 +216,21 @@ isEnumAvailable enumMap framework depFws eName =
       Nothing -> False
       Just fw -> fw == framework || fwToPackageName fw `Set.member` depFws
 
-exportMethods :: KnownTypes -> Set Text -> ObjCClass -> (ObjCMethod -> Bool) -> Text
-exportMethods known importable cls originFilter =
+exportMethods :: KnownTypes -> Set Text -> Set Text -> ObjCClass -> (ObjCMethod -> Bool) -> Text
+exportMethods known importable allKnownClasses cls originFilter =
   let methods = dedupByHsName cls $
         filter (\m -> not (methodIsImplicit m) && originFilter m
                               && isMethodSupported known m)
-                       (allClassMethods importable cls)
+                       (allClassMethods importable allKnownClasses cls)
       instNames = instanceMethodNameSet cls methods
       methodExports = fmap (\m -> "  , " <> methodHaskellName cls instNames m) methods
-      uniqueSels = dedup Set.empty (fmap methodSelector methods)
-      dedup _ [] = []
-      dedup seen (s:ss)
-        | Set.member s seen = dedup seen ss
-        | otherwise         = s : dedup (Set.insert s seen) ss
+      uniqueSels = dedup Set.empty Set.empty (fmap methodSelector methods)
+      dedup _ _ [] = []
+      dedup seenSel seenHs (s:ss)
+        | Set.member s seenSel = dedup seenSel seenHs ss
+        | Set.member hs seenHs = dedup seenSel seenHs ss
+        | otherwise            = s : dedup (Set.insert s seenSel) (Set.insert hs seenHs) ss
+        where hs = selectorHaskellName s
       selExports = fmap (\s -> "  , " <> selectorHaskellName s) uniqueSels
   in T.unlines (methodExports ++ selExports)
 
@@ -260,12 +263,12 @@ enumConstantHsName cName = case T.uncons cName of
 
 generateImports
   :: Map Text Text -> KnownTypes -> ClassHierarchy -> ObjCClass -> Text
-  -> Set Text -> Set Text -> (ObjCMethod -> Bool) -> [ObjCType] -> [Text]
-generateImports fwMap allKnown hierarchy cls framework importable depFws originFilter allMethodTypes =
+  -> Set Text -> Set Text -> Set Text -> (ObjCMethod -> Bool) -> [ObjCType] -> [Text]
+generateImports fwMap allKnown hierarchy cls framework importable allKnownClasses depFws originFilter allMethodTypes =
   standardImports ++ [""] ++ internalImport ++ structImports ++ enumImports ++ crossFwImportLines
   where
     usesStret = any (isStructReturn . methodReturnType)
-                    (filter originFilter (allClassMethods importable cls))
+                    (filter originFilter (allClassMethods importable allKnownClasses cls))
     msgSendImports
       | usesStret = "import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)"
       | otherwise = "import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)"

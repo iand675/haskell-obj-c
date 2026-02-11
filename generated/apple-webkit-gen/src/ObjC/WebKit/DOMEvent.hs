@@ -11,10 +11,13 @@ module ObjC.WebKit.DOMEvent
   , initEvent_canBubbleArg_cancelableArg
   , initEvent
   , type_
+  , target
+  , currentTarget
   , eventPhase
   , bubbles
   , cancelable
   , timeStamp
+  , srcElement
   , returnValue
   , setReturnValue
   , cancelBubble
@@ -24,10 +27,13 @@ module ObjC.WebKit.DOMEvent
   , initEvent_canBubbleArg_cancelableArgSelector
   , initEventSelector
   , typeSelector
+  , targetSelector
+  , currentTargetSelector
   , eventPhaseSelector
   , bubblesSelector
   , cancelableSelector
   , timeStampSelector
+  , srcElementSelector
   , returnValueSelector
   , setReturnValueSelector
   , cancelBubbleSelector
@@ -78,6 +84,16 @@ type_ :: IsDOMEvent domEvent => domEvent -> IO (Id NSString)
 type_ domEvent  =
     sendMsg domEvent (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- target@
+target :: IsDOMEvent domEvent => domEvent -> IO RawId
+target domEvent  =
+    fmap (RawId . castPtr) $ sendMsg domEvent (mkSelector "target") (retPtr retVoid) []
+
+-- | @- currentTarget@
+currentTarget :: IsDOMEvent domEvent => domEvent -> IO RawId
+currentTarget domEvent  =
+    fmap (RawId . castPtr) $ sendMsg domEvent (mkSelector "currentTarget") (retPtr retVoid) []
+
 -- | @- eventPhase@
 eventPhase :: IsDOMEvent domEvent => domEvent -> IO CUShort
 eventPhase domEvent  =
@@ -97,6 +113,11 @@ cancelable domEvent  =
 timeStamp :: IsDOMEvent domEvent => domEvent -> IO CULong
 timeStamp domEvent  =
     sendMsg domEvent (mkSelector "timeStamp") retCULong []
+
+-- | @- srcElement@
+srcElement :: IsDOMEvent domEvent => domEvent -> IO RawId
+srcElement domEvent  =
+    fmap (RawId . castPtr) $ sendMsg domEvent (mkSelector "srcElement") (retPtr retVoid) []
 
 -- | @- returnValue@
 returnValue :: IsDOMEvent domEvent => domEvent -> IO Bool
@@ -142,6 +163,14 @@ initEventSelector = mkSelector "initEvent:::"
 typeSelector :: Selector
 typeSelector = mkSelector "type"
 
+-- | @Selector@ for @target@
+targetSelector :: Selector
+targetSelector = mkSelector "target"
+
+-- | @Selector@ for @currentTarget@
+currentTargetSelector :: Selector
+currentTargetSelector = mkSelector "currentTarget"
+
 -- | @Selector@ for @eventPhase@
 eventPhaseSelector :: Selector
 eventPhaseSelector = mkSelector "eventPhase"
@@ -157,6 +186,10 @@ cancelableSelector = mkSelector "cancelable"
 -- | @Selector@ for @timeStamp@
 timeStampSelector :: Selector
 timeStampSelector = mkSelector "timeStamp"
+
+-- | @Selector@ for @srcElement@
+srcElementSelector :: Selector
+srcElementSelector = mkSelector "srcElement"
 
 -- | @Selector@ for @returnValue@
 returnValueSelector :: Selector

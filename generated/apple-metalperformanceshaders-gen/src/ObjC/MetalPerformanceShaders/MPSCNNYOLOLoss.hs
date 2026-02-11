@@ -12,6 +12,8 @@ module ObjC.MetalPerformanceShaders.MPSCNNYOLOLoss
   , initWithCoder_device
   , encodeToCommandBuffer_sourceImage_labels_destinationImage
   , encodeToCommandBuffer_sourceImage_labels
+  , encodeBatchToCommandBuffer_sourceImages_labels_destinationImages
+  , encodeBatchToCommandBuffer_sourceImages_labels
   , lossXY
   , lossWH
   , lossConfidence
@@ -32,6 +34,8 @@ module ObjC.MetalPerformanceShaders.MPSCNNYOLOLoss
   , initWithCoder_deviceSelector
   , encodeToCommandBuffer_sourceImage_labels_destinationImageSelector
   , encodeToCommandBuffer_sourceImage_labelsSelector
+  , encodeBatchToCommandBuffer_sourceImages_labels_destinationImagesSelector
+  , encodeBatchToCommandBuffer_sourceImages_labelsSelector
   , lossXYSelector
   , lossWHSelector
   , lossConfidenceSelector
@@ -139,6 +143,16 @@ encodeToCommandBuffer_sourceImage_labels mpscnnyoloLoss  commandBuffer sourceIma
   withObjCPtr sourceImage $ \raw_sourceImage ->
     withObjCPtr labels $ \raw_labels ->
         sendMsg mpscnnyoloLoss (mkSelector "encodeToCommandBuffer:sourceImage:labels:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_labels :: Ptr ())] >>= retainedObject . castPtr
+
+-- | @- encodeBatchToCommandBuffer:sourceImages:labels:destinationImages:@
+encodeBatchToCommandBuffer_sourceImages_labels_destinationImages :: IsMPSCNNYOLOLoss mpscnnyoloLoss => mpscnnyoloLoss -> RawId -> RawId -> RawId -> RawId -> IO ()
+encodeBatchToCommandBuffer_sourceImages_labels_destinationImages mpscnnyoloLoss  commandBuffer sourceImage labels destinationImage =
+    sendMsg mpscnnyoloLoss (mkSelector "encodeBatchToCommandBuffer:sourceImages:labels:destinationImages:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImage) :: Ptr ()), argPtr (castPtr (unRawId labels) :: Ptr ()), argPtr (castPtr (unRawId destinationImage) :: Ptr ())]
+
+-- | @- encodeBatchToCommandBuffer:sourceImages:labels:@
+encodeBatchToCommandBuffer_sourceImages_labels :: IsMPSCNNYOLOLoss mpscnnyoloLoss => mpscnnyoloLoss -> RawId -> RawId -> RawId -> IO RawId
+encodeBatchToCommandBuffer_sourceImages_labels mpscnnyoloLoss  commandBuffer sourceImage labels =
+    fmap (RawId . castPtr) $ sendMsg mpscnnyoloLoss (mkSelector "encodeBatchToCommandBuffer:sourceImages:labels:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImage) :: Ptr ()), argPtr (castPtr (unRawId labels) :: Ptr ())]
 
 -- | lossXY
 --
@@ -256,6 +270,14 @@ encodeToCommandBuffer_sourceImage_labels_destinationImageSelector = mkSelector "
 -- | @Selector@ for @encodeToCommandBuffer:sourceImage:labels:@
 encodeToCommandBuffer_sourceImage_labelsSelector :: Selector
 encodeToCommandBuffer_sourceImage_labelsSelector = mkSelector "encodeToCommandBuffer:sourceImage:labels:"
+
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:labels:destinationImages:@
+encodeBatchToCommandBuffer_sourceImages_labels_destinationImagesSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_labels_destinationImagesSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:labels:destinationImages:"
+
+-- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:labels:@
+encodeBatchToCommandBuffer_sourceImages_labelsSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_labelsSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:labels:"
 
 -- | @Selector@ for @lossXY@
 lossXYSelector :: Selector

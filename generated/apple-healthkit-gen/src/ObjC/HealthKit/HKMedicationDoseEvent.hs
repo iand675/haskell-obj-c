@@ -13,6 +13,8 @@ module ObjC.HealthKit.HKMedicationDoseEvent
   , scheduleType
   , medicationConceptIdentifier
   , scheduledDate
+  , scheduledDoseQuantity
+  , doseQuantity
   , logStatus
   , unit
   , initSelector
@@ -21,6 +23,8 @@ module ObjC.HealthKit.HKMedicationDoseEvent
   , scheduleTypeSelector
   , medicationConceptIdentifierSelector
   , scheduledDateSelector
+  , scheduledDoseQuantitySelector
+  , doseQuantitySelector
   , logStatusSelector
   , unitSelector
 
@@ -102,6 +106,24 @@ scheduledDate :: IsHKMedicationDoseEvent hkMedicationDoseEvent => hkMedicationDo
 scheduledDate hkMedicationDoseEvent  =
     sendMsg hkMedicationDoseEvent (mkSelector "scheduledDate") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The dose quantity a person is expected to take based on their medication schedule.
+--
+-- The value is always non-null for ``HKMedicationDoseEvent/ScheduleType/schedule``, and always null for ``HKMedicationDoseEvent/ScheduleType/asNeeded``.
+--
+-- ObjC selector: @- scheduledDoseQuantity@
+scheduledDoseQuantity :: IsHKMedicationDoseEvent hkMedicationDoseEvent => hkMedicationDoseEvent -> IO (Id NSNumber)
+scheduledDoseQuantity hkMedicationDoseEvent  =
+    sendMsg hkMedicationDoseEvent (mkSelector "scheduledDoseQuantity") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The dose quantity the person reports as taken.
+--
+-- For scheduled dose events, the value defaults to the ``HKMedicationDoseEvent/scheduledDoseQuantity-477ge``, when logged from a reminder. For as needed dose events, the value defaults to @1@ in the medication tracking experience, but can always be edited by the person logging.
+--
+-- ObjC selector: @- doseQuantity@
+doseQuantity :: IsHKMedicationDoseEvent hkMedicationDoseEvent => hkMedicationDoseEvent -> IO (Id NSNumber)
+doseQuantity hkMedicationDoseEvent  =
+    sendMsg hkMedicationDoseEvent (mkSelector "doseQuantity") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | The log status the system assigns to this dose event.
 --
 -- ObjC selector: @- logStatus@
@@ -145,6 +167,14 @@ medicationConceptIdentifierSelector = mkSelector "medicationConceptIdentifier"
 -- | @Selector@ for @scheduledDate@
 scheduledDateSelector :: Selector
 scheduledDateSelector = mkSelector "scheduledDate"
+
+-- | @Selector@ for @scheduledDoseQuantity@
+scheduledDoseQuantitySelector :: Selector
+scheduledDoseQuantitySelector = mkSelector "scheduledDoseQuantity"
+
+-- | @Selector@ for @doseQuantity@
+doseQuantitySelector :: Selector
+doseQuantitySelector = mkSelector "doseQuantity"
 
 -- | @Selector@ for @logStatus@
 logStatusSelector :: Selector

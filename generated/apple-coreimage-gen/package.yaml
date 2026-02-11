@@ -47,6 +47,10 @@ library:
   - ObjC.CoreImage.CITextFeature
   - ObjC.CoreImage.CIVector
   - ObjC.CoreImage.CIWarpKernel
+  - ObjC.CoreImage.Delegate.CIFilter
+  - ObjC.CoreImage.Delegate.CIFilterConstructor
+  - ObjC.CoreImage.Delegate.CIImageProcessorInput
+  - ObjC.CoreImage.Delegate.CIImageProcessorOutput
   - ObjC.CoreImage.Enums
   - ObjC.CoreImage.Internal.Classes
   - ObjC.CoreImage.Internal.Enums

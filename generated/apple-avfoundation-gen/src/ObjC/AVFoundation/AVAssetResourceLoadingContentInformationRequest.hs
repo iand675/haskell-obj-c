@@ -10,20 +10,26 @@ module ObjC.AVFoundation.AVAssetResourceLoadingContentInformationRequest
   , new
   , contentType
   , setContentType
+  , allowedContentTypes
   , contentLength
   , setContentLength
   , byteRangeAccessSupported
   , setByteRangeAccessSupported
+  , renewalDate
+  , setRenewalDate
   , entireLengthAvailableOnDemand
   , setEntireLengthAvailableOnDemand
   , initSelector
   , newSelector
   , contentTypeSelector
   , setContentTypeSelector
+  , allowedContentTypesSelector
   , contentLengthSelector
   , setContentLengthSelector
   , byteRangeAccessSupportedSelector
   , setByteRangeAccessSupportedSelector
+  , renewalDateSelector
+  , setRenewalDateSelector
   , entireLengthAvailableOnDemandSelector
   , setEntireLengthAvailableOnDemandSelector
 
@@ -80,6 +86,17 @@ setContentType avAssetResourceLoadingContentInformationRequest  value =
   withObjCPtr value $ \raw_value ->
       sendMsg avAssetResourceLoadingContentInformationRequest (mkSelector "setContentType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | allowedContentTypes
+--
+-- An array showing the types of data which will be accepted as a valid response for the requested resource.
+--
+-- If an AVAssetResourceLoadingRequest's contentInformationRequest is not nil, ensure that the value assigned to the contentType property is in this array. Otherwise, calling -finishLoading on the associated request will result in an exception.
+--
+-- ObjC selector: @- allowedContentTypes@
+allowedContentTypes :: IsAVAssetResourceLoadingContentInformationRequest avAssetResourceLoadingContentInformationRequest => avAssetResourceLoadingContentInformationRequest -> IO (Id NSArray)
+allowedContentTypes avAssetResourceLoadingContentInformationRequest  =
+    sendMsg avAssetResourceLoadingContentInformationRequest (mkSelector "allowedContentTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | contentLength
 --
 -- Indicates the length of the requested resource, in bytes.
@@ -124,6 +141,29 @@ setByteRangeAccessSupported :: IsAVAssetResourceLoadingContentInformationRequest
 setByteRangeAccessSupported avAssetResourceLoadingContentInformationRequest  value =
     sendMsg avAssetResourceLoadingContentInformationRequest (mkSelector "setByteRangeAccessSupported:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | renewalDate
+--
+-- For resources that expire, the date at which a new AVAssetResourceLoadingRequest will be issued for a renewal of this resource, if the media system still requires it.
+--
+-- Before you finish loading an AVAssetResourceLoadingRequest, if the resource is prone to expiry you should set the value of this property to the date at which a renewal should be triggered. This value should be set sufficiently early enough to allow an AVAssetResourceRenewalRequest, delivered to your delegate via -resourceLoader:shouldWaitForRenewalOfRequestedResource:, to finish before the actual expiry time. Otherwise media playback may fail.
+--
+-- ObjC selector: @- renewalDate@
+renewalDate :: IsAVAssetResourceLoadingContentInformationRequest avAssetResourceLoadingContentInformationRequest => avAssetResourceLoadingContentInformationRequest -> IO (Id NSDate)
+renewalDate avAssetResourceLoadingContentInformationRequest  =
+    sendMsg avAssetResourceLoadingContentInformationRequest (mkSelector "renewalDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | renewalDate
+--
+-- For resources that expire, the date at which a new AVAssetResourceLoadingRequest will be issued for a renewal of this resource, if the media system still requires it.
+--
+-- Before you finish loading an AVAssetResourceLoadingRequest, if the resource is prone to expiry you should set the value of this property to the date at which a renewal should be triggered. This value should be set sufficiently early enough to allow an AVAssetResourceRenewalRequest, delivered to your delegate via -resourceLoader:shouldWaitForRenewalOfRequestedResource:, to finish before the actual expiry time. Otherwise media playback may fail.
+--
+-- ObjC selector: @- setRenewalDate:@
+setRenewalDate :: (IsAVAssetResourceLoadingContentInformationRequest avAssetResourceLoadingContentInformationRequest, IsNSDate value) => avAssetResourceLoadingContentInformationRequest -> value -> IO ()
+setRenewalDate avAssetResourceLoadingContentInformationRequest  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avAssetResourceLoadingContentInformationRequest (mkSelector "setRenewalDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | entireLengthAvailableOnDemand
 --
 -- Indicates whether asset data loading can expect data to be produced immediately.
@@ -166,6 +206,10 @@ contentTypeSelector = mkSelector "contentType"
 setContentTypeSelector :: Selector
 setContentTypeSelector = mkSelector "setContentType:"
 
+-- | @Selector@ for @allowedContentTypes@
+allowedContentTypesSelector :: Selector
+allowedContentTypesSelector = mkSelector "allowedContentTypes"
+
 -- | @Selector@ for @contentLength@
 contentLengthSelector :: Selector
 contentLengthSelector = mkSelector "contentLength"
@@ -181,6 +225,14 @@ byteRangeAccessSupportedSelector = mkSelector "byteRangeAccessSupported"
 -- | @Selector@ for @setByteRangeAccessSupported:@
 setByteRangeAccessSupportedSelector :: Selector
 setByteRangeAccessSupportedSelector = mkSelector "setByteRangeAccessSupported:"
+
+-- | @Selector@ for @renewalDate@
+renewalDateSelector :: Selector
+renewalDateSelector = mkSelector "renewalDate"
+
+-- | @Selector@ for @setRenewalDate:@
+setRenewalDateSelector :: Selector
+setRenewalDateSelector = mkSelector "setRenewalDate:"
 
 -- | @Selector@ for @entireLengthAvailableOnDemand@
 entireLengthAvailableOnDemandSelector :: Selector

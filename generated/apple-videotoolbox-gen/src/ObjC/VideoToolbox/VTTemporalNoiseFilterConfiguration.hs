@@ -15,20 +15,24 @@ module ObjC.VideoToolbox.VTTemporalNoiseFilterConfiguration
   , new
   , frameWidth
   , frameHeight
+  , frameSupportedPixelFormats
   , sourcePixelBufferAttributes
   , destinationPixelBufferAttributes
   , nextFrameCount
   , previousFrameCount
+  , supportedSourcePixelFormats
   , supported
   , initWithFrameWidth_frameHeight_sourcePixelFormatSelector
   , initSelector
   , newSelector
   , frameWidthSelector
   , frameHeightSelector
+  , frameSupportedPixelFormatsSelector
   , sourcePixelBufferAttributesSelector
   , destinationPixelBufferAttributesSelector
   , nextFrameCountSelector
   , previousFrameCountSelector
+  , supportedSourcePixelFormatsSelector
   , supportedSelector
 
 
@@ -86,6 +90,13 @@ frameHeight :: IsVTTemporalNoiseFilterConfiguration vtTemporalNoiseFilterConfigu
 frameHeight vtTemporalNoiseFilterConfiguration  =
     sendMsg vtTemporalNoiseFilterConfiguration (mkSelector "frameHeight") retCLong []
 
+-- | Supported pixel formats for source frames for current configuration.
+--
+-- ObjC selector: @- frameSupportedPixelFormats@
+frameSupportedPixelFormats :: IsVTTemporalNoiseFilterConfiguration vtTemporalNoiseFilterConfiguration => vtTemporalNoiseFilterConfiguration -> IO (Id NSArray)
+frameSupportedPixelFormats vtTemporalNoiseFilterConfiguration  =
+    sendMsg vtTemporalNoiseFilterConfiguration (mkSelector "frameSupportedPixelFormats") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Pixel buffer attributes dictionary that describes requirements for pixel buffers which represent source frames and reference frames.
 --
 -- Use ``CVPixelBufferCreateResolvedAttributesDictionary`` to combine this dictionary with your pixel buffer attributes dictionary.
@@ -117,6 +128,15 @@ nextFrameCount vtTemporalNoiseFilterConfiguration  =
 previousFrameCount :: IsVTTemporalNoiseFilterConfiguration vtTemporalNoiseFilterConfiguration => vtTemporalNoiseFilterConfiguration -> IO CLong
 previousFrameCount vtTemporalNoiseFilterConfiguration  =
     sendMsg vtTemporalNoiseFilterConfiguration (mkSelector "previousFrameCount") retCLong []
+
+-- | List of all supported pixel formats for source frames.
+--
+-- ObjC selector: @+ supportedSourcePixelFormats@
+supportedSourcePixelFormats :: IO (Id NSArray)
+supportedSourcePixelFormats  =
+  do
+    cls' <- getRequiredClass "VTTemporalNoiseFilterConfiguration"
+    sendClassMsg cls' (mkSelector "supportedSourcePixelFormats") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | Reports whether the system supports this processor.
 --
@@ -151,6 +171,10 @@ frameWidthSelector = mkSelector "frameWidth"
 frameHeightSelector :: Selector
 frameHeightSelector = mkSelector "frameHeight"
 
+-- | @Selector@ for @frameSupportedPixelFormats@
+frameSupportedPixelFormatsSelector :: Selector
+frameSupportedPixelFormatsSelector = mkSelector "frameSupportedPixelFormats"
+
 -- | @Selector@ for @sourcePixelBufferAttributes@
 sourcePixelBufferAttributesSelector :: Selector
 sourcePixelBufferAttributesSelector = mkSelector "sourcePixelBufferAttributes"
@@ -166,6 +190,10 @@ nextFrameCountSelector = mkSelector "nextFrameCount"
 -- | @Selector@ for @previousFrameCount@
 previousFrameCountSelector :: Selector
 previousFrameCountSelector = mkSelector "previousFrameCount"
+
+-- | @Selector@ for @supportedSourcePixelFormats@
+supportedSourcePixelFormatsSelector :: Selector
+supportedSourcePixelFormatsSelector = mkSelector "supportedSourcePixelFormats"
 
 -- | @Selector@ for @supported@
 supportedSelector :: Selector

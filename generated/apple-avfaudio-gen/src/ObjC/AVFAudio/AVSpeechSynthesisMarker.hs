@@ -19,6 +19,10 @@ module ObjC.AVFAudio.AVSpeechSynthesisMarker
   , setByteSampleOffset
   , textRange
   , setTextRange
+  , bookmarkName
+  , setBookmarkName
+  , phoneme
+  , setPhoneme
   , initWithMarkerType_forTextRange_atByteSampleOffsetSelector
   , initWithWordRange_atByteSampleOffsetSelector
   , initWithSentenceRange_atByteSampleOffsetSelector
@@ -31,6 +35,10 @@ module ObjC.AVFAudio.AVSpeechSynthesisMarker
   , setByteSampleOffsetSelector
   , textRangeSelector
   , setTextRangeSelector
+  , bookmarkNameSelector
+  , setBookmarkNameSelector
+  , phonemeSelector
+  , setPhonemeSelector
 
   -- * Enum types
   , AVSpeechSynthesisMarkerMark(AVSpeechSynthesisMarkerMark)
@@ -129,6 +137,26 @@ setTextRange :: IsAVSpeechSynthesisMarker avSpeechSynthesisMarker => avSpeechSyn
 setTextRange avSpeechSynthesisMarker  value =
     sendMsg avSpeechSynthesisMarker (mkSelector "setTextRange:") retVoid [argNSRange value]
 
+-- | @- bookmarkName@
+bookmarkName :: IsAVSpeechSynthesisMarker avSpeechSynthesisMarker => avSpeechSynthesisMarker -> IO RawId
+bookmarkName avSpeechSynthesisMarker  =
+    fmap (RawId . castPtr) $ sendMsg avSpeechSynthesisMarker (mkSelector "bookmarkName") (retPtr retVoid) []
+
+-- | @- setBookmarkName:@
+setBookmarkName :: IsAVSpeechSynthesisMarker avSpeechSynthesisMarker => avSpeechSynthesisMarker -> RawId -> IO ()
+setBookmarkName avSpeechSynthesisMarker  value =
+    sendMsg avSpeechSynthesisMarker (mkSelector "setBookmarkName:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- phoneme@
+phoneme :: IsAVSpeechSynthesisMarker avSpeechSynthesisMarker => avSpeechSynthesisMarker -> IO RawId
+phoneme avSpeechSynthesisMarker  =
+    fmap (RawId . castPtr) $ sendMsg avSpeechSynthesisMarker (mkSelector "phoneme") (retPtr retVoid) []
+
+-- | @- setPhoneme:@
+setPhoneme :: IsAVSpeechSynthesisMarker avSpeechSynthesisMarker => avSpeechSynthesisMarker -> RawId -> IO ()
+setPhoneme avSpeechSynthesisMarker  value =
+    sendMsg avSpeechSynthesisMarker (mkSelector "setPhoneme:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -180,4 +208,20 @@ textRangeSelector = mkSelector "textRange"
 -- | @Selector@ for @setTextRange:@
 setTextRangeSelector :: Selector
 setTextRangeSelector = mkSelector "setTextRange:"
+
+-- | @Selector@ for @bookmarkName@
+bookmarkNameSelector :: Selector
+bookmarkNameSelector = mkSelector "bookmarkName"
+
+-- | @Selector@ for @setBookmarkName:@
+setBookmarkNameSelector :: Selector
+setBookmarkNameSelector = mkSelector "setBookmarkName:"
+
+-- | @Selector@ for @phoneme@
+phonemeSelector :: Selector
+phonemeSelector = mkSelector "phoneme"
+
+-- | @Selector@ for @setPhoneme:@
+setPhonemeSelector :: Selector
+setPhonemeSelector = mkSelector "setPhoneme:"
 

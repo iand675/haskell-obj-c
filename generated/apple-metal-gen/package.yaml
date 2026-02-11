@@ -16,6 +16,50 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.Metal.Delegate.MTL4Archive
+  - ObjC.Metal.Delegate.MTL4CommandAllocator
+  - ObjC.Metal.Delegate.MTL4CommandBuffer
+  - ObjC.Metal.Delegate.MTL4CommandEncoder
+  - ObjC.Metal.Delegate.MTL4CommitFeedback
+  - ObjC.Metal.Delegate.MTL4CompilerTask
+  - ObjC.Metal.Delegate.MTL4ComputeCommandEncoder
+  - ObjC.Metal.Delegate.MTL4MachineLearningCommandEncoder
+  - ObjC.Metal.Delegate.MTL4MachineLearningPipelineState
+  - ObjC.Metal.Delegate.MTL4PipelineDataSetSerializer
+  - ObjC.Metal.Delegate.MTL4RenderCommandEncoder
+  - ObjC.Metal.Delegate.MTLAccelerationStructureCommandEncoder
+  - ObjC.Metal.Delegate.MTLArgumentEncoder
+  - ObjC.Metal.Delegate.MTLBinaryArchive
+  - ObjC.Metal.Delegate.MTLBinding
+  - ObjC.Metal.Delegate.MTLBufferBinding
+  - ObjC.Metal.Delegate.MTLCaptureScope
+  - ObjC.Metal.Delegate.MTLCommandBufferEncoderInfo
+  - ObjC.Metal.Delegate.MTLCommandEncoder
+  - ObjC.Metal.Delegate.MTLComputeCommandEncoder
+  - ObjC.Metal.Delegate.MTLCounter
+  - ObjC.Metal.Delegate.MTLCounterSampleBuffer
+  - ObjC.Metal.Delegate.MTLCounterSet
+  - ObjC.Metal.Delegate.MTLEvent
+  - ObjC.Metal.Delegate.MTLFence
+  - ObjC.Metal.Delegate.MTLFunctionHandle
+  - ObjC.Metal.Delegate.MTLFunctionLog
+  - ObjC.Metal.Delegate.MTLFunctionLogDebugLocation
+  - ObjC.Metal.Delegate.MTLIOCommandBuffer
+  - ObjC.Metal.Delegate.MTLIOCommandQueue
+  - ObjC.Metal.Delegate.MTLIOScratchBuffer
+  - ObjC.Metal.Delegate.MTLIOScratchBufferAllocator
+  - ObjC.Metal.Delegate.MTLIndirectCommandBuffer
+  - ObjC.Metal.Delegate.MTLIndirectComputeCommand
+  - ObjC.Metal.Delegate.MTLIndirectRenderCommand
+  - ObjC.Metal.Delegate.MTLIntersectionFunctionTable
+  - ObjC.Metal.Delegate.MTLObjectPayloadBinding
+  - ObjC.Metal.Delegate.MTLParallelRenderCommandEncoder
+  - ObjC.Metal.Delegate.MTLRasterizationRateMap
+  - ObjC.Metal.Delegate.MTLResourceViewPool
+  - ObjC.Metal.Delegate.MTLSharedEvent
+  - ObjC.Metal.Delegate.MTLTensorBinding
+  - ObjC.Metal.Delegate.MTLTextureBinding
+  - ObjC.Metal.Delegate.MTLThreadgroupBinding
   - ObjC.Metal.Enums
   - ObjC.Metal.Internal.Classes
   - ObjC.Metal.Internal.Enums

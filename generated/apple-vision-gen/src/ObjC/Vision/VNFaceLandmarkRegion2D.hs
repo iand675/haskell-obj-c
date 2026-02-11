@@ -11,8 +11,10 @@
 module ObjC.Vision.VNFaceLandmarkRegion2D
   ( VNFaceLandmarkRegion2D
   , IsVNFaceLandmarkRegion2D(..)
+  , normalizedPoints
   , precisionEstimatesPerPoint
   , pointsClassification
+  , normalizedPointsSelector
   , precisionEstimatesPerPointSelector
   , pointsClassificationSelector
 
@@ -40,6 +42,17 @@ import ObjC.Vision.Internal.Classes
 import ObjC.Vision.Internal.Enums
 import ObjC.Foundation.Internal.Classes
 
+-- | Obtains the array of normalized landmark points.
+--
+-- Provides the address of a buffer containing the array of CGPoints representing the landmark points.  This buffer is owned by the target object and is guaranteed to exist as long as the VNFaceLandmarkRegion2D does.
+--
+-- Returns: the address of the array of pointCount points.
+--
+-- ObjC selector: @- normalizedPoints@
+normalizedPoints :: IsVNFaceLandmarkRegion2D vnFaceLandmarkRegion2D => vnFaceLandmarkRegion2D -> IO RawId
+normalizedPoints vnFaceLandmarkRegion2D  =
+    fmap (RawId . castPtr) $ sendMsg vnFaceLandmarkRegion2D (mkSelector "normalizedPoints") (retPtr retVoid) []
+
 -- | Obtains the array of accuracy placement estimates per landmark point.
 --
 -- Provides the NSArray object containing landmarks accuracy placement estimates per landmark point. This property is only                populated when VNDetectFaceLandmarksRequest object is configured with VNRequestFaceLandmarksConstellation76Points. It is                set to nil for other constellations
@@ -61,6 +74,10 @@ pointsClassification vnFaceLandmarkRegion2D  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @normalizedPoints@
+normalizedPointsSelector :: Selector
+normalizedPointsSelector = mkSelector "normalizedPoints"
 
 -- | @Selector@ for @precisionEstimatesPerPoint@
 precisionEstimatesPerPointSelector :: Selector

@@ -12,6 +12,7 @@ module ObjC.AppKit.NSTextContainer
   , lineFragmentRectForProposedRect_sweepDirection_movementDirection_remainingRect
   , containsPoint
   , replaceLayoutManager
+  , textLayoutManager
   , lineBreakMode
   , setLineBreakMode
   , lineFragmentPadding
@@ -25,6 +26,10 @@ module ObjC.AppKit.NSTextContainer
   , setHeightTracksTextView
   , containerSize
   , setContainerSize
+  , layoutManager
+  , setLayoutManager
+  , exclusionPaths
+  , setExclusionPaths
   , textView
   , setTextView
   , initWithCoderSelector
@@ -32,6 +37,7 @@ module ObjC.AppKit.NSTextContainer
   , lineFragmentRectForProposedRect_sweepDirection_movementDirection_remainingRectSelector
   , containsPointSelector
   , replaceLayoutManagerSelector
+  , textLayoutManagerSelector
   , lineBreakModeSelector
   , setLineBreakModeSelector
   , lineFragmentPaddingSelector
@@ -45,6 +51,10 @@ module ObjC.AppKit.NSTextContainer
   , setHeightTracksTextViewSelector
   , containerSizeSelector
   , setContainerSizeSelector
+  , layoutManagerSelector
+  , setLayoutManagerSelector
+  , exclusionPathsSelector
+  , setExclusionPathsSelector
   , textViewSelector
   , setTextViewSelector
 
@@ -117,6 +127,11 @@ replaceLayoutManager :: (IsNSTextContainer nsTextContainer, IsNSLayoutManager ne
 replaceLayoutManager nsTextContainer  newLayoutManager =
   withObjCPtr newLayoutManager $ \raw_newLayoutManager ->
       sendMsg nsTextContainer (mkSelector "replaceLayoutManager:") retVoid [argPtr (castPtr raw_newLayoutManager :: Ptr ())]
+
+-- | @- textLayoutManager@
+textLayoutManager :: IsNSTextContainer nsTextContainer => nsTextContainer -> IO (Id NSTextLayoutManager)
+textLayoutManager nsTextContainer  =
+    sendMsg nsTextContainer (mkSelector "textLayoutManager") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- lineBreakMode@
 lineBreakMode :: IsNSTextContainer nsTextContainer => nsTextContainer -> IO NSLineBreakMode
@@ -191,6 +206,28 @@ setContainerSize :: IsNSTextContainer nsTextContainer => nsTextContainer -> NSSi
 setContainerSize nsTextContainer  value =
     sendMsg nsTextContainer (mkSelector "setContainerSize:") retVoid [argNSSize value]
 
+-- | @- layoutManager@
+layoutManager :: IsNSTextContainer nsTextContainer => nsTextContainer -> IO (Id NSLayoutManager)
+layoutManager nsTextContainer  =
+    sendMsg nsTextContainer (mkSelector "layoutManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setLayoutManager:@
+setLayoutManager :: (IsNSTextContainer nsTextContainer, IsNSLayoutManager value) => nsTextContainer -> value -> IO ()
+setLayoutManager nsTextContainer  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsTextContainer (mkSelector "setLayoutManager:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- exclusionPaths@
+exclusionPaths :: IsNSTextContainer nsTextContainer => nsTextContainer -> IO (Id NSArray)
+exclusionPaths nsTextContainer  =
+    sendMsg nsTextContainer (mkSelector "exclusionPaths") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setExclusionPaths:@
+setExclusionPaths :: (IsNSTextContainer nsTextContainer, IsNSArray value) => nsTextContainer -> value -> IO ()
+setExclusionPaths nsTextContainer  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsTextContainer (mkSelector "setExclusionPaths:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- textView@
 textView :: IsNSTextContainer nsTextContainer => nsTextContainer -> IO (Id NSTextView)
 textView nsTextContainer  =
@@ -225,6 +262,10 @@ containsPointSelector = mkSelector "containsPoint:"
 -- | @Selector@ for @replaceLayoutManager:@
 replaceLayoutManagerSelector :: Selector
 replaceLayoutManagerSelector = mkSelector "replaceLayoutManager:"
+
+-- | @Selector@ for @textLayoutManager@
+textLayoutManagerSelector :: Selector
+textLayoutManagerSelector = mkSelector "textLayoutManager"
 
 -- | @Selector@ for @lineBreakMode@
 lineBreakModeSelector :: Selector
@@ -277,6 +318,22 @@ containerSizeSelector = mkSelector "containerSize"
 -- | @Selector@ for @setContainerSize:@
 setContainerSizeSelector :: Selector
 setContainerSizeSelector = mkSelector "setContainerSize:"
+
+-- | @Selector@ for @layoutManager@
+layoutManagerSelector :: Selector
+layoutManagerSelector = mkSelector "layoutManager"
+
+-- | @Selector@ for @setLayoutManager:@
+setLayoutManagerSelector :: Selector
+setLayoutManagerSelector = mkSelector "setLayoutManager:"
+
+-- | @Selector@ for @exclusionPaths@
+exclusionPathsSelector :: Selector
+exclusionPathsSelector = mkSelector "exclusionPaths"
+
+-- | @Selector@ for @setExclusionPaths:@
+setExclusionPathsSelector :: Selector
+setExclusionPathsSelector = mkSelector "setExclusionPaths:"
 
 -- | @Selector@ for @textView@
 textViewSelector :: Selector

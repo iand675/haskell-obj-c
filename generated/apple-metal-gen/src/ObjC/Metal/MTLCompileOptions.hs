@@ -21,6 +21,8 @@ module ObjC.Metal.MTLCompileOptions
   , setLibraryType
   , installName
   , setInstallName
+  , libraries
+  , setLibraries
   , preserveInvariance
   , setPreserveInvariance
   , optimizationLevel
@@ -47,6 +49,8 @@ module ObjC.Metal.MTLCompileOptions
   , setLibraryTypeSelector
   , installNameSelector
   , setInstallNameSelector
+  , librariesSelector
+  , setLibrariesSelector
   , preserveInvarianceSelector
   , setPreserveInvarianceSelector
   , optimizationLevelSelector
@@ -249,6 +253,25 @@ setInstallName mtlCompileOptions  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mtlCompileOptions (mkSelector "setInstallName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | libraries
+--
+-- A set of MTLDynamicLibrary instances to link against. The installName of the provided MTLDynamicLibrary is embedded into the compilation result. When a function from the resulting MTLLibrary is used (either as an MTLFunction, or as an to create a pipeline state, the embedded install names are used to automatically load the MTLDynamicLibrary instances. This property can be null if no libraries should be automatically loaded, either because the MTLLibrary has no external dependencies, or because you will use preloadedLibraries to specify the libraries to use at pipeline creation time.
+--
+-- ObjC selector: @- libraries@
+libraries :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> IO (Id NSArray)
+libraries mtlCompileOptions  =
+    sendMsg mtlCompileOptions (mkSelector "libraries") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | libraries
+--
+-- A set of MTLDynamicLibrary instances to link against. The installName of the provided MTLDynamicLibrary is embedded into the compilation result. When a function from the resulting MTLLibrary is used (either as an MTLFunction, or as an to create a pipeline state, the embedded install names are used to automatically load the MTLDynamicLibrary instances. This property can be null if no libraries should be automatically loaded, either because the MTLLibrary has no external dependencies, or because you will use preloadedLibraries to specify the libraries to use at pipeline creation time.
+--
+-- ObjC selector: @- setLibraries:@
+setLibraries :: (IsMTLCompileOptions mtlCompileOptions, IsNSArray value) => mtlCompileOptions -> value -> IO ()
+setLibraries mtlCompileOptions  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg mtlCompileOptions (mkSelector "setLibraries:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | preserveInvariance
 --
 -- If YES,  set the compiler to compile shaders to preserve invariance.  The default is false.
@@ -412,6 +435,14 @@ installNameSelector = mkSelector "installName"
 -- | @Selector@ for @setInstallName:@
 setInstallNameSelector :: Selector
 setInstallNameSelector = mkSelector "setInstallName:"
+
+-- | @Selector@ for @libraries@
+librariesSelector :: Selector
+librariesSelector = mkSelector "libraries"
+
+-- | @Selector@ for @setLibraries:@
+setLibrariesSelector :: Selector
+setLibrariesSelector = mkSelector "setLibraries:"
 
 -- | @Selector@ for @preserveInvariance@
 preserveInvarianceSelector :: Selector

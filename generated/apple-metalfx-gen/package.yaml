@@ -16,6 +16,16 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.MetalFX.Delegate.MTL4FXFrameInterpolator
+  - ObjC.MetalFX.Delegate.MTL4FXSpatialScaler
+  - ObjC.MetalFX.Delegate.MTL4FXTemporalDenoisedScaler
+  - ObjC.MetalFX.Delegate.MTL4FXTemporalScaler
+  - ObjC.MetalFX.Delegate.MTLFXFrameInterpolator
+  - ObjC.MetalFX.Delegate.MTLFXFrameInterpolatorBase
+  - ObjC.MetalFX.Delegate.MTLFXSpatialScaler
+  - ObjC.MetalFX.Delegate.MTLFXSpatialScalerBase
+  - ObjC.MetalFX.Delegate.MTLFXTemporalDenoisedScalerBase
+  - ObjC.MetalFX.Delegate.MTLFXTemporalScalerBase
   - ObjC.MetalFX.Enums
   - ObjC.MetalFX.Internal.Classes
   - ObjC.MetalFX.Internal.Enums

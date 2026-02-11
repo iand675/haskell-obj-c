@@ -89,6 +89,9 @@ module ObjC.WebKit.WKWebExtensionContext
   , hasInjectedContent
   , hasContentModificationRules
   , commands
+  , openWindows
+  , focusedWindow
+  , openTabs
   , newSelector
   , initSelector
   , contextForExtensionSelector
@@ -167,6 +170,9 @@ module ObjC.WebKit.WKWebExtensionContext
   , hasInjectedContentSelector
   , hasContentModificationRulesSelector
   , commandsSelector
+  , openWindowsSelector
+  , focusedWindowSelector
+  , openTabsSelector
 
   -- * Enum types
   , WKWebExtensionContextPermissionStatus(WKWebExtensionContextPermissionStatus)
@@ -1225,6 +1231,43 @@ commands :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionConte
 commands wkWebExtensionContext  =
     sendMsg wkWebExtensionContext (mkSelector "commands") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The open windows that are exposed to this extension.
+--
+-- Provides the windows that are open and visible to the extension, as updated by the ``didOpenWindow:`` and ``didCloseWindow:`` methods. Initially populated by the windows returned by the extension controller delegate method ``webExtensionController:openWindowsForExtensionContext:``.
+--
+-- didOpenWindow:
+--
+-- didCloseWindow:
+--
+-- ObjC selector: @- openWindows@
+openWindows :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id NSArray)
+openWindows wkWebExtensionContext  =
+    sendMsg wkWebExtensionContext (mkSelector "openWindows") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The window that currently has focus for this extension.
+--
+-- Provides the window that currently has focus, as set by the ``didFocusWindow:`` method. It will be @nil@ if no window has focus or if a window has focus that is not visible to the extension. Initially populated by the window returned by the extension controller delegate method ``webExtensionController:focusedWindowForExtensionContext:``.
+--
+-- didFocusWindow:
+--
+-- ObjC selector: @- focusedWindow@
+focusedWindow :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO RawId
+focusedWindow wkWebExtensionContext  =
+    fmap (RawId . castPtr) $ sendMsg wkWebExtensionContext (mkSelector "focusedWindow") (retPtr retVoid) []
+
+-- | A set of open tabs in all open windows that are exposed to this extension.
+--
+-- Provides a set of tabs in all open windows that are visible to the extension, as updated by the ``didOpenTab:`` and ``didCloseTab:`` methods. Initially populated by the tabs in the windows returned by the extension controller delegate method ``webExtensionController:openWindowsForExtensionContext:``.
+--
+-- didOpenTab:
+--
+-- didCloseTab:
+--
+-- ObjC selector: @- openTabs@
+openTabs :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id NSSet)
+openTabs wkWebExtensionContext  =
+    sendMsg wkWebExtensionContext (mkSelector "openTabs") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -1540,4 +1583,16 @@ hasContentModificationRulesSelector = mkSelector "hasContentModificationRules"
 -- | @Selector@ for @commands@
 commandsSelector :: Selector
 commandsSelector = mkSelector "commands"
+
+-- | @Selector@ for @openWindows@
+openWindowsSelector :: Selector
+openWindowsSelector = mkSelector "openWindows"
+
+-- | @Selector@ for @focusedWindow@
+focusedWindowSelector :: Selector
+focusedWindowSelector = mkSelector "focusedWindow"
+
+-- | @Selector@ for @openTabs@
+openTabsSelector :: Selector
+openTabsSelector = mkSelector "openTabs"
 

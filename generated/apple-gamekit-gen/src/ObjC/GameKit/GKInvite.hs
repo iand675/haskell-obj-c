@@ -8,10 +8,12 @@
 module ObjC.GameKit.GKInvite
   ( GKInvite
   , IsGKInvite(..)
+  , sender
   , hosted
   , playerGroup
   , playerAttributes
   , inviter
+  , senderSelector
   , hostedSelector
   , playerGroupSelector
   , playerAttributesSelector
@@ -34,6 +36,11 @@ import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.GameKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | @- sender@
+sender :: IsGKInvite gkInvite => gkInvite -> IO (Id GKPlayer)
+sender gkInvite  =
+    sendMsg gkInvite (mkSelector "sender") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- hosted@
 hosted :: IsGKInvite gkInvite => gkInvite -> IO Bool
@@ -64,6 +71,10 @@ inviter gkInvite  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @sender@
+senderSelector :: Selector
+senderSelector = mkSelector "sender"
 
 -- | @Selector@ for @hosted@
 hostedSelector :: Selector

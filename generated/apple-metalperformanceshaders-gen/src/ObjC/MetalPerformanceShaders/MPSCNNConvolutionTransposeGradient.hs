@@ -21,6 +21,7 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionTransposeGradient
   , sourceGradientFeatureChannels
   , sourceImageFeatureChannels
   , groups
+  , dataSource
   , gradientOption
   , setGradientOption
   , initWithDevice_weightsSelector
@@ -31,6 +32,7 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionTransposeGradient
   , sourceGradientFeatureChannelsSelector
   , sourceImageFeatureChannelsSelector
   , groupsSelector
+  , dataSourceSelector
   , gradientOptionSelector
   , setGradientOptionSelector
 
@@ -138,6 +140,15 @@ groups :: IsMPSCNNConvolutionTransposeGradient mpscnnConvolutionTransposeGradien
 groups mpscnnConvolutionTransposeGradient  =
     sendMsg mpscnnConvolutionTransposeGradient (mkSelector "groups") retCULong []
 
+-- | dataSource
+--
+-- dataSource with which gradient object was created
+--
+-- ObjC selector: @- dataSource@
+dataSource :: IsMPSCNNConvolutionTransposeGradient mpscnnConvolutionTransposeGradient => mpscnnConvolutionTransposeGradient -> IO RawId
+dataSource mpscnnConvolutionTransposeGradient  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnConvolutionTransposeGradient (mkSelector "dataSource") (retPtr retVoid) []
+
 -- | gradientOption
 --
 -- Option to control which gradient to compute. Default is MPSCNNConvolutionGradientOptionAll              which means both gradient with respect to data and gradient with respect to weight and bias are computed.
@@ -191,6 +202,10 @@ sourceImageFeatureChannelsSelector = mkSelector "sourceImageFeatureChannels"
 -- | @Selector@ for @groups@
 groupsSelector :: Selector
 groupsSelector = mkSelector "groups"
+
+-- | @Selector@ for @dataSource@
+dataSourceSelector :: Selector
+dataSourceSelector = mkSelector "dataSource"
 
 -- | @Selector@ for @gradientOption@
 gradientOptionSelector :: Selector

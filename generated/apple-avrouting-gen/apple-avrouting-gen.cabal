@@ -18,6 +18,7 @@ library
       ObjC.AVRouting.AVCustomRoutingEvent
       ObjC.AVRouting.AVCustomRoutingPartialIP
       ObjC.AVRouting.AVRoutingPlaybackArbiter
+      ObjC.AVRouting.Delegate.AVCustomRoutingControllerDelegate
       ObjC.AVRouting.Enums
       ObjC.AVRouting.Internal.Classes
       ObjC.AVRouting.Internal.Enums

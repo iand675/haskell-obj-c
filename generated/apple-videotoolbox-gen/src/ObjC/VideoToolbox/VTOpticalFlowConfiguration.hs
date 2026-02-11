@@ -20,6 +20,7 @@ module ObjC.VideoToolbox.VTOpticalFlowConfiguration
   , revision
   , supportedRevisions
   , defaultRevision
+  , frameSupportedPixelFormats
   , sourcePixelBufferAttributes
   , destinationPixelBufferAttributes
   , supported
@@ -33,6 +34,7 @@ module ObjC.VideoToolbox.VTOpticalFlowConfiguration
   , revisionSelector
   , supportedRevisionsSelector
   , defaultRevisionSelector
+  , frameSupportedPixelFormatsSelector
   , sourcePixelBufferAttributesSelector
   , destinationPixelBufferAttributesSelector
   , supportedSelector
@@ -136,6 +138,13 @@ defaultRevision  =
     cls' <- getRequiredClass "VTOpticalFlowConfiguration"
     fmap (coerce :: CLong -> VTOpticalFlowConfigurationRevision) $ sendClassMsg cls' (mkSelector "defaultRevision") retCLong []
 
+-- | Supported pixel formats for source frames for current configuration.
+--
+-- ObjC selector: @- frameSupportedPixelFormats@
+frameSupportedPixelFormats :: IsVTOpticalFlowConfiguration vtOpticalFlowConfiguration => vtOpticalFlowConfiguration -> IO (Id NSArray)
+frameSupportedPixelFormats vtOpticalFlowConfiguration  =
+    sendMsg vtOpticalFlowConfiguration (mkSelector "frameSupportedPixelFormats") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Pixel buffer attributes dictionary that describes requirements for pixel buffers which represent source frames and reference frames.
 --
 -- Use ``CVPixelBufferCreateResolvedAttributesDictionary`` to combine this dictionary with your pixel buffer attributes dictionary.
@@ -209,6 +218,10 @@ supportedRevisionsSelector = mkSelector "supportedRevisions"
 -- | @Selector@ for @defaultRevision@
 defaultRevisionSelector :: Selector
 defaultRevisionSelector = mkSelector "defaultRevision"
+
+-- | @Selector@ for @frameSupportedPixelFormats@
+frameSupportedPixelFormatsSelector :: Selector
+frameSupportedPixelFormatsSelector = mkSelector "frameSupportedPixelFormats"
 
 -- | @Selector@ for @sourcePixelBufferAttributes@
 sourcePixelBufferAttributesSelector :: Selector

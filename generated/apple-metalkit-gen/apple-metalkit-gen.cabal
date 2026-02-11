@@ -12,6 +12,7 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.MetalKit.Delegate.MTKViewDelegate
       ObjC.MetalKit.Internal.Classes
       ObjC.MetalKit.MTKMesh
       ObjC.MetalKit.MTKMeshBuffer

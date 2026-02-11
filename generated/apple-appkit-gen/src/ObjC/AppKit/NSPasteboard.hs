@@ -38,6 +38,7 @@ module ObjC.AppKit.NSPasteboard
   , name
   , changeCount
   , accessBehavior
+  , pasteboardItems
   , types
   , pasteboardWithNameSelector
   , pasteboardWithUniqueNameSelector
@@ -70,6 +71,7 @@ module ObjC.AppKit.NSPasteboard
   , nameSelector
   , changeCountSelector
   , accessBehaviorSelector
+  , pasteboardItemsSelector
   , typesSelector
 
   -- * Enum types
@@ -298,6 +300,11 @@ accessBehavior :: IsNSPasteboard nsPasteboard => nsPasteboard -> IO NSPasteboard
 accessBehavior nsPasteboard  =
     fmap (coerce :: CLong -> NSPasteboardAccessBehavior) $ sendMsg nsPasteboard (mkSelector "accessBehavior") retCLong []
 
+-- | @- pasteboardItems@
+pasteboardItems :: IsNSPasteboard nsPasteboard => nsPasteboard -> IO (Id NSArray)
+pasteboardItems nsPasteboard  =
+    sendMsg nsPasteboard (mkSelector "pasteboardItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- types@
 types :: IsNSPasteboard nsPasteboard => nsPasteboard -> IO (Id NSArray)
 types nsPasteboard  =
@@ -430,6 +437,10 @@ changeCountSelector = mkSelector "changeCount"
 -- | @Selector@ for @accessBehavior@
 accessBehaviorSelector :: Selector
 accessBehaviorSelector = mkSelector "accessBehavior"
+
+-- | @Selector@ for @pasteboardItems@
+pasteboardItemsSelector :: Selector
+pasteboardItemsSelector = mkSelector "pasteboardItems"
 
 -- | @Selector@ for @types@
 typesSelector :: Selector

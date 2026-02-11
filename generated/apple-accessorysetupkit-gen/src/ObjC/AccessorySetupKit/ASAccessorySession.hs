@@ -21,6 +21,8 @@ module ObjC.AccessorySetupKit.ASAccessorySession
   , updatePickerShowingDiscoveredDisplayItems_completionHandler
   , finishPickerDiscovery
   , accessories
+  , pickerDisplaySettings
+  , setPickerDisplaySettings
   , activateWithQueue_eventHandlerSelector
   , invalidateSelector
   , showPickerWithCompletionHandlerSelector
@@ -33,6 +35,8 @@ module ObjC.AccessorySetupKit.ASAccessorySession
   , updatePickerShowingDiscoveredDisplayItems_completionHandlerSelector
   , finishPickerDiscoverySelector
   , accessoriesSelector
+  , pickerDisplaySettingsSelector
+  , setPickerDisplaySettingsSelector
 
   -- * Enum types
   , ASAccessoryRenameOptions(ASAccessoryRenameOptions)
@@ -186,6 +190,25 @@ accessories :: IsASAccessorySession asAccessorySession => asAccessorySession -> 
 accessories asAccessorySession  =
     sendMsg asAccessorySession (mkSelector "accessories") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | Settings that affect the display of the accessory picker.
+--
+-- Use this property to configure settings like the picker timeout.
+--
+-- ObjC selector: @- pickerDisplaySettings@
+pickerDisplaySettings :: IsASAccessorySession asAccessorySession => asAccessorySession -> IO (Id ASPickerDisplaySettings)
+pickerDisplaySettings asAccessorySession  =
+    sendMsg asAccessorySession (mkSelector "pickerDisplaySettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Settings that affect the display of the accessory picker.
+--
+-- Use this property to configure settings like the picker timeout.
+--
+-- ObjC selector: @- setPickerDisplaySettings:@
+setPickerDisplaySettings :: (IsASAccessorySession asAccessorySession, IsASPickerDisplaySettings value) => asAccessorySession -> value -> IO ()
+setPickerDisplaySettings asAccessorySession  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg asAccessorySession (mkSelector "setPickerDisplaySettings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -237,4 +260,12 @@ finishPickerDiscoverySelector = mkSelector "finishPickerDiscovery:"
 -- | @Selector@ for @accessories@
 accessoriesSelector :: Selector
 accessoriesSelector = mkSelector "accessories"
+
+-- | @Selector@ for @pickerDisplaySettings@
+pickerDisplaySettingsSelector :: Selector
+pickerDisplaySettingsSelector = mkSelector "pickerDisplaySettings"
+
+-- | @Selector@ for @setPickerDisplaySettings:@
+setPickerDisplaySettingsSelector :: Selector
+setPickerDisplaySettingsSelector = mkSelector "setPickerDisplaySettings:"
 

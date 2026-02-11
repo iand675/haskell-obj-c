@@ -8,8 +8,12 @@ module ObjC.AuthenticationServices.ASAuthorization
   , IsASAuthorization(..)
   , new
   , init_
+  , provider
+  , credential
   , newSelector
   , initSelector
+  , providerSelector
+  , credentialSelector
 
 
   ) where
@@ -41,6 +45,20 @@ init_ :: IsASAuthorization asAuthorization => asAuthorization -> IO (Id ASAuthor
 init_ asAuthorization  =
     sendMsg asAuthorization (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | Provider which was used to generate this authorization response.
+--
+-- ObjC selector: @- provider@
+provider :: IsASAuthorization asAuthorization => asAuthorization -> IO RawId
+provider asAuthorization  =
+    fmap (RawId . castPtr) $ sendMsg asAuthorization (mkSelector "provider") (retPtr retVoid) []
+
+-- | The credential that was returned by the authorization provider. Authorization provider type should be used to determine how to introspect the credential.
+--
+-- ObjC selector: @- credential@
+credential :: IsASAuthorization asAuthorization => asAuthorization -> IO RawId
+credential asAuthorization  =
+    fmap (RawId . castPtr) $ sendMsg asAuthorization (mkSelector "credential") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -52,4 +70,12 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @init@
 initSelector :: Selector
 initSelector = mkSelector "init"
+
+-- | @Selector@ for @provider@
+providerSelector :: Selector
+providerSelector = mkSelector "provider"
+
+-- | @Selector@ for @credential@
+credentialSelector :: Selector
+credentialSelector = mkSelector "credential"
 

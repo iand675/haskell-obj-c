@@ -7,6 +7,7 @@ module ObjC.Foundation.NSScanner
   ( NSScanner
   , IsNSScanner(..)
   , initWithString
+  , scanDecimal
   , scanInt
   , scanInteger
   , scanLongLong
@@ -34,6 +35,7 @@ module ObjC.Foundation.NSScanner
   , setLocale
   , atEnd
   , initWithStringSelector
+  , scanDecimalSelector
   , scanIntSelector
   , scanIntegerSelector
   , scanLongLongSelector
@@ -83,6 +85,11 @@ initWithString :: (IsNSScanner nsScanner, IsNSString string) => nsScanner -> str
 initWithString nsScanner  string =
   withObjCPtr string $ \raw_string ->
       sendMsg nsScanner (mkSelector "initWithString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= ownedObject . castPtr
+
+-- | @- scanDecimal:@
+scanDecimal :: IsNSScanner nsScanner => nsScanner -> RawId -> IO Bool
+scanDecimal nsScanner  dcm =
+    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsScanner (mkSelector "scanDecimal:") retCULong [argPtr (castPtr (unRawId dcm) :: Ptr ())]
 
 -- | @- scanInt:@
 scanInt :: IsNSScanner nsScanner => nsScanner -> Ptr CInt -> IO Bool
@@ -236,6 +243,10 @@ atEnd nsScanner  =
 -- | @Selector@ for @initWithString:@
 initWithStringSelector :: Selector
 initWithStringSelector = mkSelector "initWithString:"
+
+-- | @Selector@ for @scanDecimal:@
+scanDecimalSelector :: Selector
+scanDecimalSelector = mkSelector "scanDecimal:"
 
 -- | @Selector@ for @scanInt:@
 scanIntSelector :: Selector

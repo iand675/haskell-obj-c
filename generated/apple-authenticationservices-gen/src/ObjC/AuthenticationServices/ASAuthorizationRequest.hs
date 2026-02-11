@@ -8,8 +8,10 @@ module ObjC.AuthenticationServices.ASAuthorizationRequest
   , IsASAuthorizationRequest(..)
   , new
   , init_
+  , provider
   , newSelector
   , initSelector
+  , providerSelector
 
 
   ) where
@@ -41,6 +43,13 @@ init_ :: IsASAuthorizationRequest asAuthorizationRequest => asAuthorizationReque
 init_ asAuthorizationRequest  =
     sendMsg asAuthorizationRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | The provider object that is being used to service this request
+--
+-- ObjC selector: @- provider@
+provider :: IsASAuthorizationRequest asAuthorizationRequest => asAuthorizationRequest -> IO RawId
+provider asAuthorizationRequest  =
+    fmap (RawId . castPtr) $ sendMsg asAuthorizationRequest (mkSelector "provider") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -52,4 +61,8 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @init@
 initSelector :: Selector
 initSelector = mkSelector "init"
+
+-- | @Selector@ for @provider@
+providerSelector :: Selector
+providerSelector = mkSelector "provider"
 

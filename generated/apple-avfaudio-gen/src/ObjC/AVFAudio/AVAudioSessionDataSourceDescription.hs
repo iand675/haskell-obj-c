@@ -9,12 +9,16 @@ module ObjC.AVFAudio.AVAudioSessionDataSourceDescription
   ( AVAudioSessionDataSourceDescription
   , IsAVAudioSessionDataSourceDescription(..)
   , setPreferredPolarPattern_error
+  , dataSourceID
+  , dataSourceName
   , location
   , orientation
   , supportedPolarPatterns
   , selectedPolarPattern
   , preferredPolarPattern
   , setPreferredPolarPattern_errorSelector
+  , dataSourceIDSelector
+  , dataSourceNameSelector
   , locationSelector
   , orientationSelector
   , supportedPolarPatternsSelector
@@ -49,6 +53,20 @@ setPreferredPolarPattern_error avAudioSessionDataSourceDescription  pattern_ out
   withObjCPtr pattern_ $ \raw_pattern_ ->
     withObjCPtr outError $ \raw_outError ->
         fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSessionDataSourceDescription (mkSelector "setPreferredPolarPattern:error:") retCULong [argPtr (castPtr raw_pattern_ :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+
+-- | System-assigned ID for the data source.
+--
+-- ObjC selector: @- dataSourceID@
+dataSourceID :: IsAVAudioSessionDataSourceDescription avAudioSessionDataSourceDescription => avAudioSessionDataSourceDescription -> IO (Id NSNumber)
+dataSourceID avAudioSessionDataSourceDescription  =
+    sendMsg avAudioSessionDataSourceDescription (mkSelector "dataSourceID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Human-readable name for the data source.
+--
+-- ObjC selector: @- dataSourceName@
+dataSourceName :: IsAVAudioSessionDataSourceDescription avAudioSessionDataSourceDescription => avAudioSessionDataSourceDescription -> IO (Id NSString)
+dataSourceName avAudioSessionDataSourceDescription  =
+    sendMsg avAudioSessionDataSourceDescription (mkSelector "dataSourceName") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | Describes the general location of a data source. Will be nil for data sources for which the location is not known.
 --
@@ -92,6 +110,14 @@ preferredPolarPattern avAudioSessionDataSourceDescription  =
 -- | @Selector@ for @setPreferredPolarPattern:error:@
 setPreferredPolarPattern_errorSelector :: Selector
 setPreferredPolarPattern_errorSelector = mkSelector "setPreferredPolarPattern:error:"
+
+-- | @Selector@ for @dataSourceID@
+dataSourceIDSelector :: Selector
+dataSourceIDSelector = mkSelector "dataSourceID"
+
+-- | @Selector@ for @dataSourceName@
+dataSourceNameSelector :: Selector
+dataSourceNameSelector = mkSelector "dataSourceName"
 
 -- | @Selector@ for @location@
 locationSelector :: Selector

@@ -12,6 +12,8 @@ module ObjC.AppKit.NSPageController
   , navigateBack
   , navigateForward
   , takeSelectedIndexFrom
+  , delegate
+  , setDelegate
   , selectedViewController
   , transitionStyle
   , setTransitionStyle
@@ -24,6 +26,8 @@ module ObjC.AppKit.NSPageController
   , navigateBackSelector
   , navigateForwardSelector
   , takeSelectedIndexFromSelector
+  , delegateSelector
+  , setDelegateSelector
   , selectedViewControllerSelector
   , transitionStyleSelector
   , setTransitionStyleSelector
@@ -80,6 +84,16 @@ navigateForward nsPageController  sender =
 takeSelectedIndexFrom :: IsNSPageController nsPageController => nsPageController -> RawId -> IO ()
 takeSelectedIndexFrom nsPageController  sender =
     sendMsg nsPageController (mkSelector "takeSelectedIndexFrom:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+
+-- | @- delegate@
+delegate :: IsNSPageController nsPageController => nsPageController -> IO RawId
+delegate nsPageController  =
+    fmap (RawId . castPtr) $ sendMsg nsPageController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSPageController nsPageController => nsPageController -> RawId -> IO ()
+setDelegate nsPageController  value =
+    sendMsg nsPageController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- selectedViewController@
 selectedViewController :: IsNSPageController nsPageController => nsPageController -> IO (Id NSViewController)
@@ -140,6 +154,14 @@ navigateForwardSelector = mkSelector "navigateForward:"
 -- | @Selector@ for @takeSelectedIndexFrom:@
 takeSelectedIndexFromSelector :: Selector
 takeSelectedIndexFromSelector = mkSelector "takeSelectedIndexFrom:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @selectedViewController@
 selectedViewControllerSelector :: Selector

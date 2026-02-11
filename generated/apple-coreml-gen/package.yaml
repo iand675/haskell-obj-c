@@ -16,6 +16,9 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.CoreML.Delegate.MLBatchProvider
+  - ObjC.CoreML.Delegate.MLCustomLayer
+  - ObjC.CoreML.Delegate.MLCustomModel
   - ObjC.CoreML.Enums
   - ObjC.CoreML.Internal.Classes
   - ObjC.CoreML.Internal.Enums

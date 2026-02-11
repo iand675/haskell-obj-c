@@ -96,6 +96,8 @@ module ObjC.AppKit.NSMatrix
   , autoscroll
   , setAutoscroll
   , mouseDownFlags
+  , delegate
+  , setDelegate
   , autorecalculatesCellSize
   , setAutorecalculatesCellSize
   , tabKeyTraversesCells
@@ -191,6 +193,8 @@ module ObjC.AppKit.NSMatrix
   , autoscrollSelector
   , setAutoscrollSelector
   , mouseDownFlagsSelector
+  , delegateSelector
+  , setDelegateSelector
   , autorecalculatesCellSizeSelector
   , setAutorecalculatesCellSizeSelector
   , tabKeyTraversesCellsSelector
@@ -690,6 +694,16 @@ mouseDownFlags :: IsNSMatrix nsMatrix => nsMatrix -> IO CLong
 mouseDownFlags nsMatrix  =
     sendMsg nsMatrix (mkSelector "mouseDownFlags") retCLong []
 
+-- | @- delegate@
+delegate :: IsNSMatrix nsMatrix => nsMatrix -> IO RawId
+delegate nsMatrix  =
+    fmap (RawId . castPtr) $ sendMsg nsMatrix (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSMatrix nsMatrix => nsMatrix -> RawId -> IO ()
+setDelegate nsMatrix  value =
+    sendMsg nsMatrix (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- autorecalculatesCellSize@
 autorecalculatesCellSize :: IsNSMatrix nsMatrix => nsMatrix -> IO Bool
 autorecalculatesCellSize nsMatrix  =
@@ -1080,6 +1094,14 @@ setAutoscrollSelector = mkSelector "setAutoscroll:"
 -- | @Selector@ for @mouseDownFlags@
 mouseDownFlagsSelector :: Selector
 mouseDownFlagsSelector = mkSelector "mouseDownFlags"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @autorecalculatesCellSize@
 autorecalculatesCellSizeSelector :: Selector

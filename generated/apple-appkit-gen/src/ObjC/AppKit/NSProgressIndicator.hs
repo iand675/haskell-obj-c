@@ -24,6 +24,8 @@ module ObjC.AppKit.NSProgressIndicator
   , setMinValue
   , maxValue
   , setMaxValue
+  , observedProgress
+  , setObservedProgress
   , usesThreadedAnimation
   , setUsesThreadedAnimation
   , style
@@ -51,6 +53,8 @@ module ObjC.AppKit.NSProgressIndicator
   , setMinValueSelector
   , maxValueSelector
   , setMaxValueSelector
+  , observedProgressSelector
+  , setObservedProgressSelector
   , usesThreadedAnimationSelector
   , setUsesThreadedAnimationSelector
   , styleSelector
@@ -181,6 +185,17 @@ setMaxValue :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator 
 setMaxValue nsProgressIndicator  value =
     sendMsg nsProgressIndicator (mkSelector "setMaxValue:") retVoid [argCDouble value]
 
+-- | @- observedProgress@
+observedProgress :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> IO (Id NSProgress)
+observedProgress nsProgressIndicator  =
+    sendMsg nsProgressIndicator (mkSelector "observedProgress") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setObservedProgress:@
+setObservedProgress :: (IsNSProgressIndicator nsProgressIndicator, IsNSProgress value) => nsProgressIndicator -> value -> IO ()
+setObservedProgress nsProgressIndicator  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsProgressIndicator (mkSelector "setObservedProgress:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- usesThreadedAnimation@
 usesThreadedAnimation :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> IO Bool
 usesThreadedAnimation nsProgressIndicator  =
@@ -302,6 +317,14 @@ maxValueSelector = mkSelector "maxValue"
 -- | @Selector@ for @setMaxValue:@
 setMaxValueSelector :: Selector
 setMaxValueSelector = mkSelector "setMaxValue:"
+
+-- | @Selector@ for @observedProgress@
+observedProgressSelector :: Selector
+observedProgressSelector = mkSelector "observedProgress"
+
+-- | @Selector@ for @setObservedProgress:@
+setObservedProgressSelector :: Selector
+setObservedProgressSelector = mkSelector "setObservedProgress:"
 
 -- | @Selector@ for @usesThreadedAnimation@
 usesThreadedAnimationSelector :: Selector

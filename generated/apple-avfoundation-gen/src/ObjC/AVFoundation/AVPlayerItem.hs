@@ -85,8 +85,13 @@ module ObjC.AVFoundation.AVPlayerItem
   , setAllowedAudioSpatializationFormats
   , audioMix
   , setAudioMix
+  , videoComposition
+  , setVideoComposition
+  , customVideoCompositor
   , seekingWaitsForVideoCompositionRendering
   , setSeekingWaitsForVideoCompositionRendering
+  , textStyleRules
+  , setTextStyleRules
   , videoApertureMode
   , setVideoApertureMode
   , appliesPerFrameHDRDisplayMetadata
@@ -175,8 +180,13 @@ module ObjC.AVFoundation.AVPlayerItem
   , setAllowedAudioSpatializationFormatsSelector
   , audioMixSelector
   , setAudioMixSelector
+  , videoCompositionSelector
+  , setVideoCompositionSelector
+  , customVideoCompositorSelector
   , seekingWaitsForVideoCompositionRenderingSelector
   , setSeekingWaitsForVideoCompositionRenderingSelector
+  , textStyleRulesSelector
+  , setTextStyleRulesSelector
   , videoApertureModeSelector
   , setVideoApertureModeSelector
   , appliesPerFrameHDRDisplayMetadataSelector
@@ -994,6 +1004,40 @@ setAudioMix avPlayerItem  value =
   withObjCPtr value $ \raw_value ->
       sendMsg avPlayerItem (mkSelector "setAudioMix:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | Indicates the video composition settings to be applied during playback.
+--
+-- Before macOS 13, iOS 16, tvOS 16, and watchOS 9, this property must be accessed on the main thread/queue.
+--
+-- This property throws an exception if a video composition is set with any of the following values: - renderSize, renderScale, or frameDuration is less than or equal to zero - sourceTrackIDForFrameTiming is less than or equal to zero - uses AVVideoCompositionCoreAnimationTool (works for offline rendering only)
+--
+-- ObjC selector: @- videoComposition@
+videoComposition :: IsAVPlayerItem avPlayerItem => avPlayerItem -> IO (Id AVVideoComposition)
+videoComposition avPlayerItem  =
+    sendMsg avPlayerItem (mkSelector "videoComposition") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Indicates the video composition settings to be applied during playback.
+--
+-- Before macOS 13, iOS 16, tvOS 16, and watchOS 9, this property must be accessed on the main thread/queue.
+--
+-- This property throws an exception if a video composition is set with any of the following values: - renderSize, renderScale, or frameDuration is less than or equal to zero - sourceTrackIDForFrameTiming is less than or equal to zero - uses AVVideoCompositionCoreAnimationTool (works for offline rendering only)
+--
+-- ObjC selector: @- setVideoComposition:@
+setVideoComposition :: (IsAVPlayerItem avPlayerItem, IsAVVideoComposition value) => avPlayerItem -> value -> IO ()
+setVideoComposition avPlayerItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avPlayerItem (mkSelector "setVideoComposition:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | Indicates the custom video compositor instance.
+--
+-- This property is nil if there is no video compositor, or if the internal video compositor is in use. This reference can be used to provide extra context to the custom video compositor instance if required. The value of this property can change as a result of setting the @videoComposition@ property.
+--
+-- Before macOS 13, iOS 16, tvOS 16, and watchOS 9, this property must be accessed on the main thread/queue.
+--
+-- ObjC selector: @- customVideoCompositor@
+customVideoCompositor :: IsAVPlayerItem avPlayerItem => avPlayerItem -> IO RawId
+customVideoCompositor avPlayerItem  =
+    fmap (RawId . castPtr) $ sendMsg avPlayerItem (mkSelector "customVideoCompositor") (retPtr retVoid) []
+
 -- | Indicates whether the item's timing follows the displayed video frame when seeking with a video composition
 --
 -- By default, item timing is updated as quickly as possible, not waiting for media at new times to be rendered when seeking or  during normal playback. The latency that occurs, for example, between the completion of a seek operation and the display of a  video frame at a new time is negligible in most situations. However, when video compositions are in use, the processing of  video for any particular time may introduce noticeable latency. Therefore it may be desirable when a video composition is in  use for the item's timing be updated only after the video frame for a time has been displayed. This allows, for instance, an  AVSynchronizedLayer associated with an AVPlayerItem to remain in synchronization with the displayed video and for the  currentTime property to return the time of the displayed video.
@@ -1015,6 +1059,29 @@ seekingWaitsForVideoCompositionRendering avPlayerItem  =
 setSeekingWaitsForVideoCompositionRendering :: IsAVPlayerItem avPlayerItem => avPlayerItem -> Bool -> IO ()
 setSeekingWaitsForVideoCompositionRendering avPlayerItem  value =
     sendMsg avPlayerItem (mkSelector "setSeekingWaitsForVideoCompositionRendering:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | An array of AVTextStyleRules representing text styling that can be applied to subtitles and other legible media.
+--
+-- The styling information contained in each AVTextStyleRule object in the array is used only when no equivalent styling information is provided by the media resource being played. For example, if the text style rules specify Courier font but the media resource specifies Helvetica font, the text will be drawn using Helvetica font.
+--
+-- This property has an effect only for tracks with media subtype kCMSubtitleFormatType_WebVTT.
+--
+-- ObjC selector: @- textStyleRules@
+textStyleRules :: IsAVPlayerItem avPlayerItem => avPlayerItem -> IO (Id NSArray)
+textStyleRules avPlayerItem  =
+    sendMsg avPlayerItem (mkSelector "textStyleRules") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | An array of AVTextStyleRules representing text styling that can be applied to subtitles and other legible media.
+--
+-- The styling information contained in each AVTextStyleRule object in the array is used only when no equivalent styling information is provided by the media resource being played. For example, if the text style rules specify Courier font but the media resource specifies Helvetica font, the text will be drawn using Helvetica font.
+--
+-- This property has an effect only for tracks with media subtype kCMSubtitleFormatType_WebVTT.
+--
+-- ObjC selector: @- setTextStyleRules:@
+setTextStyleRules :: (IsAVPlayerItem avPlayerItem, IsNSArray value) => avPlayerItem -> value -> IO ()
+setTextStyleRules avPlayerItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avPlayerItem (mkSelector "setTextStyleRules:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | Specifies the video aperture mode to apply during playback.
 --
@@ -1455,6 +1522,18 @@ audioMixSelector = mkSelector "audioMix"
 setAudioMixSelector :: Selector
 setAudioMixSelector = mkSelector "setAudioMix:"
 
+-- | @Selector@ for @videoComposition@
+videoCompositionSelector :: Selector
+videoCompositionSelector = mkSelector "videoComposition"
+
+-- | @Selector@ for @setVideoComposition:@
+setVideoCompositionSelector :: Selector
+setVideoCompositionSelector = mkSelector "setVideoComposition:"
+
+-- | @Selector@ for @customVideoCompositor@
+customVideoCompositorSelector :: Selector
+customVideoCompositorSelector = mkSelector "customVideoCompositor"
+
 -- | @Selector@ for @seekingWaitsForVideoCompositionRendering@
 seekingWaitsForVideoCompositionRenderingSelector :: Selector
 seekingWaitsForVideoCompositionRenderingSelector = mkSelector "seekingWaitsForVideoCompositionRendering"
@@ -1462,6 +1541,14 @@ seekingWaitsForVideoCompositionRenderingSelector = mkSelector "seekingWaitsForVi
 -- | @Selector@ for @setSeekingWaitsForVideoCompositionRendering:@
 setSeekingWaitsForVideoCompositionRenderingSelector :: Selector
 setSeekingWaitsForVideoCompositionRenderingSelector = mkSelector "setSeekingWaitsForVideoCompositionRendering:"
+
+-- | @Selector@ for @textStyleRules@
+textStyleRulesSelector :: Selector
+textStyleRulesSelector = mkSelector "textStyleRules"
+
+-- | @Selector@ for @setTextStyleRules:@
+setTextStyleRulesSelector :: Selector
+setTextStyleRulesSelector = mkSelector "setTextStyleRules:"
 
 -- | @Selector@ for @videoApertureMode@
 videoApertureModeSelector :: Selector

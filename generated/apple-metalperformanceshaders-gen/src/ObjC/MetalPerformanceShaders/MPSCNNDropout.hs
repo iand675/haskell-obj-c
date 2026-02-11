@@ -15,13 +15,17 @@ module ObjC.MetalPerformanceShaders.MPSCNNDropout
   , initWithDevice
   , initWithCoder_device
   , resultStateForSourceImage_sourceStates_destinationImage
+  , resultStateBatchForSourceImage_sourceStates_destinationImage
   , temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImage
+  , temporaryResultStateBatchForCommandBuffer_sourceImage_sourceStates_destinationImage
   , keepProbability
   , seed
   , initWithDeviceSelector
   , initWithCoder_deviceSelector
   , resultStateForSourceImage_sourceStates_destinationImageSelector
+  , resultStateBatchForSourceImage_sourceStates_destinationImageSelector
   , temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImageSelector
+  , temporaryResultStateBatchForCommandBuffer_sourceImage_sourceStates_destinationImageSelector
   , keepProbabilitySelector
   , seedSelector
 
@@ -64,6 +68,12 @@ resultStateForSourceImage_sourceStates_destinationImage mpscnnDropout  sourceIma
       withObjCPtr destinationImage $ \raw_destinationImage ->
           sendMsg mpscnnDropout (mkSelector "resultStateForSourceImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())] >>= retainedObject . castPtr
 
+-- | @- resultStateBatchForSourceImage:sourceStates:destinationImage:@
+resultStateBatchForSourceImage_sourceStates_destinationImage :: (IsMPSCNNDropout mpscnnDropout, IsNSArray sourceStates) => mpscnnDropout -> RawId -> sourceStates -> RawId -> IO (Id MPSCNNDropoutGradientState)
+resultStateBatchForSourceImage_sourceStates_destinationImage mpscnnDropout  sourceImage sourceStates destinationImage =
+  withObjCPtr sourceStates $ \raw_sourceStates ->
+      sendMsg mpscnnDropout (mkSelector "resultStateBatchForSourceImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr (unRawId sourceImage) :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr (unRawId destinationImage) :: Ptr ())] >>= retainedObject . castPtr
+
 -- | @- temporaryResultStateForCommandBuffer:sourceImage:sourceStates:destinationImage:@
 temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImage :: (IsMPSCNNDropout mpscnnDropout, IsMPSImage sourceImage, IsNSArray sourceStates, IsMPSImage destinationImage) => mpscnnDropout -> RawId -> sourceImage -> sourceStates -> destinationImage -> IO (Id MPSCNNDropoutGradientState)
 temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImage mpscnnDropout  commandBuffer sourceImage sourceStates destinationImage =
@@ -71,6 +81,12 @@ temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImage m
     withObjCPtr sourceStates $ \raw_sourceStates ->
       withObjCPtr destinationImage $ \raw_destinationImage ->
           sendMsg mpscnnDropout (mkSelector "temporaryResultStateForCommandBuffer:sourceImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())] >>= retainedObject . castPtr
+
+-- | @- temporaryResultStateBatchForCommandBuffer:sourceImage:sourceStates:destinationImage:@
+temporaryResultStateBatchForCommandBuffer_sourceImage_sourceStates_destinationImage :: (IsMPSCNNDropout mpscnnDropout, IsNSArray sourceStates) => mpscnnDropout -> RawId -> RawId -> sourceStates -> RawId -> IO RawId
+temporaryResultStateBatchForCommandBuffer_sourceImage_sourceStates_destinationImage mpscnnDropout  commandBuffer sourceImage sourceStates destinationImage =
+  withObjCPtr sourceStates $ \raw_sourceStates ->
+      fmap (RawId . castPtr) $ sendMsg mpscnnDropout (mkSelector "temporaryResultStateBatchForCommandBuffer:sourceImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImage) :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr (unRawId destinationImage) :: Ptr ())]
 
 -- | keepProbability
 --
@@ -106,9 +122,17 @@ initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 resultStateForSourceImage_sourceStates_destinationImageSelector :: Selector
 resultStateForSourceImage_sourceStates_destinationImageSelector = mkSelector "resultStateForSourceImage:sourceStates:destinationImage:"
 
+-- | @Selector@ for @resultStateBatchForSourceImage:sourceStates:destinationImage:@
+resultStateBatchForSourceImage_sourceStates_destinationImageSelector :: Selector
+resultStateBatchForSourceImage_sourceStates_destinationImageSelector = mkSelector "resultStateBatchForSourceImage:sourceStates:destinationImage:"
+
 -- | @Selector@ for @temporaryResultStateForCommandBuffer:sourceImage:sourceStates:destinationImage:@
 temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImageSelector :: Selector
 temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImageSelector = mkSelector "temporaryResultStateForCommandBuffer:sourceImage:sourceStates:destinationImage:"
+
+-- | @Selector@ for @temporaryResultStateBatchForCommandBuffer:sourceImage:sourceStates:destinationImage:@
+temporaryResultStateBatchForCommandBuffer_sourceImage_sourceStates_destinationImageSelector :: Selector
+temporaryResultStateBatchForCommandBuffer_sourceImage_sourceStates_destinationImageSelector = mkSelector "temporaryResultStateBatchForCommandBuffer:sourceImage:sourceStates:destinationImage:"
 
 -- | @Selector@ for @keepProbability@
 keepProbabilitySelector :: Selector

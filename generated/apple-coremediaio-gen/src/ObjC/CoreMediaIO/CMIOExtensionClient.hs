@@ -9,10 +9,12 @@ module ObjC.CoreMediaIO.CMIOExtensionClient
   , init_
   , new
   , clientID
+  , signingID
   , pid
   , initSelector
   , newSelector
   , clientIDSelector
+  , signingIDSelector
   , pidSelector
 
 
@@ -54,6 +56,15 @@ clientID :: IsCMIOExtensionClient cmioExtensionClient => cmioExtensionClient -> 
 clientID cmioExtensionClient  =
     sendMsg cmioExtensionClient (mkSelector "clientID") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | signingID
+--
+-- The client's signing identifier.
+--
+-- ObjC selector: @- signingID@
+signingID :: IsCMIOExtensionClient cmioExtensionClient => cmioExtensionClient -> IO (Id NSString)
+signingID cmioExtensionClient  =
+    sendMsg cmioExtensionClient (mkSelector "signingID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | pid
 --
 -- The pid of the client application.
@@ -78,6 +89,10 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @clientID@
 clientIDSelector :: Selector
 clientIDSelector = mkSelector "clientID"
+
+-- | @Selector@ for @signingID@
+signingIDSelector :: Selector
+signingIDSelector = mkSelector "signingID"
 
 -- | @Selector@ for @pid@
 pidSelector :: Selector

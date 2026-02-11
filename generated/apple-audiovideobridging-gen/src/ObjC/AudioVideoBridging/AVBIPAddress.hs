@@ -18,6 +18,8 @@ module ObjC.AudioVideoBridging.AVBIPAddress
   , setIpv6Address
   , ipv4Address
   , setIpv4Address
+  , stringRepresentation
+  , setStringRepresentation
   , initWithIPv6AddressSelector
   , initWithIPv6AddressDataSelector
   , initWithIPv4AddressSelector
@@ -26,6 +28,8 @@ module ObjC.AudioVideoBridging.AVBIPAddress
   , setIpv6AddressSelector
   , ipv4AddressSelector
   , setIpv4AddressSelector
+  , stringRepresentationSelector
+  , setStringRepresentationSelector
 
 
   ) where
@@ -131,6 +135,25 @@ setIpv4Address :: IsAVBIPAddress avbipAddress => avbipAddress -> CUInt -> IO ()
 setIpv4Address avbipAddress  value =
     sendMsg avbipAddress (mkSelector "setIpv4Address:") retVoid [argCUInt value]
 
+-- | stringRepresentation
+--
+-- A strign representation of the IP address in the appropriate representation for IPv4 or IPv6.
+--
+-- ObjC selector: @- stringRepresentation@
+stringRepresentation :: IsAVBIPAddress avbipAddress => avbipAddress -> IO (Id NSString)
+stringRepresentation avbipAddress  =
+    sendMsg avbipAddress (mkSelector "stringRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | stringRepresentation
+--
+-- A strign representation of the IP address in the appropriate representation for IPv4 or IPv6.
+--
+-- ObjC selector: @- setStringRepresentation:@
+setStringRepresentation :: (IsAVBIPAddress avbipAddress, IsNSString value) => avbipAddress -> value -> IO ()
+setStringRepresentation avbipAddress  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avbipAddress (mkSelector "setStringRepresentation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -166,4 +189,12 @@ ipv4AddressSelector = mkSelector "ipv4Address"
 -- | @Selector@ for @setIpv4Address:@
 setIpv4AddressSelector :: Selector
 setIpv4AddressSelector = mkSelector "setIpv4Address:"
+
+-- | @Selector@ for @stringRepresentation@
+stringRepresentationSelector :: Selector
+stringRepresentationSelector = mkSelector "stringRepresentation"
+
+-- | @Selector@ for @setStringRepresentation:@
+setStringRepresentationSelector :: Selector
+setStringRepresentationSelector = mkSelector "setStringRepresentation:"
 

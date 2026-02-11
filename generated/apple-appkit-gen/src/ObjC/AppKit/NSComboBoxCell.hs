@@ -38,6 +38,8 @@ module ObjC.AppKit.NSComboBoxCell
   , numberOfItems
   , completes
   , setCompletes
+  , dataSource
+  , setDataSource
   , objectValueOfSelectedItem
   , objectValues
   , reloadDataSelector
@@ -72,6 +74,8 @@ module ObjC.AppKit.NSComboBoxCell
   , numberOfItemsSelector
   , completesSelector
   , setCompletesSelector
+  , dataSourceSelector
+  , setDataSourceSelector
   , objectValueOfSelectedItemSelector
   , objectValuesSelector
 
@@ -256,6 +260,16 @@ setCompletes :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> Bool -> IO 
 setCompletes nsComboBoxCell  value =
     sendMsg nsComboBoxCell (mkSelector "setCompletes:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @- dataSource@
+dataSource :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> IO RawId
+dataSource nsComboBoxCell  =
+    fmap (RawId . castPtr) $ sendMsg nsComboBoxCell (mkSelector "dataSource") (retPtr retVoid) []
+
+-- | @- setDataSource:@
+setDataSource :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> RawId -> IO ()
+setDataSource nsComboBoxCell  value =
+    sendMsg nsComboBoxCell (mkSelector "setDataSource:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- objectValueOfSelectedItem@
 objectValueOfSelectedItem :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> IO RawId
 objectValueOfSelectedItem nsComboBoxCell  =
@@ -397,6 +411,14 @@ completesSelector = mkSelector "completes"
 -- | @Selector@ for @setCompletes:@
 setCompletesSelector :: Selector
 setCompletesSelector = mkSelector "setCompletes:"
+
+-- | @Selector@ for @dataSource@
+dataSourceSelector :: Selector
+dataSourceSelector = mkSelector "dataSource"
+
+-- | @Selector@ for @setDataSource:@
+setDataSourceSelector :: Selector
+setDataSourceSelector = mkSelector "setDataSource:"
 
 -- | @Selector@ for @objectValueOfSelectedItem@
 objectValueOfSelectedItemSelector :: Selector

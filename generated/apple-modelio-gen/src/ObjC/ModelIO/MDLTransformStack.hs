@@ -11,10 +11,12 @@ module ObjC.ModelIO.MDLTransformStack
   , animatedValueWithName
   , count
   , keyTimes
+  , transformOps
   , initSelector
   , animatedValueWithNameSelector
   , countSelector
   , keyTimesSelector
+  , transformOpsSelector
 
   -- * Enum types
   , MDLTransformOpRotationOrder(MDLTransformOpRotationOrder)
@@ -64,6 +66,11 @@ keyTimes :: IsMDLTransformStack mdlTransformStack => mdlTransformStack -> IO (Id
 keyTimes mdlTransformStack  =
     sendMsg mdlTransformStack (mkSelector "keyTimes") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- transformOps@
+transformOps :: IsMDLTransformStack mdlTransformStack => mdlTransformStack -> IO (Id NSArray)
+transformOps mdlTransformStack  =
+    sendMsg mdlTransformStack (mkSelector "transformOps") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -83,4 +90,8 @@ countSelector = mkSelector "count"
 -- | @Selector@ for @keyTimes@
 keyTimesSelector :: Selector
 keyTimesSelector = mkSelector "keyTimes"
+
+-- | @Selector@ for @transformOps@
+transformOpsSelector :: Selector
+transformOpsSelector = mkSelector "transformOps"
 

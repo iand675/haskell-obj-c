@@ -16,6 +16,14 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.ModelIO.Delegate.MDLAssetResolver
+  - ObjC.ModelIO.Delegate.MDLLightProbeIrradianceDataSource
+  - ObjC.ModelIO.Delegate.MDLMeshBuffer
+  - ObjC.ModelIO.Delegate.MDLMeshBufferAllocator
+  - ObjC.ModelIO.Delegate.MDLMeshBufferZone
+  - ObjC.ModelIO.Delegate.MDLNamed
+  - ObjC.ModelIO.Delegate.MDLObjectContainerComponent
+  - ObjC.ModelIO.Delegate.MDLTransformOp
   - ObjC.ModelIO.Enums
   - ObjC.ModelIO.Internal.Classes
   - ObjC.ModelIO.Internal.Enums

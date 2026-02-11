@@ -25,6 +25,7 @@ library
       ObjC.CoreSpotlight.CSSuggestion
       ObjC.CoreSpotlight.CSUserQuery
       ObjC.CoreSpotlight.CSUserQueryContext
+      ObjC.CoreSpotlight.Delegate.CSSearchableIndexDelegate
       ObjC.CoreSpotlight.Enums
       ObjC.CoreSpotlight.Internal.Classes
       ObjC.CoreSpotlight.Internal.Enums

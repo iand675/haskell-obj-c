@@ -18,6 +18,11 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.PhotosUI.Delegate.PHContentEditingController
+  - ObjC.PhotosUI.Delegate.PHPickerViewControllerDelegate
+  - ObjC.PhotosUI.Delegate.PHProjectExtensionController
+  - ObjC.PhotosUI.Delegate.PHProjectTypeDescriptionDataSource
+  - ObjC.PhotosUI.Delegate.PHProjectTypeDescriptionInvalidator
   - ObjC.PhotosUI.Enums
   - ObjC.PhotosUI.Internal.Classes
   - ObjC.PhotosUI.Internal.Enums

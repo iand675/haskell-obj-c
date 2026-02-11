@@ -42,6 +42,8 @@ module ObjC.AppKit.NSText
   , toggleRuler
   , string
   , setString
+  , delegate
+  , setDelegate
   , editable
   , setEditable
   , selectable
@@ -112,6 +114,8 @@ module ObjC.AppKit.NSText
   , toggleRulerSelector
   , stringSelector
   , setStringSelector
+  , delegateSelector
+  , setDelegateSelector
   , editableSelector
   , setEditableSelector
   , selectableSelector
@@ -362,6 +366,16 @@ setString :: (IsNSText nsText, IsNSString value) => nsText -> value -> IO ()
 setString nsText  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsText (mkSelector "setString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- delegate@
+delegate :: IsNSText nsText => nsText -> IO RawId
+delegate nsText  =
+    fmap (RawId . castPtr) $ sendMsg nsText (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSText nsText => nsText -> RawId -> IO ()
+setDelegate nsText  value =
+    sendMsg nsText (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- editable@
 editable :: IsNSText nsText => nsText -> IO Bool
@@ -684,6 +698,14 @@ stringSelector = mkSelector "string"
 -- | @Selector@ for @setString:@
 setStringSelector :: Selector
 setStringSelector = mkSelector "setString:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @editable@
 editableSelector :: Selector

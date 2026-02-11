@@ -32,6 +32,9 @@ module ObjC.GameKit.GKScore
   , rank
   , shouldSetDefaultLeaderboard
   , setShouldSetDefaultLeaderboard
+  , playerID
+  , category
+  , setCategory
   , initWithLeaderboardIdentifierSelector
   , initWithLeaderboardIdentifier_playerSelector
   , reportScores_withCompletionHandlerSelector
@@ -56,6 +59,9 @@ module ObjC.GameKit.GKScore
   , rankSelector
   , shouldSetDefaultLeaderboardSelector
   , setShouldSetDefaultLeaderboardSelector
+  , playerIDSelector
+  , categorySelector
+  , setCategorySelector
 
 
   ) where
@@ -260,6 +266,24 @@ setShouldSetDefaultLeaderboard :: IsGKScore gkScore => gkScore -> Bool -> IO ()
 setShouldSetDefaultLeaderboard gkScore  value =
     sendMsg gkScore (mkSelector "setShouldSetDefaultLeaderboard:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | * This property is obsolete. **
+--
+-- ObjC selector: @- playerID@
+playerID :: IsGKScore gkScore => gkScore -> IO (Id NSString)
+playerID gkScore  =
+    sendMsg gkScore (mkSelector "playerID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- category@
+category :: IsGKScore gkScore => gkScore -> IO (Id NSString)
+category gkScore  =
+    sendMsg gkScore (mkSelector "category") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setCategory:@
+setCategory :: (IsGKScore gkScore, IsNSString value) => gkScore -> value -> IO ()
+setCategory gkScore  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg gkScore (mkSelector "setCategory:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -359,4 +383,16 @@ shouldSetDefaultLeaderboardSelector = mkSelector "shouldSetDefaultLeaderboard"
 -- | @Selector@ for @setShouldSetDefaultLeaderboard:@
 setShouldSetDefaultLeaderboardSelector :: Selector
 setShouldSetDefaultLeaderboardSelector = mkSelector "setShouldSetDefaultLeaderboard:"
+
+-- | @Selector@ for @playerID@
+playerIDSelector :: Selector
+playerIDSelector = mkSelector "playerID"
+
+-- | @Selector@ for @category@
+categorySelector :: Selector
+categorySelector = mkSelector "category"
+
+-- | @Selector@ for @setCategory:@
+setCategorySelector :: Selector
+setCategorySelector = mkSelector "setCategory:"
 

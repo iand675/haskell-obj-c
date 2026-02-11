@@ -17,6 +17,8 @@ module ObjC.PassKit.PKPaymentAuthorizationController
   , supportsDisbursementsUsingNetworks
   , supportsDisbursementsUsingNetworks_capabilities
   , initWithDisbursementRequest
+  , delegate
+  , setDelegate
   , canMakePaymentsSelector
   , canMakePaymentsUsingNetworksSelector
   , canMakePaymentsUsingNetworks_capabilitiesSelector
@@ -27,6 +29,8 @@ module ObjC.PassKit.PKPaymentAuthorizationController
   , supportsDisbursementsUsingNetworksSelector
   , supportsDisbursementsUsingNetworks_capabilitiesSelector
   , initWithDisbursementRequestSelector
+  , delegateSelector
+  , setDelegateSelector
 
   -- * Enum types
   , PKMerchantCapability(PKMerchantCapability)
@@ -122,6 +126,16 @@ initWithDisbursementRequest pkPaymentAuthorizationController  request =
   withObjCPtr request $ \raw_request ->
       sendMsg pkPaymentAuthorizationController (mkSelector "initWithDisbursementRequest:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ())] >>= ownedObject . castPtr
 
+-- | @- delegate@
+delegate :: IsPKPaymentAuthorizationController pkPaymentAuthorizationController => pkPaymentAuthorizationController -> IO RawId
+delegate pkPaymentAuthorizationController  =
+    fmap (RawId . castPtr) $ sendMsg pkPaymentAuthorizationController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsPKPaymentAuthorizationController pkPaymentAuthorizationController => pkPaymentAuthorizationController -> RawId -> IO ()
+setDelegate pkPaymentAuthorizationController  value =
+    sendMsg pkPaymentAuthorizationController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -165,4 +179,12 @@ supportsDisbursementsUsingNetworks_capabilitiesSelector = mkSelector "supportsDi
 -- | @Selector@ for @initWithDisbursementRequest:@
 initWithDisbursementRequestSelector :: Selector
 initWithDisbursementRequestSelector = mkSelector "initWithDisbursementRequest:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

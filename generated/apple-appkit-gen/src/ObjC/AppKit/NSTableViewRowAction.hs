@@ -13,12 +13,16 @@ module ObjC.AppKit.NSTableViewRowAction
   , setTitle
   , backgroundColor
   , setBackgroundColor
+  , image
+  , setImage
   , rowActionWithStyle_title_handlerSelector
   , styleSelector
   , titleSelector
   , setTitleSelector
   , backgroundColorSelector
   , setBackgroundColorSelector
+  , imageSelector
+  , setImageSelector
 
   -- * Enum types
   , NSTableViewRowActionStyle(NSTableViewRowActionStyle)
@@ -78,6 +82,17 @@ setBackgroundColor nsTableViewRowAction  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsTableViewRowAction (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- image@
+image :: IsNSTableViewRowAction nsTableViewRowAction => nsTableViewRowAction -> IO (Id NSImage)
+image nsTableViewRowAction  =
+    sendMsg nsTableViewRowAction (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setImage:@
+setImage :: (IsNSTableViewRowAction nsTableViewRowAction, IsNSImage value) => nsTableViewRowAction -> value -> IO ()
+setImage nsTableViewRowAction  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsTableViewRowAction (mkSelector "setImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -105,4 +120,12 @@ backgroundColorSelector = mkSelector "backgroundColor"
 -- | @Selector@ for @setBackgroundColor:@
 setBackgroundColorSelector :: Selector
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
+
+-- | @Selector@ for @image@
+imageSelector :: Selector
+imageSelector = mkSelector "image"
+
+-- | @Selector@ for @setImage:@
+setImageSelector :: Selector
+setImageSelector = mkSelector "setImage:"
 

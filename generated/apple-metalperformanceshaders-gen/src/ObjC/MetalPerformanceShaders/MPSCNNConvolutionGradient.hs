@@ -52,6 +52,7 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionGradient
   , sourceImageFeatureChannels
   , groups
   , channelMultiplier
+  , dataSource
   , gradientOption
   , setGradientOption
   , serializeWeightsAndBiases
@@ -65,6 +66,7 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionGradient
   , sourceImageFeatureChannelsSelector
   , groupsSelector
   , channelMultiplierSelector
+  , dataSourceSelector
   , gradientOptionSelector
   , setGradientOptionSelector
   , serializeWeightsAndBiasesSelector
@@ -183,6 +185,15 @@ channelMultiplier :: IsMPSCNNConvolutionGradient mpscnnConvolutionGradient => mp
 channelMultiplier mpscnnConvolutionGradient  =
     sendMsg mpscnnConvolutionGradient (mkSelector "channelMultiplier") retCULong []
 
+-- | dataSource
+--
+-- dataSource with which gradient object was created
+--
+-- ObjC selector: @- dataSource@
+dataSource :: IsMPSCNNConvolutionGradient mpscnnConvolutionGradient => mpscnnConvolutionGradient -> IO RawId
+dataSource mpscnnConvolutionGradient  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnConvolutionGradient (mkSelector "dataSource") (retPtr retVoid) []
+
 -- | gradientOption
 --
 -- Option to control which gradient to compute. Default is MPSCNNConvolutionGradientOptionAll              which means both gradient with respect to data and gradient with respect to weight and bias are computed.
@@ -258,6 +269,10 @@ groupsSelector = mkSelector "groups"
 -- | @Selector@ for @channelMultiplier@
 channelMultiplierSelector :: Selector
 channelMultiplierSelector = mkSelector "channelMultiplier"
+
+-- | @Selector@ for @dataSource@
+dataSourceSelector :: Selector
+dataSourceSelector = mkSelector "dataSource"
 
 -- | @Selector@ for @gradientOption@
 gradientOptionSelector :: Selector

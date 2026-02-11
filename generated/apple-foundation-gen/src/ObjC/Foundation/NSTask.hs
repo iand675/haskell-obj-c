@@ -17,10 +17,16 @@ module ObjC.Foundation.NSTask
   , launchedTaskWithLaunchPath_arguments
   , launchedTaskWithExecutableURL_arguments_error_terminationHandler
   , waitUntilExit
+  , executableURL
+  , setExecutableURL
   , arguments
   , setArguments
   , environment
   , setEnvironment
+  , currentDirectoryURL
+  , setCurrentDirectoryURL
+  , launchRequirementData
+  , setLaunchRequirementData
   , standardInput
   , setStandardInput
   , standardOutput
@@ -35,6 +41,10 @@ module ObjC.Foundation.NSTask
   , setTerminationHandler
   , qualityOfService
   , setQualityOfService
+  , launchPath
+  , setLaunchPath
+  , currentDirectoryPath
+  , setCurrentDirectoryPath
   , initSelector
   , launchAndReturnErrorSelector
   , interruptSelector
@@ -45,10 +55,16 @@ module ObjC.Foundation.NSTask
   , launchedTaskWithLaunchPath_argumentsSelector
   , launchedTaskWithExecutableURL_arguments_error_terminationHandlerSelector
   , waitUntilExitSelector
+  , executableURLSelector
+  , setExecutableURLSelector
   , argumentsSelector
   , setArgumentsSelector
   , environmentSelector
   , setEnvironmentSelector
+  , currentDirectoryURLSelector
+  , setCurrentDirectoryURLSelector
+  , launchRequirementDataSelector
+  , setLaunchRequirementDataSelector
   , standardInputSelector
   , setStandardInputSelector
   , standardOutputSelector
@@ -63,6 +79,10 @@ module ObjC.Foundation.NSTask
   , setTerminationHandlerSelector
   , qualityOfServiceSelector
   , setQualityOfServiceSelector
+  , launchPathSelector
+  , setLaunchPathSelector
+  , currentDirectoryPathSelector
+  , setCurrentDirectoryPathSelector
 
   -- * Enum types
   , NSQualityOfService(NSQualityOfService)
@@ -152,6 +172,17 @@ waitUntilExit :: IsNSTask nsTask => nsTask -> IO ()
 waitUntilExit nsTask  =
     sendMsg nsTask (mkSelector "waitUntilExit") retVoid []
 
+-- | @- executableURL@
+executableURL :: IsNSTask nsTask => nsTask -> IO (Id NSURL)
+executableURL nsTask  =
+    sendMsg nsTask (mkSelector "executableURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setExecutableURL:@
+setExecutableURL :: (IsNSTask nsTask, IsNSURL value) => nsTask -> value -> IO ()
+setExecutableURL nsTask  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsTask (mkSelector "setExecutableURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- arguments@
 arguments :: IsNSTask nsTask => nsTask -> IO (Id NSArray)
 arguments nsTask  =
@@ -173,6 +204,28 @@ setEnvironment :: (IsNSTask nsTask, IsNSDictionary value) => nsTask -> value -> 
 setEnvironment nsTask  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsTask (mkSelector "setEnvironment:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- currentDirectoryURL@
+currentDirectoryURL :: IsNSTask nsTask => nsTask -> IO (Id NSURL)
+currentDirectoryURL nsTask  =
+    sendMsg nsTask (mkSelector "currentDirectoryURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setCurrentDirectoryURL:@
+setCurrentDirectoryURL :: (IsNSTask nsTask, IsNSURL value) => nsTask -> value -> IO ()
+setCurrentDirectoryURL nsTask  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsTask (mkSelector "setCurrentDirectoryURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- launchRequirementData@
+launchRequirementData :: IsNSTask nsTask => nsTask -> IO (Id NSData)
+launchRequirementData nsTask  =
+    sendMsg nsTask (mkSelector "launchRequirementData") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setLaunchRequirementData:@
+setLaunchRequirementData :: (IsNSTask nsTask, IsNSData value) => nsTask -> value -> IO ()
+setLaunchRequirementData nsTask  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsTask (mkSelector "setLaunchRequirementData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- standardInput@
 standardInput :: IsNSTask nsTask => nsTask -> IO RawId
@@ -244,6 +297,28 @@ setQualityOfService :: IsNSTask nsTask => nsTask -> NSQualityOfService -> IO ()
 setQualityOfService nsTask  value =
     sendMsg nsTask (mkSelector "setQualityOfService:") retVoid [argCLong (coerce value)]
 
+-- | @- launchPath@
+launchPath :: IsNSTask nsTask => nsTask -> IO (Id NSString)
+launchPath nsTask  =
+    sendMsg nsTask (mkSelector "launchPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setLaunchPath:@
+setLaunchPath :: (IsNSTask nsTask, IsNSString value) => nsTask -> value -> IO ()
+setLaunchPath nsTask  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsTask (mkSelector "setLaunchPath:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- currentDirectoryPath@
+currentDirectoryPath :: IsNSTask nsTask => nsTask -> IO (Id NSString)
+currentDirectoryPath nsTask  =
+    sendMsg nsTask (mkSelector "currentDirectoryPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setCurrentDirectoryPath:@
+setCurrentDirectoryPath :: (IsNSTask nsTask, IsNSString value) => nsTask -> value -> IO ()
+setCurrentDirectoryPath nsTask  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsTask (mkSelector "setCurrentDirectoryPath:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -288,6 +363,14 @@ launchedTaskWithExecutableURL_arguments_error_terminationHandlerSelector = mkSel
 waitUntilExitSelector :: Selector
 waitUntilExitSelector = mkSelector "waitUntilExit"
 
+-- | @Selector@ for @executableURL@
+executableURLSelector :: Selector
+executableURLSelector = mkSelector "executableURL"
+
+-- | @Selector@ for @setExecutableURL:@
+setExecutableURLSelector :: Selector
+setExecutableURLSelector = mkSelector "setExecutableURL:"
+
 -- | @Selector@ for @arguments@
 argumentsSelector :: Selector
 argumentsSelector = mkSelector "arguments"
@@ -303,6 +386,22 @@ environmentSelector = mkSelector "environment"
 -- | @Selector@ for @setEnvironment:@
 setEnvironmentSelector :: Selector
 setEnvironmentSelector = mkSelector "setEnvironment:"
+
+-- | @Selector@ for @currentDirectoryURL@
+currentDirectoryURLSelector :: Selector
+currentDirectoryURLSelector = mkSelector "currentDirectoryURL"
+
+-- | @Selector@ for @setCurrentDirectoryURL:@
+setCurrentDirectoryURLSelector :: Selector
+setCurrentDirectoryURLSelector = mkSelector "setCurrentDirectoryURL:"
+
+-- | @Selector@ for @launchRequirementData@
+launchRequirementDataSelector :: Selector
+launchRequirementDataSelector = mkSelector "launchRequirementData"
+
+-- | @Selector@ for @setLaunchRequirementData:@
+setLaunchRequirementDataSelector :: Selector
+setLaunchRequirementDataSelector = mkSelector "setLaunchRequirementData:"
 
 -- | @Selector@ for @standardInput@
 standardInputSelector :: Selector
@@ -359,4 +458,20 @@ qualityOfServiceSelector = mkSelector "qualityOfService"
 -- | @Selector@ for @setQualityOfService:@
 setQualityOfServiceSelector :: Selector
 setQualityOfServiceSelector = mkSelector "setQualityOfService:"
+
+-- | @Selector@ for @launchPath@
+launchPathSelector :: Selector
+launchPathSelector = mkSelector "launchPath"
+
+-- | @Selector@ for @setLaunchPath:@
+setLaunchPathSelector :: Selector
+setLaunchPathSelector = mkSelector "setLaunchPath:"
+
+-- | @Selector@ for @currentDirectoryPath@
+currentDirectoryPathSelector :: Selector
+currentDirectoryPathSelector = mkSelector "currentDirectoryPath"
+
+-- | @Selector@ for @setCurrentDirectoryPath:@
+setCurrentDirectoryPathSelector :: Selector
+setCurrentDirectoryPathSelector = mkSelector "setCurrentDirectoryPath:"
 

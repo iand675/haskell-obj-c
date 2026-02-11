@@ -13,7 +13,15 @@ module ObjC.NetworkExtension.NEIPv4Route
   ( NEIPv4Route
   , IsNEIPv4Route(..)
   , initWithDestinationAddress_subnetMask
+  , destinationAddress
+  , destinationSubnetMask
+  , gatewayAddress
+  , setGatewayAddress
   , initWithDestinationAddress_subnetMaskSelector
+  , destinationAddressSelector
+  , destinationSubnetMaskSelector
+  , gatewayAddressSelector
+  , setGatewayAddressSelector
 
 
   ) where
@@ -50,6 +58,43 @@ initWithDestinationAddress_subnetMask neiPv4Route  address subnetMask =
     withObjCPtr subnetMask $ \raw_subnetMask ->
         sendMsg neiPv4Route (mkSelector "initWithDestinationAddress:subnetMask:") (retPtr retVoid) [argPtr (castPtr raw_address :: Ptr ()), argPtr (castPtr raw_subnetMask :: Ptr ())] >>= ownedObject . castPtr
 
+-- | destinationAddress
+--
+-- An IPv4 address represented as a dotted decimal string.
+--
+-- ObjC selector: @- destinationAddress@
+destinationAddress :: IsNEIPv4Route neiPv4Route => neiPv4Route -> IO (Id NSString)
+destinationAddress neiPv4Route  =
+    sendMsg neiPv4Route (mkSelector "destinationAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | destinationSubnetMask
+--
+-- An IPv4 subnet mask represented as a dotted decimal string. This mask in combination with the destinationAddress property is used to determine the destination network of the route.
+--
+-- ObjC selector: @- destinationSubnetMask@
+destinationSubnetMask :: IsNEIPv4Route neiPv4Route => neiPv4Route -> IO (Id NSString)
+destinationSubnetMask neiPv4Route  =
+    sendMsg neiPv4Route (mkSelector "destinationSubnetMask") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | gatewayAddress
+--
+-- The IPv4 address of the route's gateway. If this property is nil then the route's gateway will be set to the tunnel's virtual interface.
+--
+-- ObjC selector: @- gatewayAddress@
+gatewayAddress :: IsNEIPv4Route neiPv4Route => neiPv4Route -> IO (Id NSString)
+gatewayAddress neiPv4Route  =
+    sendMsg neiPv4Route (mkSelector "gatewayAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | gatewayAddress
+--
+-- The IPv4 address of the route's gateway. If this property is nil then the route's gateway will be set to the tunnel's virtual interface.
+--
+-- ObjC selector: @- setGatewayAddress:@
+setGatewayAddress :: (IsNEIPv4Route neiPv4Route, IsNSString value) => neiPv4Route -> value -> IO ()
+setGatewayAddress neiPv4Route  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg neiPv4Route (mkSelector "setGatewayAddress:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -57,4 +102,20 @@ initWithDestinationAddress_subnetMask neiPv4Route  address subnetMask =
 -- | @Selector@ for @initWithDestinationAddress:subnetMask:@
 initWithDestinationAddress_subnetMaskSelector :: Selector
 initWithDestinationAddress_subnetMaskSelector = mkSelector "initWithDestinationAddress:subnetMask:"
+
+-- | @Selector@ for @destinationAddress@
+destinationAddressSelector :: Selector
+destinationAddressSelector = mkSelector "destinationAddress"
+
+-- | @Selector@ for @destinationSubnetMask@
+destinationSubnetMaskSelector :: Selector
+destinationSubnetMaskSelector = mkSelector "destinationSubnetMask"
+
+-- | @Selector@ for @gatewayAddress@
+gatewayAddressSelector :: Selector
+gatewayAddressSelector = mkSelector "gatewayAddress"
+
+-- | @Selector@ for @setGatewayAddress:@
+setGatewayAddressSelector :: Selector
+setGatewayAddressSelector = mkSelector "setGatewayAddress:"
 

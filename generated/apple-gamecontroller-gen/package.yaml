@@ -18,6 +18,21 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.GameController.Delegate.GCAxis2DInput
+  - ObjC.GameController.Delegate.GCAxisElement
+  - ObjC.GameController.Delegate.GCAxisInput
+  - ObjC.GameController.Delegate.GCButtonElement
+  - ObjC.GameController.Delegate.GCDevicePhysicalInputState
+  - ObjC.GameController.Delegate.GCDevicePhysicalInputStateDiff
+  - ObjC.GameController.Delegate.GCDirectionPadElement
+  - ObjC.GameController.Delegate.GCLinearInput
+  - ObjC.GameController.Delegate.GCPhysicalInputExtents
+  - ObjC.GameController.Delegate.GCPhysicalInputSource
+  - ObjC.GameController.Delegate.GCPressedStateInput
+  - ObjC.GameController.Delegate.GCRelativeInput
+  - ObjC.GameController.Delegate.GCSwitchElement
+  - ObjC.GameController.Delegate.GCSwitchPositionInput
+  - ObjC.GameController.Delegate.GCTouchedStateInput
   - ObjC.GameController.Enums
   - ObjC.GameController.GCColor
   - ObjC.GameController.GCController

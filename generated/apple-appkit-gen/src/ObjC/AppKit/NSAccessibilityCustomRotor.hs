@@ -15,12 +15,20 @@ module ObjC.AppKit.NSAccessibilityCustomRotor
   , setType
   , label
   , setLabel
+  , itemSearchDelegate
+  , setItemSearchDelegate
+  , itemLoadingDelegate
+  , setItemLoadingDelegate
   , initWithLabel_itemSearchDelegateSelector
   , initWithRotorType_itemSearchDelegateSelector
   , typeSelector
   , setTypeSelector
   , labelSelector
   , setLabelSelector
+  , itemSearchDelegateSelector
+  , setItemSearchDelegateSelector
+  , itemLoadingDelegateSelector
+  , setItemLoadingDelegateSelector
 
   -- * Enum types
   , NSAccessibilityCustomRotorType(NSAccessibilityCustomRotorType)
@@ -117,6 +125,34 @@ setLabel nsAccessibilityCustomRotor  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsAccessibilityCustomRotor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | The itemSearchDelegate will be asked to find the next item result after performing a search with the given search parameters.
+--
+-- ObjC selector: @- itemSearchDelegate@
+itemSearchDelegate :: IsNSAccessibilityCustomRotor nsAccessibilityCustomRotor => nsAccessibilityCustomRotor -> IO RawId
+itemSearchDelegate nsAccessibilityCustomRotor  =
+    fmap (RawId . castPtr) $ sendMsg nsAccessibilityCustomRotor (mkSelector "itemSearchDelegate") (retPtr retVoid) []
+
+-- | The itemSearchDelegate will be asked to find the next item result after performing a search with the given search parameters.
+--
+-- ObjC selector: @- setItemSearchDelegate:@
+setItemSearchDelegate :: IsNSAccessibilityCustomRotor nsAccessibilityCustomRotor => nsAccessibilityCustomRotor -> RawId -> IO ()
+setItemSearchDelegate nsAccessibilityCustomRotor  value =
+    sendMsg nsAccessibilityCustomRotor (mkSelector "setItemSearchDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | Provide an item load delegate if the rotor vends item results that do not have a backing UI element yet. The loader will be asked to load an element via the accessibilityElementWithToken protocol method when the item result is selected by an assistive client. Applications can use the item result's token to determine which item to return.
+--
+-- ObjC selector: @- itemLoadingDelegate@
+itemLoadingDelegate :: IsNSAccessibilityCustomRotor nsAccessibilityCustomRotor => nsAccessibilityCustomRotor -> IO RawId
+itemLoadingDelegate nsAccessibilityCustomRotor  =
+    fmap (RawId . castPtr) $ sendMsg nsAccessibilityCustomRotor (mkSelector "itemLoadingDelegate") (retPtr retVoid) []
+
+-- | Provide an item load delegate if the rotor vends item results that do not have a backing UI element yet. The loader will be asked to load an element via the accessibilityElementWithToken protocol method when the item result is selected by an assistive client. Applications can use the item result's token to determine which item to return.
+--
+-- ObjC selector: @- setItemLoadingDelegate:@
+setItemLoadingDelegate :: IsNSAccessibilityCustomRotor nsAccessibilityCustomRotor => nsAccessibilityCustomRotor -> RawId -> IO ()
+setItemLoadingDelegate nsAccessibilityCustomRotor  value =
+    sendMsg nsAccessibilityCustomRotor (mkSelector "setItemLoadingDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -144,4 +180,20 @@ labelSelector = mkSelector "label"
 -- | @Selector@ for @setLabel:@
 setLabelSelector :: Selector
 setLabelSelector = mkSelector "setLabel:"
+
+-- | @Selector@ for @itemSearchDelegate@
+itemSearchDelegateSelector :: Selector
+itemSearchDelegateSelector = mkSelector "itemSearchDelegate"
+
+-- | @Selector@ for @setItemSearchDelegate:@
+setItemSearchDelegateSelector :: Selector
+setItemSearchDelegateSelector = mkSelector "setItemSearchDelegate:"
+
+-- | @Selector@ for @itemLoadingDelegate@
+itemLoadingDelegateSelector :: Selector
+itemLoadingDelegateSelector = mkSelector "itemLoadingDelegate"
+
+-- | @Selector@ for @setItemLoadingDelegate:@
+setItemLoadingDelegateSelector :: Selector
+setItemLoadingDelegateSelector = mkSelector "setItemLoadingDelegate:"
 

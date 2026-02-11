@@ -17,6 +17,10 @@ module ObjC.MapKit.MKDirectionsRequest
   , setTransportType
   , requestsAlternateRoutes
   , setRequestsAlternateRoutes
+  , departureDate
+  , setDepartureDate
+  , arrivalDate
+  , setArrivalDate
   , tollPreference
   , setTollPreference
   , highwayPreference
@@ -31,6 +35,10 @@ module ObjC.MapKit.MKDirectionsRequest
   , setTransportTypeSelector
   , requestsAlternateRoutesSelector
   , setRequestsAlternateRoutesSelector
+  , departureDateSelector
+  , setDepartureDateSelector
+  , arrivalDateSelector
+  , setArrivalDateSelector
   , tollPreferenceSelector
   , setTollPreferenceSelector
   , highwayPreferenceSelector
@@ -121,6 +129,26 @@ setRequestsAlternateRoutes :: IsMKDirectionsRequest mkDirectionsRequest => mkDir
 setRequestsAlternateRoutes mkDirectionsRequest  value =
     sendMsg mkDirectionsRequest (mkSelector "setRequestsAlternateRoutes:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @- departureDate@
+departureDate :: IsMKDirectionsRequest mkDirectionsRequest => mkDirectionsRequest -> IO RawId
+departureDate mkDirectionsRequest  =
+    fmap (RawId . castPtr) $ sendMsg mkDirectionsRequest (mkSelector "departureDate") (retPtr retVoid) []
+
+-- | @- setDepartureDate:@
+setDepartureDate :: IsMKDirectionsRequest mkDirectionsRequest => mkDirectionsRequest -> RawId -> IO ()
+setDepartureDate mkDirectionsRequest  value =
+    sendMsg mkDirectionsRequest (mkSelector "setDepartureDate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- arrivalDate@
+arrivalDate :: IsMKDirectionsRequest mkDirectionsRequest => mkDirectionsRequest -> IO RawId
+arrivalDate mkDirectionsRequest  =
+    fmap (RawId . castPtr) $ sendMsg mkDirectionsRequest (mkSelector "arrivalDate") (retPtr retVoid) []
+
+-- | @- setArrivalDate:@
+setArrivalDate :: IsMKDirectionsRequest mkDirectionsRequest => mkDirectionsRequest -> RawId -> IO ()
+setArrivalDate mkDirectionsRequest  value =
+    sendMsg mkDirectionsRequest (mkSelector "setArrivalDate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- tollPreference@
 tollPreference :: IsMKDirectionsRequest mkDirectionsRequest => mkDirectionsRequest -> IO MKDirectionsRoutePreference
 tollPreference mkDirectionsRequest  =
@@ -184,6 +212,22 @@ requestsAlternateRoutesSelector = mkSelector "requestsAlternateRoutes"
 -- | @Selector@ for @setRequestsAlternateRoutes:@
 setRequestsAlternateRoutesSelector :: Selector
 setRequestsAlternateRoutesSelector = mkSelector "setRequestsAlternateRoutes:"
+
+-- | @Selector@ for @departureDate@
+departureDateSelector :: Selector
+departureDateSelector = mkSelector "departureDate"
+
+-- | @Selector@ for @setDepartureDate:@
+setDepartureDateSelector :: Selector
+setDepartureDateSelector = mkSelector "setDepartureDate:"
+
+-- | @Selector@ for @arrivalDate@
+arrivalDateSelector :: Selector
+arrivalDateSelector = mkSelector "arrivalDate"
+
+-- | @Selector@ for @setArrivalDate:@
+setArrivalDateSelector :: Selector
+setArrivalDateSelector = mkSelector "setArrivalDate:"
 
 -- | @Selector@ for @tollPreference@
 tollPreferenceSelector :: Selector

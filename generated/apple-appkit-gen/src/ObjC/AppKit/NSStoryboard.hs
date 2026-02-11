@@ -11,11 +11,13 @@ module ObjC.AppKit.NSStoryboard
   , instantiateInitialControllerWithCreator
   , instantiateControllerWithIdentifier
   , instantiateControllerWithIdentifier_creator
+  , mainStoryboard
   , storyboardWithName_bundleSelector
   , instantiateInitialControllerSelector
   , instantiateInitialControllerWithCreatorSelector
   , instantiateControllerWithIdentifierSelector
   , instantiateControllerWithIdentifier_creatorSelector
+  , mainStoryboardSelector
 
 
   ) where
@@ -66,6 +68,13 @@ instantiateControllerWithIdentifier_creator nsStoryboard  identifier block =
   withObjCPtr identifier $ \raw_identifier ->
       fmap (RawId . castPtr) $ sendMsg nsStoryboard (mkSelector "instantiateControllerWithIdentifier:creator:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr (unRawId block) :: Ptr ())]
 
+-- | @+ mainStoryboard@
+mainStoryboard :: IO (Id NSStoryboard)
+mainStoryboard  =
+  do
+    cls' <- getRequiredClass "NSStoryboard"
+    sendClassMsg cls' (mkSelector "mainStoryboard") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -89,4 +98,8 @@ instantiateControllerWithIdentifierSelector = mkSelector "instantiateControllerW
 -- | @Selector@ for @instantiateControllerWithIdentifier:creator:@
 instantiateControllerWithIdentifier_creatorSelector :: Selector
 instantiateControllerWithIdentifier_creatorSelector = mkSelector "instantiateControllerWithIdentifier:creator:"
+
+-- | @Selector@ for @mainStoryboard@
+mainStoryboardSelector :: Selector
+mainStoryboardSelector = mkSelector "mainStoryboard"
 

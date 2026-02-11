@@ -15,6 +15,7 @@ module ObjC.WebKit.DOMTreeWalker
   , nextNode
   , root
   , whatToShow
+  , filter_
   , expandEntityReferences
   , currentNode
   , setCurrentNode
@@ -27,6 +28,7 @@ module ObjC.WebKit.DOMTreeWalker
   , nextNodeSelector
   , rootSelector
   , whatToShowSelector
+  , filterSelector
   , expandEntityReferencesSelector
   , currentNodeSelector
   , setCurrentNodeSelector
@@ -94,6 +96,11 @@ whatToShow :: IsDOMTreeWalker domTreeWalker => domTreeWalker -> IO CUInt
 whatToShow domTreeWalker  =
     sendMsg domTreeWalker (mkSelector "whatToShow") retCUInt []
 
+-- | @- filter@
+filter_ :: IsDOMTreeWalker domTreeWalker => domTreeWalker -> IO RawId
+filter_ domTreeWalker  =
+    fmap (RawId . castPtr) $ sendMsg domTreeWalker (mkSelector "filter") (retPtr retVoid) []
+
 -- | @- expandEntityReferences@
 expandEntityReferences :: IsDOMTreeWalker domTreeWalker => domTreeWalker -> IO Bool
 expandEntityReferences domTreeWalker  =
@@ -149,6 +156,10 @@ rootSelector = mkSelector "root"
 -- | @Selector@ for @whatToShow@
 whatToShowSelector :: Selector
 whatToShowSelector = mkSelector "whatToShow"
+
+-- | @Selector@ for @filter@
+filterSelector :: Selector
+filterSelector = mkSelector "filter"
 
 -- | @Selector@ for @expandEntityReferences@
 expandEntityReferencesSelector :: Selector

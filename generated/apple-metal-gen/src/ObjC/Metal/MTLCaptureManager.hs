@@ -18,6 +18,8 @@ module ObjC.Metal.MTLCaptureManager
   , startCaptureWithCommandQueue
   , startCaptureWithScope
   , stopCapture
+  , defaultCaptureScope
+  , setDefaultCaptureScope
   , isCapturing
   , sharedCaptureManagerSelector
   , initSelector
@@ -30,6 +32,8 @@ module ObjC.Metal.MTLCaptureManager
   , startCaptureWithCommandQueueSelector
   , startCaptureWithScopeSelector
   , stopCaptureSelector
+  , defaultCaptureScopeSelector
+  , setDefaultCaptureScopeSelector
   , isCapturingSelector
 
   -- * Enum types
@@ -128,6 +132,16 @@ stopCapture :: IsMTLCaptureManager mtlCaptureManager => mtlCaptureManager -> IO 
 stopCapture mtlCaptureManager  =
     sendMsg mtlCaptureManager (mkSelector "stopCapture") retVoid []
 
+-- | @- defaultCaptureScope@
+defaultCaptureScope :: IsMTLCaptureManager mtlCaptureManager => mtlCaptureManager -> IO RawId
+defaultCaptureScope mtlCaptureManager  =
+    fmap (RawId . castPtr) $ sendMsg mtlCaptureManager (mkSelector "defaultCaptureScope") (retPtr retVoid) []
+
+-- | @- setDefaultCaptureScope:@
+setDefaultCaptureScope :: IsMTLCaptureManager mtlCaptureManager => mtlCaptureManager -> RawId -> IO ()
+setDefaultCaptureScope mtlCaptureManager  value =
+    sendMsg mtlCaptureManager (mkSelector "setDefaultCaptureScope:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- isCapturing@
 isCapturing :: IsMTLCaptureManager mtlCaptureManager => mtlCaptureManager -> IO Bool
 isCapturing mtlCaptureManager  =
@@ -180,6 +194,14 @@ startCaptureWithScopeSelector = mkSelector "startCaptureWithScope:"
 -- | @Selector@ for @stopCapture@
 stopCaptureSelector :: Selector
 stopCaptureSelector = mkSelector "stopCapture"
+
+-- | @Selector@ for @defaultCaptureScope@
+defaultCaptureScopeSelector :: Selector
+defaultCaptureScopeSelector = mkSelector "defaultCaptureScope"
+
+-- | @Selector@ for @setDefaultCaptureScope:@
+setDefaultCaptureScopeSelector :: Selector
+setDefaultCaptureScopeSelector = mkSelector "setDefaultCaptureScope:"
 
 -- | @Selector@ for @isCapturing@
 isCapturingSelector :: Selector

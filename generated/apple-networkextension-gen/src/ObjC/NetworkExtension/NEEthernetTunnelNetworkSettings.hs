@@ -15,7 +15,9 @@ module ObjC.NetworkExtension.NEEthernetTunnelNetworkSettings
   ( NEEthernetTunnelNetworkSettings
   , IsNEEthernetTunnelNetworkSettings(..)
   , initWithTunnelRemoteAddress_ethernetAddress_mtu
+  , ethernetAddress
   , initWithTunnelRemoteAddress_ethernetAddress_mtuSelector
+  , ethernetAddressSelector
 
 
   ) where
@@ -52,6 +54,15 @@ initWithTunnelRemoteAddress_ethernetAddress_mtu neEthernetTunnelNetworkSettings 
     withObjCPtr ethernetAddress $ \raw_ethernetAddress ->
         sendMsg neEthernetTunnelNetworkSettings (mkSelector "initWithTunnelRemoteAddress:ethernetAddress:mtu:") (retPtr retVoid) [argPtr (castPtr raw_address :: Ptr ()), argPtr (castPtr raw_ethernetAddress :: Ptr ()), argCLong mtu] >>= ownedObject . castPtr
 
+-- | ethernetAddress
+--
+-- An NSString object containing the ethernet address of the tunnel interface.
+--
+-- ObjC selector: @- ethernetAddress@
+ethernetAddress :: IsNEEthernetTunnelNetworkSettings neEthernetTunnelNetworkSettings => neEthernetTunnelNetworkSettings -> IO (Id NSString)
+ethernetAddress neEthernetTunnelNetworkSettings  =
+    sendMsg neEthernetTunnelNetworkSettings (mkSelector "ethernetAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -59,4 +70,8 @@ initWithTunnelRemoteAddress_ethernetAddress_mtu neEthernetTunnelNetworkSettings 
 -- | @Selector@ for @initWithTunnelRemoteAddress:ethernetAddress:mtu:@
 initWithTunnelRemoteAddress_ethernetAddress_mtuSelector :: Selector
 initWithTunnelRemoteAddress_ethernetAddress_mtuSelector = mkSelector "initWithTunnelRemoteAddress:ethernetAddress:mtu:"
+
+-- | @Selector@ for @ethernetAddress@
+ethernetAddressSelector :: Selector
+ethernetAddressSelector = mkSelector "ethernetAddress"
 

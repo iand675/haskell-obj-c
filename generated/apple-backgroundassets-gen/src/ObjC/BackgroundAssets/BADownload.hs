@@ -11,12 +11,16 @@ module ObjC.BackgroundAssets.BADownload
   , init_
   , new
   , state
+  , identifier
+  , uniqueIdentifier
   , priority
   , isEssential
   , copyAsNonEssentialSelector
   , initSelector
   , newSelector
   , stateSelector
+  , identifierSelector
+  , uniqueIdentifierSelector
   , prioritySelector
   , isEssentialSelector
 
@@ -74,6 +78,20 @@ state :: IsBADownload baDownload => baDownload -> IO BADownloadState
 state baDownload  =
     fmap (coerce :: CLong -> BADownloadState) $ sendMsg baDownload (mkSelector "state") retCLong []
 
+-- | A client defined identifier that uniquely identifies this asset.
+--
+-- ObjC selector: @- identifier@
+identifier :: IsBADownload baDownload => baDownload -> IO (Id NSString)
+identifier baDownload  =
+    sendMsg baDownload (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | A UUID that uniquely identifies the download object.
+--
+-- ObjC selector: @- uniqueIdentifier@
+uniqueIdentifier :: IsBADownload baDownload => baDownload -> IO (Id NSString)
+uniqueIdentifier baDownload  =
+    sendMsg baDownload (mkSelector "uniqueIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | A client set priority to try to order downloads in order of importance
 --
 -- ObjC selector: @- priority@
@@ -107,6 +125,14 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @state@
 stateSelector :: Selector
 stateSelector = mkSelector "state"
+
+-- | @Selector@ for @identifier@
+identifierSelector :: Selector
+identifierSelector = mkSelector "identifier"
+
+-- | @Selector@ for @uniqueIdentifier@
+uniqueIdentifierSelector :: Selector
+uniqueIdentifierSelector = mkSelector "uniqueIdentifier"
 
 -- | @Selector@ for @priority@
 prioritySelector :: Selector

@@ -9,6 +9,8 @@ module ObjC.AVFoundation.AVSampleBufferAudioRenderer
   , IsAVSampleBufferAudioRenderer(..)
   , status
   , error_
+  , audioOutputDeviceUniqueID
+  , setAudioOutputDeviceUniqueID
   , audioTimePitchAlgorithm
   , setAudioTimePitchAlgorithm
   , allowedAudioSpatializationFormats
@@ -19,6 +21,8 @@ module ObjC.AVFoundation.AVSampleBufferAudioRenderer
   , setMuted
   , statusSelector
   , errorSelector
+  , audioOutputDeviceUniqueIDSelector
+  , setAudioOutputDeviceUniqueIDSelector
   , audioTimePitchAlgorithmSelector
   , setAudioTimePitchAlgorithmSelector
   , allowedAudioSpatializationFormatsSelector
@@ -66,6 +70,45 @@ status avSampleBufferAudioRenderer  =
 error_ :: IsAVSampleBufferAudioRenderer avSampleBufferAudioRenderer => avSampleBufferAudioRenderer -> IO (Id NSError)
 error_ avSampleBufferAudioRenderer  =
     sendMsg avSampleBufferAudioRenderer (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | audioOutputDeviceUniqueID
+--
+-- Specifies the unique ID of the Core Audio output device used to play audio.
+--
+-- By default, the value of this property is nil, indicating that the default audio output device is used. Otherwise the value of this property is an NSString containing the unique ID of the Core Audio output device to be used for audio output.
+--
+-- Core Audio's kAudioDevicePropertyDeviceUID is a suitable source of audio output device unique IDs.
+--
+-- Modifying this property while the timebase's rate is not 0.0 may cause the rate to briefly change to 0.0.
+--
+-- On macOS, the audio device clock may be used as the AVSampleBufferRenderSynchronizer's and all attached AVQueuedSampleBufferRendering's timebase's clocks.  If the audioOutputDeviceUniqueID is modified, the clocks of all these timebases may also change.
+--
+-- If multiple AVSampleBufferAudioRenderers with different values for audioOutputDeviceUniqueID are attached to the same AVSampleBufferRenderSynchronizer, audio may not stay in sync during playback.  To avoid this, ensure that all synchronized AVSampleBufferAudioRenderers are using the same audio output device.
+--
+-- ObjC selector: @- audioOutputDeviceUniqueID@
+audioOutputDeviceUniqueID :: IsAVSampleBufferAudioRenderer avSampleBufferAudioRenderer => avSampleBufferAudioRenderer -> IO (Id NSString)
+audioOutputDeviceUniqueID avSampleBufferAudioRenderer  =
+    sendMsg avSampleBufferAudioRenderer (mkSelector "audioOutputDeviceUniqueID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | audioOutputDeviceUniqueID
+--
+-- Specifies the unique ID of the Core Audio output device used to play audio.
+--
+-- By default, the value of this property is nil, indicating that the default audio output device is used. Otherwise the value of this property is an NSString containing the unique ID of the Core Audio output device to be used for audio output.
+--
+-- Core Audio's kAudioDevicePropertyDeviceUID is a suitable source of audio output device unique IDs.
+--
+-- Modifying this property while the timebase's rate is not 0.0 may cause the rate to briefly change to 0.0.
+--
+-- On macOS, the audio device clock may be used as the AVSampleBufferRenderSynchronizer's and all attached AVQueuedSampleBufferRendering's timebase's clocks.  If the audioOutputDeviceUniqueID is modified, the clocks of all these timebases may also change.
+--
+-- If multiple AVSampleBufferAudioRenderers with different values for audioOutputDeviceUniqueID are attached to the same AVSampleBufferRenderSynchronizer, audio may not stay in sync during playback.  To avoid this, ensure that all synchronized AVSampleBufferAudioRenderers are using the same audio output device.
+--
+-- ObjC selector: @- setAudioOutputDeviceUniqueID:@
+setAudioOutputDeviceUniqueID :: (IsAVSampleBufferAudioRenderer avSampleBufferAudioRenderer, IsNSString value) => avSampleBufferAudioRenderer -> value -> IO ()
+setAudioOutputDeviceUniqueID avSampleBufferAudioRenderer  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avSampleBufferAudioRenderer (mkSelector "setAudioOutputDeviceUniqueID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | audioTimePitchAlgorithm
 --
@@ -155,6 +198,14 @@ statusSelector = mkSelector "status"
 -- | @Selector@ for @error@
 errorSelector :: Selector
 errorSelector = mkSelector "error"
+
+-- | @Selector@ for @audioOutputDeviceUniqueID@
+audioOutputDeviceUniqueIDSelector :: Selector
+audioOutputDeviceUniqueIDSelector = mkSelector "audioOutputDeviceUniqueID"
+
+-- | @Selector@ for @setAudioOutputDeviceUniqueID:@
+setAudioOutputDeviceUniqueIDSelector :: Selector
+setAudioOutputDeviceUniqueIDSelector = mkSelector "setAudioOutputDeviceUniqueID:"
 
 -- | @Selector@ for @audioTimePitchAlgorithm@
 audioTimePitchAlgorithmSelector :: Selector

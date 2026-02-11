@@ -11,7 +11,11 @@ module ObjC.NetworkExtension.NWHostEndpoint
   ( NWHostEndpoint
   , IsNWHostEndpoint(..)
   , endpointWithHostname_port
+  , hostname
+  , port
   , endpointWithHostname_portSelector
+  , hostnameSelector
+  , portSelector
 
 
   ) where
@@ -48,6 +52,24 @@ endpointWithHostname_port hostname port =
       withObjCPtr port $ \raw_port ->
         sendClassMsg cls' (mkSelector "endpointWithHostname:port:") (retPtr retVoid) [argPtr (castPtr raw_hostname :: Ptr ()), argPtr (castPtr raw_port :: Ptr ())] >>= retainedObject . castPtr
 
+-- | hostname
+--
+-- The endpoint's hostname.
+--
+-- ObjC selector: @- hostname@
+hostname :: IsNWHostEndpoint nwHostEndpoint => nwHostEndpoint -> IO (Id NSString)
+hostname nwHostEndpoint  =
+    sendMsg nwHostEndpoint (mkSelector "hostname") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | port
+--
+-- The endpoint's port.
+--
+-- ObjC selector: @- port@
+port :: IsNWHostEndpoint nwHostEndpoint => nwHostEndpoint -> IO (Id NSString)
+port nwHostEndpoint  =
+    sendMsg nwHostEndpoint (mkSelector "port") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -55,4 +77,12 @@ endpointWithHostname_port hostname port =
 -- | @Selector@ for @endpointWithHostname:port:@
 endpointWithHostname_portSelector :: Selector
 endpointWithHostname_portSelector = mkSelector "endpointWithHostname:port:"
+
+-- | @Selector@ for @hostname@
+hostnameSelector :: Selector
+hostnameSelector = mkSelector "hostname"
+
+-- | @Selector@ for @port@
+portSelector :: Selector
+portSelector = mkSelector "port"
 

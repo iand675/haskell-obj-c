@@ -20,6 +20,8 @@ module ObjC.MailKit.MEMessage
   , bccAddresses
   , replyToAddresses
   , allRecipientAddresses
+  , dateSent
+  , dateReceived
   , headers
   , rawData
   , initSelector
@@ -33,6 +35,8 @@ module ObjC.MailKit.MEMessage
   , bccAddressesSelector
   , replyToAddressesSelector
   , allRecipientAddressesSelector
+  , dateSentSelector
+  , dateReceivedSelector
   , headersSelector
   , rawDataSelector
 
@@ -139,6 +143,20 @@ allRecipientAddresses :: IsMEMessage meMessage => meMessage -> IO (Id NSArray)
 allRecipientAddresses meMessage  =
     sendMsg meMessage (mkSelector "allRecipientAddresses") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The date the mail message was sent. Optionally set by the by the sender.
+--
+-- ObjC selector: @- dateSent@
+dateSent :: IsMEMessage meMessage => meMessage -> IO (Id NSDate)
+dateSent meMessage  =
+    sendMsg meMessage (mkSelector "dateSent") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The date the mail message was received. Only present if the message has been received.
+--
+-- ObjC selector: @- dateReceived@
+dateReceived :: IsMEMessage meMessage => meMessage -> IO (Id NSDate)
+dateReceived meMessage  =
+    sendMsg meMessage (mkSelector "dateReceived") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | The headers for the message. Might only be a subset if the full body has not been downloaded.
 --
 -- ObjC selector: @- headers@
@@ -200,6 +218,14 @@ replyToAddressesSelector = mkSelector "replyToAddresses"
 -- | @Selector@ for @allRecipientAddresses@
 allRecipientAddressesSelector :: Selector
 allRecipientAddressesSelector = mkSelector "allRecipientAddresses"
+
+-- | @Selector@ for @dateSent@
+dateSentSelector :: Selector
+dateSentSelector = mkSelector "dateSent"
+
+-- | @Selector@ for @dateReceived@
+dateReceivedSelector :: Selector
+dateReceivedSelector = mkSelector "dateReceived"
 
 -- | @Selector@ for @headers@
 headersSelector :: Selector

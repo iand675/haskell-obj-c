@@ -24,9 +24,13 @@ module ObjC.AVFoundation.AVCaptureConnection
   , initWithInputPorts_output
   , initWithInputPort_videoPreviewLayer
   , isVideoRotationAngleSupported
+  , inputPorts
+  , output
+  , videoPreviewLayer
   , enabled
   , setEnabled
   , active
+  , audioChannels
   , supportsVideoMirroring
   , videoMirrored
   , setVideoMirrored
@@ -62,9 +66,13 @@ module ObjC.AVFoundation.AVCaptureConnection
   , initWithInputPorts_outputSelector
   , initWithInputPort_videoPreviewLayerSelector
   , isVideoRotationAngleSupportedSelector
+  , inputPortsSelector
+  , outputSelector
+  , videoPreviewLayerSelector
   , enabledSelector
   , setEnabledSelector
   , activeSelector
+  , audioChannelsSelector
   , supportsVideoMirroringSelector
   , videoMirroredSelector
   , setVideoMirroredSelector
@@ -240,6 +248,39 @@ isVideoRotationAngleSupported :: IsAVCaptureConnection avCaptureConnection => av
 isVideoRotationAngleSupported avCaptureConnection  videoRotationAngle =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureConnection (mkSelector "isVideoRotationAngleSupported:") retCULong [argCDouble videoRotationAngle]
 
+-- | inputPorts
+--
+-- An array of AVCaptureInputPort instances providing data through this connection.
+--
+-- An AVCaptureConnection may involve one or more AVCaptureInputPorts producing data to the connection's AVCaptureOutput. This property is read-only. An AVCaptureConnection's inputPorts remain static for the life of the object.
+--
+-- ObjC selector: @- inputPorts@
+inputPorts :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO (Id NSArray)
+inputPorts avCaptureConnection  =
+    sendMsg avCaptureConnection (mkSelector "inputPorts") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | output
+--
+-- The AVCaptureOutput instance consuming data from this connection's inputPorts.
+--
+-- An AVCaptureConnection may involve one or more AVCaptureInputPorts producing data to the connection's AVCaptureOutput. This property is read-only. An AVCaptureConnection's output remains static for the life of the object. Note that a connection can either be to an output or a video preview layer, but never to both.
+--
+-- ObjC selector: @- output@
+output :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO (Id AVCaptureOutput)
+output avCaptureConnection  =
+    sendMsg avCaptureConnection (mkSelector "output") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | videoPreviewLayer
+--
+-- The AVCaptureVideoPreviewLayer instance consuming data from this connection's inputPort.
+--
+-- An AVCaptureConnection may involve one AVCaptureInputPort producing data to an AVCaptureVideoPreviewLayer object. This property is read-only. An AVCaptureConnection's videoPreviewLayer remains static for the life of the object. Note that a connection can either be to an output or a video preview layer, but never to both.
+--
+-- ObjC selector: @- videoPreviewLayer@
+videoPreviewLayer :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO (Id AVCaptureVideoPreviewLayer)
+videoPreviewLayer avCaptureConnection  =
+    sendMsg avCaptureConnection (mkSelector "videoPreviewLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | enabled
 --
 -- Indicates whether the connection's output should consume data.
@@ -274,6 +315,17 @@ setEnabled avCaptureConnection  value =
 active :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO Bool
 active avCaptureConnection  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureConnection (mkSelector "active") retCULong []
+
+-- | audioChannels
+--
+-- An array of AVCaptureAudioChannel objects representing individual channels of audio data flowing through the connection.
+--
+-- This property is only applicable to AVCaptureConnection instances involving audio. In such connections, the audioChannels array contains one AVCaptureAudioChannel object for each channel of audio data flowing through this connection.
+--
+-- ObjC selector: @- audioChannels@
+audioChannels :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO (Id NSArray)
+audioChannels avCaptureConnection  =
+    sendMsg avCaptureConnection (mkSelector "audioChannels") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | supportsVideoMirroring
 --
@@ -635,6 +687,18 @@ initWithInputPort_videoPreviewLayerSelector = mkSelector "initWithInputPort:vide
 isVideoRotationAngleSupportedSelector :: Selector
 isVideoRotationAngleSupportedSelector = mkSelector "isVideoRotationAngleSupported:"
 
+-- | @Selector@ for @inputPorts@
+inputPortsSelector :: Selector
+inputPortsSelector = mkSelector "inputPorts"
+
+-- | @Selector@ for @output@
+outputSelector :: Selector
+outputSelector = mkSelector "output"
+
+-- | @Selector@ for @videoPreviewLayer@
+videoPreviewLayerSelector :: Selector
+videoPreviewLayerSelector = mkSelector "videoPreviewLayer"
+
 -- | @Selector@ for @enabled@
 enabledSelector :: Selector
 enabledSelector = mkSelector "enabled"
@@ -646,6 +710,10 @@ setEnabledSelector = mkSelector "setEnabled:"
 -- | @Selector@ for @active@
 activeSelector :: Selector
 activeSelector = mkSelector "active"
+
+-- | @Selector@ for @audioChannels@
+audioChannelsSelector :: Selector
+audioChannelsSelector = mkSelector "audioChannels"
 
 -- | @Selector@ for @supportsVideoMirroring@
 supportsVideoMirroringSelector :: Selector

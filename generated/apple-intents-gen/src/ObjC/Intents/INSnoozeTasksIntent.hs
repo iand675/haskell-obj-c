@@ -9,9 +9,11 @@ module ObjC.Intents.INSnoozeTasksIntent
   , initWithTasks_nextTriggerTime_all
   , tasks
   , nextTriggerTime
+  , all_
   , initWithTasks_nextTriggerTime_allSelector
   , tasksSelector
   , nextTriggerTimeSelector
+  , allSelector
 
 
   ) where
@@ -49,6 +51,11 @@ nextTriggerTime :: IsINSnoozeTasksIntent inSnoozeTasksIntent => inSnoozeTasksInt
 nextTriggerTime inSnoozeTasksIntent  =
     sendMsg inSnoozeTasksIntent (mkSelector "nextTriggerTime") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- all@
+all_ :: IsINSnoozeTasksIntent inSnoozeTasksIntent => inSnoozeTasksIntent -> IO (Id NSNumber)
+all_ inSnoozeTasksIntent  =
+    sendMsg inSnoozeTasksIntent (mkSelector "all") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -64,4 +71,8 @@ tasksSelector = mkSelector "tasks"
 -- | @Selector@ for @nextTriggerTime@
 nextTriggerTimeSelector :: Selector
 nextTriggerTimeSelector = mkSelector "nextTriggerTime"
+
+-- | @Selector@ for @all@
+allSelector :: Selector
+allSelector = mkSelector "all"
 

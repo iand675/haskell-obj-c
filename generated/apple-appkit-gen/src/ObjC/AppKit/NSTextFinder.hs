@@ -14,6 +14,10 @@ module ObjC.AppKit.NSTextFinder
   , cancelFindIndicator
   , drawIncrementalMatchHighlightInRect
   , noteClientStringWillChange
+  , client
+  , setClient
+  , findBarContainer
+  , setFindBarContainer
   , findIndicatorNeedsUpdate
   , setFindIndicatorNeedsUpdate
   , incrementalSearchingEnabled
@@ -28,6 +32,10 @@ module ObjC.AppKit.NSTextFinder
   , cancelFindIndicatorSelector
   , drawIncrementalMatchHighlightInRectSelector
   , noteClientStringWillChangeSelector
+  , clientSelector
+  , setClientSelector
+  , findBarContainerSelector
+  , setFindBarContainerSelector
   , findIndicatorNeedsUpdateSelector
   , setFindIndicatorNeedsUpdateSelector
   , incrementalSearchingEnabledSelector
@@ -109,6 +117,26 @@ noteClientStringWillChange :: IsNSTextFinder nsTextFinder => nsTextFinder -> IO 
 noteClientStringWillChange nsTextFinder  =
     sendMsg nsTextFinder (mkSelector "noteClientStringWillChange") retVoid []
 
+-- | @- client@
+client :: IsNSTextFinder nsTextFinder => nsTextFinder -> IO RawId
+client nsTextFinder  =
+    fmap (RawId . castPtr) $ sendMsg nsTextFinder (mkSelector "client") (retPtr retVoid) []
+
+-- | @- setClient:@
+setClient :: IsNSTextFinder nsTextFinder => nsTextFinder -> RawId -> IO ()
+setClient nsTextFinder  value =
+    sendMsg nsTextFinder (mkSelector "setClient:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | @- findBarContainer@
+findBarContainer :: IsNSTextFinder nsTextFinder => nsTextFinder -> IO RawId
+findBarContainer nsTextFinder  =
+    fmap (RawId . castPtr) $ sendMsg nsTextFinder (mkSelector "findBarContainer") (retPtr retVoid) []
+
+-- | @- setFindBarContainer:@
+setFindBarContainer :: IsNSTextFinder nsTextFinder => nsTextFinder -> RawId -> IO ()
+setFindBarContainer nsTextFinder  value =
+    sendMsg nsTextFinder (mkSelector "setFindBarContainer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- findIndicatorNeedsUpdate@
 findIndicatorNeedsUpdate :: IsNSTextFinder nsTextFinder => nsTextFinder -> IO Bool
 findIndicatorNeedsUpdate nsTextFinder  =
@@ -175,6 +203,22 @@ drawIncrementalMatchHighlightInRectSelector = mkSelector "drawIncrementalMatchHi
 -- | @Selector@ for @noteClientStringWillChange@
 noteClientStringWillChangeSelector :: Selector
 noteClientStringWillChangeSelector = mkSelector "noteClientStringWillChange"
+
+-- | @Selector@ for @client@
+clientSelector :: Selector
+clientSelector = mkSelector "client"
+
+-- | @Selector@ for @setClient:@
+setClientSelector :: Selector
+setClientSelector = mkSelector "setClient:"
+
+-- | @Selector@ for @findBarContainer@
+findBarContainerSelector :: Selector
+findBarContainerSelector = mkSelector "findBarContainer"
+
+-- | @Selector@ for @setFindBarContainer:@
+setFindBarContainerSelector :: Selector
+setFindBarContainerSelector = mkSelector "setFindBarContainer:"
 
 -- | @Selector@ for @findIndicatorNeedsUpdate@
 findIndicatorNeedsUpdateSelector :: Selector

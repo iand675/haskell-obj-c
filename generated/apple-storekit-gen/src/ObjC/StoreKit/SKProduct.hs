@@ -14,7 +14,9 @@ module ObjC.StoreKit.SKProduct
   , isDownloadable
   , downloadable
   , isFamilyShareable
+  , contentLengths
   , downloadContentLengths
+  , contentVersion
   , downloadContentVersion
   , subscriptionPeriod
   , introductoryPrice
@@ -28,7 +30,9 @@ module ObjC.StoreKit.SKProduct
   , isDownloadableSelector
   , downloadableSelector
   , isFamilyShareableSelector
+  , contentLengthsSelector
   , downloadContentLengthsSelector
+  , contentVersionSelector
   , downloadContentVersionSelector
   , subscriptionPeriodSelector
   , introductoryPriceSelector
@@ -93,10 +97,20 @@ isFamilyShareable :: IsSKProduct skProduct => skProduct -> IO Bool
 isFamilyShareable skProduct  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg skProduct (mkSelector "isFamilyShareable") retCULong []
 
+-- | @- contentLengths@
+contentLengths :: IsSKProduct skProduct => skProduct -> IO (Id NSArray)
+contentLengths skProduct  =
+    sendMsg skProduct (mkSelector "contentLengths") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- downloadContentLengths@
 downloadContentLengths :: IsSKProduct skProduct => skProduct -> IO (Id NSArray)
 downloadContentLengths skProduct  =
     sendMsg skProduct (mkSelector "downloadContentLengths") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- contentVersion@
+contentVersion :: IsSKProduct skProduct => skProduct -> IO (Id NSString)
+contentVersion skProduct  =
+    sendMsg skProduct (mkSelector "contentVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- downloadContentVersion@
 downloadContentVersion :: IsSKProduct skProduct => skProduct -> IO (Id NSString)
@@ -159,9 +173,17 @@ downloadableSelector = mkSelector "downloadable"
 isFamilyShareableSelector :: Selector
 isFamilyShareableSelector = mkSelector "isFamilyShareable"
 
+-- | @Selector@ for @contentLengths@
+contentLengthsSelector :: Selector
+contentLengthsSelector = mkSelector "contentLengths"
+
 -- | @Selector@ for @downloadContentLengths@
 downloadContentLengthsSelector :: Selector
 downloadContentLengthsSelector = mkSelector "downloadContentLengths"
+
+-- | @Selector@ for @contentVersion@
+contentVersionSelector :: Selector
+contentVersionSelector = mkSelector "contentVersion"
 
 -- | @Selector@ for @downloadContentVersion@
 downloadContentVersionSelector :: Selector

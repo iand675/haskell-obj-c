@@ -25,6 +25,7 @@ module ObjC.IOBluetooth.IOBluetoothRFCOMMChannel
   , write_length_sleep
   , writeAsync_length_refcon
   , writeSync_length
+  , writeSimple_length_sleep_bytesSent
   , setSerialParameters_dataBits_parity_stopBits
   , sendRemoteLineStatus
   , setDelegate
@@ -46,6 +47,7 @@ module ObjC.IOBluetooth.IOBluetoothRFCOMMChannel
   , write_length_sleepSelector
   , writeAsync_length_refconSelector
   , writeSync_lengthSelector
+  , writeSimple_length_sleep_bytesSentSelector
   , setSerialParameters_dataBits_parity_stopBitsSelector
   , sendRemoteLineStatusSelector
   , setDelegateSelector
@@ -286,6 +288,27 @@ writeSync_length :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBlu
 writeSync_length ioBluetoothRFCOMMChannel  data_ length_ =
     sendMsg ioBluetoothRFCOMMChannel (mkSelector "writeSync:length:") retCInt [argPtr data_, argCUInt (fromIntegral length_)]
 
+-- | writeSimple:length:sleep:
+--
+-- Sends a block of data in the channel.
+--
+-- ***WARNING*** This method is being deprecated in favor of -writeSync:... and -writeAsync:...				Sends data through the channel. The number of bytes to be sent is arbitrary. The caller				does not have to worry about the MTU.
+--
+-- @data@ — a pointer to the data buffer to be sent.
+--
+-- @length@ — the length of the buffer to be sent (in bytes).
+--
+-- @sleep@ — a boolean if set to TRUE the call will wait until it is possible to send all the data.
+--
+-- @a@ — UInt32 pointer in which the caller received the nuber of bytes sent.    If set to FALSE and it is not possible to send part of the data the method will return immediately.
+--
+-- Returns: An error code value. 0 if successful.
+--
+-- ObjC selector: @- writeSimple:length:sleep:bytesSent:@
+writeSimple_length_sleep_bytesSent :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBluetoothRFCOMMChannel -> Ptr () -> CUShort -> Bool -> RawId -> IO CInt
+writeSimple_length_sleep_bytesSent ioBluetoothRFCOMMChannel  data_ length_ sleep numBytesSent =
+    sendMsg ioBluetoothRFCOMMChannel (mkSelector "writeSimple:length:sleep:bytesSent:") retCInt [argPtr data_, argCUInt (fromIntegral length_), argCULong (if sleep then 1 else 0), argPtr (castPtr (unRawId numBytesSent) :: Ptr ())]
+
 -- | setSerialParameters:dataBits:parity:stopBits:
 --
 -- Changes the parameters of the serial connection.
@@ -460,6 +483,10 @@ writeAsync_length_refconSelector = mkSelector "writeAsync:length:refcon:"
 -- | @Selector@ for @writeSync:length:@
 writeSync_lengthSelector :: Selector
 writeSync_lengthSelector = mkSelector "writeSync:length:"
+
+-- | @Selector@ for @writeSimple:length:sleep:bytesSent:@
+writeSimple_length_sleep_bytesSentSelector :: Selector
+writeSimple_length_sleep_bytesSentSelector = mkSelector "writeSimple:length:sleep:bytesSent:"
 
 -- | @Selector@ for @setSerialParameters:dataBits:parity:stopBits:@
 setSerialParameters_dataBits_parity_stopBitsSelector :: Selector

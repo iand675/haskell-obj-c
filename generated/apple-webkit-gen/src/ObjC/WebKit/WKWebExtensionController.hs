@@ -30,6 +30,8 @@ module ObjC.WebKit.WKWebExtensionController
   , didMoveTab_fromIndex_inWindow
   , didReplaceTab_withTab
   , didChangeTabProperties_forTab
+  , delegate
+  , setDelegate
   , configuration
   , extensions
   , extensionContexts
@@ -53,6 +55,8 @@ module ObjC.WebKit.WKWebExtensionController
   , didMoveTab_fromIndex_inWindowSelector
   , didReplaceTab_withTabSelector
   , didChangeTabProperties_forTabSelector
+  , delegateSelector
+  , setDelegateSelector
   , configurationSelector
   , extensionsSelector
   , extensionContextsSelector
@@ -355,6 +359,20 @@ didChangeTabProperties_forTab :: IsWKWebExtensionController wkWebExtensionContro
 didChangeTabProperties_forTab wkWebExtensionController  properties changedTab =
     sendMsg wkWebExtensionController (mkSelector "didChangeTabProperties:forTab:") retVoid [argCULong (coerce properties), argPtr (castPtr (unRawId changedTab) :: Ptr ())]
 
+-- | The extension controller delegate.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsWKWebExtensionController wkWebExtensionController => wkWebExtensionController -> IO RawId
+delegate wkWebExtensionController  =
+    fmap (RawId . castPtr) $ sendMsg wkWebExtensionController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | The extension controller delegate.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsWKWebExtensionController wkWebExtensionController => wkWebExtensionController -> RawId -> IO ()
+setDelegate wkWebExtensionController  value =
+    sendMsg wkWebExtensionController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | A copy of the configuration with which the web extension controller was initialized.
 --
 -- Mutating the configuration has no effect on the web extension controller.
@@ -470,6 +488,14 @@ didReplaceTab_withTabSelector = mkSelector "didReplaceTab:withTab:"
 -- | @Selector@ for @didChangeTabProperties:forTab:@
 didChangeTabProperties_forTabSelector :: Selector
 didChangeTabProperties_forTabSelector = mkSelector "didChangeTabProperties:forTab:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @configuration@
 configurationSelector :: Selector

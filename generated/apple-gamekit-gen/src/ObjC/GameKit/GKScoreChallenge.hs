@@ -6,6 +6,10 @@
 module ObjC.GameKit.GKScoreChallenge
   ( GKScoreChallenge
   , IsGKScoreChallenge(..)
+  , score
+  , leaderboardEntry
+  , scoreSelector
+  , leaderboardEntrySelector
 
 
   ) where
@@ -25,7 +29,29 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.GameKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | The score to meet to satisfy this challenge
+--
+-- ObjC selector: @- score@
+score :: IsGKScoreChallenge gkScoreChallenge => gkScoreChallenge -> IO (Id GKScore)
+score gkScoreChallenge  =
+    sendMsg gkScoreChallenge (mkSelector "score") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The leaderboard entry to meet to satisfy this challenge
+--
+-- ObjC selector: @- leaderboardEntry@
+leaderboardEntry :: IsGKScoreChallenge gkScoreChallenge => gkScoreChallenge -> IO (Id GKLeaderboardEntry)
+leaderboardEntry gkScoreChallenge  =
+    sendMsg gkScoreChallenge (mkSelector "leaderboardEntry") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @score@
+scoreSelector :: Selector
+scoreSelector = mkSelector "score"
+
+-- | @Selector@ for @leaderboardEntry@
+leaderboardEntrySelector :: Selector
+leaderboardEntrySelector = mkSelector "leaderboardEntry"
 

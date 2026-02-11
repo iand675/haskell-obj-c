@@ -20,6 +20,8 @@ module ObjC.MapKit.MKLocalSearchCompleter
   , setPointOfInterestFilter
   , addressFilter
   , setAddressFilter
+  , delegate
+  , setDelegate
   , results
   , searching
   , cancelSelector
@@ -35,6 +37,8 @@ module ObjC.MapKit.MKLocalSearchCompleter
   , setPointOfInterestFilterSelector
   , addressFilterSelector
   , setAddressFilterSelector
+  , delegateSelector
+  , setDelegateSelector
   , resultsSelector
   , searchingSelector
 
@@ -137,6 +141,16 @@ setAddressFilter mkLocalSearchCompleter  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mkLocalSearchCompleter (mkSelector "setAddressFilter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsMKLocalSearchCompleter mkLocalSearchCompleter => mkLocalSearchCompleter -> IO RawId
+delegate mkLocalSearchCompleter  =
+    fmap (RawId . castPtr) $ sendMsg mkLocalSearchCompleter (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsMKLocalSearchCompleter mkLocalSearchCompleter => mkLocalSearchCompleter -> RawId -> IO ()
+setDelegate mkLocalSearchCompleter  value =
+    sendMsg mkLocalSearchCompleter (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- results@
 results :: IsMKLocalSearchCompleter mkLocalSearchCompleter => mkLocalSearchCompleter -> IO (Id NSArray)
 results mkLocalSearchCompleter  =
@@ -202,6 +216,14 @@ addressFilterSelector = mkSelector "addressFilter"
 -- | @Selector@ for @setAddressFilter:@
 setAddressFilterSelector :: Selector
 setAddressFilterSelector = mkSelector "setAddressFilter:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @results@
 resultsSelector :: Selector

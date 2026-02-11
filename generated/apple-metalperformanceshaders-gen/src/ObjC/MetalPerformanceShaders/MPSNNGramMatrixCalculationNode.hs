@@ -13,11 +13,15 @@ module ObjC.MetalPerformanceShaders.MPSNNGramMatrixCalculationNode
   , nodeWithSource_alpha
   , initWithSource_alpha
   , alpha
+  , propertyCallBack
+  , setPropertyCallBack
   , nodeWithSourceSelector
   , initWithSourceSelector
   , nodeWithSource_alphaSelector
   , initWithSource_alphaSelector
   , alphaSelector
+  , propertyCallBackSelector
+  , setPropertyCallBackSelector
 
 
   ) where
@@ -102,6 +106,24 @@ alpha :: IsMPSNNGramMatrixCalculationNode mpsnnGramMatrixCalculationNode => mpsn
 alpha mpsnnGramMatrixCalculationNode  =
     sendMsg mpsnnGramMatrixCalculationNode (mkSelector "alpha") retCFloat []
 
+-- | propertyCallBack
+--
+-- Optional callback option - setting this allows the alpha value to be changed dynamically at encode time.              Default value: nil.
+--
+-- ObjC selector: @- propertyCallBack@
+propertyCallBack :: IsMPSNNGramMatrixCalculationNode mpsnnGramMatrixCalculationNode => mpsnnGramMatrixCalculationNode -> IO RawId
+propertyCallBack mpsnnGramMatrixCalculationNode  =
+    fmap (RawId . castPtr) $ sendMsg mpsnnGramMatrixCalculationNode (mkSelector "propertyCallBack") (retPtr retVoid) []
+
+-- | propertyCallBack
+--
+-- Optional callback option - setting this allows the alpha value to be changed dynamically at encode time.              Default value: nil.
+--
+-- ObjC selector: @- setPropertyCallBack:@
+setPropertyCallBack :: IsMPSNNGramMatrixCalculationNode mpsnnGramMatrixCalculationNode => mpsnnGramMatrixCalculationNode -> RawId -> IO ()
+setPropertyCallBack mpsnnGramMatrixCalculationNode  value =
+    sendMsg mpsnnGramMatrixCalculationNode (mkSelector "setPropertyCallBack:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -125,4 +147,12 @@ initWithSource_alphaSelector = mkSelector "initWithSource:alpha:"
 -- | @Selector@ for @alpha@
 alphaSelector :: Selector
 alphaSelector = mkSelector "alpha"
+
+-- | @Selector@ for @propertyCallBack@
+propertyCallBackSelector :: Selector
+propertyCallBackSelector = mkSelector "propertyCallBack"
+
+-- | @Selector@ for @setPropertyCallBack:@
+setPropertyCallBackSelector :: Selector
+setPropertyCallBackSelector = mkSelector "setPropertyCallBack:"
 

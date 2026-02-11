@@ -16,6 +16,7 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.PushKit.Delegate.PKPushRegistryDelegate
   - ObjC.PushKit.Internal.Classes
   - ObjC.PushKit.PKPushCredentials
   - ObjC.PushKit.PKPushPayload

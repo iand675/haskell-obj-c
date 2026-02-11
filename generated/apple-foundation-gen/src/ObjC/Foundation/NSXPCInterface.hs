@@ -13,6 +13,8 @@ module ObjC.Foundation.NSXPCInterface
   , interfaceForSelector_argumentIndex_ofReply
   , setXPCType_forSelector_argumentIndex_ofReply
   , xpcTypeForSelector_argumentIndex_ofReply
+  , protocol
+  , setProtocol
   , interfaceWithProtocolSelector
   , setClasses_forSelector_argumentIndex_ofReplySelector
   , classesForSelector_argumentIndex_ofReplySelector
@@ -20,6 +22,8 @@ module ObjC.Foundation.NSXPCInterface
   , interfaceForSelector_argumentIndex_ofReplySelector
   , setXPCType_forSelector_argumentIndex_ofReplySelector
   , xpcTypeForSelector_argumentIndex_ofReplySelector
+  , protocolSelector
+  , setProtocolSelector
 
 
   ) where
@@ -77,6 +81,16 @@ xpcTypeForSelector_argumentIndex_ofReply :: IsNSXPCInterface nsxpcInterface => n
 xpcTypeForSelector_argumentIndex_ofReply nsxpcInterface  sel arg ofReply =
     fmap (RawId . castPtr) $ sendMsg nsxpcInterface (mkSelector "XPCTypeForSelector:argumentIndex:ofReply:") (retPtr retVoid) [argPtr (unSelector sel), argCULong arg, argCULong (if ofReply then 1 else 0)]
 
+-- | @- protocol@
+protocol :: IsNSXPCInterface nsxpcInterface => nsxpcInterface -> IO RawId
+protocol nsxpcInterface  =
+    fmap (RawId . castPtr) $ sendMsg nsxpcInterface (mkSelector "protocol") (retPtr retVoid) []
+
+-- | @- setProtocol:@
+setProtocol :: IsNSXPCInterface nsxpcInterface => nsxpcInterface -> RawId -> IO ()
+setProtocol nsxpcInterface  value =
+    sendMsg nsxpcInterface (mkSelector "setProtocol:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -108,4 +122,12 @@ setXPCType_forSelector_argumentIndex_ofReplySelector = mkSelector "setXPCType:fo
 -- | @Selector@ for @XPCTypeForSelector:argumentIndex:ofReply:@
 xpcTypeForSelector_argumentIndex_ofReplySelector :: Selector
 xpcTypeForSelector_argumentIndex_ofReplySelector = mkSelector "XPCTypeForSelector:argumentIndex:ofReply:"
+
+-- | @Selector@ for @protocol@
+protocolSelector :: Selector
+protocolSelector = mkSelector "protocol"
+
+-- | @Selector@ for @setProtocol:@
+setProtocolSelector :: Selector
+setProtocolSelector = mkSelector "setProtocol:"
 

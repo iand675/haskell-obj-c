@@ -10,8 +10,10 @@ module ObjC.CoreML.MLGPUComputeDevice
   , IsMLGPUComputeDevice(..)
   , init_
   , new
+  , metalDevice
   , initSelector
   , newSelector
+  , metalDeviceSelector
 
 
   ) where
@@ -43,6 +45,13 @@ new  =
     cls' <- getRequiredClass "MLGPUComputeDevice"
     sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | The underlying metal device.
+--
+-- ObjC selector: @- metalDevice@
+metalDevice :: IsMLGPUComputeDevice mlgpuComputeDevice => mlgpuComputeDevice -> IO RawId
+metalDevice mlgpuComputeDevice  =
+    fmap (RawId . castPtr) $ sendMsg mlgpuComputeDevice (mkSelector "metalDevice") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -54,4 +63,8 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @new@
 newSelector :: Selector
 newSelector = mkSelector "new"
+
+-- | @Selector@ for @metalDevice@
+metalDeviceSelector :: Selector
+metalDeviceSelector = mkSelector "metalDevice"
 

@@ -12,6 +12,8 @@ module ObjC.AppKit.NSTextViewportLayoutController
   , layoutViewport
   , relocateViewportToTextLocation
   , adjustViewportByVerticalOffset
+  , delegate
+  , setDelegate
   , textLayoutManager
   , viewportRange
   , initWithTextLayoutManagerSelector
@@ -20,6 +22,8 @@ module ObjC.AppKit.NSTextViewportLayoutController
   , layoutViewportSelector
   , relocateViewportToTextLocationSelector
   , adjustViewportByVerticalOffsetSelector
+  , delegateSelector
+  , setDelegateSelector
   , textLayoutManagerSelector
   , viewportRangeSelector
 
@@ -74,6 +78,16 @@ adjustViewportByVerticalOffset :: IsNSTextViewportLayoutController nsTextViewpor
 adjustViewportByVerticalOffset nsTextViewportLayoutController  verticalOffset =
     sendMsg nsTextViewportLayoutController (mkSelector "adjustViewportByVerticalOffset:") retVoid [argCDouble verticalOffset]
 
+-- | @- delegate@
+delegate :: IsNSTextViewportLayoutController nsTextViewportLayoutController => nsTextViewportLayoutController -> IO RawId
+delegate nsTextViewportLayoutController  =
+    fmap (RawId . castPtr) $ sendMsg nsTextViewportLayoutController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSTextViewportLayoutController nsTextViewportLayoutController => nsTextViewportLayoutController -> RawId -> IO ()
+setDelegate nsTextViewportLayoutController  value =
+    sendMsg nsTextViewportLayoutController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- textLayoutManager@
 textLayoutManager :: IsNSTextViewportLayoutController nsTextViewportLayoutController => nsTextViewportLayoutController -> IO (Id NSTextLayoutManager)
 textLayoutManager nsTextViewportLayoutController  =
@@ -111,6 +125,14 @@ relocateViewportToTextLocationSelector = mkSelector "relocateViewportToTextLocat
 -- | @Selector@ for @adjustViewportByVerticalOffset:@
 adjustViewportByVerticalOffsetSelector :: Selector
 adjustViewportByVerticalOffsetSelector = mkSelector "adjustViewportByVerticalOffset:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @textLayoutManager@
 textLayoutManagerSelector :: Selector

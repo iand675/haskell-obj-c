@@ -14,6 +14,10 @@ module ObjC.AppKit.NSColorPickerTouchBarItem
   , setColor
   , showsAlpha
   , setShowsAlpha
+  , allowedColorSpaces
+  , setAllowedColorSpaces
+  , colorList
+  , setColorList
   , customizationLabel
   , setCustomizationLabel
   , target
@@ -30,6 +34,10 @@ module ObjC.AppKit.NSColorPickerTouchBarItem
   , setColorSelector
   , showsAlphaSelector
   , setShowsAlphaSelector
+  , allowedColorSpacesSelector
+  , setAllowedColorSpacesSelector
+  , colorListSelector
+  , setColorListSelector
   , customizationLabelSelector
   , setCustomizationLabelSelector
   , targetSelector
@@ -121,6 +129,36 @@ setShowsAlpha :: IsNSColorPickerTouchBarItem nsColorPickerTouchBarItem => nsColo
 setShowsAlpha nsColorPickerTouchBarItem  value =
     sendMsg nsColorPickerTouchBarItem (mkSelector "setShowsAlpha:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | Controls the color spaces that the receiver is able to produce. If a color outside of the allowed spaces are displayed or selected, it will first be converted to the first color space in the array. @nil@ signifies any color space is allowed. Empty array is an invalid value and will raise an exception if set. Defaults to @nil@.
+--
+-- ObjC selector: @- allowedColorSpaces@
+allowedColorSpaces :: IsNSColorPickerTouchBarItem nsColorPickerTouchBarItem => nsColorPickerTouchBarItem -> IO (Id NSArray)
+allowedColorSpaces nsColorPickerTouchBarItem  =
+    sendMsg nsColorPickerTouchBarItem (mkSelector "allowedColorSpaces") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Controls the color spaces that the receiver is able to produce. If a color outside of the allowed spaces are displayed or selected, it will first be converted to the first color space in the array. @nil@ signifies any color space is allowed. Empty array is an invalid value and will raise an exception if set. Defaults to @nil@.
+--
+-- ObjC selector: @- setAllowedColorSpaces:@
+setAllowedColorSpaces :: (IsNSColorPickerTouchBarItem nsColorPickerTouchBarItem, IsNSArray value) => nsColorPickerTouchBarItem -> value -> IO ()
+setAllowedColorSpaces nsColorPickerTouchBarItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsColorPickerTouchBarItem (mkSelector "setAllowedColorSpaces:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | The color list displayed in the list color picker. Defaults to the standard system color list. Setting a custom color list will disable the additional tints/shades that appear on long-press.
+--
+-- ObjC selector: @- colorList@
+colorList :: IsNSColorPickerTouchBarItem nsColorPickerTouchBarItem => nsColorPickerTouchBarItem -> IO (Id NSColorList)
+colorList nsColorPickerTouchBarItem  =
+    sendMsg nsColorPickerTouchBarItem (mkSelector "colorList") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The color list displayed in the list color picker. Defaults to the standard system color list. Setting a custom color list will disable the additional tints/shades that appear on long-press.
+--
+-- ObjC selector: @- setColorList:@
+setColorList :: (IsNSColorPickerTouchBarItem nsColorPickerTouchBarItem, IsNSColorList value) => nsColorPickerTouchBarItem -> value -> IO ()
+setColorList nsColorPickerTouchBarItem  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsColorPickerTouchBarItem (mkSelector "setColorList:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | The localized string labelling this item during user customization. The default value is the localized string of "Color Picker".
 --
 -- ObjC selector: @- customizationLabel@
@@ -205,6 +243,22 @@ showsAlphaSelector = mkSelector "showsAlpha"
 -- | @Selector@ for @setShowsAlpha:@
 setShowsAlphaSelector :: Selector
 setShowsAlphaSelector = mkSelector "setShowsAlpha:"
+
+-- | @Selector@ for @allowedColorSpaces@
+allowedColorSpacesSelector :: Selector
+allowedColorSpacesSelector = mkSelector "allowedColorSpaces"
+
+-- | @Selector@ for @setAllowedColorSpaces:@
+setAllowedColorSpacesSelector :: Selector
+setAllowedColorSpacesSelector = mkSelector "setAllowedColorSpaces:"
+
+-- | @Selector@ for @colorList@
+colorListSelector :: Selector
+colorListSelector = mkSelector "colorList"
+
+-- | @Selector@ for @setColorList:@
+setColorListSelector :: Selector
+setColorListSelector = mkSelector "setColorList:"
 
 -- | @Selector@ for @customizationLabel@
 customizationLabelSelector :: Selector

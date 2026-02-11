@@ -17,6 +17,8 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.HealthKit.Delegate.HKLiveWorkoutBuilderDelegate
+  - ObjC.HealthKit.Delegate.HKWorkoutSessionDelegate
   - ObjC.HealthKit.Enums
   - ObjC.HealthKit.HKActivityMoveModeObject
   - ObjC.HealthKit.HKActivitySummary

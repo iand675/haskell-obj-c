@@ -12,6 +12,12 @@
 module ObjC.NetworkExtension.NEFilterBrowserFlow
   ( NEFilterBrowserFlow
   , IsNEFilterBrowserFlow(..)
+  , request
+  , response
+  , parentURL
+  , requestSelector
+  , responseSelector
+  , parentURLSelector
 
 
   ) where
@@ -31,7 +37,46 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.NetworkExtension.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | request
+--
+-- The NSURLRequest of the flow. This property is always nil for the control providers.
+--
+-- ObjC selector: @- request@
+request :: IsNEFilterBrowserFlow neFilterBrowserFlow => neFilterBrowserFlow -> IO (Id NSURLRequest)
+request neFilterBrowserFlow  =
+    sendMsg neFilterBrowserFlow (mkSelector "request") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | response
+--
+-- The NSURLResponse of the flow. This will be nil until the request is sent to the server and the response headers are received. And this property is always nil for the control providers.
+--
+-- ObjC selector: @- response@
+response :: IsNEFilterBrowserFlow neFilterBrowserFlow => neFilterBrowserFlow -> IO (Id NSURLResponse)
+response neFilterBrowserFlow  =
+    sendMsg neFilterBrowserFlow (mkSelector "response") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | parentURL
+--
+-- The parent URL for the current flow which is created to load the sub frames because the flow with the parent URL was allowed. Will be nil if the parent flow does not exist.
+--
+-- ObjC selector: @- parentURL@
+parentURL :: IsNEFilterBrowserFlow neFilterBrowserFlow => neFilterBrowserFlow -> IO (Id NSURL)
+parentURL neFilterBrowserFlow  =
+    sendMsg neFilterBrowserFlow (mkSelector "parentURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @request@
+requestSelector :: Selector
+requestSelector = mkSelector "request"
+
+-- | @Selector@ for @response@
+responseSelector :: Selector
+responseSelector = mkSelector "response"
+
+-- | @Selector@ for @parentURL@
+parentURLSelector :: Selector
+parentURLSelector = mkSelector "parentURL"
 

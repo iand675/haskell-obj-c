@@ -9,6 +9,7 @@ module ObjC.CoreLocation.CLBeacon
   , IsCLBeacon(..)
   , timestamp
   , uuid
+  , proximityUUID
   , major
   , minor
   , proximity
@@ -16,6 +17,7 @@ module ObjC.CoreLocation.CLBeacon
   , rssi
   , timestampSelector
   , uuidSelector
+  , proximityUUIDSelector
   , majorSelector
   , minorSelector
   , proximitySelector
@@ -57,6 +59,11 @@ uuid :: IsCLBeacon clBeacon => clBeacon -> IO (Id NSUUID)
 uuid clBeacon  =
     sendMsg clBeacon (mkSelector "UUID") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- proximityUUID@
+proximityUUID :: IsCLBeacon clBeacon => clBeacon -> IO (Id NSUUID)
+proximityUUID clBeacon  =
+    sendMsg clBeacon (mkSelector "proximityUUID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- major@
 major :: IsCLBeacon clBeacon => clBeacon -> IO (Id NSNumber)
 major clBeacon  =
@@ -93,6 +100,10 @@ timestampSelector = mkSelector "timestamp"
 -- | @Selector@ for @UUID@
 uuidSelector :: Selector
 uuidSelector = mkSelector "UUID"
+
+-- | @Selector@ for @proximityUUID@
+proximityUUIDSelector :: Selector
+proximityUUIDSelector = mkSelector "proximityUUID"
 
 -- | @Selector@ for @major@
 majorSelector :: Selector

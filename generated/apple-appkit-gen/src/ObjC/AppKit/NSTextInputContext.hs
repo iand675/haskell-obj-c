@@ -19,6 +19,7 @@ module ObjC.AppKit.NSTextInputContext
   , textInputClientDidScroll
   , localizedNameForInputSource
   , currentInputContext
+  , client
   , acceptsGlyphInfo
   , setAcceptsGlyphInfo
   , allowedInputSourceLocales
@@ -39,6 +40,7 @@ module ObjC.AppKit.NSTextInputContext
   , textInputClientDidScrollSelector
   , localizedNameForInputSourceSelector
   , currentInputContextSelector
+  , clientSelector
   , acceptsGlyphInfoSelector
   , setAcceptsGlyphInfoSelector
   , allowedInputSourceLocalesSelector
@@ -142,6 +144,13 @@ currentInputContext  =
     cls' <- getRequiredClass "NSTextInputContext"
     sendClassMsg cls' (mkSelector "currentInputContext") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | ** Properties ****
+--
+-- ObjC selector: @- client@
+client :: IsNSTextInputContext nsTextInputContext => nsTextInputContext -> IO RawId
+client nsTextInputContext  =
+    fmap (RawId . castPtr) $ sendMsg nsTextInputContext (mkSelector "client") (retPtr retVoid) []
+
 -- | @- acceptsGlyphInfo@
 acceptsGlyphInfo :: IsNSTextInputContext nsTextInputContext => nsTextInputContext -> IO Bool
 acceptsGlyphInfo nsTextInputContext  =
@@ -236,6 +245,10 @@ localizedNameForInputSourceSelector = mkSelector "localizedNameForInputSource:"
 -- | @Selector@ for @currentInputContext@
 currentInputContextSelector :: Selector
 currentInputContextSelector = mkSelector "currentInputContext"
+
+-- | @Selector@ for @client@
+clientSelector :: Selector
+clientSelector = mkSelector "client"
 
 -- | @Selector@ for @acceptsGlyphInfo@
 acceptsGlyphInfoSelector :: Selector

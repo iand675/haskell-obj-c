@@ -11,16 +11,28 @@ module ObjC.StoreKit.SKDownload
   , deleteContentForProductID
   , state
   , downloadState
+  , contentLength
   , expectedContentLength
+  , contentIdentifier
+  , contentURL
+  , contentVersion
+  , error_
   , progress
   , timeRemaining
+  , transaction
   , contentURLForProductIDSelector
   , deleteContentForProductIDSelector
   , stateSelector
   , downloadStateSelector
+  , contentLengthSelector
   , expectedContentLengthSelector
+  , contentIdentifierSelector
+  , contentURLSelector
+  , contentVersionSelector
+  , errorSelector
   , progressSelector
   , timeRemainingSelector
+  , transactionSelector
 
   -- * Enum types
   , SKDownloadState(SKDownloadState)
@@ -75,10 +87,35 @@ downloadState :: IsSKDownload skDownload => skDownload -> IO SKDownloadState
 downloadState skDownload  =
     fmap (coerce :: CLong -> SKDownloadState) $ sendMsg skDownload (mkSelector "downloadState") retCLong []
 
+-- | @- contentLength@
+contentLength :: IsSKDownload skDownload => skDownload -> IO (Id NSNumber)
+contentLength skDownload  =
+    sendMsg skDownload (mkSelector "contentLength") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- expectedContentLength@
 expectedContentLength :: IsSKDownload skDownload => skDownload -> IO CLong
 expectedContentLength skDownload  =
     sendMsg skDownload (mkSelector "expectedContentLength") retCLong []
+
+-- | @- contentIdentifier@
+contentIdentifier :: IsSKDownload skDownload => skDownload -> IO (Id NSString)
+contentIdentifier skDownload  =
+    sendMsg skDownload (mkSelector "contentIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- contentURL@
+contentURL :: IsSKDownload skDownload => skDownload -> IO (Id NSURL)
+contentURL skDownload  =
+    sendMsg skDownload (mkSelector "contentURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- contentVersion@
+contentVersion :: IsSKDownload skDownload => skDownload -> IO (Id NSString)
+contentVersion skDownload  =
+    sendMsg skDownload (mkSelector "contentVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- error@
+error_ :: IsSKDownload skDownload => skDownload -> IO (Id NSError)
+error_ skDownload  =
+    sendMsg skDownload (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- progress@
 progress :: IsSKDownload skDownload => skDownload -> IO CFloat
@@ -89,6 +126,11 @@ progress skDownload  =
 timeRemaining :: IsSKDownload skDownload => skDownload -> IO CDouble
 timeRemaining skDownload  =
     sendMsg skDownload (mkSelector "timeRemaining") retCDouble []
+
+-- | @- transaction@
+transaction :: IsSKDownload skDownload => skDownload -> IO (Id SKPaymentTransaction)
+transaction skDownload  =
+    sendMsg skDownload (mkSelector "transaction") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -110,9 +152,29 @@ stateSelector = mkSelector "state"
 downloadStateSelector :: Selector
 downloadStateSelector = mkSelector "downloadState"
 
+-- | @Selector@ for @contentLength@
+contentLengthSelector :: Selector
+contentLengthSelector = mkSelector "contentLength"
+
 -- | @Selector@ for @expectedContentLength@
 expectedContentLengthSelector :: Selector
 expectedContentLengthSelector = mkSelector "expectedContentLength"
+
+-- | @Selector@ for @contentIdentifier@
+contentIdentifierSelector :: Selector
+contentIdentifierSelector = mkSelector "contentIdentifier"
+
+-- | @Selector@ for @contentURL@
+contentURLSelector :: Selector
+contentURLSelector = mkSelector "contentURL"
+
+-- | @Selector@ for @contentVersion@
+contentVersionSelector :: Selector
+contentVersionSelector = mkSelector "contentVersion"
+
+-- | @Selector@ for @error@
+errorSelector :: Selector
+errorSelector = mkSelector "error"
 
 -- | @Selector@ for @progress@
 progressSelector :: Selector
@@ -121,4 +183,8 @@ progressSelector = mkSelector "progress"
 -- | @Selector@ for @timeRemaining@
 timeRemainingSelector :: Selector
 timeRemainingSelector = mkSelector "timeRemaining"
+
+-- | @Selector@ for @transaction@
+transactionSelector :: Selector
+transactionSelector = mkSelector "transaction"
 

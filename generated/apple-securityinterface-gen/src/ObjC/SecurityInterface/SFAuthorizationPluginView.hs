@@ -12,7 +12,9 @@
 module ObjC.SecurityInterface.SFAuthorizationPluginView
   ( SFAuthorizationPluginView
   , IsSFAuthorizationPluginView(..)
+  , initWithCallbacks_andEngineRef
   , engineRef
+  , callbacks
   , lastError
   , didActivate
   , willActivateWithUser
@@ -23,7 +25,9 @@ module ObjC.SecurityInterface.SFAuthorizationPluginView
   , setEnabled
   , displayView
   , updateView
+  , initWithCallbacks_andEngineRefSelector
   , engineRefSelector
+  , callbacksSelector
   , lastErrorSelector
   , didActivateSelector
   , willActivateWithUserSelector
@@ -54,6 +58,19 @@ import ObjC.SecurityInterface.Internal.Classes
 import ObjC.AppKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | initWithCallbacks:andEngineRef:
+--
+-- The initialization method of this class.  You must provide the callbacks and engineRef that were provided to the AuthorizationPlugin and AuthorizationMechanismRef.
+--
+-- @callbacks@ — The AuthorizationCallbacks provided to the AuthorizationPlugin.
+--
+-- @engineRef@ — The AuthorizationEngineRef provided to the AuthorizationMechanismRef.
+--
+-- ObjC selector: @- initWithCallbacks:andEngineRef:@
+initWithCallbacks_andEngineRef :: IsSFAuthorizationPluginView sfAuthorizationPluginView => sfAuthorizationPluginView -> Const RawId -> Ptr () -> IO RawId
+initWithCallbacks_andEngineRef sfAuthorizationPluginView  callbacks engineRef =
+    fmap (RawId . castPtr) $ sendMsg sfAuthorizationPluginView (mkSelector "initWithCallbacks:andEngineRef:") (retPtr retVoid) [argPtr (castPtr (unRawId (unConst callbacks)) :: Ptr ()), argPtr engineRef]
+
 -- | engineRef
 --
 -- An accessor method to the AuthorizationEngineRef provided to the init method.  Use this value when calling the functions of the AuthorizationCallbacks when you need to set the result or set a context value.
@@ -62,6 +79,15 @@ import ObjC.Foundation.Internal.Classes
 engineRef :: IsSFAuthorizationPluginView sfAuthorizationPluginView => sfAuthorizationPluginView -> IO (Ptr ())
 engineRef sfAuthorizationPluginView  =
     fmap castPtr $ sendMsg sfAuthorizationPluginView (mkSelector "engineRef") (retPtr retVoid) []
+
+-- | callbacks
+--
+-- An accessor method to the AuthorizationEngineRef provided to the init method.  Use this to get the function pointers to SetResult, SetContextValue, etc.  See the AuthorizationCallbacks documentation for more details.
+--
+-- ObjC selector: @- callbacks@
+callbacks :: IsSFAuthorizationPluginView sfAuthorizationPluginView => sfAuthorizationPluginView -> IO (Const RawId)
+callbacks sfAuthorizationPluginView  =
+    fmap Const $ fmap (RawId . castPtr) $ sendMsg sfAuthorizationPluginView (mkSelector "callbacks") (retPtr retVoid) []
 
 -- | lastError
 --
@@ -166,9 +192,17 @@ updateView sfAuthorizationPluginView  =
 -- Selectors
 -- ---------------------------------------------------------------------------
 
+-- | @Selector@ for @initWithCallbacks:andEngineRef:@
+initWithCallbacks_andEngineRefSelector :: Selector
+initWithCallbacks_andEngineRefSelector = mkSelector "initWithCallbacks:andEngineRef:"
+
 -- | @Selector@ for @engineRef@
 engineRefSelector :: Selector
 engineRefSelector = mkSelector "engineRef"
+
+-- | @Selector@ for @callbacks@
+callbacksSelector :: Selector
+callbacksSelector = mkSelector "callbacks"
 
 -- | @Selector@ for @lastError@
 lastErrorSelector :: Selector

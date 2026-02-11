@@ -20,7 +20,10 @@ module ObjC.StoreKit.SKPaymentQueue
   , removeTransactionObserver
   , showPriceConsentIfNeeded
   , presentCodeRedemptionSheet
+  , delegate
+  , setDelegate
   , storefront
+  , transactionObservers
   , transactions
   , defaultQueueSelector
   , canMakePaymentsSelector
@@ -36,7 +39,10 @@ module ObjC.StoreKit.SKPaymentQueue
   , removeTransactionObserverSelector
   , showPriceConsentIfNeededSelector
   , presentCodeRedemptionSheetSelector
+  , delegateSelector
+  , setDelegateSelector
   , storefrontSelector
+  , transactionObserversSelector
   , transactionsSelector
 
 
@@ -138,10 +144,25 @@ presentCodeRedemptionSheet :: IsSKPaymentQueue skPaymentQueue => skPaymentQueue 
 presentCodeRedemptionSheet skPaymentQueue  =
     sendMsg skPaymentQueue (mkSelector "presentCodeRedemptionSheet") retVoid []
 
+-- | @- delegate@
+delegate :: IsSKPaymentQueue skPaymentQueue => skPaymentQueue -> IO RawId
+delegate skPaymentQueue  =
+    fmap (RawId . castPtr) $ sendMsg skPaymentQueue (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsSKPaymentQueue skPaymentQueue => skPaymentQueue -> RawId -> IO ()
+setDelegate skPaymentQueue  value =
+    sendMsg skPaymentQueue (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- storefront@
 storefront :: IsSKPaymentQueue skPaymentQueue => skPaymentQueue -> IO (Id SKStorefront)
 storefront skPaymentQueue  =
     sendMsg skPaymentQueue (mkSelector "storefront") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- transactionObservers@
+transactionObservers :: IsSKPaymentQueue skPaymentQueue => skPaymentQueue -> IO (Id NSArray)
+transactionObservers skPaymentQueue  =
+    sendMsg skPaymentQueue (mkSelector "transactionObservers") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- transactions@
 transactions :: IsSKPaymentQueue skPaymentQueue => skPaymentQueue -> IO (Id NSArray)
@@ -208,9 +229,21 @@ showPriceConsentIfNeededSelector = mkSelector "showPriceConsentIfNeeded"
 presentCodeRedemptionSheetSelector :: Selector
 presentCodeRedemptionSheetSelector = mkSelector "presentCodeRedemptionSheet"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @storefront@
 storefrontSelector :: Selector
 storefrontSelector = mkSelector "storefront"
+
+-- | @Selector@ for @transactionObservers@
+transactionObserversSelector :: Selector
+transactionObserversSelector = mkSelector "transactionObservers"
 
 -- | @Selector@ for @transactions@
 transactionsSelector :: Selector

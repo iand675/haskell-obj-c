@@ -17,6 +17,7 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.OpenDirectory.Delegate.ODQueryDelegate
   - ObjC.OpenDirectory.Enums
   - ObjC.OpenDirectory.Internal.Classes
   - ObjC.OpenDirectory.Internal.Enums

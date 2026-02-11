@@ -19,18 +19,34 @@ module ObjC.AVFoundation.AVVideoComposition
   , videoCompositionWithVideoComposition
   , videoCompositionWithAsset_applyingCIFiltersWithHandler
   , videoCompositionWithAsset_applyingCIFiltersWithHandler_completionHandler
+  , customVideoCompositorClass
   , sourceTrackIDForFrameTiming
   , renderScale
+  , instructions
   , animationTool
+  , sourceSampleDataTrackIDs
+  , outputBufferDescription
+  , spatialVideoConfigurations
+  , colorPrimaries
+  , colorYCbCrMatrix
+  , colorTransferFunction
   , perFrameHDRDisplayMetadataPolicy
   , videoCompositionWithPropertiesOfAssetSelector
   , videoCompositionWithPropertiesOfAsset_completionHandlerSelector
   , videoCompositionWithVideoCompositionSelector
   , videoCompositionWithAsset_applyingCIFiltersWithHandlerSelector
   , videoCompositionWithAsset_applyingCIFiltersWithHandler_completionHandlerSelector
+  , customVideoCompositorClassSelector
   , sourceTrackIDForFrameTimingSelector
   , renderScaleSelector
+  , instructionsSelector
   , animationToolSelector
+  , sourceSampleDataTrackIDsSelector
+  , outputBufferDescriptionSelector
+  , spatialVideoConfigurationsSelector
+  , colorPrimariesSelector
+  , colorYCbCrMatrixSelector
+  , colorTransferFunctionSelector
   , perFrameHDRDisplayMetadataPolicySelector
 
 
@@ -151,6 +167,13 @@ videoCompositionWithAsset_applyingCIFiltersWithHandler_completionHandler asset a
     withObjCPtr asset $ \raw_asset ->
       sendClassMsg cls' (mkSelector "videoCompositionWithAsset:applyingCIFiltersWithHandler:completionHandler:") retVoid [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr applier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
 
+-- | Indicates a custom compositor class to use. The class must implement the AVVideoCompositing protocol. If nil, the default, internal video compositor is used
+--
+-- ObjC selector: @- customVideoCompositorClass@
+customVideoCompositorClass :: IsAVVideoComposition avVideoComposition => avVideoComposition -> IO Class
+customVideoCompositorClass avVideoComposition  =
+    fmap (Class . castPtr) $ sendMsg avVideoComposition (mkSelector "customVideoCompositorClass") (retPtr retVoid) []
+
 -- | If sourceTrackIDForFrameTiming is not kCMPersistentTrackID_Invalid, frame timing for the video composition is derived from the source asset's track with the corresponding ID. This may be used to preserve a source asset's variable frame timing. If an empty edit is encountered in the source asset’s track, the compositor composes frames as needed up to the frequency specified in frameDuration property. */
 --
 -- ObjC selector: @- sourceTrackIDForFrameTiming@
@@ -165,12 +188,71 @@ renderScale :: IsAVVideoComposition avVideoComposition => avVideoComposition -> 
 renderScale avVideoComposition  =
     sendMsg avVideoComposition (mkSelector "renderScale") retCFloat []
 
+-- | Indicates instructions for video composition via an NSArray of instances of classes implementing the AVVideoCompositionInstruction protocol. For the first instruction in the array, timeRange.start must be less than or equal to the earliest time for which playback or other processing will be attempted (note that this will typically be kCMTimeZero). For subsequent instructions, timeRange.start must be equal to the prior instruction's end time. The end time of the last instruction must be greater than or equal to the latest time for which playback or other processing will be attempted (note that this will often be the duration of the asset with which the instance of AVVideoComposition is associated).
+--
+-- ObjC selector: @- instructions@
+instructions :: IsAVVideoComposition avVideoComposition => avVideoComposition -> IO (Id NSArray)
+instructions avVideoComposition  =
+    sendMsg avVideoComposition (mkSelector "instructions") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Indicates a special video composition tool for use of Core Animation; may be nil
 --
 -- ObjC selector: @- animationTool@
 animationTool :: IsAVVideoComposition avVideoComposition => avVideoComposition -> IO (Id AVVideoCompositionCoreAnimationTool)
 animationTool avVideoComposition  =
     sendMsg avVideoComposition (mkSelector "animationTool") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | List of all track IDs for tracks from which sample data should be presented to the compositor at any point in the overall composition. The sample data will be delivered to the custom compositor via AVAsynchronousVideoCompositionRequest.
+--
+-- ObjC selector: @- sourceSampleDataTrackIDs@
+sourceSampleDataTrackIDs :: IsAVVideoComposition avVideoComposition => avVideoComposition -> IO (Id NSArray)
+sourceSampleDataTrackIDs avVideoComposition  =
+    sendMsg avVideoComposition (mkSelector "sourceSampleDataTrackIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The output buffers of the video composition can be specified with the outputBufferDescription. The value is an array of CMTagCollectionRef objects that describes the output buffers.
+--
+-- If the video composition will output tagged buffers, the details of those buffers should be specified with CMTags. Specifically, the StereoView (eyes) and ProjectionKind must be specified. The behavior is undefined if the output tagged buffers do not match the outputBufferDescription. The default is nil, which means monoscopic output. Note that an empty array is not valid. An exception will be thrown if the objects in the array are not of type CMTagCollectionRef. Note that tagged buffers are only supported for custom compositors.
+--
+-- ObjC selector: @- outputBufferDescription@
+outputBufferDescription :: IsAVVideoComposition avVideoComposition => avVideoComposition -> IO (Id NSArray)
+outputBufferDescription avVideoComposition  =
+    sendMsg avVideoComposition (mkSelector "outputBufferDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Indicates the spatial configurations that are available to associate with the output of the video composition.
+--
+-- A custom compositor can output spatial video by specifying one of these spatial configurations. A spatial configuration with all nil values indicates the video is not spatial. A nil spatial configuration also indicates the video is not spatial. The value can be nil, which indicates the output will not be spatial. NOTE: If this property is not empty, then the client must attach one of the spatial configurations in this array to all of the pixel buffers, otherwise an exception will be thrown.
+--
+-- ObjC selector: @- spatialVideoConfigurations@
+spatialVideoConfigurations :: IsAVVideoComposition avVideoComposition => avVideoComposition -> IO (Id NSArray)
+spatialVideoConfigurations avVideoComposition  =
+    sendMsg avVideoComposition (mkSelector "spatialVideoConfigurations") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Rendering will use these primaries and frames will be tagged as such. If the value of this property is nil then the source's primaries will be propagated and used.
+--
+-- Default is nil. Valid values are those suitable for AVVideoColorPrimariesKey. Generally set as a triple along with colorYCbCrMatrix and colorTransferFunction.
+--
+-- ObjC selector: @- colorPrimaries@
+colorPrimaries :: IsAVVideoComposition avVideoComposition => avVideoComposition -> IO (Id NSString)
+colorPrimaries avVideoComposition  =
+    sendMsg avVideoComposition (mkSelector "colorPrimaries") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Rendering will use this matrix and frames will be tagged as such. If the value of this property is nil then the source's matrix will be propagated and used.
+--
+-- Default is nil. Valid values are those suitable for AVVideoYCbCrMatrixKey. Generally set as a triple along with colorPrimaries and colorTransferFunction.
+--
+-- ObjC selector: @- colorYCbCrMatrix@
+colorYCbCrMatrix :: IsAVVideoComposition avVideoComposition => avVideoComposition -> IO (Id NSString)
+colorYCbCrMatrix avVideoComposition  =
+    sendMsg avVideoComposition (mkSelector "colorYCbCrMatrix") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Rendering will use this transfer function and frames will be tagged as such. If the value of this property is nil then the source's transfer function will be propagated and used.
+--
+-- Default is nil. Valid values are those suitable for AVVideoTransferFunctionKey. Generally set as a triple along with colorYCbCrMatrix and colorYCbCrMatrix.
+--
+-- ObjC selector: @- colorTransferFunction@
+colorTransferFunction :: IsAVVideoComposition avVideoComposition => avVideoComposition -> IO (Id NSString)
+colorTransferFunction avVideoComposition  =
+    sendMsg avVideoComposition (mkSelector "colorTransferFunction") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | Configures policy for per frame HDR display metadata on the rendered frame
 --
@@ -205,6 +287,10 @@ videoCompositionWithAsset_applyingCIFiltersWithHandlerSelector = mkSelector "vid
 videoCompositionWithAsset_applyingCIFiltersWithHandler_completionHandlerSelector :: Selector
 videoCompositionWithAsset_applyingCIFiltersWithHandler_completionHandlerSelector = mkSelector "videoCompositionWithAsset:applyingCIFiltersWithHandler:completionHandler:"
 
+-- | @Selector@ for @customVideoCompositorClass@
+customVideoCompositorClassSelector :: Selector
+customVideoCompositorClassSelector = mkSelector "customVideoCompositorClass"
+
 -- | @Selector@ for @sourceTrackIDForFrameTiming@
 sourceTrackIDForFrameTimingSelector :: Selector
 sourceTrackIDForFrameTimingSelector = mkSelector "sourceTrackIDForFrameTiming"
@@ -213,9 +299,37 @@ sourceTrackIDForFrameTimingSelector = mkSelector "sourceTrackIDForFrameTiming"
 renderScaleSelector :: Selector
 renderScaleSelector = mkSelector "renderScale"
 
+-- | @Selector@ for @instructions@
+instructionsSelector :: Selector
+instructionsSelector = mkSelector "instructions"
+
 -- | @Selector@ for @animationTool@
 animationToolSelector :: Selector
 animationToolSelector = mkSelector "animationTool"
+
+-- | @Selector@ for @sourceSampleDataTrackIDs@
+sourceSampleDataTrackIDsSelector :: Selector
+sourceSampleDataTrackIDsSelector = mkSelector "sourceSampleDataTrackIDs"
+
+-- | @Selector@ for @outputBufferDescription@
+outputBufferDescriptionSelector :: Selector
+outputBufferDescriptionSelector = mkSelector "outputBufferDescription"
+
+-- | @Selector@ for @spatialVideoConfigurations@
+spatialVideoConfigurationsSelector :: Selector
+spatialVideoConfigurationsSelector = mkSelector "spatialVideoConfigurations"
+
+-- | @Selector@ for @colorPrimaries@
+colorPrimariesSelector :: Selector
+colorPrimariesSelector = mkSelector "colorPrimaries"
+
+-- | @Selector@ for @colorYCbCrMatrix@
+colorYCbCrMatrixSelector :: Selector
+colorYCbCrMatrixSelector = mkSelector "colorYCbCrMatrix"
+
+-- | @Selector@ for @colorTransferFunction@
+colorTransferFunctionSelector :: Selector
+colorTransferFunctionSelector = mkSelector "colorTransferFunction"
 
 -- | @Selector@ for @perFrameHDRDisplayMetadataPolicy@
 perFrameHDRDisplayMetadataPolicySelector :: Selector

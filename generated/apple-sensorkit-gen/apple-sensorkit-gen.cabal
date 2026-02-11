@@ -12,6 +12,7 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.SensorKit.Delegate.SRSensorReaderDelegate
       ObjC.SensorKit.Enums
       ObjC.SensorKit.Internal.Classes
       ObjC.SensorKit.Internal.Enums

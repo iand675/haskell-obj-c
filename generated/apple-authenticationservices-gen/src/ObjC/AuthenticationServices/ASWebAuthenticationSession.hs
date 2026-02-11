@@ -24,6 +24,8 @@ module ObjC.AuthenticationServices.ASWebAuthenticationSession
   , cancel
   , new
   , init_
+  , presentationContextProvider
+  , setPresentationContextProvider
   , prefersEphemeralWebBrowserSession
   , setPrefersEphemeralWebBrowserSession
   , additionalHeaderFields
@@ -35,6 +37,8 @@ module ObjC.AuthenticationServices.ASWebAuthenticationSession
   , cancelSelector
   , newSelector
   , initSelector
+  , presentationContextProviderSelector
+  , setPresentationContextProviderSelector
   , prefersEphemeralWebBrowserSessionSelector
   , setPrefersEphemeralWebBrowserSessionSelector
   , additionalHeaderFieldsSelector
@@ -111,6 +115,20 @@ init_ :: IsASWebAuthenticationSession asWebAuthenticationSession => asWebAuthent
 init_ asWebAuthenticationSession  =
     sendMsg asWebAuthenticationSession (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | Provides context to target where in an application's UI the authorization view should be shown. A provider must be set prior to calling -start, otherwise the authorization view cannot be displayed. If deploying to iOS prior to 13.0, the desired window is inferred by the application's key window.
+--
+-- ObjC selector: @- presentationContextProvider@
+presentationContextProvider :: IsASWebAuthenticationSession asWebAuthenticationSession => asWebAuthenticationSession -> IO RawId
+presentationContextProvider asWebAuthenticationSession  =
+    fmap (RawId . castPtr) $ sendMsg asWebAuthenticationSession (mkSelector "presentationContextProvider") (retPtr retVoid) []
+
+-- | Provides context to target where in an application's UI the authorization view should be shown. A provider must be set prior to calling -start, otherwise the authorization view cannot be displayed. If deploying to iOS prior to 13.0, the desired window is inferred by the application's key window.
+--
+-- ObjC selector: @- setPresentationContextProvider:@
+setPresentationContextProvider :: IsASWebAuthenticationSession asWebAuthenticationSession => asWebAuthenticationSession -> RawId -> IO ()
+setPresentationContextProvider asWebAuthenticationSession  value =
+    sendMsg asWebAuthenticationSession (mkSelector "setPresentationContextProvider:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Indicates whether this session should ask the browser for an ephemeral session.
 --
 -- Ephemeral web browser sessions do not not share cookies or other browsing data with a user's normal browser session. This value is NO by default. Setting this property after calling -[ASWebAuthenticationSession start] has no effect.
@@ -178,6 +196,14 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @init@
 initSelector :: Selector
 initSelector = mkSelector "init"
+
+-- | @Selector@ for @presentationContextProvider@
+presentationContextProviderSelector :: Selector
+presentationContextProviderSelector = mkSelector "presentationContextProvider"
+
+-- | @Selector@ for @setPresentationContextProvider:@
+setPresentationContextProviderSelector :: Selector
+setPresentationContextProviderSelector = mkSelector "setPresentationContextProvider:"
 
 -- | @Selector@ for @prefersEphemeralWebBrowserSession@
 prefersEphemeralWebBrowserSessionSelector :: Selector

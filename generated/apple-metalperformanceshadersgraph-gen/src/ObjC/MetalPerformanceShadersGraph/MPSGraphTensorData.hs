@@ -11,22 +11,32 @@
 module ObjC.MetalPerformanceShadersGraph.MPSGraphTensorData
   ( MPSGraphTensorData
   , IsMPSGraphTensorData(..)
+  , initWithDevice_data_shape_dataType
+  , initWithMTLBuffer_shape_dataType
+  , initWithMTLBuffer_shape_dataType_rowBytes
   , initWithMPSMatrix
   , initWithMPSMatrix_rank
   , initWithMPSVector
   , initWithMPSVector_rank
   , initWithMPSNDArray
+  , initWithMPSImageBatch
   , initWithMTLTensor
   , mpsndarray
+  , shape
   , dataType
   , device
+  , initWithDevice_data_shape_dataTypeSelector
+  , initWithMTLBuffer_shape_dataTypeSelector
+  , initWithMTLBuffer_shape_dataType_rowBytesSelector
   , initWithMPSMatrixSelector
   , initWithMPSMatrix_rankSelector
   , initWithMPSVectorSelector
   , initWithMPSVector_rankSelector
   , initWithMPSNDArraySelector
+  , initWithMPSImageBatchSelector
   , initWithMTLTensorSelector
   , mpsndarraySelector
+  , shapeSelector
   , dataTypeSelector
   , deviceSelector
 
@@ -78,6 +88,39 @@ import ObjC.MetalPerformanceShadersGraph.Internal.Classes
 import ObjC.MetalPerformanceShaders.Internal.Enums
 import ObjC.Foundation.Internal.Classes
 import ObjC.MetalPerformanceShaders.Internal.Classes
+
+-- | Initializes the tensor data with an @NSData@ on a device.
+--
+-- - Parameters:   - device: MPSDevice on which the MPSGraphTensorData exists   - data: NSData from which to copy the contents   - shape: shape of the output tensor   - dataType: dataType of the placeholder tensor - Returns: A valid MPSGraphTensorData, or nil if allocation failure.
+--
+-- ObjC selector: @- initWithDevice:data:shape:dataType:@
+initWithDevice_data_shape_dataType :: (IsMPSGraphTensorData mpsGraphTensorData, IsMPSGraphDevice device, IsNSData data_) => mpsGraphTensorData -> device -> data_ -> RawId -> MPSDataType -> IO (Id MPSGraphTensorData)
+initWithDevice_data_shape_dataType mpsGraphTensorData  device data_ shape dataType =
+  withObjCPtr device $ \raw_device ->
+    withObjCPtr data_ $ \raw_data_ ->
+        sendMsg mpsGraphTensorData (mkSelector "initWithDevice:data:shape:dataType:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr (unRawId shape) :: Ptr ()), argCUInt (coerce dataType)] >>= ownedObject . castPtr
+
+-- | Initializes an tensor data with a metal buffer.
+--
+-- The device of the MTLBuffer will be used to get the MPSDevice for this MPSGraphTensorData.
+--
+-- - Parameters:   - buffer: MTLBuffer to be used within the MPSGraphTensorData   - shape: shape of the output tensor   - dataType: dataType of the placeholder tensor - Returns: A valid MPSGraphTensorData, or nil if allocation failure.
+--
+-- ObjC selector: @- initWithMTLBuffer:shape:dataType:@
+initWithMTLBuffer_shape_dataType :: IsMPSGraphTensorData mpsGraphTensorData => mpsGraphTensorData -> RawId -> RawId -> MPSDataType -> IO (Id MPSGraphTensorData)
+initWithMTLBuffer_shape_dataType mpsGraphTensorData  buffer shape dataType =
+    sendMsg mpsGraphTensorData (mkSelector "initWithMTLBuffer:shape:dataType:") (retPtr retVoid) [argPtr (castPtr (unRawId buffer) :: Ptr ()), argPtr (castPtr (unRawId shape) :: Ptr ()), argCUInt (coerce dataType)] >>= ownedObject . castPtr
+
+-- | Initializes an tensor data with a metal buffer.
+--
+-- The device of the MTLBuffer will be used to get the MPSDevice for this MPSGraphTensorData.
+--
+-- - Parameters:   - buffer: MTLBuffer to be used within the MPSGraphTensorData   - shape: shape of the output tensor   - dataType: dataType of the placeholder tensor   - rowBytes: rowBytes for the fastest moving dimension, must be larger than or equal to sizeOf(dataType)shape[rank - 1] and must be a multiple of sizeOf(dataType) - Returns: A valid MPSGraphTensorData, or nil if allocation failure.
+--
+-- ObjC selector: @- initWithMTLBuffer:shape:dataType:rowBytes:@
+initWithMTLBuffer_shape_dataType_rowBytes :: IsMPSGraphTensorData mpsGraphTensorData => mpsGraphTensorData -> RawId -> RawId -> MPSDataType -> CULong -> IO (Id MPSGraphTensorData)
+initWithMTLBuffer_shape_dataType_rowBytes mpsGraphTensorData  buffer shape dataType rowBytes =
+    sendMsg mpsGraphTensorData (mkSelector "initWithMTLBuffer:shape:dataType:rowBytes:") (retPtr retVoid) [argPtr (castPtr (unRawId buffer) :: Ptr ()), argPtr (castPtr (unRawId shape) :: Ptr ()), argCUInt (coerce dataType), argCULong rowBytes] >>= ownedObject . castPtr
 
 -- | Initializes a tensor data with an MPS matrix.
 --
@@ -139,6 +182,17 @@ initWithMPSNDArray mpsGraphTensorData  ndarray =
   withObjCPtr ndarray $ \raw_ndarray ->
       sendMsg mpsGraphTensorData (mkSelector "initWithMPSNDArray:") (retPtr retVoid) [argPtr (castPtr raw_ndarray :: Ptr ())] >>= ownedObject . castPtr
 
+-- | Initializes a tensor data with an MPS image batch.
+--
+-- The dataLayout used will be NHWC, call a transpose or permute to change to a layout of your choice.
+--
+-- - Parameters:   - imageBatch: The device on which the kernel will run, unorm8 and unorm16 images will create a float32 tensorData - Returns: A valid MPSGraphTensorData, or nil if allocation failure.
+--
+-- ObjC selector: @- initWithMPSImageBatch:@
+initWithMPSImageBatch :: IsMPSGraphTensorData mpsGraphTensorData => mpsGraphTensorData -> RawId -> IO (Id MPSGraphTensorData)
+initWithMPSImageBatch mpsGraphTensorData  imageBatch =
+    sendMsg mpsGraphTensorData (mkSelector "initWithMPSImageBatch:") (retPtr retVoid) [argPtr (castPtr (unRawId imageBatch) :: Ptr ())] >>= ownedObject . castPtr
+
 -- | Initializes an MPSGraphTensorData with an MTLTensor.
 --
 -- The internal storage of the MTLTensor will be aliased. Requires tensor to support MTLTensorUsageMachineLearning.
@@ -159,6 +213,13 @@ mpsndarray :: IsMPSGraphTensorData mpsGraphTensorData => mpsGraphTensorData -> I
 mpsndarray mpsGraphTensorData  =
     sendMsg mpsGraphTensorData (mkSelector "mpsndarray") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The shape of the tensor data.
+--
+-- ObjC selector: @- shape@
+shape :: IsMPSGraphTensorData mpsGraphTensorData => mpsGraphTensorData -> IO RawId
+shape mpsGraphTensorData  =
+    fmap (RawId . castPtr) $ sendMsg mpsGraphTensorData (mkSelector "shape") (retPtr retVoid) []
+
 -- | The data type of the tensor data.
 --
 -- ObjC selector: @- dataType@
@@ -176,6 +237,18 @@ device mpsGraphTensorData  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @initWithDevice:data:shape:dataType:@
+initWithDevice_data_shape_dataTypeSelector :: Selector
+initWithDevice_data_shape_dataTypeSelector = mkSelector "initWithDevice:data:shape:dataType:"
+
+-- | @Selector@ for @initWithMTLBuffer:shape:dataType:@
+initWithMTLBuffer_shape_dataTypeSelector :: Selector
+initWithMTLBuffer_shape_dataTypeSelector = mkSelector "initWithMTLBuffer:shape:dataType:"
+
+-- | @Selector@ for @initWithMTLBuffer:shape:dataType:rowBytes:@
+initWithMTLBuffer_shape_dataType_rowBytesSelector :: Selector
+initWithMTLBuffer_shape_dataType_rowBytesSelector = mkSelector "initWithMTLBuffer:shape:dataType:rowBytes:"
 
 -- | @Selector@ for @initWithMPSMatrix:@
 initWithMPSMatrixSelector :: Selector
@@ -197,6 +270,10 @@ initWithMPSVector_rankSelector = mkSelector "initWithMPSVector:rank:"
 initWithMPSNDArraySelector :: Selector
 initWithMPSNDArraySelector = mkSelector "initWithMPSNDArray:"
 
+-- | @Selector@ for @initWithMPSImageBatch:@
+initWithMPSImageBatchSelector :: Selector
+initWithMPSImageBatchSelector = mkSelector "initWithMPSImageBatch:"
+
 -- | @Selector@ for @initWithMTLTensor:@
 initWithMTLTensorSelector :: Selector
 initWithMTLTensorSelector = mkSelector "initWithMTLTensor:"
@@ -204,6 +281,10 @@ initWithMTLTensorSelector = mkSelector "initWithMTLTensor:"
 -- | @Selector@ for @mpsndarray@
 mpsndarraySelector :: Selector
 mpsndarraySelector = mkSelector "mpsndarray"
+
+-- | @Selector@ for @shape@
+shapeSelector :: Selector
+shapeSelector = mkSelector "shape"
 
 -- | @Selector@ for @dataType@
 dataTypeSelector :: Selector

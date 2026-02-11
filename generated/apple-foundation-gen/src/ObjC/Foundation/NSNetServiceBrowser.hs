@@ -13,6 +13,8 @@ module ObjC.Foundation.NSNetServiceBrowser
   , searchForRegistrationDomains
   , searchForServicesOfType_inDomain
   , stop
+  , delegate
+  , setDelegate
   , includesPeerToPeer
   , setIncludesPeerToPeer
   , initSelector
@@ -22,6 +24,8 @@ module ObjC.Foundation.NSNetServiceBrowser
   , searchForRegistrationDomainsSelector
   , searchForServicesOfType_inDomainSelector
   , stopSelector
+  , delegateSelector
+  , setDelegateSelector
   , includesPeerToPeerSelector
   , setIncludesPeerToPeerSelector
 
@@ -83,6 +87,16 @@ stop :: IsNSNetServiceBrowser nsNetServiceBrowser => nsNetServiceBrowser -> IO (
 stop nsNetServiceBrowser  =
     sendMsg nsNetServiceBrowser (mkSelector "stop") retVoid []
 
+-- | @- delegate@
+delegate :: IsNSNetServiceBrowser nsNetServiceBrowser => nsNetServiceBrowser -> IO RawId
+delegate nsNetServiceBrowser  =
+    fmap (RawId . castPtr) $ sendMsg nsNetServiceBrowser (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSNetServiceBrowser nsNetServiceBrowser => nsNetServiceBrowser -> RawId -> IO ()
+setDelegate nsNetServiceBrowser  value =
+    sendMsg nsNetServiceBrowser (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- includesPeerToPeer@
 includesPeerToPeer :: IsNSNetServiceBrowser nsNetServiceBrowser => nsNetServiceBrowser -> IO Bool
 includesPeerToPeer nsNetServiceBrowser  =
@@ -124,6 +138,14 @@ searchForServicesOfType_inDomainSelector = mkSelector "searchForServicesOfType:i
 -- | @Selector@ for @stop@
 stopSelector :: Selector
 stopSelector = mkSelector "stop"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @includesPeerToPeer@
 includesPeerToPeerSelector :: Selector

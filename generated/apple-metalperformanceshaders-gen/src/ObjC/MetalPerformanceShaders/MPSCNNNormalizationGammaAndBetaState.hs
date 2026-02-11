@@ -12,8 +12,12 @@ module ObjC.MetalPerformanceShaders.MPSCNNNormalizationGammaAndBetaState
   , IsMPSCNNNormalizationGammaAndBetaState(..)
   , initWithGamma_beta
   , temporaryStateWithCommandBuffer_numberOfFeatureChannels
+  , gamma
+  , beta
   , initWithGamma_betaSelector
   , temporaryStateWithCommandBuffer_numberOfFeatureChannelsSelector
+  , gammaSelector
+  , betaSelector
 
 
   ) where
@@ -57,6 +61,24 @@ temporaryStateWithCommandBuffer_numberOfFeatureChannels commandBuffer numberOfFe
     cls' <- getRequiredClass "MPSCNNNormalizationGammaAndBetaState"
     sendClassMsg cls' (mkSelector "temporaryStateWithCommandBuffer:numberOfFeatureChannels:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argCULong numberOfFeatureChannels] >>= retainedObject . castPtr
 
+-- | gamma
+--
+-- A MTLBuffer containing the gamma terms.
+--
+-- ObjC selector: @- gamma@
+gamma :: IsMPSCNNNormalizationGammaAndBetaState mpscnnNormalizationGammaAndBetaState => mpscnnNormalizationGammaAndBetaState -> IO RawId
+gamma mpscnnNormalizationGammaAndBetaState  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnNormalizationGammaAndBetaState (mkSelector "gamma") (retPtr retVoid) []
+
+-- | beta
+--
+-- A MTLBuffer containing the beta terms.
+--
+-- ObjC selector: @- beta@
+beta :: IsMPSCNNNormalizationGammaAndBetaState mpscnnNormalizationGammaAndBetaState => mpscnnNormalizationGammaAndBetaState -> IO RawId
+beta mpscnnNormalizationGammaAndBetaState  =
+    fmap (RawId . castPtr) $ sendMsg mpscnnNormalizationGammaAndBetaState (mkSelector "beta") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -68,4 +90,12 @@ initWithGamma_betaSelector = mkSelector "initWithGamma:beta:"
 -- | @Selector@ for @temporaryStateWithCommandBuffer:numberOfFeatureChannels:@
 temporaryStateWithCommandBuffer_numberOfFeatureChannelsSelector :: Selector
 temporaryStateWithCommandBuffer_numberOfFeatureChannelsSelector = mkSelector "temporaryStateWithCommandBuffer:numberOfFeatureChannels:"
+
+-- | @Selector@ for @gamma@
+gammaSelector :: Selector
+gammaSelector = mkSelector "gamma"
+
+-- | @Selector@ for @beta@
+betaSelector :: Selector
+betaSelector = mkSelector "beta"
 

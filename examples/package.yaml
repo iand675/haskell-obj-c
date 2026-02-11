@@ -9,7 +9,6 @@ dependencies:
 - libffi
 - apple-appkit-gen
 - apple-foundation-gen
-- template-haskell
 
 ghc-options:
 - -Wall
@@ -64,6 +63,15 @@ executables:
   todo-list:
     main: Main.hs
     source-dirs: todo-list
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -dynamic
+
+  delegate-demo:
+    main: Main.hs
+    source-dirs: delegate-demo
     ghc-options:
     - -threaded
     - -rtsopts

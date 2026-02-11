@@ -6,6 +6,8 @@
 module ObjC.NotificationCenter.NCWidgetSearchViewController
   ( NCWidgetSearchViewController
   , IsNCWidgetSearchViewController(..)
+  , delegate
+  , setDelegate
   , searchResults
   , setSearchResults
   , searchDescription
@@ -14,6 +16,8 @@ module ObjC.NotificationCenter.NCWidgetSearchViewController
   , setSearchResultsPlaceholderString
   , searchResultKeyPath
   , setSearchResultKeyPath
+  , delegateSelector
+  , setDelegateSelector
   , searchResultsSelector
   , setSearchResultsSelector
   , searchDescriptionSelector
@@ -41,6 +45,16 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.NotificationCenter.Internal.Classes
 import ObjC.AppKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
+
+-- | @- delegate@
+delegate :: IsNCWidgetSearchViewController ncWidgetSearchViewController => ncWidgetSearchViewController -> IO RawId
+delegate ncWidgetSearchViewController  =
+    fmap (RawId . castPtr) $ sendMsg ncWidgetSearchViewController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNCWidgetSearchViewController ncWidgetSearchViewController => ncWidgetSearchViewController -> RawId -> IO ()
+setDelegate ncWidgetSearchViewController  value =
+    sendMsg ncWidgetSearchViewController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- searchResults@
 searchResults :: IsNCWidgetSearchViewController ncWidgetSearchViewController => ncWidgetSearchViewController -> IO (Id NSArray)
@@ -89,6 +103,14 @@ setSearchResultKeyPath ncWidgetSearchViewController  value =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @searchResults@
 searchResultsSelector :: Selector

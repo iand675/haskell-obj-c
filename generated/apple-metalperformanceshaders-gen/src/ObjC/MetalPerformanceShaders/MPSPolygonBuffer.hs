@@ -12,10 +12,16 @@ module ObjC.MetalPerformanceShaders.MPSPolygonBuffer
   , initWithCoder
   , polygonBuffer
   , copyWithZone
+  , vertexBuffer
+  , setVertexBuffer
   , vertexBufferOffset
   , setVertexBufferOffset
+  , indexBuffer
+  , setIndexBuffer
   , indexBufferOffset
   , setIndexBufferOffset
+  , maskBuffer
+  , setMaskBuffer
   , maskBufferOffset
   , setMaskBufferOffset
   , polygonCount
@@ -24,10 +30,16 @@ module ObjC.MetalPerformanceShaders.MPSPolygonBuffer
   , initWithCoderSelector
   , polygonBufferSelector
   , copyWithZoneSelector
+  , vertexBufferSelector
+  , setVertexBufferSelector
   , vertexBufferOffsetSelector
   , setVertexBufferOffsetSelector
+  , indexBufferSelector
+  , setIndexBufferSelector
   , indexBufferOffsetSelector
   , setIndexBufferOffsetSelector
+  , maskBufferSelector
+  , setMaskBufferSelector
   , maskBufferOffsetSelector
   , setMaskBufferOffsetSelector
   , polygonCountSelector
@@ -84,6 +96,28 @@ copyWithZone :: IsMPSPolygonBuffer mpsPolygonBuffer => mpsPolygonBuffer -> Ptr (
 copyWithZone mpsPolygonBuffer  zone =
     sendMsg mpsPolygonBuffer (mkSelector "copyWithZone:") (retPtr retVoid) [argPtr zone] >>= ownedObject . castPtr
 
+-- | Vertex buffer containing vertex data encoded as three 32 bit floats per vertex. Note that by default each vertex is aligned to the alignment of the vector_float3 type: 16 bytes. This can be changed using the vertexStride property. A vertex buffer must be provided before the acceleration structure is built.
+--
+-- When using triangle polygons, degenerate (zero or negative area) triangles are ignored during acceleration structure construction. This can be used to pad triangle indices if needed.
+--
+-- Quadrilateral polygons are internally treated as two triangles. If the quadrilateral has vertices v0, v1, v2, and v3, the two triangles will have vertices v0, v1, v2 and v0, v2, v3. A quadrilateral may be used to represent a triangle by repeating the last vertex. If the first triangle is degenerate (zero or negative area), the entire quadrilateral will be ignored. This can be used to pad quadrilateral indices if needed. All four vertices of a quadrilateral must be coplanar and the quadrilateral must be convex.
+--
+-- ObjC selector: @- vertexBuffer@
+vertexBuffer :: IsMPSPolygonBuffer mpsPolygonBuffer => mpsPolygonBuffer -> IO RawId
+vertexBuffer mpsPolygonBuffer  =
+    fmap (RawId . castPtr) $ sendMsg mpsPolygonBuffer (mkSelector "vertexBuffer") (retPtr retVoid) []
+
+-- | Vertex buffer containing vertex data encoded as three 32 bit floats per vertex. Note that by default each vertex is aligned to the alignment of the vector_float3 type: 16 bytes. This can be changed using the vertexStride property. A vertex buffer must be provided before the acceleration structure is built.
+--
+-- When using triangle polygons, degenerate (zero or negative area) triangles are ignored during acceleration structure construction. This can be used to pad triangle indices if needed.
+--
+-- Quadrilateral polygons are internally treated as two triangles. If the quadrilateral has vertices v0, v1, v2, and v3, the two triangles will have vertices v0, v1, v2 and v0, v2, v3. A quadrilateral may be used to represent a triangle by repeating the last vertex. If the first triangle is degenerate (zero or negative area), the entire quadrilateral will be ignored. This can be used to pad quadrilateral indices if needed. All four vertices of a quadrilateral must be coplanar and the quadrilateral must be convex.
+--
+-- ObjC selector: @- setVertexBuffer:@
+setVertexBuffer :: IsMPSPolygonBuffer mpsPolygonBuffer => mpsPolygonBuffer -> RawId -> IO ()
+setVertexBuffer mpsPolygonBuffer  value =
+    sendMsg mpsPolygonBuffer (mkSelector "setVertexBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Offset, in bytes, into the vertex buffer. Defaults to 0 bytes. Must be aligned to 4 bytes.
 --
 -- ObjC selector: @- vertexBufferOffset@
@@ -98,6 +132,20 @@ setVertexBufferOffset :: IsMPSPolygonBuffer mpsPolygonBuffer => mpsPolygonBuffer
 setVertexBufferOffset mpsPolygonBuffer  value =
     sendMsg mpsPolygonBuffer (mkSelector "setVertexBufferOffset:") retVoid [argCULong value]
 
+-- | Index buffer containing index data. Each index references a vertex in the vertex buffer. May be nil.
+--
+-- ObjC selector: @- indexBuffer@
+indexBuffer :: IsMPSPolygonBuffer mpsPolygonBuffer => mpsPolygonBuffer -> IO RawId
+indexBuffer mpsPolygonBuffer  =
+    fmap (RawId . castPtr) $ sendMsg mpsPolygonBuffer (mkSelector "indexBuffer") (retPtr retVoid) []
+
+-- | Index buffer containing index data. Each index references a vertex in the vertex buffer. May be nil.
+--
+-- ObjC selector: @- setIndexBuffer:@
+setIndexBuffer :: IsMPSPolygonBuffer mpsPolygonBuffer => mpsPolygonBuffer -> RawId -> IO ()
+setIndexBuffer mpsPolygonBuffer  value =
+    sendMsg mpsPolygonBuffer (mkSelector "setIndexBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Offset, in bytes, into the index buffer. Defaults to 0 bytes. Must be aligned to a multiple of the index type. Changes to this property require rebuilding the acceleration structure.
 --
 -- ObjC selector: @- indexBufferOffset@
@@ -111,6 +159,20 @@ indexBufferOffset mpsPolygonBuffer  =
 setIndexBufferOffset :: IsMPSPolygonBuffer mpsPolygonBuffer => mpsPolygonBuffer -> CULong -> IO ()
 setIndexBufferOffset mpsPolygonBuffer  value =
     sendMsg mpsPolygonBuffer (mkSelector "setIndexBufferOffset:") retVoid [argCULong value]
+
+-- | Mask buffer containing one uint32_t mask per polygon. May be nil. Otherwise, the mask type must be specified on the MPSRayIntersector with which it is used.
+--
+-- ObjC selector: @- maskBuffer@
+maskBuffer :: IsMPSPolygonBuffer mpsPolygonBuffer => mpsPolygonBuffer -> IO RawId
+maskBuffer mpsPolygonBuffer  =
+    fmap (RawId . castPtr) $ sendMsg mpsPolygonBuffer (mkSelector "maskBuffer") (retPtr retVoid) []
+
+-- | Mask buffer containing one uint32_t mask per polygon. May be nil. Otherwise, the mask type must be specified on the MPSRayIntersector with which it is used.
+--
+-- ObjC selector: @- setMaskBuffer:@
+setMaskBuffer :: IsMPSPolygonBuffer mpsPolygonBuffer => mpsPolygonBuffer -> RawId -> IO ()
+setMaskBuffer mpsPolygonBuffer  value =
+    sendMsg mpsPolygonBuffer (mkSelector "setMaskBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | Offset, in bytes, into the mask buffer. Defaults to 0 bytes. Must be aligned to 4 bytes.
 --
@@ -160,6 +222,14 @@ polygonBufferSelector = mkSelector "polygonBuffer"
 copyWithZoneSelector :: Selector
 copyWithZoneSelector = mkSelector "copyWithZone:"
 
+-- | @Selector@ for @vertexBuffer@
+vertexBufferSelector :: Selector
+vertexBufferSelector = mkSelector "vertexBuffer"
+
+-- | @Selector@ for @setVertexBuffer:@
+setVertexBufferSelector :: Selector
+setVertexBufferSelector = mkSelector "setVertexBuffer:"
+
 -- | @Selector@ for @vertexBufferOffset@
 vertexBufferOffsetSelector :: Selector
 vertexBufferOffsetSelector = mkSelector "vertexBufferOffset"
@@ -168,6 +238,14 @@ vertexBufferOffsetSelector = mkSelector "vertexBufferOffset"
 setVertexBufferOffsetSelector :: Selector
 setVertexBufferOffsetSelector = mkSelector "setVertexBufferOffset:"
 
+-- | @Selector@ for @indexBuffer@
+indexBufferSelector :: Selector
+indexBufferSelector = mkSelector "indexBuffer"
+
+-- | @Selector@ for @setIndexBuffer:@
+setIndexBufferSelector :: Selector
+setIndexBufferSelector = mkSelector "setIndexBuffer:"
+
 -- | @Selector@ for @indexBufferOffset@
 indexBufferOffsetSelector :: Selector
 indexBufferOffsetSelector = mkSelector "indexBufferOffset"
@@ -175,6 +253,14 @@ indexBufferOffsetSelector = mkSelector "indexBufferOffset"
 -- | @Selector@ for @setIndexBufferOffset:@
 setIndexBufferOffsetSelector :: Selector
 setIndexBufferOffsetSelector = mkSelector "setIndexBufferOffset:"
+
+-- | @Selector@ for @maskBuffer@
+maskBufferSelector :: Selector
+maskBufferSelector = mkSelector "maskBuffer"
+
+-- | @Selector@ for @setMaskBuffer:@
+setMaskBufferSelector :: Selector
+setMaskBufferSelector = mkSelector "setMaskBuffer:"
 
 -- | @Selector@ for @maskBufferOffset@
 maskBufferOffsetSelector :: Selector

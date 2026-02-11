@@ -10,10 +10,14 @@ module ObjC.MapKit.MKMapItemDetailViewController
   , initWithMapItem
   , mapItem
   , setMapItem
+  , delegate
+  , setDelegate
   , initWithMapItem_displaysMapSelector
   , initWithMapItemSelector
   , mapItemSelector
   , setMapItemSelector
+  , delegateSelector
+  , setDelegateSelector
 
 
   ) where
@@ -57,6 +61,16 @@ setMapItem mkMapItemDetailViewController  value =
   withObjCPtr value $ \raw_value ->
       sendMsg mkMapItemDetailViewController (mkSelector "setMapItem:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- delegate@
+delegate :: IsMKMapItemDetailViewController mkMapItemDetailViewController => mkMapItemDetailViewController -> IO RawId
+delegate mkMapItemDetailViewController  =
+    fmap (RawId . castPtr) $ sendMsg mkMapItemDetailViewController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsMKMapItemDetailViewController mkMapItemDetailViewController => mkMapItemDetailViewController -> RawId -> IO ()
+setDelegate mkMapItemDetailViewController  value =
+    sendMsg mkMapItemDetailViewController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -76,4 +90,12 @@ mapItemSelector = mkSelector "mapItem"
 -- | @Selector@ for @setMapItem:@
 setMapItemSelector :: Selector
 setMapItemSelector = mkSelector "setMapItem:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 

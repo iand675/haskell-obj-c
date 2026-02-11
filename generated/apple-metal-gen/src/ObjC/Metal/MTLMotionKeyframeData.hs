@@ -9,9 +9,13 @@ module ObjC.Metal.MTLMotionKeyframeData
   ( MTLMotionKeyframeData
   , IsMTLMotionKeyframeData(..)
   , data_
+  , buffer
+  , setBuffer
   , offset
   , setOffset
   , dataSelector
+  , bufferSelector
+  , setBufferSelector
   , offsetSelector
   , setOffsetSelector
 
@@ -40,6 +44,20 @@ data_  =
     cls' <- getRequiredClass "MTLMotionKeyframeData"
     sendClassMsg cls' (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | Buffer containing the data of a single keyframe. Multiple keyframes can be interleaved in one MTLBuffer.
+--
+-- ObjC selector: @- buffer@
+buffer :: IsMTLMotionKeyframeData mtlMotionKeyframeData => mtlMotionKeyframeData -> IO RawId
+buffer mtlMotionKeyframeData  =
+    fmap (RawId . castPtr) $ sendMsg mtlMotionKeyframeData (mkSelector "buffer") (retPtr retVoid) []
+
+-- | Buffer containing the data of a single keyframe. Multiple keyframes can be interleaved in one MTLBuffer.
+--
+-- ObjC selector: @- setBuffer:@
+setBuffer :: IsMTLMotionKeyframeData mtlMotionKeyframeData => mtlMotionKeyframeData -> RawId -> IO ()
+setBuffer mtlMotionKeyframeData  value =
+    sendMsg mtlMotionKeyframeData (mkSelector "setBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | Buffer offset. Must be a multiple of 4 bytes.
 --
 -- ObjC selector: @- offset@
@@ -61,6 +79,14 @@ setOffset mtlMotionKeyframeData  value =
 -- | @Selector@ for @data@
 dataSelector :: Selector
 dataSelector = mkSelector "data"
+
+-- | @Selector@ for @buffer@
+bufferSelector :: Selector
+bufferSelector = mkSelector "buffer"
+
+-- | @Selector@ for @setBuffer:@
+setBufferSelector :: Selector
+setBufferSelector = mkSelector "setBuffer:"
 
 -- | @Selector@ for @offset@
 offsetSelector :: Selector

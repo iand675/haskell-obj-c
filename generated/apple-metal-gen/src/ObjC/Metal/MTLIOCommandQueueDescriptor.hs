@@ -19,6 +19,8 @@ module ObjC.Metal.MTLIOCommandQueueDescriptor
   , setType
   , maxCommandsInFlight
   , setMaxCommandsInFlight
+  , scratchBufferAllocator
+  , setScratchBufferAllocator
   , maxCommandBufferCountSelector
   , setMaxCommandBufferCountSelector
   , prioritySelector
@@ -27,6 +29,8 @@ module ObjC.Metal.MTLIOCommandQueueDescriptor
   , setTypeSelector
   , maxCommandsInFlightSelector
   , setMaxCommandsInFlightSelector
+  , scratchBufferAllocatorSelector
+  , setScratchBufferAllocatorSelector
 
   -- * Enum types
   , MTLIOCommandQueueType(MTLIOCommandQueueType)
@@ -131,6 +135,28 @@ setMaxCommandsInFlight :: IsMTLIOCommandQueueDescriptor mtlioCommandQueueDescrip
 setMaxCommandsInFlight mtlioCommandQueueDescriptor  value =
     sendMsg mtlioCommandQueueDescriptor (mkSelector "setMaxCommandsInFlight:") retVoid [argCULong value]
 
+-- | scratchBufferAllocator
+--
+-- An optional property that allows setting a custom allocator for scratch buffers by the queue.
+--
+-- An application can manage scratch buffers manually by implemeting a class  conforming to the MTLIOScratchBufferAllocator protocol and creating an instance that is passed in here.
+--
+-- ObjC selector: @- scratchBufferAllocator@
+scratchBufferAllocator :: IsMTLIOCommandQueueDescriptor mtlioCommandQueueDescriptor => mtlioCommandQueueDescriptor -> IO RawId
+scratchBufferAllocator mtlioCommandQueueDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mtlioCommandQueueDescriptor (mkSelector "scratchBufferAllocator") (retPtr retVoid) []
+
+-- | scratchBufferAllocator
+--
+-- An optional property that allows setting a custom allocator for scratch buffers by the queue.
+--
+-- An application can manage scratch buffers manually by implemeting a class  conforming to the MTLIOScratchBufferAllocator protocol and creating an instance that is passed in here.
+--
+-- ObjC selector: @- setScratchBufferAllocator:@
+setScratchBufferAllocator :: IsMTLIOCommandQueueDescriptor mtlioCommandQueueDescriptor => mtlioCommandQueueDescriptor -> RawId -> IO ()
+setScratchBufferAllocator mtlioCommandQueueDescriptor  value =
+    sendMsg mtlioCommandQueueDescriptor (mkSelector "setScratchBufferAllocator:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -166,4 +192,12 @@ maxCommandsInFlightSelector = mkSelector "maxCommandsInFlight"
 -- | @Selector@ for @setMaxCommandsInFlight:@
 setMaxCommandsInFlightSelector :: Selector
 setMaxCommandsInFlightSelector = mkSelector "setMaxCommandsInFlight:"
+
+-- | @Selector@ for @scratchBufferAllocator@
+scratchBufferAllocatorSelector :: Selector
+scratchBufferAllocatorSelector = mkSelector "scratchBufferAllocator"
+
+-- | @Selector@ for @setScratchBufferAllocator:@
+setScratchBufferAllocatorSelector :: Selector
+setScratchBufferAllocatorSelector = mkSelector "setScratchBufferAllocator:"
 

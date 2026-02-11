@@ -6,6 +6,10 @@
 module ObjC.ReplayKit.RPPreviewViewController
   ( RPPreviewViewController
   , IsRPPreviewViewController(..)
+  , previewControllerDelegate
+  , setPreviewControllerDelegate
+  , previewControllerDelegateSelector
+  , setPreviewControllerDelegateSelector
 
 
   ) where
@@ -26,7 +30,25 @@ import ObjC.ReplayKit.Internal.Classes
 import ObjC.AppKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | @- previewControllerDelegate@
+previewControllerDelegate :: IsRPPreviewViewController rpPreviewViewController => rpPreviewViewController -> IO RawId
+previewControllerDelegate rpPreviewViewController  =
+    fmap (RawId . castPtr) $ sendMsg rpPreviewViewController (mkSelector "previewControllerDelegate") (retPtr retVoid) []
+
+-- | @- setPreviewControllerDelegate:@
+setPreviewControllerDelegate :: IsRPPreviewViewController rpPreviewViewController => rpPreviewViewController -> RawId -> IO ()
+setPreviewControllerDelegate rpPreviewViewController  value =
+    sendMsg rpPreviewViewController (mkSelector "setPreviewControllerDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @previewControllerDelegate@
+previewControllerDelegateSelector :: Selector
+previewControllerDelegateSelector = mkSelector "previewControllerDelegate"
+
+-- | @Selector@ for @setPreviewControllerDelegate:@
+setPreviewControllerDelegateSelector :: Selector
+setPreviewControllerDelegateSelector = mkSelector "setPreviewControllerDelegate:"
 

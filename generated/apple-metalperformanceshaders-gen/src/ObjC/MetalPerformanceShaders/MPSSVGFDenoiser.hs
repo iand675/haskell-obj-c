@@ -40,6 +40,7 @@ module ObjC.MetalPerformanceShaders.MPSSVGFDenoiser
   , encodeToCommandBuffer_sourceTexture_motionVectorTexture_depthNormalTexture_previousDepthNormalTexture
   , encodeToCommandBuffer_sourceTexture_destinationTexture_sourceTexture2_destinationTexture2_motionVectorTexture_depthNormalTexture_previousDepthNormalTexture
   , svgf
+  , textureAllocator
   , bilateralFilterIterations
   , setBilateralFilterIterations
   , initWithDeviceSelector
@@ -49,6 +50,7 @@ module ObjC.MetalPerformanceShaders.MPSSVGFDenoiser
   , encodeToCommandBuffer_sourceTexture_motionVectorTexture_depthNormalTexture_previousDepthNormalTextureSelector
   , encodeToCommandBuffer_sourceTexture_destinationTexture_sourceTexture2_destinationTexture2_motionVectorTexture_depthNormalTexture_previousDepthNormalTextureSelector
   , svgfSelector
+  , textureAllocatorSelector
   , bilateralFilterIterationsSelector
   , setBilateralFilterIterationsSelector
 
@@ -132,6 +134,13 @@ svgf :: IsMPSSVGFDenoiser mpssvgfDenoiser => mpssvgfDenoiser -> IO (Id MPSSVGF)
 svgf mpssvgfDenoiser  =
     sendMsg mpssvgfDenoiser (mkSelector "svgf") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | The object which will be used to allocate intermediate and output textures.
+--
+-- ObjC selector: @- textureAllocator@
+textureAllocator :: IsMPSSVGFDenoiser mpssvgfDenoiser => mpssvgfDenoiser -> IO RawId
+textureAllocator mpssvgfDenoiser  =
+    fmap (RawId . castPtr) $ sendMsg mpssvgfDenoiser (mkSelector "textureAllocator") (retPtr retVoid) []
+
 -- | The number of bilateral filter iterations to run. More iterations will improve quality at the cost of performance. Defaults to 5. Must be at least 1.
 --
 -- ObjC selector: @- bilateralFilterIterations@
@@ -177,6 +186,10 @@ encodeToCommandBuffer_sourceTexture_destinationTexture_sourceTexture2_destinatio
 -- | @Selector@ for @svgf@
 svgfSelector :: Selector
 svgfSelector = mkSelector "svgf"
+
+-- | @Selector@ for @textureAllocator@
+textureAllocatorSelector :: Selector
+textureAllocatorSelector = mkSelector "textureAllocator"
 
 -- | @Selector@ for @bilateralFilterIterations@
 bilateralFilterIterationsSelector :: Selector

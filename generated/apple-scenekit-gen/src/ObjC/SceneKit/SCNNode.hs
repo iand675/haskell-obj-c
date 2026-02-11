@@ -52,6 +52,10 @@ module ObjC.SceneKit.SCNNode
   , setCamera
   , geometry
   , setGeometry
+  , skinner
+  , setSkinner
+  , morpher
+  , setMorpher
   , transform
   , setTransform
   , worldTransform
@@ -83,12 +87,21 @@ module ObjC.SceneKit.SCNNode
   , setMovabilityHint
   , parentNode
   , childNodes
+  , physicsBody
+  , setPhysicsBody
+  , physicsField
+  , setPhysicsField
+  , constraints
+  , setConstraints
   , presentationNode
   , paused
   , setPaused
+  , rendererDelegate
+  , setRendererDelegate
   , categoryBitMask
   , setCategoryBitMask
   , audioPlayers
+  , particleSystems
   , focusBehavior
   , setFocusBehavior
   , localUp
@@ -136,6 +149,10 @@ module ObjC.SceneKit.SCNNode
   , setCameraSelector
   , geometrySelector
   , setGeometrySelector
+  , skinnerSelector
+  , setSkinnerSelector
+  , morpherSelector
+  , setMorpherSelector
   , transformSelector
   , setTransformSelector
   , worldTransformSelector
@@ -167,12 +184,21 @@ module ObjC.SceneKit.SCNNode
   , setMovabilityHintSelector
   , parentNodeSelector
   , childNodesSelector
+  , physicsBodySelector
+  , setPhysicsBodySelector
+  , physicsFieldSelector
+  , setPhysicsFieldSelector
+  , constraintsSelector
+  , setConstraintsSelector
   , presentationNodeSelector
   , pausedSelector
   , setPausedSelector
+  , rendererDelegateSelector
+  , setRendererDelegateSelector
   , categoryBitMaskSelector
   , setCategoryBitMaskSelector
   , audioPlayersSelector
+  , particleSystemsSelector
   , focusBehaviorSelector
   , setFocusBehaviorSelector
   , localUpSelector
@@ -638,6 +664,44 @@ setGeometry scnNode  value =
   withObjCPtr value $ \raw_value ->
       sendMsg scnNode (mkSelector "setGeometry:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | skinner
+--
+-- Returns the skinner attached to the receiver.
+--
+-- ObjC selector: @- skinner@
+skinner :: IsSCNNode scnNode => scnNode -> IO (Id SCNSkinner)
+skinner scnNode  =
+    sendMsg scnNode (mkSelector "skinner") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | skinner
+--
+-- Returns the skinner attached to the receiver.
+--
+-- ObjC selector: @- setSkinner:@
+setSkinner :: (IsSCNNode scnNode, IsSCNSkinner value) => scnNode -> value -> IO ()
+setSkinner scnNode  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg scnNode (mkSelector "setSkinner:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | morpher
+--
+-- Returns the morpher attached to the receiver.
+--
+-- ObjC selector: @- morpher@
+morpher :: IsSCNNode scnNode => scnNode -> IO (Id SCNMorpher)
+morpher scnNode  =
+    sendMsg scnNode (mkSelector "morpher") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | morpher
+--
+-- Returns the morpher attached to the receiver.
+--
+-- ObjC selector: @- setMorpher:@
+setMorpher :: (IsSCNNode scnNode, IsSCNMorpher value) => scnNode -> value -> IO ()
+setMorpher scnNode  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg scnNode (mkSelector "setMorpher:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | transform
 --
 -- Determines the receiver's transform. Animatable.
@@ -933,6 +997,75 @@ childNodes :: IsSCNNode scnNode => scnNode -> IO (Id NSArray)
 childNodes scnNode  =
     sendMsg scnNode (mkSelector "childNodes") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | physicsBody
+--
+-- The description of the physics body of the receiver.
+--
+-- Default is nil.
+--
+-- ObjC selector: @- physicsBody@
+physicsBody :: IsSCNNode scnNode => scnNode -> IO (Id SCNPhysicsBody)
+physicsBody scnNode  =
+    sendMsg scnNode (mkSelector "physicsBody") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | physicsBody
+--
+-- The description of the physics body of the receiver.
+--
+-- Default is nil.
+--
+-- ObjC selector: @- setPhysicsBody:@
+setPhysicsBody :: (IsSCNNode scnNode, IsSCNPhysicsBody value) => scnNode -> value -> IO ()
+setPhysicsBody scnNode  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg scnNode (mkSelector "setPhysicsBody:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | physicsField
+--
+-- The description of the physics field of the receiver.
+--
+-- Default is nil.
+--
+-- ObjC selector: @- physicsField@
+physicsField :: IsSCNNode scnNode => scnNode -> IO (Id SCNPhysicsField)
+physicsField scnNode  =
+    sendMsg scnNode (mkSelector "physicsField") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | physicsField
+--
+-- The description of the physics field of the receiver.
+--
+-- Default is nil.
+--
+-- ObjC selector: @- setPhysicsField:@
+setPhysicsField :: (IsSCNNode scnNode, IsSCNPhysicsField value) => scnNode -> value -> IO ()
+setPhysicsField scnNode  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg scnNode (mkSelector "setPhysicsField:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | constraints
+--
+-- An array of SCNConstraint that are applied to the receiver.
+--
+-- Adding or removing a constraint can be implicitly animated based on the current transaction.
+--
+-- ObjC selector: @- constraints@
+constraints :: IsSCNNode scnNode => scnNode -> IO (Id NSArray)
+constraints scnNode  =
+    sendMsg scnNode (mkSelector "constraints") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | constraints
+--
+-- An array of SCNConstraint that are applied to the receiver.
+--
+-- Adding or removing a constraint can be implicitly animated based on the current transaction.
+--
+-- ObjC selector: @- setConstraints:@
+setConstraints :: (IsSCNNode scnNode, IsNSArray value) => scnNode -> value -> IO ()
+setConstraints scnNode  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg scnNode (mkSelector "setConstraints:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | presentationNode
 --
 -- Returns the presentation node.
@@ -961,6 +1094,28 @@ paused scnNode  =
 setPaused :: IsSCNNode scnNode => scnNode -> Bool -> IO ()
 setPaused scnNode  value =
     sendMsg scnNode (mkSelector "setPaused:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | rendererDelegate
+--
+-- Specifies the receiver's renderer delegate object.
+--
+-- Setting a renderer delegate prevents the SceneKit renderer from drawing the node and lets you use custom OpenGL code instead.             The preferred way to customize the rendering is to tweak the material properties of the different materials of the node's geometry. SCNMaterial conforms to the SCNShadable protocol and allows for more advanced rendering using GLSL.             You would typically use a renderer delegate with a node that has no geometry and only serves as a location in space. An example would be attaching a particle system to that node and render it with custom OpenGL code.
+--
+-- ObjC selector: @- rendererDelegate@
+rendererDelegate :: IsSCNNode scnNode => scnNode -> IO RawId
+rendererDelegate scnNode  =
+    fmap (RawId . castPtr) $ sendMsg scnNode (mkSelector "rendererDelegate") (retPtr retVoid) []
+
+-- | rendererDelegate
+--
+-- Specifies the receiver's renderer delegate object.
+--
+-- Setting a renderer delegate prevents the SceneKit renderer from drawing the node and lets you use custom OpenGL code instead.             The preferred way to customize the rendering is to tweak the material properties of the different materials of the node's geometry. SCNMaterial conforms to the SCNShadable protocol and allows for more advanced rendering using GLSL.             You would typically use a renderer delegate with a node that has no geometry and only serves as a location in space. An example would be attaching a particle system to that node and render it with custom OpenGL code.
+--
+-- ObjC selector: @- setRendererDelegate:@
+setRendererDelegate :: IsSCNNode scnNode => scnNode -> RawId -> IO ()
+setRendererDelegate scnNode  value =
+    sendMsg scnNode (mkSelector "setRendererDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | categoryBitMask
 --
@@ -992,6 +1147,11 @@ setCategoryBitMask scnNode  value =
 audioPlayers :: IsSCNNode scnNode => scnNode -> IO (Id NSArray)
 audioPlayers scnNode  =
     sendMsg scnNode (mkSelector "audioPlayers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- particleSystems@
+particleSystems :: IsSCNNode scnNode => scnNode -> IO (Id NSArray)
+particleSystems scnNode  =
+    sendMsg scnNode (mkSelector "particleSystems") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | focusBehavior
 --
@@ -1231,6 +1391,22 @@ geometrySelector = mkSelector "geometry"
 setGeometrySelector :: Selector
 setGeometrySelector = mkSelector "setGeometry:"
 
+-- | @Selector@ for @skinner@
+skinnerSelector :: Selector
+skinnerSelector = mkSelector "skinner"
+
+-- | @Selector@ for @setSkinner:@
+setSkinnerSelector :: Selector
+setSkinnerSelector = mkSelector "setSkinner:"
+
+-- | @Selector@ for @morpher@
+morpherSelector :: Selector
+morpherSelector = mkSelector "morpher"
+
+-- | @Selector@ for @setMorpher:@
+setMorpherSelector :: Selector
+setMorpherSelector = mkSelector "setMorpher:"
+
 -- | @Selector@ for @transform@
 transformSelector :: Selector
 transformSelector = mkSelector "transform"
@@ -1355,6 +1531,30 @@ parentNodeSelector = mkSelector "parentNode"
 childNodesSelector :: Selector
 childNodesSelector = mkSelector "childNodes"
 
+-- | @Selector@ for @physicsBody@
+physicsBodySelector :: Selector
+physicsBodySelector = mkSelector "physicsBody"
+
+-- | @Selector@ for @setPhysicsBody:@
+setPhysicsBodySelector :: Selector
+setPhysicsBodySelector = mkSelector "setPhysicsBody:"
+
+-- | @Selector@ for @physicsField@
+physicsFieldSelector :: Selector
+physicsFieldSelector = mkSelector "physicsField"
+
+-- | @Selector@ for @setPhysicsField:@
+setPhysicsFieldSelector :: Selector
+setPhysicsFieldSelector = mkSelector "setPhysicsField:"
+
+-- | @Selector@ for @constraints@
+constraintsSelector :: Selector
+constraintsSelector = mkSelector "constraints"
+
+-- | @Selector@ for @setConstraints:@
+setConstraintsSelector :: Selector
+setConstraintsSelector = mkSelector "setConstraints:"
+
 -- | @Selector@ for @presentationNode@
 presentationNodeSelector :: Selector
 presentationNodeSelector = mkSelector "presentationNode"
@@ -1367,6 +1567,14 @@ pausedSelector = mkSelector "paused"
 setPausedSelector :: Selector
 setPausedSelector = mkSelector "setPaused:"
 
+-- | @Selector@ for @rendererDelegate@
+rendererDelegateSelector :: Selector
+rendererDelegateSelector = mkSelector "rendererDelegate"
+
+-- | @Selector@ for @setRendererDelegate:@
+setRendererDelegateSelector :: Selector
+setRendererDelegateSelector = mkSelector "setRendererDelegate:"
+
 -- | @Selector@ for @categoryBitMask@
 categoryBitMaskSelector :: Selector
 categoryBitMaskSelector = mkSelector "categoryBitMask"
@@ -1378,6 +1586,10 @@ setCategoryBitMaskSelector = mkSelector "setCategoryBitMask:"
 -- | @Selector@ for @audioPlayers@
 audioPlayersSelector :: Selector
 audioPlayersSelector = mkSelector "audioPlayers"
+
+-- | @Selector@ for @particleSystems@
+particleSystemsSelector :: Selector
+particleSystemsSelector = mkSelector "particleSystems"
 
 -- | @Selector@ for @focusBehavior@
 focusBehaviorSelector :: Selector

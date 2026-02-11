@@ -7,6 +7,8 @@
 module ObjC.AppKit.NSTokenField
   ( NSTokenField
   , IsNSTokenField(..)
+  , delegate
+  , setDelegate
   , tokenStyle
   , setTokenStyle
   , completionDelay
@@ -15,6 +17,8 @@ module ObjC.AppKit.NSTokenField
   , tokenizingCharacterSet
   , setTokenizingCharacterSet
   , defaultTokenizingCharacterSet
+  , delegateSelector
+  , setDelegateSelector
   , tokenStyleSelector
   , setTokenStyleSelector
   , completionDelaySelector
@@ -49,6 +53,16 @@ import ObjC.Runtime.Class (getRequiredClass)
 import ObjC.AppKit.Internal.Classes
 import ObjC.AppKit.Internal.Enums
 import ObjC.Foundation.Internal.Classes
+
+-- | @- delegate@
+delegate :: IsNSTokenField nsTokenField => nsTokenField -> IO RawId
+delegate nsTokenField  =
+    fmap (RawId . castPtr) $ sendMsg nsTokenField (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSTokenField nsTokenField => nsTokenField -> RawId -> IO ()
+setDelegate nsTokenField  value =
+    sendMsg nsTokenField (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- tokenStyle@
 tokenStyle :: IsNSTokenField nsTokenField => nsTokenField -> IO NSTokenStyle
@@ -98,6 +112,14 @@ defaultTokenizingCharacterSet  =
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @tokenStyle@
 tokenStyleSelector :: Selector

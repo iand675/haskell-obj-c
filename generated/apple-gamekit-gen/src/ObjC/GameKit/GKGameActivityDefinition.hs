@@ -16,6 +16,8 @@ module ObjC.GameKit.GKGameActivityDefinition
   , defaultProperties
   , fallbackURL
   , supportsPartyCode
+  , maxPlayers
+  , minPlayers
   , supportsUnlimitedPlayers
   , playStyle
   , releaseState
@@ -28,6 +30,8 @@ module ObjC.GameKit.GKGameActivityDefinition
   , defaultPropertiesSelector
   , fallbackURLSelector
   , supportsPartyCodeSelector
+  , maxPlayersSelector
+  , minPlayersSelector
   , supportsUnlimitedPlayersSelector
   , playStyleSelector
   , releaseStateSelector
@@ -121,6 +125,20 @@ supportsPartyCode :: IsGKGameActivityDefinition gkGameActivityDefinition => gkGa
 supportsPartyCode gkGameActivityDefinition  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkGameActivityDefinition (mkSelector "supportsPartyCode") retCULong []
 
+-- | The maximum number of participants that can join the activity. Returns nil when no maximum is set (unlimited players) or when player range is undefined. When not nil, the value is always greater than or equal to @minPlayers@.
+--
+-- ObjC selector: @- maxPlayers@
+maxPlayers :: IsGKGameActivityDefinition gkGameActivityDefinition => gkGameActivityDefinition -> IO (Id NSNumber)
+maxPlayers gkGameActivityDefinition  =
+    sendMsg gkGameActivityDefinition (mkSelector "maxPlayers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | The minimum number of participants that can join the activity.
+--
+-- ObjC selector: @- minPlayers@
+minPlayers :: IsGKGameActivityDefinition gkGameActivityDefinition => gkGameActivityDefinition -> IO (Id NSNumber)
+minPlayers gkGameActivityDefinition  =
+    sendMsg gkGameActivityDefinition (mkSelector "minPlayers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | True if the activity supports an unlimited number of players. False if maxPlayers is set to a defined limit or if no player range is provided.
 --
 -- ObjC selector: @- supportsUnlimitedPlayers@
@@ -181,6 +199,14 @@ fallbackURLSelector = mkSelector "fallbackURL"
 -- | @Selector@ for @supportsPartyCode@
 supportsPartyCodeSelector :: Selector
 supportsPartyCodeSelector = mkSelector "supportsPartyCode"
+
+-- | @Selector@ for @maxPlayers@
+maxPlayersSelector :: Selector
+maxPlayersSelector = mkSelector "maxPlayers"
+
+-- | @Selector@ for @minPlayers@
+minPlayersSelector :: Selector
+minPlayersSelector = mkSelector "minPlayers"
 
 -- | @Selector@ for @supportsUnlimitedPlayers@
 supportsUnlimitedPlayersSelector :: Selector

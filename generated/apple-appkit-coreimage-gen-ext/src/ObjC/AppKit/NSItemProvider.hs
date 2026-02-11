@@ -7,7 +7,9 @@ module ObjC.AppKit.NSItemProvider
   ( NSItemProvider
   , IsNSItemProvider(..)
   , registerCloudKitShareWithPreparationHandler
+  , registerCloudKitShare_container
   , registerCloudKitShareWithPreparationHandlerSelector
+  , registerCloudKitShare_containerSelector
 
 
   ) where
@@ -33,6 +35,13 @@ registerCloudKitShareWithPreparationHandler :: IsNSItemProvider nsItemProvider =
 registerCloudKitShareWithPreparationHandler nsItemProvider  preparationHandler =
     sendMsg nsItemProvider (mkSelector "registerCloudKitShareWithPreparationHandler:") retVoid [argPtr (castPtr preparationHandler :: Ptr ())]
 
+-- | Use this method when you have a CKShare that is already saved to the server. Invoking the service with a CKShare registerd with this method will allow the owner to make modifications to the share settings, or will allow a participant to view the share settings.
+--
+-- ObjC selector: @- registerCloudKitShare:container:@
+registerCloudKitShare_container :: IsNSItemProvider nsItemProvider => nsItemProvider -> RawId -> RawId -> IO ()
+registerCloudKitShare_container nsItemProvider  share container =
+    sendMsg nsItemProvider (mkSelector "registerCloudKitShare:container:") retVoid [argPtr (castPtr (unRawId share) :: Ptr ()), argPtr (castPtr (unRawId container) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -40,4 +49,8 @@ registerCloudKitShareWithPreparationHandler nsItemProvider  preparationHandler =
 -- | @Selector@ for @registerCloudKitShareWithPreparationHandler:@
 registerCloudKitShareWithPreparationHandlerSelector :: Selector
 registerCloudKitShareWithPreparationHandlerSelector = mkSelector "registerCloudKitShareWithPreparationHandler:"
+
+-- | @Selector@ for @registerCloudKitShare:container:@
+registerCloudKitShare_containerSelector :: Selector
+registerCloudKitShare_containerSelector = mkSelector "registerCloudKitShare:container:"
 

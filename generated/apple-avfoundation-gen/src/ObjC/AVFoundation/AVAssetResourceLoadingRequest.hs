@@ -16,6 +16,13 @@ module ObjC.AVFoundation.AVAssetResourceLoadingRequest
   , request
   , finished
   , cancelled
+  , contentInformationRequest
+  , dataRequest
+  , response
+  , setResponse
+  , redirect
+  , setRedirect
+  , requestor
   , initSelector
   , newSelector
   , finishLoadingSelector
@@ -26,6 +33,13 @@ module ObjC.AVFoundation.AVAssetResourceLoadingRequest
   , requestSelector
   , finishedSelector
   , cancelledSelector
+  , contentInformationRequestSelector
+  , dataRequestSelector
+  , responseSelector
+  , setResponseSelector
+  , redirectSelector
+  , setRedirectSelector
+  , requestorSelector
 
 
   ) where
@@ -176,6 +190,75 @@ cancelled :: IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest => av
 cancelled avAssetResourceLoadingRequest  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetResourceLoadingRequest (mkSelector "cancelled") retCULong []
 
+-- | contentInformationRequest
+--
+-- An instance of AVAssetResourceLoadingContentInformationRequest that you must populate with information about the resource before responding to any AVAssetResourceLoadingDataRequests for the resource.  The value of this property will be nil if no such information is being requested.
+--
+-- ObjC selector: @- contentInformationRequest@
+contentInformationRequest :: IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest => avAssetResourceLoadingRequest -> IO (Id AVAssetResourceLoadingContentInformationRequest)
+contentInformationRequest avAssetResourceLoadingRequest  =
+    sendMsg avAssetResourceLoadingRequest (mkSelector "contentInformationRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | dataRequest
+--
+-- An instance of AVAssetResourceLoadingDataRequest that indicates the range of resource data that's being requested.  If an AVAssetResourceLoadingContentInformationRequest has been provided, you must set its properties appropriately before responding to any AVAssetResourceLoadingDataRequests.  The value of this property will be nil if no data is being requested.
+--
+-- ObjC selector: @- dataRequest@
+dataRequest :: IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest => avAssetResourceLoadingRequest -> IO (Id AVAssetResourceLoadingDataRequest)
+dataRequest avAssetResourceLoadingRequest  =
+    sendMsg avAssetResourceLoadingRequest (mkSelector "dataRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | response
+--
+-- Set the value of this property to an instance of NSURLResponse indicating a response to the loading request. If no response is needed, leave the value of this property set to nil.
+--
+-- ObjC selector: @- response@
+response :: IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest => avAssetResourceLoadingRequest -> IO (Id NSURLResponse)
+response avAssetResourceLoadingRequest  =
+    sendMsg avAssetResourceLoadingRequest (mkSelector "response") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | response
+--
+-- Set the value of this property to an instance of NSURLResponse indicating a response to the loading request. If no response is needed, leave the value of this property set to nil.
+--
+-- ObjC selector: @- setResponse:@
+setResponse :: (IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest, IsNSURLResponse value) => avAssetResourceLoadingRequest -> value -> IO ()
+setResponse avAssetResourceLoadingRequest  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avAssetResourceLoadingRequest (mkSelector "setResponse:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | redirect
+--
+-- Set the value of this property to an instance of NSURLRequest indicating a redirection of the loading request to another URL. If no redirection is needed, leave the value of this property set to nil.
+--
+-- AVAssetResourceLoader supports redirects to HTTP URLs only. Redirects to other URLs will result in a loading failure.
+--
+-- ObjC selector: @- redirect@
+redirect :: IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest => avAssetResourceLoadingRequest -> IO (Id NSURLRequest)
+redirect avAssetResourceLoadingRequest  =
+    sendMsg avAssetResourceLoadingRequest (mkSelector "redirect") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | redirect
+--
+-- Set the value of this property to an instance of NSURLRequest indicating a redirection of the loading request to another URL. If no redirection is needed, leave the value of this property set to nil.
+--
+-- AVAssetResourceLoader supports redirects to HTTP URLs only. Redirects to other URLs will result in a loading failure.
+--
+-- ObjC selector: @- setRedirect:@
+setRedirect :: (IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest, IsNSURLRequest value) => avAssetResourceLoadingRequest -> value -> IO ()
+setRedirect avAssetResourceLoadingRequest  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avAssetResourceLoadingRequest (mkSelector "setRedirect:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | requestor
+--
+-- The AVAssetResourceLoadingRequestor that made this request
+--
+-- ObjC selector: @- requestor@
+requestor :: IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest => avAssetResourceLoadingRequest -> IO (Id AVAssetResourceLoadingRequestor)
+requestor avAssetResourceLoadingRequest  =
+    sendMsg avAssetResourceLoadingRequest (mkSelector "requestor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -219,4 +302,32 @@ finishedSelector = mkSelector "finished"
 -- | @Selector@ for @cancelled@
 cancelledSelector :: Selector
 cancelledSelector = mkSelector "cancelled"
+
+-- | @Selector@ for @contentInformationRequest@
+contentInformationRequestSelector :: Selector
+contentInformationRequestSelector = mkSelector "contentInformationRequest"
+
+-- | @Selector@ for @dataRequest@
+dataRequestSelector :: Selector
+dataRequestSelector = mkSelector "dataRequest"
+
+-- | @Selector@ for @response@
+responseSelector :: Selector
+responseSelector = mkSelector "response"
+
+-- | @Selector@ for @setResponse:@
+setResponseSelector :: Selector
+setResponseSelector = mkSelector "setResponse:"
+
+-- | @Selector@ for @redirect@
+redirectSelector :: Selector
+redirectSelector = mkSelector "redirect"
+
+-- | @Selector@ for @setRedirect:@
+setRedirectSelector :: Selector
+setRedirectSelector = mkSelector "setRedirect:"
+
+-- | @Selector@ for @requestor@
+requestorSelector :: Selector
+requestorSelector = mkSelector "requestor"
 

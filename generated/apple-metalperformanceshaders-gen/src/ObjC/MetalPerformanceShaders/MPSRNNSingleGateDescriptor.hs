@@ -27,7 +27,15 @@ module ObjC.MetalPerformanceShaders.MPSRNNSingleGateDescriptor
   ( MPSRNNSingleGateDescriptor
   , IsMPSRNNSingleGateDescriptor(..)
   , createRNNSingleGateDescriptorWithInputFeatureChannels_outputFeatureChannels
+  , inputWeights
+  , setInputWeights
+  , recurrentWeights
+  , setRecurrentWeights
   , createRNNSingleGateDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector
+  , inputWeightsSelector
+  , setInputWeightsSelector
+  , recurrentWeightsSelector
+  , setRecurrentWeightsSelector
 
 
   ) where
@@ -62,6 +70,42 @@ createRNNSingleGateDescriptorWithInputFeatureChannels_outputFeatureChannels inpu
     cls' <- getRequiredClass "MPSRNNSingleGateDescriptor"
     sendClassMsg cls' (mkSelector "createRNNSingleGateDescriptorWithInputFeatureChannels:outputFeatureChannels:") (retPtr retVoid) [argCULong inputFeatureChannels, argCULong outputFeatureChannels] >>= retainedObject . castPtr
 
+-- | inputWeights
+--
+-- Contains weights 'W_ij', bias 'b_i' and neuron 'gi' from the simple RNN layer formula.              If nil then assumed zero weights, bias and no neuron (identity mapping). Defaults to nil.
+--
+-- ObjC selector: @- inputWeights@
+inputWeights :: IsMPSRNNSingleGateDescriptor mpsrnnSingleGateDescriptor => mpsrnnSingleGateDescriptor -> IO RawId
+inputWeights mpsrnnSingleGateDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpsrnnSingleGateDescriptor (mkSelector "inputWeights") (retPtr retVoid) []
+
+-- | inputWeights
+--
+-- Contains weights 'W_ij', bias 'b_i' and neuron 'gi' from the simple RNN layer formula.              If nil then assumed zero weights, bias and no neuron (identity mapping). Defaults to nil.
+--
+-- ObjC selector: @- setInputWeights:@
+setInputWeights :: IsMPSRNNSingleGateDescriptor mpsrnnSingleGateDescriptor => mpsrnnSingleGateDescriptor -> RawId -> IO ()
+setInputWeights mpsrnnSingleGateDescriptor  value =
+    sendMsg mpsrnnSingleGateDescriptor (mkSelector "setInputWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
+-- | recurrentWeights
+--
+-- Contains weights 'U_ij' from the simple RNN layer formula.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- recurrentWeights@
+recurrentWeights :: IsMPSRNNSingleGateDescriptor mpsrnnSingleGateDescriptor => mpsrnnSingleGateDescriptor -> IO RawId
+recurrentWeights mpsrnnSingleGateDescriptor  =
+    fmap (RawId . castPtr) $ sendMsg mpsrnnSingleGateDescriptor (mkSelector "recurrentWeights") (retPtr retVoid) []
+
+-- | recurrentWeights
+--
+-- Contains weights 'U_ij' from the simple RNN layer formula.              If nil then assumed zero weights. Defaults to nil.
+--
+-- ObjC selector: @- setRecurrentWeights:@
+setRecurrentWeights :: IsMPSRNNSingleGateDescriptor mpsrnnSingleGateDescriptor => mpsrnnSingleGateDescriptor -> RawId -> IO ()
+setRecurrentWeights mpsrnnSingleGateDescriptor  value =
+    sendMsg mpsrnnSingleGateDescriptor (mkSelector "setRecurrentWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -69,4 +113,20 @@ createRNNSingleGateDescriptorWithInputFeatureChannels_outputFeatureChannels inpu
 -- | @Selector@ for @createRNNSingleGateDescriptorWithInputFeatureChannels:outputFeatureChannels:@
 createRNNSingleGateDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector :: Selector
 createRNNSingleGateDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector = mkSelector "createRNNSingleGateDescriptorWithInputFeatureChannels:outputFeatureChannels:"
+
+-- | @Selector@ for @inputWeights@
+inputWeightsSelector :: Selector
+inputWeightsSelector = mkSelector "inputWeights"
+
+-- | @Selector@ for @setInputWeights:@
+setInputWeightsSelector :: Selector
+setInputWeightsSelector = mkSelector "setInputWeights:"
+
+-- | @Selector@ for @recurrentWeights@
+recurrentWeightsSelector :: Selector
+recurrentWeightsSelector = mkSelector "recurrentWeights"
+
+-- | @Selector@ for @setRecurrentWeights:@
+setRecurrentWeightsSelector :: Selector
+setRecurrentWeightsSelector = mkSelector "setRecurrentWeights:"
 

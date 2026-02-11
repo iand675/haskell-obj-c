@@ -16,6 +16,8 @@ module ObjC.Foundation.NSMetadataQuery
   , enumerateResultsWithOptions_usingBlock
   , indexOfResult
   , valueOfAttribute_forResultAtIndex
+  , delegate
+  , setDelegate
   , predicate
   , setPredicate
   , sortDescriptors
@@ -48,6 +50,8 @@ module ObjC.Foundation.NSMetadataQuery
   , enumerateResultsWithOptions_usingBlockSelector
   , indexOfResultSelector
   , valueOfAttribute_forResultAtIndexSelector
+  , delegateSelector
+  , setDelegateSelector
   , predicateSelector
   , setPredicateSelector
   , sortDescriptorsSelector
@@ -139,6 +143,16 @@ valueOfAttribute_forResultAtIndex :: (IsNSMetadataQuery nsMetadataQuery, IsNSStr
 valueOfAttribute_forResultAtIndex nsMetadataQuery  attrName idx =
   withObjCPtr attrName $ \raw_attrName ->
       fmap (RawId . castPtr) $ sendMsg nsMetadataQuery (mkSelector "valueOfAttribute:forResultAtIndex:") (retPtr retVoid) [argPtr (castPtr raw_attrName :: Ptr ()), argCULong idx]
+
+-- | @- delegate@
+delegate :: IsNSMetadataQuery nsMetadataQuery => nsMetadataQuery -> IO RawId
+delegate nsMetadataQuery  =
+    fmap (RawId . castPtr) $ sendMsg nsMetadataQuery (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSMetadataQuery nsMetadataQuery => nsMetadataQuery -> RawId -> IO ()
+setDelegate nsMetadataQuery  value =
+    sendMsg nsMetadataQuery (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- predicate@
 predicate :: IsNSMetadataQuery nsMetadataQuery => nsMetadataQuery -> IO (Id NSPredicate)
@@ -301,6 +315,14 @@ indexOfResultSelector = mkSelector "indexOfResult:"
 -- | @Selector@ for @valueOfAttribute:forResultAtIndex:@
 valueOfAttribute_forResultAtIndexSelector :: Selector
 valueOfAttribute_forResultAtIndexSelector = mkSelector "valueOfAttribute:forResultAtIndex:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @predicate@
 predicateSelector :: Selector

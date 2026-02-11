@@ -22,6 +22,8 @@ module ObjC.CoreBluetooth.CBCentralManager
   , connectPeripheral_options
   , cancelPeripheralConnection
   , registerForConnectionEventsWithOptions
+  , delegate
+  , setDelegate
   , isScanning
   , supportsFeaturesSelector
   , initSelector
@@ -34,6 +36,8 @@ module ObjC.CoreBluetooth.CBCentralManager
   , connectPeripheral_optionsSelector
   , cancelPeripheralConnectionSelector
   , registerForConnectionEventsWithOptionsSelector
+  , delegateSelector
+  , setDelegateSelector
   , isScanningSelector
 
   -- * Enum types
@@ -229,6 +233,24 @@ registerForConnectionEventsWithOptions cbCentralManager  options =
   withObjCPtr options $ \raw_options ->
       sendMsg cbCentralManager (mkSelector "registerForConnectionEventsWithOptions:") retVoid [argPtr (castPtr raw_options :: Ptr ())]
 
+-- | delegate
+--
+-- The delegate object that will receive central events.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsCBCentralManager cbCentralManager => cbCentralManager -> IO RawId
+delegate cbCentralManager  =
+    fmap (RawId . castPtr) $ sendMsg cbCentralManager (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- The delegate object that will receive central events.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsCBCentralManager cbCentralManager => cbCentralManager -> RawId -> IO ()
+setDelegate cbCentralManager  value =
+    sendMsg cbCentralManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | isScanning
 --
 -- Whether or not the central is currently scanning.
@@ -285,6 +307,14 @@ cancelPeripheralConnectionSelector = mkSelector "cancelPeripheralConnection:"
 -- | @Selector@ for @registerForConnectionEventsWithOptions:@
 registerForConnectionEventsWithOptionsSelector :: Selector
 registerForConnectionEventsWithOptionsSelector = mkSelector "registerForConnectionEventsWithOptions:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @isScanning@
 isScanningSelector :: Selector

@@ -16,6 +16,7 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - ObjC.SharedWithYouCore.Delegate.SWCollaborationActionHandler
   - ObjC.SharedWithYouCore.Internal.Classes
   - ObjC.SharedWithYouCore.SWAction
   - ObjC.SharedWithYouCore.SWCollaborationCoordinator

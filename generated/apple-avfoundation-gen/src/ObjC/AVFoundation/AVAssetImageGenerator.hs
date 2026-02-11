@@ -12,6 +12,7 @@ module ObjC.AVFoundation.AVAssetImageGenerator
   , initWithAsset
   , generateCGImagesAsynchronouslyForTimes_completionHandler
   , cancelAllCGImageGeneration
+  , asset
   , appliesPreferredTrackTransform
   , setAppliesPreferredTrackTransform
   , apertureMode
@@ -20,12 +21,14 @@ module ObjC.AVFoundation.AVAssetImageGenerator
   , setDynamicRangePolicy
   , videoComposition
   , setVideoComposition
+  , customVideoCompositor
   , initSelector
   , newSelector
   , assetImageGeneratorWithAssetSelector
   , initWithAssetSelector
   , generateCGImagesAsynchronouslyForTimes_completionHandlerSelector
   , cancelAllCGImageGenerationSelector
+  , assetSelector
   , appliesPreferredTrackTransformSelector
   , setAppliesPreferredTrackTransformSelector
   , apertureModeSelector
@@ -34,6 +37,7 @@ module ObjC.AVFoundation.AVAssetImageGenerator
   , setDynamicRangePolicySelector
   , videoCompositionSelector
   , setVideoCompositionSelector
+  , customVideoCompositorSelector
 
 
   ) where
@@ -138,6 +142,11 @@ cancelAllCGImageGeneration :: IsAVAssetImageGenerator avAssetImageGenerator => a
 cancelAllCGImageGeneration avAssetImageGenerator  =
     sendMsg avAssetImageGenerator (mkSelector "cancelAllCGImageGeneration") retVoid []
 
+-- | @- asset@
+asset :: IsAVAssetImageGenerator avAssetImageGenerator => avAssetImageGenerator -> IO (Id AVAsset)
+asset avAssetImageGenerator  =
+    sendMsg avAssetImageGenerator (mkSelector "asset") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- appliesPreferredTrackTransform@
 appliesPreferredTrackTransform :: IsAVAssetImageGenerator avAssetImageGenerator => avAssetImageGenerator -> IO Bool
 appliesPreferredTrackTransform avAssetImageGenerator  =
@@ -205,6 +214,11 @@ setVideoComposition avAssetImageGenerator  value =
   withObjCPtr value $ \raw_value ->
       sendMsg avAssetImageGenerator (mkSelector "setVideoComposition:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- customVideoCompositor@
+customVideoCompositor :: IsAVAssetImageGenerator avAssetImageGenerator => avAssetImageGenerator -> IO RawId
+customVideoCompositor avAssetImageGenerator  =
+    fmap (RawId . castPtr) $ sendMsg avAssetImageGenerator (mkSelector "customVideoCompositor") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -232,6 +246,10 @@ generateCGImagesAsynchronouslyForTimes_completionHandlerSelector = mkSelector "g
 -- | @Selector@ for @cancelAllCGImageGeneration@
 cancelAllCGImageGenerationSelector :: Selector
 cancelAllCGImageGenerationSelector = mkSelector "cancelAllCGImageGeneration"
+
+-- | @Selector@ for @asset@
+assetSelector :: Selector
+assetSelector = mkSelector "asset"
 
 -- | @Selector@ for @appliesPreferredTrackTransform@
 appliesPreferredTrackTransformSelector :: Selector
@@ -264,4 +282,8 @@ videoCompositionSelector = mkSelector "videoComposition"
 -- | @Selector@ for @setVideoComposition:@
 setVideoCompositionSelector :: Selector
 setVideoCompositionSelector = mkSelector "setVideoComposition:"
+
+-- | @Selector@ for @customVideoCompositor@
+customVideoCompositorSelector :: Selector
+customVideoCompositorSelector = mkSelector "customVideoCompositor"
 

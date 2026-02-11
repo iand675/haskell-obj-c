@@ -15,8 +15,11 @@ module ObjC.CoreData.NSFetchedResultsController
   , managedObjectContext
   , sectionNameKeyPath
   , cacheName
+  , delegate
+  , setDelegate
   , fetchedObjects
   , sectionIndexTitles
+  , sections
   , initWithFetchRequest_managedObjectContext_sectionNameKeyPath_cacheNameSelector
   , performFetchSelector
   , deleteCacheWithNameSelector
@@ -26,8 +29,11 @@ module ObjC.CoreData.NSFetchedResultsController
   , managedObjectContextSelector
   , sectionNameKeyPathSelector
   , cacheNameSelector
+  , delegateSelector
+  , setDelegateSelector
   , fetchedObjectsSelector
   , sectionIndexTitlesSelector
+  , sectionsSelector
 
 
   ) where
@@ -102,6 +108,16 @@ cacheName :: IsNSFetchedResultsController nsFetchedResultsController => nsFetche
 cacheName nsFetchedResultsController  =
     sendMsg nsFetchedResultsController (mkSelector "cacheName") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | @- delegate@
+delegate :: IsNSFetchedResultsController nsFetchedResultsController => nsFetchedResultsController -> IO RawId
+delegate nsFetchedResultsController  =
+    fmap (RawId . castPtr) $ sendMsg nsFetchedResultsController (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSFetchedResultsController nsFetchedResultsController => nsFetchedResultsController -> RawId -> IO ()
+setDelegate nsFetchedResultsController  value =
+    sendMsg nsFetchedResultsController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- fetchedObjects@
 fetchedObjects :: IsNSFetchedResultsController nsFetchedResultsController => nsFetchedResultsController -> IO (Id NSArray)
 fetchedObjects nsFetchedResultsController  =
@@ -111,6 +127,11 @@ fetchedObjects nsFetchedResultsController  =
 sectionIndexTitles :: IsNSFetchedResultsController nsFetchedResultsController => nsFetchedResultsController -> IO (Id NSArray)
 sectionIndexTitles nsFetchedResultsController  =
     sendMsg nsFetchedResultsController (mkSelector "sectionIndexTitles") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- sections@
+sections :: IsNSFetchedResultsController nsFetchedResultsController => nsFetchedResultsController -> IO (Id NSArray)
+sections nsFetchedResultsController  =
+    sendMsg nsFetchedResultsController (mkSelector "sections") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -152,6 +173,14 @@ sectionNameKeyPathSelector = mkSelector "sectionNameKeyPath"
 cacheNameSelector :: Selector
 cacheNameSelector = mkSelector "cacheName"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @fetchedObjects@
 fetchedObjectsSelector :: Selector
 fetchedObjectsSelector = mkSelector "fetchedObjects"
@@ -159,4 +188,8 @@ fetchedObjectsSelector = mkSelector "fetchedObjects"
 -- | @Selector@ for @sectionIndexTitles@
 sectionIndexTitlesSelector :: Selector
 sectionIndexTitlesSelector = mkSelector "sectionIndexTitles"
+
+-- | @Selector@ for @sections@
+sectionsSelector :: Selector
+sectionsSelector = mkSelector "sections"
 

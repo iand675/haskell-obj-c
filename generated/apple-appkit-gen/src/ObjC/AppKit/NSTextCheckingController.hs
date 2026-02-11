@@ -24,6 +24,7 @@ module ObjC.AppKit.NSTextCheckingController
   , updateCandidates
   , validAnnotations
   , menuAtIndex_clickedOnSelection_effectiveRange
+  , client
   , spellCheckerDocumentTag
   , setSpellCheckerDocumentTag
   , initWithClientSelector
@@ -44,6 +45,7 @@ module ObjC.AppKit.NSTextCheckingController
   , updateCandidatesSelector
   , validAnnotationsSelector
   , menuAtIndex_clickedOnSelection_effectiveRangeSelector
+  , clientSelector
   , spellCheckerDocumentTagSelector
   , setSpellCheckerDocumentTagSelector
 
@@ -157,6 +159,11 @@ menuAtIndex_clickedOnSelection_effectiveRange :: IsNSTextCheckingController nsTe
 menuAtIndex_clickedOnSelection_effectiveRange nsTextCheckingController  location clickedOnSelection effectiveRange =
     sendMsg nsTextCheckingController (mkSelector "menuAtIndex:clickedOnSelection:effectiveRange:") (retPtr retVoid) [argCULong location, argCULong (if clickedOnSelection then 1 else 0), argPtr effectiveRange] >>= retainedObject . castPtr
 
+-- | @- client@
+client :: IsNSTextCheckingController nsTextCheckingController => nsTextCheckingController -> IO RawId
+client nsTextCheckingController  =
+    fmap (RawId . castPtr) $ sendMsg nsTextCheckingController (mkSelector "client") (retPtr retVoid) []
+
 -- | @- spellCheckerDocumentTag@
 spellCheckerDocumentTag :: IsNSTextCheckingController nsTextCheckingController => nsTextCheckingController -> IO CLong
 spellCheckerDocumentTag nsTextCheckingController  =
@@ -242,6 +249,10 @@ validAnnotationsSelector = mkSelector "validAnnotations"
 -- | @Selector@ for @menuAtIndex:clickedOnSelection:effectiveRange:@
 menuAtIndex_clickedOnSelection_effectiveRangeSelector :: Selector
 menuAtIndex_clickedOnSelection_effectiveRangeSelector = mkSelector "menuAtIndex:clickedOnSelection:effectiveRange:"
+
+-- | @Selector@ for @client@
+clientSelector :: Selector
+clientSelector = mkSelector "client"
 
 -- | @Selector@ for @spellCheckerDocumentTag@
 spellCheckerDocumentTagSelector :: Selector

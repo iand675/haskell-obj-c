@@ -25,6 +25,10 @@ module ObjC.Foundation.NSScriptCommand
   , wellFormed
   , scriptErrorNumber
   , setScriptErrorNumber
+  , scriptErrorOffendingObjectDescriptor
+  , setScriptErrorOffendingObjectDescriptor
+  , scriptErrorExpectedTypeDescriptor
+  , setScriptErrorExpectedTypeDescriptor
   , scriptErrorString
   , setScriptErrorString
   , appleEvent
@@ -47,6 +51,10 @@ module ObjC.Foundation.NSScriptCommand
   , wellFormedSelector
   , scriptErrorNumberSelector
   , setScriptErrorNumberSelector
+  , scriptErrorOffendingObjectDescriptorSelector
+  , setScriptErrorOffendingObjectDescriptorSelector
+  , scriptErrorExpectedTypeDescriptorSelector
+  , setScriptErrorExpectedTypeDescriptorSelector
   , scriptErrorStringSelector
   , setScriptErrorStringSelector
   , appleEventSelector
@@ -169,6 +177,28 @@ setScriptErrorNumber :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> 
 setScriptErrorNumber nsScriptCommand  value =
     sendMsg nsScriptCommand (mkSelector "setScriptErrorNumber:") retVoid [argCLong value]
 
+-- | @- scriptErrorOffendingObjectDescriptor@
+scriptErrorOffendingObjectDescriptor :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> IO (Id NSAppleEventDescriptor)
+scriptErrorOffendingObjectDescriptor nsScriptCommand  =
+    sendMsg nsScriptCommand (mkSelector "scriptErrorOffendingObjectDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setScriptErrorOffendingObjectDescriptor:@
+setScriptErrorOffendingObjectDescriptor :: (IsNSScriptCommand nsScriptCommand, IsNSAppleEventDescriptor value) => nsScriptCommand -> value -> IO ()
+setScriptErrorOffendingObjectDescriptor nsScriptCommand  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsScriptCommand (mkSelector "setScriptErrorOffendingObjectDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- scriptErrorExpectedTypeDescriptor@
+scriptErrorExpectedTypeDescriptor :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> IO (Id NSAppleEventDescriptor)
+scriptErrorExpectedTypeDescriptor nsScriptCommand  =
+    sendMsg nsScriptCommand (mkSelector "scriptErrorExpectedTypeDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setScriptErrorExpectedTypeDescriptor:@
+setScriptErrorExpectedTypeDescriptor :: (IsNSScriptCommand nsScriptCommand, IsNSAppleEventDescriptor value) => nsScriptCommand -> value -> IO ()
+setScriptErrorExpectedTypeDescriptor nsScriptCommand  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsScriptCommand (mkSelector "setScriptErrorExpectedTypeDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- scriptErrorString@
 scriptErrorString :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> IO (Id NSString)
 scriptErrorString nsScriptCommand  =
@@ -264,6 +294,22 @@ scriptErrorNumberSelector = mkSelector "scriptErrorNumber"
 -- | @Selector@ for @setScriptErrorNumber:@
 setScriptErrorNumberSelector :: Selector
 setScriptErrorNumberSelector = mkSelector "setScriptErrorNumber:"
+
+-- | @Selector@ for @scriptErrorOffendingObjectDescriptor@
+scriptErrorOffendingObjectDescriptorSelector :: Selector
+scriptErrorOffendingObjectDescriptorSelector = mkSelector "scriptErrorOffendingObjectDescriptor"
+
+-- | @Selector@ for @setScriptErrorOffendingObjectDescriptor:@
+setScriptErrorOffendingObjectDescriptorSelector :: Selector
+setScriptErrorOffendingObjectDescriptorSelector = mkSelector "setScriptErrorOffendingObjectDescriptor:"
+
+-- | @Selector@ for @scriptErrorExpectedTypeDescriptor@
+scriptErrorExpectedTypeDescriptorSelector :: Selector
+scriptErrorExpectedTypeDescriptorSelector = mkSelector "scriptErrorExpectedTypeDescriptor"
+
+-- | @Selector@ for @setScriptErrorExpectedTypeDescriptor:@
+setScriptErrorExpectedTypeDescriptorSelector :: Selector
+setScriptErrorExpectedTypeDescriptorSelector = mkSelector "setScriptErrorExpectedTypeDescriptor:"
 
 -- | @Selector@ for @scriptErrorString@
 scriptErrorStringSelector :: Selector

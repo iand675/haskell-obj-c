@@ -16,6 +16,7 @@ module ObjC.AVFoundation.AVCaptureAudioDataOutput
   , new
   , setSampleBufferDelegate_queue
   , recommendedAudioSettingsForAssetWriterWithOutputFileType
+  , sampleBufferDelegate
   , sampleBufferCallbackQueue
   , audioSettings
   , setAudioSettings
@@ -25,6 +26,7 @@ module ObjC.AVFoundation.AVCaptureAudioDataOutput
   , newSelector
   , setSampleBufferDelegate_queueSelector
   , recommendedAudioSettingsForAssetWriterWithOutputFileTypeSelector
+  , sampleBufferDelegateSelector
   , sampleBufferCallbackQueueSelector
   , audioSettingsSelector
   , setAudioSettingsSelector
@@ -102,6 +104,17 @@ recommendedAudioSettingsForAssetWriterWithOutputFileType :: (IsAVCaptureAudioDat
 recommendedAudioSettingsForAssetWriterWithOutputFileType avCaptureAudioDataOutput  outputFileType =
   withObjCPtr outputFileType $ \raw_outputFileType ->
       sendMsg avCaptureAudioDataOutput (mkSelector "recommendedAudioSettingsForAssetWriterWithOutputFileType:") (retPtr retVoid) [argPtr (castPtr raw_outputFileType :: Ptr ())] >>= retainedObject . castPtr
+
+-- | sampleBufferDelegate
+--
+-- The receiver's delegate.
+--
+-- The value of this property is an object conforming to the AVCaptureAudioDataOutputSampleBufferDelegate protocol that will receive sample buffers after they are captured. The delegate is set using the setSampleBufferDelegate:queue: method.
+--
+-- ObjC selector: @- sampleBufferDelegate@
+sampleBufferDelegate :: IsAVCaptureAudioDataOutput avCaptureAudioDataOutput => avCaptureAudioDataOutput -> IO RawId
+sampleBufferDelegate avCaptureAudioDataOutput  =
+    fmap (RawId . castPtr) $ sendMsg avCaptureAudioDataOutput (mkSelector "sampleBufferDelegate") (retPtr retVoid) []
 
 -- | sampleBufferCallbackQueue
 --
@@ -182,6 +195,10 @@ setSampleBufferDelegate_queueSelector = mkSelector "setSampleBufferDelegate:queu
 -- | @Selector@ for @recommendedAudioSettingsForAssetWriterWithOutputFileType:@
 recommendedAudioSettingsForAssetWriterWithOutputFileTypeSelector :: Selector
 recommendedAudioSettingsForAssetWriterWithOutputFileTypeSelector = mkSelector "recommendedAudioSettingsForAssetWriterWithOutputFileType:"
+
+-- | @Selector@ for @sampleBufferDelegate@
+sampleBufferDelegateSelector :: Selector
+sampleBufferDelegateSelector = mkSelector "sampleBufferDelegate"
 
 -- | @Selector@ for @sampleBufferCallbackQueue@
 sampleBufferCallbackQueueSelector :: Selector

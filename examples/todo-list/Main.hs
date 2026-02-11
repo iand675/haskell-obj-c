@@ -1,7 +1,5 @@
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PatternSynonyms #-}
 
@@ -11,21 +9,22 @@
 --
 --   * 'NSVisualEffectView' for a frosted-glass (HUD) window
 --   * Auto-reflowing layout via 'NSStackView' (vertical + horizontal)
---   * 'NSTableView' with a Haskell-backed data source and delegate
---   * 'defineClass' methods that return non-void values (@Int@, @RawId@)
+--   * 'NSTableView' with generated 'NSTableViewDataSource' and
+--     'NSTableViewDelegate' delegate modules (no Template Haskell)
+--   * 'ActionTarget' for button and text-field actions
 --   * Return-key binding on the input field
 module Main (main) where
 
 import Control.Monad (when)
 import Data.IORef
 import Data.String (fromString)
-import Foreign.C.Types (CLong(..), CDouble(..), CULong, CFloat)
+import Foreign.C.Types (CDouble(..), CULong, CFloat)
 import Foreign.LibFFI (retCULong, retCLong, retVoid, retPtr, argPtr)
 import Foreign.ForeignPtr (withForeignPtr)
 import Foreign.Ptr (nullPtr, castPtr, Ptr)
 
 import ObjC.Runtime
-import ObjC.Runtime.TH
+import ObjC.Runtime.ActionTarget (newActionTarget)
 
 -- Generated AppKit / Foundation bindings ------------------------------------
 import ObjC.AppKit.NSApplication
@@ -81,6 +80,18 @@ import ObjC.AppKit.NSTableColumn
 import ObjC.Foundation.NSString (NSString)
 import ObjC.Foundation.Structs (NSRect(..), NSPoint(..), NSSize(..), NSEdgeInsets(..))
 
+-- Generated delegate modules ------------------------------------------------
+import ObjC.AppKit.Delegate.NSTableViewDataSource
+  ( NSTableViewDataSourceOverrides(..)
+  , defaultNSTableViewDataSourceOverrides
+  , newNSTableViewDataSource
+  )
+import ObjC.AppKit.Delegate.NSTableViewDelegate
+  ( NSTableViewDelegateOverrides(..)
+  , defaultNSTableViewDelegateOverrides
+  , newNSTableViewDelegate
+  )
+
 import qualified ObjC.AppKit.NSApplication as App
 import qualified ObjC.AppKit.NSWindow as Win
 import qualified ObjC.AppKit.NSTextField as TF
@@ -96,30 +107,6 @@ import qualified ObjC.AppKit.NSVisualEffectView as VEV
 import qualified ObjC.AppKit.NSStackView as StkV
 import qualified ObjC.AppKit.NSTableView as TV
 import qualified ObjC.AppKit.NSTableColumn as TC
-
--- ---------------------------------------------------------------------------
--- ObjC target classes
--- ---------------------------------------------------------------------------
-
--- | Target for the "Add" button and the text field's Return key.
-$(defineClass "AddTarget" "NSObject" $ do
-  instanceMethod "addItem:" [t| RawId -> IO () |]
- )
-
--- | Combined NSTableViewDataSource + NSTableViewDelegate.
--- 'numberOfRowsInTableView:' returns the item count; the view-for-row
--- method builds a row view with checkbox, label, and delete button.
-$(defineClass "TableDelegate" "NSObject" $ do
-  instanceMethod "numberOfRowsInTableView:" [t| RawId -> IO Int |]
-  instanceMethod "tableView:viewForTableColumn:row:" [t| RawId -> RawId -> Int -> IO RawId |]
- )
-
--- | Single shared target for every checkbox and delete button in the table.
--- Uses @rowForView:@ on the table view to identify which row was acted on.
-$(defineClass "TableActions" "NSObject" $ do
-  instanceMethod "toggleItem:" [t| RawId -> IO () |]
-  instanceMethod "deleteItem:" [t| RawId -> IO () |]
- )
 
 -- ---------------------------------------------------------------------------
 -- Domain
@@ -323,9 +310,8 @@ main = withAutoreleasePool $ do
   -- =======================================================================
   -- Table actions target (shared by all row buttons)
   -- =======================================================================
-  tableActionsTarget <- newTableActions $ do
-    pure TableActionsImpl
-      { _toggleItem = \sender -> do
+  tableActionsTarget <- newActionTarget
+    [ ("toggleItem:", \sender -> do
           rowIdx <- sendMsg tableView (mkSelector "rowForView:")
                       retCLong [argPtr (castPtr (unRawId sender) :: Ptr ())]
           when (rowIdx >= 0) $ do
@@ -337,9 +323,9 @@ main = withAutoreleasePool $ do
                 then i { todoCompleted = not (todoCompleted i) }
                 else i))
             TV.reloadData tableView
-            updateLabels
+            updateLabels)
 
-      , _deleteItem = \sender -> do
+    , ("deleteItem:", \sender -> do
           rowIdx <- sendMsg tableView (mkSelector "rowForView:")
                       retCLong [argPtr (castPtr (unRawId sender) :: Ptr ())]
           when (rowIdx >= 0) $ do
@@ -348,70 +334,73 @@ main = withAutoreleasePool $ do
                 iid = todoId (items !! idx)
             modifyIORef' itemsRef (filter (\i -> todoId i /= iid))
             TV.reloadData tableView
-            updateLabels
-      }
+            updateLabels)
+    ]
 
   -- =======================================================================
-  -- Table delegate (NSTableViewDataSource + NSTableViewDelegate)
+  -- Data source (NSTableViewDataSource protocol)
   -- =======================================================================
-  tableDelTarget <- newTableDelegate $ do
-    pure TableDelegateImpl
-      { _numberOfRowsInTableView = \_tv -> do
-          items <- readIORef itemsRef
-          pure (length items)
+  dataSource <- newNSTableViewDataSource defaultNSTableViewDataSourceOverrides
+    { _numberOfRowsInTableView = Just $ \_tv -> do
+        items <- readIORef itemsRef
+        pure (length items)
+    }
 
-      , _tableViewviewForTableColumnrow = \_tv _col rowIdx -> do
-          items <- readIORef itemsRef
-          let item = items !! rowIdx
-              done = todoCompleted item
+  -- =======================================================================
+  -- Delegate (NSTableViewDelegate protocol)
+  -- =======================================================================
+  delegate <- newNSTableViewDelegate defaultNSTableViewDelegateOverrides
+    { _tableView_viewForTableColumn_row = Just $ \_tv _col rowIdx -> do
+        items <- readIORef itemsRef
+        let item = items !! rowIdx
+            done = todoCompleted item
 
-          -- Row container view
-          rowView <- alloc @NSView >>= \v ->
-            View.initWithFrame v (NSRect (NSPoint 0 0) (NSSize 440 rowH))
+        -- Row container view
+        rowView <- alloc @NSView >>= \v ->
+          View.initWithFrame v (NSRect (NSPoint 0 0) (NSSize 440 rowH))
 
-          -- Checkbox
-          cb <- Btn.checkboxWithTitle_target_action
-            ("" :: Id NSString) tableActionsTarget (mkSelector "toggleItem:")
-          View.setFrame cb (NSRect (NSPoint 12 12) (NSSize 24 24))
-          when done $ Btn.setState cb 1
-          View.addSubview rowView (toNSView cb)
+        -- Checkbox
+        cb <- Btn.checkboxWithTitle_target_action
+          ("" :: Id NSString) tableActionsTarget (mkSelector "toggleItem:")
+        View.setFrame cb (NSRect (NSPoint 12 12) (NSSize 24 24))
+        when done $ Btn.setState cb 1
+        View.addSubview rowView (toNSView cb)
 
-          -- Text label  (explicit white for readability on HUD background)
-          lbl <- TF.labelWithString (todoText item)
-          View.setFrame lbl (NSRect (NSPoint 44 13) (NSSize 340 22))
-          Font.systemFontOfSize 15 >>= Ctrl.setFont lbl
-          if done
-            then Color.colorWithSRGBRed_green_blue_alpha 1 1 1 0.35
-                   >>= TF.setTextColor lbl
-            else TF.setTextColor lbl white
-          -- Stretch horizontally when the column resizes
-          View.setAutoresizingMask lbl NSViewWidthSizable
-          View.addSubview rowView (toNSView lbl)
+        -- Text label  (explicit white for readability on HUD background)
+        lbl <- TF.labelWithString (todoText item)
+        View.setFrame lbl (NSRect (NSPoint 44 13) (NSSize 340 22))
+        Font.systemFontOfSize 15 >>= Ctrl.setFont lbl
+        if done
+          then Color.colorWithSRGBRed_green_blue_alpha 1 1 1 0.35
+                 >>= TF.setTextColor lbl
+          else TF.setTextColor lbl white
+        -- Stretch horizontally when the column resizes
+        View.setAutoresizingMask lbl NSViewWidthSizable
+        View.addSubview rowView (toNSView lbl)
 
-          -- Delete button (pinned to right edge via autoresizing)
-          del <- Btn.buttonWithTitle_target_action
-            ("✕" :: Id NSString) tableActionsTarget (mkSelector "deleteItem:")
-          View.setFrame del (NSRect (NSPoint 396 10) (NSSize 32 28))
-          Btn.setBordered del False
-          View.setAutoresizingMask del NSViewMinXMargin
-          View.addSubview rowView (toNSView del)
+        -- Delete button (pinned to right edge via autoresizing)
+        del <- Btn.buttonWithTitle_target_action
+          ("✕" :: Id NSString) tableActionsTarget (mkSelector "deleteItem:")
+        View.setFrame del (NSRect (NSPoint 396 10) (NSSize 32 28))
+        Btn.setBordered del False
+        View.setAutoresizingMask del NSViewMinXMargin
+        View.addSubview rowView (toNSView del)
 
-          -- Return with retain+autorelease for safe handoff to the table view
-          returnId rowView
-      }
+        -- Return with retain+autorelease for safe handoff to the table view
+        returnId rowView
+    }
 
-  -- Wire delegate + data source
+  -- Wire delegate + data source (separate objects, no proxy needed)
   sendMsg tableView (mkSelector "setDelegate:") retVoid
-    [argPtr (castPtr (unRawId tableDelTarget) :: Ptr ())]
+    [argPtr (castPtr (unRawId delegate) :: Ptr ())]
   sendMsg tableView (mkSelector "setDataSource:") retVoid
-    [argPtr (castPtr (unRawId tableDelTarget) :: Ptr ())]
+    [argPtr (castPtr (unRawId dataSource) :: Ptr ())]
 
   -- =======================================================================
   -- Add target
   -- =======================================================================
-  addTarget' <- newAddTarget $ do
-    pure AddTargetImpl
-      { _addItem = \_sender -> do
+  addTarget' <- newActionTarget
+    [ ("addItem:", \_sender -> do
           text <- Ctrl.stringValue inputField
           len  <- sendMsg text (mkSelector "length") retCULong [] :: IO CULong
           when (len > 0) $ do
@@ -420,8 +409,8 @@ main = withAutoreleasePool $ do
             modifyIORef' itemsRef (++ [TodoItem iid text False])
             Ctrl.setStringValue inputField ("" :: Id NSString)
             TV.reloadData tableView
-            updateLabels
-      }
+            updateLabels)
+    ]
 
   -- Wire add button and input field Return key
   Ctrl.setTarget addBtn  addTarget'

@@ -16,7 +16,11 @@ module ObjC.Intents.INCallRecord
   , identifier
   , dateCreated
   , callRecordType
+  , callDuration
+  , unseen
   , callCapability
+  , numberOfCalls
+  , isCallerIdBlocked
   , participants
   , caller
   , initSelector
@@ -28,7 +32,11 @@ module ObjC.Intents.INCallRecord
   , identifierSelector
   , dateCreatedSelector
   , callRecordTypeSelector
+  , callDurationSelector
+  , unseenSelector
   , callCapabilitySelector
+  , numberOfCallsSelector
+  , isCallerIdBlockedSelector
   , participantsSelector
   , callerSelector
 
@@ -138,10 +146,30 @@ callRecordType :: IsINCallRecord inCallRecord => inCallRecord -> IO INCallRecord
 callRecordType inCallRecord  =
     fmap (coerce :: CLong -> INCallRecordType) $ sendMsg inCallRecord (mkSelector "callRecordType") retCLong []
 
+-- | @- callDuration@
+callDuration :: IsINCallRecord inCallRecord => inCallRecord -> IO (Id NSNumber)
+callDuration inCallRecord  =
+    sendMsg inCallRecord (mkSelector "callDuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- unseen@
+unseen :: IsINCallRecord inCallRecord => inCallRecord -> IO (Id NSNumber)
+unseen inCallRecord  =
+    sendMsg inCallRecord (mkSelector "unseen") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- callCapability@
 callCapability :: IsINCallRecord inCallRecord => inCallRecord -> IO INCallCapability
 callCapability inCallRecord  =
     fmap (coerce :: CLong -> INCallCapability) $ sendMsg inCallRecord (mkSelector "callCapability") retCLong []
+
+-- | @- numberOfCalls@
+numberOfCalls :: IsINCallRecord inCallRecord => inCallRecord -> IO (Id NSNumber)
+numberOfCalls inCallRecord  =
+    sendMsg inCallRecord (mkSelector "numberOfCalls") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- isCallerIdBlocked@
+isCallerIdBlocked :: IsINCallRecord inCallRecord => inCallRecord -> IO (Id NSNumber)
+isCallerIdBlocked inCallRecord  =
+    sendMsg inCallRecord (mkSelector "isCallerIdBlocked") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- participants@
 participants :: IsINCallRecord inCallRecord => inCallRecord -> IO (Id NSArray)
@@ -193,9 +221,25 @@ dateCreatedSelector = mkSelector "dateCreated"
 callRecordTypeSelector :: Selector
 callRecordTypeSelector = mkSelector "callRecordType"
 
+-- | @Selector@ for @callDuration@
+callDurationSelector :: Selector
+callDurationSelector = mkSelector "callDuration"
+
+-- | @Selector@ for @unseen@
+unseenSelector :: Selector
+unseenSelector = mkSelector "unseen"
+
 -- | @Selector@ for @callCapability@
 callCapabilitySelector :: Selector
 callCapabilitySelector = mkSelector "callCapability"
+
+-- | @Selector@ for @numberOfCalls@
+numberOfCallsSelector :: Selector
+numberOfCallsSelector = mkSelector "numberOfCalls"
+
+-- | @Selector@ for @isCallerIdBlocked@
+isCallerIdBlockedSelector :: Selector
+isCallerIdBlockedSelector = mkSelector "isCallerIdBlocked"
 
 -- | @Selector@ for @participants@
 participantsSelector :: Selector

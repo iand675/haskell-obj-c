@@ -33,6 +33,9 @@ module ObjC.IOUSBHost.IOUSBHostObject
   , configurationDescriptorWithConfigurationValue_error
   , stringWithIndex_languageID_error
   , stringWithIndex_error
+  , frameNumberWithTime
+  , currentMicroframeWithTime_error
+  , referenceMicroframeWithTime_error
   , ioDataWithCapacity_error
   , ioService
   , queue
@@ -59,6 +62,9 @@ module ObjC.IOUSBHost.IOUSBHostObject
   , configurationDescriptorWithConfigurationValue_errorSelector
   , stringWithIndex_languageID_errorSelector
   , stringWithIndex_errorSelector
+  , frameNumberWithTimeSelector
+  , currentMicroframeWithTime_errorSelector
+  , referenceMicroframeWithTime_errorSelector
   , ioDataWithCapacity_errorSelector
   , ioServiceSelector
   , queueSelector
@@ -424,6 +430,47 @@ stringWithIndex_error iousbHostObject  index error_ =
   withObjCPtr error_ $ \raw_error_ ->
       sendMsg iousbHostObject (mkSelector "stringWithIndex:error:") (retPtr retVoid) [argCULong index, argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr >>= \x -> pure (Const x)
 
+-- | Return the current frame number of the USB controller
+--
+-- This method will return the current frame number of the USB controller,              omitting micro frame.  This is most useful for scheduling future isochronous              requests.
+--
+-- @time@ — If not nil, this will be updated with the current system time
+--
+-- Returns: The current frame number
+--
+-- ObjC selector: @- frameNumberWithTime:@
+frameNumberWithTime :: IsIOUSBHostObject iousbHostObject => iousbHostObject -> RawId -> IO CULong
+frameNumberWithTime iousbHostObject  time =
+    sendMsg iousbHostObject (mkSelector "frameNumberWithTime:") retCULong [argPtr (castPtr (unRawId time) :: Ptr ())]
+
+-- | Return the current microframe number of the USB controller
+--
+-- This method will return the current microframe number of the USB controller.              This is most useful for scheduling future isochronous requests.
+--
+-- @time@ — If not nil, this will be updated with system time associated with the microframe.
+--
+-- Returns: The current microframe number. Returns 0 on failure, with NSError populated with the IOReturn error code.
+--
+-- ObjC selector: @- currentMicroframeWithTime:error:@
+currentMicroframeWithTime_error :: (IsIOUSBHostObject iousbHostObject, IsNSError error_) => iousbHostObject -> RawId -> error_ -> IO CULong
+currentMicroframeWithTime_error iousbHostObject  time error_ =
+  withObjCPtr error_ $ \raw_error_ ->
+      sendMsg iousbHostObject (mkSelector "currentMicroframeWithTime:error:") retCULong [argPtr (castPtr (unRawId time) :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+
+-- | Return a recent microframe number of the USB controller
+--
+-- This method will return a recent microframe number of the USB controller.              This is most useful for scheduling future isochronous requests.
+--
+-- @time@ — If not nil, this will be updated with system time associated with the microframe.
+--
+-- Returns: A recent microframe number. Returns 0 on failure, with NSError populated with the IOReturn error code.
+--
+-- ObjC selector: @- referenceMicroframeWithTime:error:@
+referenceMicroframeWithTime_error :: (IsIOUSBHostObject iousbHostObject, IsNSError error_) => iousbHostObject -> RawId -> error_ -> IO CULong
+referenceMicroframeWithTime_error iousbHostObject  time error_ =
+  withObjCPtr error_ $ \raw_error_ ->
+      sendMsg iousbHostObject (mkSelector "referenceMicroframeWithTime:error:") retCULong [argPtr (castPtr (unRawId time) :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+
 -- | Allocate a buffer to be used for I/O
 --
 -- This method will allocate and map an IOBufferMemoryDescriptor optimized for use              by the underlying controller hardware. A buffer allocated by this method will not              be bounced to perform DMA operations.              Because the NSMutableData is backed by kernel memory, the length and capacity are              not mutable. Any changes to the length or capacity will cause an exception to be              thrown.
@@ -564,6 +611,18 @@ stringWithIndex_languageID_errorSelector = mkSelector "stringWithIndex:languageI
 -- | @Selector@ for @stringWithIndex:error:@
 stringWithIndex_errorSelector :: Selector
 stringWithIndex_errorSelector = mkSelector "stringWithIndex:error:"
+
+-- | @Selector@ for @frameNumberWithTime:@
+frameNumberWithTimeSelector :: Selector
+frameNumberWithTimeSelector = mkSelector "frameNumberWithTime:"
+
+-- | @Selector@ for @currentMicroframeWithTime:error:@
+currentMicroframeWithTime_errorSelector :: Selector
+currentMicroframeWithTime_errorSelector = mkSelector "currentMicroframeWithTime:error:"
+
+-- | @Selector@ for @referenceMicroframeWithTime:error:@
+referenceMicroframeWithTime_errorSelector :: Selector
+referenceMicroframeWithTime_errorSelector = mkSelector "referenceMicroframeWithTime:error:"
 
 -- | @Selector@ for @ioDataWithCapacity:error:@
 ioDataWithCapacity_errorSelector :: Selector

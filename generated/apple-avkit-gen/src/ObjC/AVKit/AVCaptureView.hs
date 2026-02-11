@@ -14,6 +14,8 @@ module ObjC.AVKit.AVCaptureView
   , setSession_showVideoPreview_showAudioPreview
   , session
   , fileOutput
+  , delegate
+  , setDelegate
   , controlsStyle
   , setControlsStyle
   , videoGravity
@@ -21,6 +23,8 @@ module ObjC.AVKit.AVCaptureView
   , setSession_showVideoPreview_showAudioPreviewSelector
   , sessionSelector
   , fileOutputSelector
+  , delegateSelector
+  , setDelegateSelector
   , controlsStyleSelector
   , setControlsStyleSelector
   , videoGravitySelector
@@ -93,6 +97,28 @@ fileOutput :: IsAVCaptureView avCaptureView => avCaptureView -> IO (Id AVCapture
 fileOutput avCaptureView  =
     sendMsg avCaptureView (mkSelector "fileOutput") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | delegate
+--
+-- The capture view's delegate.
+--
+-- The start recording button will be disabled if the delegate is not set.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsAVCaptureView avCaptureView => avCaptureView -> IO RawId
+delegate avCaptureView  =
+    fmap (RawId . castPtr) $ sendMsg avCaptureView (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- The capture view's delegate.
+--
+-- The start recording button will be disabled if the delegate is not set.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsAVCaptureView avCaptureView => avCaptureView -> RawId -> IO ()
+setDelegate avCaptureView  value =
+    sendMsg avCaptureView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | controlsStyle
 --
 -- The style of the capture controls pane associated with the view.
@@ -149,6 +175,14 @@ sessionSelector = mkSelector "session"
 -- | @Selector@ for @fileOutput@
 fileOutputSelector :: Selector
 fileOutputSelector = mkSelector "fileOutput"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @controlsStyle@
 controlsStyleSelector :: Selector

@@ -19,10 +19,12 @@ module ObjC.MetalPerformanceShaders.MPSPredicate
   , predicateWithBuffer_offset
   , initWithBuffer_offset
   , initWithDevice
+  , predicateBuffer
   , predicateOffset
   , predicateWithBuffer_offsetSelector
   , initWithBuffer_offsetSelector
   , initWithDeviceSelector
+  , predicateBufferSelector
   , predicateOffsetSelector
 
 
@@ -84,6 +86,15 @@ initWithDevice :: IsMPSPredicate mpsPredicate => mpsPredicate -> RawId -> IO (Id
 initWithDevice mpsPredicate  device =
     sendMsg mpsPredicate (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
 
+-- | predicateBuffer
+--
+-- The buffer that is used as the predicate
+--
+-- ObjC selector: @- predicateBuffer@
+predicateBuffer :: IsMPSPredicate mpsPredicate => mpsPredicate -> IO RawId
+predicateBuffer mpsPredicate  =
+    fmap (RawId . castPtr) $ sendMsg mpsPredicate (mkSelector "predicateBuffer") (retPtr retVoid) []
+
 -- | predicateOffset
 --
 -- Location of the predicate in bytes, must be multiple of four.
@@ -110,6 +121,10 @@ initWithBuffer_offsetSelector = mkSelector "initWithBuffer:offset:"
 -- | @Selector@ for @initWithDevice:@
 initWithDeviceSelector :: Selector
 initWithDeviceSelector = mkSelector "initWithDevice:"
+
+-- | @Selector@ for @predicateBuffer@
+predicateBufferSelector :: Selector
+predicateBufferSelector = mkSelector "predicateBuffer"
 
 -- | @Selector@ for @predicateOffset@
 predicateOffsetSelector :: Selector

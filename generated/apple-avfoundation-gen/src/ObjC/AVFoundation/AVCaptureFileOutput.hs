@@ -20,6 +20,8 @@ module ObjC.AVFoundation.AVCaptureFileOutput
   , stopRecording
   , pauseRecording
   , resumeRecording
+  , delegate
+  , setDelegate
   , outputFileURL
   , recording
   , recordingPaused
@@ -32,6 +34,8 @@ module ObjC.AVFoundation.AVCaptureFileOutput
   , stopRecordingSelector
   , pauseRecordingSelector
   , resumeRecordingSelector
+  , delegateSelector
+  , setDelegateSelector
   , outputFileURLSelector
   , recordingSelector
   , recordingPausedSelector
@@ -127,6 +131,28 @@ pauseRecording avCaptureFileOutput  =
 resumeRecording :: IsAVCaptureFileOutput avCaptureFileOutput => avCaptureFileOutput -> IO ()
 resumeRecording avCaptureFileOutput  =
     sendMsg avCaptureFileOutput (mkSelector "resumeRecording") retVoid []
+
+-- | delegate
+--
+-- The receiver's delegate.
+--
+-- The value of this property is an object conforming to the AVCaptureFileOutputDelegate protocol that will be able to monitor and control recording along exact sample boundaries.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsAVCaptureFileOutput avCaptureFileOutput => avCaptureFileOutput -> IO RawId
+delegate avCaptureFileOutput  =
+    fmap (RawId . castPtr) $ sendMsg avCaptureFileOutput (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- The receiver's delegate.
+--
+-- The value of this property is an object conforming to the AVCaptureFileOutputDelegate protocol that will be able to monitor and control recording along exact sample boundaries.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsAVCaptureFileOutput avCaptureFileOutput => avCaptureFileOutput -> RawId -> IO ()
+setDelegate avCaptureFileOutput  value =
+    sendMsg avCaptureFileOutput (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | outputFileURL
 --
@@ -235,6 +261,14 @@ pauseRecordingSelector = mkSelector "pauseRecording"
 -- | @Selector@ for @resumeRecording@
 resumeRecordingSelector :: Selector
 resumeRecordingSelector = mkSelector "resumeRecording"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @outputFileURL@
 outputFileURLSelector :: Selector

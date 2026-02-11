@@ -11,7 +11,9 @@ module ObjC.AVRouting.AVCustomDeviceRoute
   ( AVCustomDeviceRoute
   , IsAVCustomDeviceRoute(..)
   , networkEndpoint
+  , bluetoothIdentifier
   , networkEndpointSelector
+  , bluetoothIdentifierSelector
 
 
   ) where
@@ -38,6 +40,13 @@ networkEndpoint :: IsAVCustomDeviceRoute avCustomDeviceRoute => avCustomDeviceRo
 networkEndpoint avCustomDeviceRoute  =
     sendMsg avCustomDeviceRoute (mkSelector "networkEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | An identifier to use to establish a connection to a Bluetooth device.
+--
+-- ObjC selector: @- bluetoothIdentifier@
+bluetoothIdentifier :: IsAVCustomDeviceRoute avCustomDeviceRoute => avCustomDeviceRoute -> IO (Id NSUUID)
+bluetoothIdentifier avCustomDeviceRoute  =
+    sendMsg avCustomDeviceRoute (mkSelector "bluetoothIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -45,4 +54,8 @@ networkEndpoint avCustomDeviceRoute  =
 -- | @Selector@ for @networkEndpoint@
 networkEndpointSelector :: Selector
 networkEndpointSelector = mkSelector "networkEndpoint"
+
+-- | @Selector@ for @bluetoothIdentifier@
+bluetoothIdentifierSelector :: Selector
+bluetoothIdentifierSelector = mkSelector "bluetoothIdentifier"
 

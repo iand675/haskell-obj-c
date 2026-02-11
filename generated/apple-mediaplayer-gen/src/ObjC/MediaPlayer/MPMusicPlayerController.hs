@@ -34,6 +34,7 @@ module ObjC.MediaPlayer.MPMusicPlayerController
   , nowPlayingItem
   , setNowPlayingItem
   , indexOfNowPlayingItem
+  , iPodMusicPlayer
   , newSelector
   , initSelector
   , setQueueWithQuerySelector
@@ -61,6 +62,7 @@ module ObjC.MediaPlayer.MPMusicPlayerController
   , nowPlayingItemSelector
   , setNowPlayingItemSelector
   , indexOfNowPlayingItemSelector
+  , iPodMusicPlayerSelector
 
   -- * Enum types
   , MPMusicPlaybackState(MPMusicPlaybackState)
@@ -255,6 +257,13 @@ indexOfNowPlayingItem :: IsMPMusicPlayerController mpMusicPlayerController => mp
 indexOfNowPlayingItem mpMusicPlayerController  =
     sendMsg mpMusicPlayerController (mkSelector "indexOfNowPlayingItem") retCULong []
 
+-- | @+ iPodMusicPlayer@
+iPodMusicPlayer :: IO RawId
+iPodMusicPlayer  =
+  do
+    cls' <- getRequiredClass "MPMusicPlayerController"
+    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "iPodMusicPlayer") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -366,4 +375,8 @@ setNowPlayingItemSelector = mkSelector "setNowPlayingItem:"
 -- | @Selector@ for @indexOfNowPlayingItem@
 indexOfNowPlayingItemSelector :: Selector
 indexOfNowPlayingItemSelector = mkSelector "indexOfNowPlayingItem"
+
+-- | @Selector@ for @iPodMusicPlayer@
+iPodMusicPlayerSelector :: Selector
+iPodMusicPlayerSelector = mkSelector "iPodMusicPlayer"
 

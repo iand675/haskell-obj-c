@@ -22,6 +22,10 @@ module ObjC.AVFAudio.AVAudioPlayer
   , playing
   , numberOfChannels
   , duration
+  , currentDevice
+  , setCurrentDevice
+  , delegate
+  , setDelegate
   , url
   , data_
   , pan
@@ -41,6 +45,10 @@ module ObjC.AVFAudio.AVAudioPlayer
   , format
   , meteringEnabled
   , setMeteringEnabled
+  , channelAssignments
+  , setChannelAssignments
+  , intendedSpatialExperience
+  , setIntendedSpatialExperience
   , initWithContentsOfURL_errorSelector
   , initWithData_errorSelector
   , initWithContentsOfURL_fileTypeHint_errorSelector
@@ -57,6 +65,10 @@ module ObjC.AVFAudio.AVAudioPlayer
   , playingSelector
   , numberOfChannelsSelector
   , durationSelector
+  , currentDeviceSelector
+  , setCurrentDeviceSelector
+  , delegateSelector
+  , setDelegateSelector
   , urlSelector
   , dataSelector
   , panSelector
@@ -76,6 +88,10 @@ module ObjC.AVFAudio.AVAudioPlayer
   , formatSelector
   , meteringEnabledSelector
   , setMeteringEnabledSelector
+  , channelAssignmentsSelector
+  , setChannelAssignmentsSelector
+  , intendedSpatialExperienceSelector
+  , setIntendedSpatialExperienceSelector
 
 
   ) where
@@ -185,6 +201,27 @@ duration :: IsAVAudioPlayer avAudioPlayer => avAudioPlayer -> IO CDouble
 duration avAudioPlayer  =
     sendMsg avAudioPlayer (mkSelector "duration") retCDouble []
 
+-- | @- currentDevice@
+currentDevice :: IsAVAudioPlayer avAudioPlayer => avAudioPlayer -> IO (Id NSString)
+currentDevice avAudioPlayer  =
+    sendMsg avAudioPlayer (mkSelector "currentDevice") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setCurrentDevice:@
+setCurrentDevice :: (IsAVAudioPlayer avAudioPlayer, IsNSString value) => avAudioPlayer -> value -> IO ()
+setCurrentDevice avAudioPlayer  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avAudioPlayer (mkSelector "setCurrentDevice:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- delegate@
+delegate :: IsAVAudioPlayer avAudioPlayer => avAudioPlayer -> IO RawId
+delegate avAudioPlayer  =
+    fmap (RawId . castPtr) $ sendMsg avAudioPlayer (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsAVAudioPlayer avAudioPlayer => avAudioPlayer -> RawId -> IO ()
+setDelegate avAudioPlayer  value =
+    sendMsg avAudioPlayer (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- url@
 url :: IsAVAudioPlayer avAudioPlayer => avAudioPlayer -> IO (Id NSURL)
 url avAudioPlayer  =
@@ -280,6 +317,27 @@ setMeteringEnabled :: IsAVAudioPlayer avAudioPlayer => avAudioPlayer -> Bool -> 
 setMeteringEnabled avAudioPlayer  value =
     sendMsg avAudioPlayer (mkSelector "setMeteringEnabled:") retVoid [argCULong (if value then 1 else 0)]
 
+-- | @- channelAssignments@
+channelAssignments :: IsAVAudioPlayer avAudioPlayer => avAudioPlayer -> IO (Id NSArray)
+channelAssignments avAudioPlayer  =
+    sendMsg avAudioPlayer (mkSelector "channelAssignments") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setChannelAssignments:@
+setChannelAssignments :: (IsAVAudioPlayer avAudioPlayer, IsNSArray value) => avAudioPlayer -> value -> IO ()
+setChannelAssignments avAudioPlayer  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avAudioPlayer (mkSelector "setChannelAssignments:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- intendedSpatialExperience@
+intendedSpatialExperience :: IsAVAudioPlayer avAudioPlayer => avAudioPlayer -> IO RawId
+intendedSpatialExperience avAudioPlayer  =
+    fmap (RawId . castPtr) $ sendMsg avAudioPlayer (mkSelector "intendedSpatialExperience") (retPtr retVoid) []
+
+-- | @- setIntendedSpatialExperience:@
+setIntendedSpatialExperience :: IsAVAudioPlayer avAudioPlayer => avAudioPlayer -> RawId -> IO ()
+setIntendedSpatialExperience avAudioPlayer  value =
+    sendMsg avAudioPlayer (mkSelector "setIntendedSpatialExperience:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -347,6 +405,22 @@ numberOfChannelsSelector = mkSelector "numberOfChannels"
 -- | @Selector@ for @duration@
 durationSelector :: Selector
 durationSelector = mkSelector "duration"
+
+-- | @Selector@ for @currentDevice@
+currentDeviceSelector :: Selector
+currentDeviceSelector = mkSelector "currentDevice"
+
+-- | @Selector@ for @setCurrentDevice:@
+setCurrentDeviceSelector :: Selector
+setCurrentDeviceSelector = mkSelector "setCurrentDevice:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @url@
 urlSelector :: Selector
@@ -423,4 +497,20 @@ meteringEnabledSelector = mkSelector "meteringEnabled"
 -- | @Selector@ for @setMeteringEnabled:@
 setMeteringEnabledSelector :: Selector
 setMeteringEnabledSelector = mkSelector "setMeteringEnabled:"
+
+-- | @Selector@ for @channelAssignments@
+channelAssignmentsSelector :: Selector
+channelAssignmentsSelector = mkSelector "channelAssignments"
+
+-- | @Selector@ for @setChannelAssignments:@
+setChannelAssignmentsSelector :: Selector
+setChannelAssignmentsSelector = mkSelector "setChannelAssignments:"
+
+-- | @Selector@ for @intendedSpatialExperience@
+intendedSpatialExperienceSelector :: Selector
+intendedSpatialExperienceSelector = mkSelector "intendedSpatialExperience"
+
+-- | @Selector@ for @setIntendedSpatialExperience:@
+setIntendedSpatialExperienceSelector :: Selector
+setIntendedSpatialExperienceSelector = mkSelector "setIntendedSpatialExperience:"
 

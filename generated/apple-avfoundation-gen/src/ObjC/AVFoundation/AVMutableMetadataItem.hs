@@ -15,10 +15,14 @@ module ObjC.AVFoundation.AVMutableMetadataItem
   , setLocale
   , dataType
   , setDataType
+  , value
+  , setValue
   , extraAttributes
   , setExtraAttributes
   , keySpace
   , setKeySpace
+  , key
+  , setKey
   , startDate
   , setStartDate
   , metadataItemSelector
@@ -30,10 +34,14 @@ module ObjC.AVFoundation.AVMutableMetadataItem
   , setLocaleSelector
   , dataTypeSelector
   , setDataTypeSelector
+  , valueSelector
+  , setValueSelector
   , extraAttributesSelector
   , setExtraAttributesSelector
   , keySpaceSelector
   , setKeySpaceSelector
+  , keySelector
+  , setKeySelector
   , startDateSelector
   , setStartDateSelector
 
@@ -110,6 +118,16 @@ setDataType avMutableMetadataItem  value =
   withObjCPtr value $ \raw_value ->
       sendMsg avMutableMetadataItem (mkSelector "setDataType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- value@
+value :: IsAVMutableMetadataItem avMutableMetadataItem => avMutableMetadataItem -> IO RawId
+value avMutableMetadataItem  =
+    fmap (RawId . castPtr) $ sendMsg avMutableMetadataItem (mkSelector "value") (retPtr retVoid) []
+
+-- | @- setValue:@
+setValue :: IsAVMutableMetadataItem avMutableMetadataItem => avMutableMetadataItem -> RawId -> IO ()
+setValue avMutableMetadataItem  value =
+    sendMsg avMutableMetadataItem (mkSelector "setValue:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- extraAttributes@
 extraAttributes :: IsAVMutableMetadataItem avMutableMetadataItem => avMutableMetadataItem -> IO (Id NSDictionary)
 extraAttributes avMutableMetadataItem  =
@@ -131,6 +149,16 @@ setKeySpace :: (IsAVMutableMetadataItem avMutableMetadataItem, IsNSString value)
 setKeySpace avMutableMetadataItem  value =
   withObjCPtr value $ \raw_value ->
       sendMsg avMutableMetadataItem (mkSelector "setKeySpace:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- key@
+key :: IsAVMutableMetadataItem avMutableMetadataItem => avMutableMetadataItem -> IO RawId
+key avMutableMetadataItem  =
+    fmap (RawId . castPtr) $ sendMsg avMutableMetadataItem (mkSelector "key") (retPtr retVoid) []
+
+-- | @- setKey:@
+setKey :: IsAVMutableMetadataItem avMutableMetadataItem => avMutableMetadataItem -> RawId -> IO ()
+setKey avMutableMetadataItem  value =
+    sendMsg avMutableMetadataItem (mkSelector "setKey:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | @- startDate@
 startDate :: IsAVMutableMetadataItem avMutableMetadataItem => avMutableMetadataItem -> IO (Id NSDate)
@@ -183,6 +211,14 @@ dataTypeSelector = mkSelector "dataType"
 setDataTypeSelector :: Selector
 setDataTypeSelector = mkSelector "setDataType:"
 
+-- | @Selector@ for @value@
+valueSelector :: Selector
+valueSelector = mkSelector "value"
+
+-- | @Selector@ for @setValue:@
+setValueSelector :: Selector
+setValueSelector = mkSelector "setValue:"
+
 -- | @Selector@ for @extraAttributes@
 extraAttributesSelector :: Selector
 extraAttributesSelector = mkSelector "extraAttributes"
@@ -198,6 +234,14 @@ keySpaceSelector = mkSelector "keySpace"
 -- | @Selector@ for @setKeySpace:@
 setKeySpaceSelector :: Selector
 setKeySpaceSelector = mkSelector "setKeySpace:"
+
+-- | @Selector@ for @key@
+keySelector :: Selector
+keySelector = mkSelector "key"
+
+-- | @Selector@ for @setKey:@
+setKeySelector :: Selector
+setKeySelector = mkSelector "setKey:"
 
 -- | @Selector@ for @startDate@
 startDateSelector :: Selector

@@ -21,6 +21,7 @@ module ObjC.HealthKit.HKVerifiableClinicalRecord
   , itemNames
   , sourceType
   , dataRepresentation
+  , jwsRepresentation
   , initSelector
   , newSelector
   , recordTypesSelector
@@ -32,6 +33,7 @@ module ObjC.HealthKit.HKVerifiableClinicalRecord
   , itemNamesSelector
   , sourceTypeSelector
   , dataRepresentationSelector
+  , jwsRepresentationSelector
 
 
   ) where
@@ -144,6 +146,15 @@ dataRepresentation :: IsHKVerifiableClinicalRecord hkVerifiableClinicalRecord =>
 dataRepresentation hkVerifiableClinicalRecord  =
     sendMsg hkVerifiableClinicalRecord (mkSelector "dataRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | JWSRepresentation
+--
+-- The record's entirety as JSON Web Signature (JWS) data.
+--
+-- ObjC selector: @- JWSRepresentation@
+jwsRepresentation :: IsHKVerifiableClinicalRecord hkVerifiableClinicalRecord => hkVerifiableClinicalRecord -> IO (Id NSData)
+jwsRepresentation hkVerifiableClinicalRecord  =
+    sendMsg hkVerifiableClinicalRecord (mkSelector "JWSRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -191,4 +202,8 @@ sourceTypeSelector = mkSelector "sourceType"
 -- | @Selector@ for @dataRepresentation@
 dataRepresentationSelector :: Selector
 dataRepresentationSelector = mkSelector "dataRepresentation"
+
+-- | @Selector@ for @JWSRepresentation@
+jwsRepresentationSelector :: Selector
+jwsRepresentationSelector = mkSelector "JWSRepresentation"
 

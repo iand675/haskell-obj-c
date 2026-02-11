@@ -18,6 +18,8 @@ module ObjC.OpenDirectory.ODQuery
   , scheduleInRunLoop_forMode
   , removeFromRunLoop_forMode
   , synchronize
+  , delegate
+  , setDelegate
   , operationQueue
   , setOperationQueue
   , queryWithNode_forRecordTypes_attribute_matchType_queryValues_returnAttributes_maximumResults_errorSelector
@@ -26,6 +28,8 @@ module ObjC.OpenDirectory.ODQuery
   , scheduleInRunLoop_forModeSelector
   , removeFromRunLoop_forModeSelector
   , synchronizeSelector
+  , delegateSelector
+  , setDelegateSelector
   , operationQueueSelector
   , setOperationQueueSelector
 
@@ -126,6 +130,28 @@ synchronize :: IsODQuery odQuery => odQuery -> IO ()
 synchronize odQuery  =
     sendMsg odQuery (mkSelector "synchronize") retVoid []
 
+-- | delegate
+--
+-- The currently set delegate
+--
+-- The query delegate which will receive asynchronous query results.
+--
+-- ObjC selector: @- delegate@
+delegate :: IsODQuery odQuery => odQuery -> IO RawId
+delegate odQuery  =
+    fmap (RawId . castPtr) $ sendMsg odQuery (mkSelector "delegate") (retPtr retVoid) []
+
+-- | delegate
+--
+-- The currently set delegate
+--
+-- The query delegate which will receive asynchronous query results.
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsODQuery odQuery => odQuery -> RawId -> IO ()
+setDelegate odQuery  value =
+    sendMsg odQuery (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | operationQueue
 --
 -- The NSOperationQueue on which asynchronous results are delivered to the delegate.
@@ -176,6 +202,14 @@ removeFromRunLoop_forModeSelector = mkSelector "removeFromRunLoop:forMode:"
 -- | @Selector@ for @synchronize@
 synchronizeSelector :: Selector
 synchronizeSelector = mkSelector "synchronize"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @operationQueue@
 operationQueueSelector :: Selector

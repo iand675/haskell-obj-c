@@ -14,6 +14,8 @@ module ObjC.SpriteKit.SKShapeNode
   , shapeNodeWithPath
   , shapeNodeWithPath_centered
   , shapeNodeWithCircleOfRadius
+  , shapeNodeWithPoints_count
+  , shapeNodeWithSplinePoints_count
   , valueForAttributeNamed
   , setValue_forAttributeNamed
   , path
@@ -50,6 +52,8 @@ module ObjC.SpriteKit.SKShapeNode
   , shapeNodeWithPathSelector
   , shapeNodeWithPath_centeredSelector
   , shapeNodeWithCircleOfRadiusSelector
+  , shapeNodeWithPoints_countSelector
+  , shapeNodeWithSplinePoints_countSelector
   , valueForAttributeNamedSelector
   , setValue_forAttributeNamedSelector
   , pathSelector
@@ -134,6 +138,20 @@ shapeNodeWithCircleOfRadius radius =
   do
     cls' <- getRequiredClass "SKShapeNode"
     sendClassMsg cls' (mkSelector "shapeNodeWithCircleOfRadius:") (retPtr retVoid) [argCDouble radius] >>= retainedObject . castPtr
+
+-- | @+ shapeNodeWithPoints:count:@
+shapeNodeWithPoints_count :: RawId -> CULong -> IO (Id SKShapeNode)
+shapeNodeWithPoints_count points numPoints =
+  do
+    cls' <- getRequiredClass "SKShapeNode"
+    sendClassMsg cls' (mkSelector "shapeNodeWithPoints:count:") (retPtr retVoid) [argPtr (castPtr (unRawId points) :: Ptr ()), argCULong numPoints] >>= retainedObject . castPtr
+
+-- | @+ shapeNodeWithSplinePoints:count:@
+shapeNodeWithSplinePoints_count :: RawId -> CULong -> IO (Id SKShapeNode)
+shapeNodeWithSplinePoints_count points numPoints =
+  do
+    cls' <- getRequiredClass "SKShapeNode"
+    sendClassMsg cls' (mkSelector "shapeNodeWithSplinePoints:count:") (retPtr retVoid) [argPtr (castPtr (unRawId points) :: Ptr ()), argCULong numPoints] >>= retainedObject . castPtr
 
 -- | @- valueForAttributeNamed:@
 valueForAttributeNamed :: (IsSKShapeNode skShapeNode, IsNSString key) => skShapeNode -> key -> IO (Id SKAttributeValue)
@@ -375,6 +393,14 @@ shapeNodeWithPath_centeredSelector = mkSelector "shapeNodeWithPath:centered:"
 -- | @Selector@ for @shapeNodeWithCircleOfRadius:@
 shapeNodeWithCircleOfRadiusSelector :: Selector
 shapeNodeWithCircleOfRadiusSelector = mkSelector "shapeNodeWithCircleOfRadius:"
+
+-- | @Selector@ for @shapeNodeWithPoints:count:@
+shapeNodeWithPoints_countSelector :: Selector
+shapeNodeWithPoints_countSelector = mkSelector "shapeNodeWithPoints:count:"
+
+-- | @Selector@ for @shapeNodeWithSplinePoints:count:@
+shapeNodeWithSplinePoints_countSelector :: Selector
+shapeNodeWithSplinePoints_countSelector = mkSelector "shapeNodeWithSplinePoints:count:"
 
 -- | @Selector@ for @valueForAttributeNamed:@
 valueForAttributeNamedSelector :: Selector

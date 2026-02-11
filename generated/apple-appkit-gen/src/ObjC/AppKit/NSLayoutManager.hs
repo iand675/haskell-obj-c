@@ -26,12 +26,14 @@ module ObjC.AppKit.NSLayoutManager
   , ensureLayoutForGlyphRange
   , ensureLayoutForTextContainer
   , ensureLayoutForBoundingRect_inTextContainer
+  , setGlyphs_properties_characterIndexes_font_forGlyphRange
   , cgGlyphAtIndex_isValidIndex
   , cgGlyphAtIndex
   , isValidGlyphIndex
   , propertyForGlyphAtIndex
   , characterIndexForGlyphAtIndex
   , glyphIndexForCharacterAtIndex
+  , getGlyphsInRange_glyphs_properties_characterIndexes_bidiLevels
   , setTextContainer_forGlyphRange
   , setLineFragmentRect_forGlyphRange_usedRect
   , setExtraLineFragmentRect_usedRect_textContainer
@@ -97,6 +99,7 @@ module ObjC.AppKit.NSLayoutManager
   , rectArrayForCharacterRange_withinSelectedCharacterRange_inTextContainer_rectCount
   , rectArrayForGlyphRange_withinSelectedGlyphRange_inTextContainer_rectCount
   , substituteFontForFont
+  , insertGlyphs_length_forStartingGlyphAtIndex_characterIndex
   , insertGlyph_atGlyphIndex_characterIndex
   , replaceGlyphAtIndex_withGlyph
   , deleteGlyphsInRange
@@ -104,16 +107,22 @@ module ObjC.AppKit.NSLayoutManager
   , setIntAttribute_value_forGlyphAtIndex
   , invalidateGlyphsOnLayoutInvalidationForGlyphRange
   , intAttribute_forGlyphAtIndex
+  , getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits
+  , getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevels
+  , getGlyphs_range
   , invalidateLayoutForCharacterRange_isSoft_actualCharacterRange
   , textStorage_edited_range_changeInLength_invalidatedRange
   , setLocations_startingGlyphIndexes_count_forGlyphRange
   , showPackedGlyphs_length_glyphRange_atPoint_font_color_printingAdjustment
+  , showCGGlyphs_positions_count_font_matrix_attributes_inContext
   , rulerMarkersForTextView_paragraphStyle_ruler
   , rulerAccessoryViewForTextView_paragraphStyle_ruler_enabled
   , layoutManagerOwnsFirstResponderInWindow
   , textStorage
   , setTextStorage
   , textContainers
+  , delegate
+  , setDelegate
   , showsInvisibleCharacters
   , setShowsInvisibleCharacters
   , showsControlCharacters
@@ -166,12 +175,14 @@ module ObjC.AppKit.NSLayoutManager
   , ensureLayoutForGlyphRangeSelector
   , ensureLayoutForTextContainerSelector
   , ensureLayoutForBoundingRect_inTextContainerSelector
+  , setGlyphs_properties_characterIndexes_font_forGlyphRangeSelector
   , cgGlyphAtIndex_isValidIndexSelector
   , cgGlyphAtIndexSelector
   , isValidGlyphIndexSelector
   , propertyForGlyphAtIndexSelector
   , characterIndexForGlyphAtIndexSelector
   , glyphIndexForCharacterAtIndexSelector
+  , getGlyphsInRange_glyphs_properties_characterIndexes_bidiLevelsSelector
   , setTextContainer_forGlyphRangeSelector
   , setLineFragmentRect_forGlyphRange_usedRectSelector
   , setExtraLineFragmentRect_usedRect_textContainerSelector
@@ -237,6 +248,7 @@ module ObjC.AppKit.NSLayoutManager
   , rectArrayForCharacterRange_withinSelectedCharacterRange_inTextContainer_rectCountSelector
   , rectArrayForGlyphRange_withinSelectedGlyphRange_inTextContainer_rectCountSelector
   , substituteFontForFontSelector
+  , insertGlyphs_length_forStartingGlyphAtIndex_characterIndexSelector
   , insertGlyph_atGlyphIndex_characterIndexSelector
   , replaceGlyphAtIndex_withGlyphSelector
   , deleteGlyphsInRangeSelector
@@ -244,16 +256,22 @@ module ObjC.AppKit.NSLayoutManager
   , setIntAttribute_value_forGlyphAtIndexSelector
   , invalidateGlyphsOnLayoutInvalidationForGlyphRangeSelector
   , intAttribute_forGlyphAtIndexSelector
+  , getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBitsSelector
+  , getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevelsSelector
+  , getGlyphs_rangeSelector
   , invalidateLayoutForCharacterRange_isSoft_actualCharacterRangeSelector
   , textStorage_edited_range_changeInLength_invalidatedRangeSelector
   , setLocations_startingGlyphIndexes_count_forGlyphRangeSelector
   , showPackedGlyphs_length_glyphRange_atPoint_font_color_printingAdjustmentSelector
+  , showCGGlyphs_positions_count_font_matrix_attributes_inContextSelector
   , rulerMarkersForTextView_paragraphStyle_rulerSelector
   , rulerAccessoryViewForTextView_paragraphStyle_ruler_enabledSelector
   , layoutManagerOwnsFirstResponderInWindowSelector
   , textStorageSelector
   , setTextStorageSelector
   , textContainersSelector
+  , delegateSelector
+  , setDelegateSelector
   , showsInvisibleCharactersSelector
   , setShowsInvisibleCharactersSelector
   , showsControlCharactersSelector
@@ -453,6 +471,14 @@ ensureLayoutForBoundingRect_inTextContainer nsLayoutManager  bounds container =
   withObjCPtr container $ \raw_container ->
       sendMsg nsLayoutManager (mkSelector "ensureLayoutForBoundingRect:inTextContainer:") retVoid [argNSRect bounds, argPtr (castPtr raw_container :: Ptr ())]
 
+-- | ********************** Set glyphs and glyph properties ***********************
+--
+-- ObjC selector: @- setGlyphs:properties:characterIndexes:font:forGlyphRange:@
+setGlyphs_properties_characterIndexes_font_forGlyphRange :: (IsNSLayoutManager nsLayoutManager, IsNSFont aFont) => nsLayoutManager -> Const RawId -> Const (Ptr NSGlyphProperty) -> Const (Ptr CULong) -> aFont -> NSRange -> IO ()
+setGlyphs_properties_characterIndexes_font_forGlyphRange nsLayoutManager  glyphs props charIndexes aFont glyphRange =
+  withObjCPtr aFont $ \raw_aFont ->
+      sendMsg nsLayoutManager (mkSelector "setGlyphs:properties:characterIndexes:font:forGlyphRange:") retVoid [argPtr (castPtr (unRawId (unConst glyphs)) :: Ptr ()), argPtr (unConst props), argPtr (unConst charIndexes), argPtr (castPtr raw_aFont :: Ptr ()), argNSRange glyphRange]
+
 -- | @- CGGlyphAtIndex:isValidIndex:@
 cgGlyphAtIndex_isValidIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> Ptr Bool -> IO CUShort
 cgGlyphAtIndex_isValidIndex nsLayoutManager  glyphIndex isValidIndex =
@@ -482,6 +508,11 @@ characterIndexForGlyphAtIndex nsLayoutManager  glyphIndex =
 glyphIndexForCharacterAtIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> IO CULong
 glyphIndexForCharacterAtIndex nsLayoutManager  charIndex =
     sendMsg nsLayoutManager (mkSelector "glyphIndexForCharacterAtIndex:") retCULong [argCULong charIndex]
+
+-- | @- getGlyphsInRange:glyphs:properties:characterIndexes:bidiLevels:@
+getGlyphsInRange_glyphs_properties_characterIndexes_bidiLevels :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> RawId -> Ptr NSGlyphProperty -> Ptr CULong -> Ptr CUChar -> IO CULong
+getGlyphsInRange_glyphs_properties_characterIndexes_bidiLevels nsLayoutManager  glyphRange glyphBuffer props charIndexBuffer bidiLevelBuffer =
+    sendMsg nsLayoutManager (mkSelector "getGlyphsInRange:glyphs:properties:characterIndexes:bidiLevels:") retCULong [argNSRange glyphRange, argPtr (castPtr (unRawId glyphBuffer) :: Ptr ()), argPtr props, argPtr charIndexBuffer, argPtr bidiLevelBuffer]
 
 -- | @- setTextContainer:forGlyphRange:@
 setTextContainer_forGlyphRange :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer container) => nsLayoutManager -> container -> NSRange -> IO ()
@@ -851,6 +882,11 @@ substituteFontForFont nsLayoutManager  originalFont =
   withObjCPtr originalFont $ \raw_originalFont ->
       sendMsg nsLayoutManager (mkSelector "substituteFontForFont:") (retPtr retVoid) [argPtr (castPtr raw_originalFont :: Ptr ())] >>= retainedObject . castPtr
 
+-- | @- insertGlyphs:length:forStartingGlyphAtIndex:characterIndex:@
+insertGlyphs_length_forStartingGlyphAtIndex_characterIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> Const RawId -> CULong -> CULong -> CULong -> IO ()
+insertGlyphs_length_forStartingGlyphAtIndex_characterIndex nsLayoutManager  glyphs length_ glyphIndex charIndex =
+    sendMsg nsLayoutManager (mkSelector "insertGlyphs:length:forStartingGlyphAtIndex:characterIndex:") retVoid [argPtr (castPtr (unRawId (unConst glyphs)) :: Ptr ()), argCULong length_, argCULong glyphIndex, argCULong charIndex]
+
 -- | @- insertGlyph:atGlyphIndex:characterIndex:@
 insertGlyph_atGlyphIndex_characterIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CUInt -> CULong -> CULong -> IO ()
 insertGlyph_atGlyphIndex_characterIndex nsLayoutManager  glyph glyphIndex charIndex =
@@ -886,6 +922,21 @@ intAttribute_forGlyphAtIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutMan
 intAttribute_forGlyphAtIndex nsLayoutManager  attributeTag glyphIndex =
     sendMsg nsLayoutManager (mkSelector "intAttribute:forGlyphAtIndex:") retCLong [argCLong attributeTag, argCULong glyphIndex]
 
+-- | @- getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:@
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> RawId -> Ptr CULong -> Ptr NSGlyphInscription -> Ptr Bool -> IO CULong
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits nsLayoutManager  glyphRange glyphBuffer charIndexBuffer inscribeBuffer elasticBuffer =
+    sendMsg nsLayoutManager (mkSelector "getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:") retCULong [argNSRange glyphRange, argPtr (castPtr (unRawId glyphBuffer) :: Ptr ()), argPtr charIndexBuffer, argPtr inscribeBuffer, argPtr elasticBuffer]
+
+-- | @- getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:bidiLevels:@
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevels :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> RawId -> Ptr CULong -> Ptr NSGlyphInscription -> Ptr Bool -> Ptr CUChar -> IO CULong
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevels nsLayoutManager  glyphRange glyphBuffer charIndexBuffer inscribeBuffer elasticBuffer bidiLevelBuffer =
+    sendMsg nsLayoutManager (mkSelector "getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:bidiLevels:") retCULong [argNSRange glyphRange, argPtr (castPtr (unRawId glyphBuffer) :: Ptr ()), argPtr charIndexBuffer, argPtr inscribeBuffer, argPtr elasticBuffer, argPtr bidiLevelBuffer]
+
+-- | @- getGlyphs:range:@
+getGlyphs_range :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> RawId -> NSRange -> IO CULong
+getGlyphs_range nsLayoutManager  glyphArray glyphRange =
+    sendMsg nsLayoutManager (mkSelector "getGlyphs:range:") retCULong [argPtr (castPtr (unRawId glyphArray) :: Ptr ()), argNSRange glyphRange]
+
 -- | @- invalidateLayoutForCharacterRange:isSoft:actualCharacterRange:@
 invalidateLayoutForCharacterRange_isSoft_actualCharacterRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> Bool -> Ptr NSRange -> IO ()
 invalidateLayoutForCharacterRange_isSoft_actualCharacterRange nsLayoutManager  charRange flag actualCharRange =
@@ -908,6 +959,15 @@ showPackedGlyphs_length_glyphRange_atPoint_font_color_printingAdjustment nsLayou
   withObjCPtr font $ \raw_font ->
     withObjCPtr color $ \raw_color ->
         sendMsg nsLayoutManager (mkSelector "showPackedGlyphs:length:glyphRange:atPoint:font:color:printingAdjustment:") retVoid [argPtr glyphs, argCULong glyphLen, argNSRange glyphRange, argNSPoint point, argPtr (castPtr raw_font :: Ptr ()), argPtr (castPtr raw_color :: Ptr ()), argNSSize printingAdjustment]
+
+-- | @- showCGGlyphs:positions:count:font:matrix:attributes:inContext:@
+showCGGlyphs_positions_count_font_matrix_attributes_inContext :: (IsNSLayoutManager nsLayoutManager, IsNSFont font, IsNSAffineTransform textMatrix, IsNSDictionary attributes, IsNSGraphicsContext graphicsContext) => nsLayoutManager -> Const RawId -> Const (Ptr NSPoint) -> CULong -> font -> textMatrix -> attributes -> graphicsContext -> IO ()
+showCGGlyphs_positions_count_font_matrix_attributes_inContext nsLayoutManager  glyphs positions glyphCount font textMatrix attributes graphicsContext =
+  withObjCPtr font $ \raw_font ->
+    withObjCPtr textMatrix $ \raw_textMatrix ->
+      withObjCPtr attributes $ \raw_attributes ->
+        withObjCPtr graphicsContext $ \raw_graphicsContext ->
+            sendMsg nsLayoutManager (mkSelector "showCGGlyphs:positions:count:font:matrix:attributes:inContext:") retVoid [argPtr (castPtr (unRawId (unConst glyphs)) :: Ptr ()), argPtr (unConst positions), argCULong glyphCount, argPtr (castPtr raw_font :: Ptr ()), argPtr (castPtr raw_textMatrix :: Ptr ()), argPtr (castPtr raw_attributes :: Ptr ()), argPtr (castPtr raw_graphicsContext :: Ptr ())]
 
 -- | *************************** Ruler support ****************************
 --
@@ -956,6 +1016,20 @@ setTextStorage nsLayoutManager  value =
 textContainers :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO (Id NSArray)
 textContainers nsLayoutManager  =
     sendMsg nsLayoutManager (mkSelector "textContainers") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | ************************** Delegate ***************************
+--
+-- ObjC selector: @- delegate@
+delegate :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO RawId
+delegate nsLayoutManager  =
+    fmap (RawId . castPtr) $ sendMsg nsLayoutManager (mkSelector "delegate") (retPtr retVoid) []
+
+-- | ************************** Delegate ***************************
+--
+-- ObjC selector: @- setDelegate:@
+setDelegate :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> RawId -> IO ()
+setDelegate nsLayoutManager  value =
+    sendMsg nsLayoutManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
 
 -- | ********************* Global layout manager options **********************
 --
@@ -1214,6 +1288,10 @@ ensureLayoutForTextContainerSelector = mkSelector "ensureLayoutForTextContainer:
 ensureLayoutForBoundingRect_inTextContainerSelector :: Selector
 ensureLayoutForBoundingRect_inTextContainerSelector = mkSelector "ensureLayoutForBoundingRect:inTextContainer:"
 
+-- | @Selector@ for @setGlyphs:properties:characterIndexes:font:forGlyphRange:@
+setGlyphs_properties_characterIndexes_font_forGlyphRangeSelector :: Selector
+setGlyphs_properties_characterIndexes_font_forGlyphRangeSelector = mkSelector "setGlyphs:properties:characterIndexes:font:forGlyphRange:"
+
 -- | @Selector@ for @CGGlyphAtIndex:isValidIndex:@
 cgGlyphAtIndex_isValidIndexSelector :: Selector
 cgGlyphAtIndex_isValidIndexSelector = mkSelector "CGGlyphAtIndex:isValidIndex:"
@@ -1237,6 +1315,10 @@ characterIndexForGlyphAtIndexSelector = mkSelector "characterIndexForGlyphAtInde
 -- | @Selector@ for @glyphIndexForCharacterAtIndex:@
 glyphIndexForCharacterAtIndexSelector :: Selector
 glyphIndexForCharacterAtIndexSelector = mkSelector "glyphIndexForCharacterAtIndex:"
+
+-- | @Selector@ for @getGlyphsInRange:glyphs:properties:characterIndexes:bidiLevels:@
+getGlyphsInRange_glyphs_properties_characterIndexes_bidiLevelsSelector :: Selector
+getGlyphsInRange_glyphs_properties_characterIndexes_bidiLevelsSelector = mkSelector "getGlyphsInRange:glyphs:properties:characterIndexes:bidiLevels:"
 
 -- | @Selector@ for @setTextContainer:forGlyphRange:@
 setTextContainer_forGlyphRangeSelector :: Selector
@@ -1498,6 +1580,10 @@ rectArrayForGlyphRange_withinSelectedGlyphRange_inTextContainer_rectCountSelecto
 substituteFontForFontSelector :: Selector
 substituteFontForFontSelector = mkSelector "substituteFontForFont:"
 
+-- | @Selector@ for @insertGlyphs:length:forStartingGlyphAtIndex:characterIndex:@
+insertGlyphs_length_forStartingGlyphAtIndex_characterIndexSelector :: Selector
+insertGlyphs_length_forStartingGlyphAtIndex_characterIndexSelector = mkSelector "insertGlyphs:length:forStartingGlyphAtIndex:characterIndex:"
+
 -- | @Selector@ for @insertGlyph:atGlyphIndex:characterIndex:@
 insertGlyph_atGlyphIndex_characterIndexSelector :: Selector
 insertGlyph_atGlyphIndex_characterIndexSelector = mkSelector "insertGlyph:atGlyphIndex:characterIndex:"
@@ -1526,6 +1612,18 @@ invalidateGlyphsOnLayoutInvalidationForGlyphRangeSelector = mkSelector "invalida
 intAttribute_forGlyphAtIndexSelector :: Selector
 intAttribute_forGlyphAtIndexSelector = mkSelector "intAttribute:forGlyphAtIndex:"
 
+-- | @Selector@ for @getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:@
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBitsSelector :: Selector
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBitsSelector = mkSelector "getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:"
+
+-- | @Selector@ for @getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:bidiLevels:@
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevelsSelector :: Selector
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevelsSelector = mkSelector "getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:bidiLevels:"
+
+-- | @Selector@ for @getGlyphs:range:@
+getGlyphs_rangeSelector :: Selector
+getGlyphs_rangeSelector = mkSelector "getGlyphs:range:"
+
 -- | @Selector@ for @invalidateLayoutForCharacterRange:isSoft:actualCharacterRange:@
 invalidateLayoutForCharacterRange_isSoft_actualCharacterRangeSelector :: Selector
 invalidateLayoutForCharacterRange_isSoft_actualCharacterRangeSelector = mkSelector "invalidateLayoutForCharacterRange:isSoft:actualCharacterRange:"
@@ -1541,6 +1639,10 @@ setLocations_startingGlyphIndexes_count_forGlyphRangeSelector = mkSelector "setL
 -- | @Selector@ for @showPackedGlyphs:length:glyphRange:atPoint:font:color:printingAdjustment:@
 showPackedGlyphs_length_glyphRange_atPoint_font_color_printingAdjustmentSelector :: Selector
 showPackedGlyphs_length_glyphRange_atPoint_font_color_printingAdjustmentSelector = mkSelector "showPackedGlyphs:length:glyphRange:atPoint:font:color:printingAdjustment:"
+
+-- | @Selector@ for @showCGGlyphs:positions:count:font:matrix:attributes:inContext:@
+showCGGlyphs_positions_count_font_matrix_attributes_inContextSelector :: Selector
+showCGGlyphs_positions_count_font_matrix_attributes_inContextSelector = mkSelector "showCGGlyphs:positions:count:font:matrix:attributes:inContext:"
 
 -- | @Selector@ for @rulerMarkersForTextView:paragraphStyle:ruler:@
 rulerMarkersForTextView_paragraphStyle_rulerSelector :: Selector
@@ -1565,6 +1667,14 @@ setTextStorageSelector = mkSelector "setTextStorage:"
 -- | @Selector@ for @textContainers@
 textContainersSelector :: Selector
 textContainersSelector = mkSelector "textContainers"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @showsInvisibleCharacters@
 showsInvisibleCharactersSelector :: Selector

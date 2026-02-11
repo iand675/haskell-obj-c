@@ -24,6 +24,8 @@ module ObjC.AudioVideoBridging.AVB17221EntityDiscovery
   , interfaceName
   , setInterfaceName
   , interface
+  , discoveryDelegate
+  , setDiscoveryDelegate
   , initWithInterfaceNameSelector
   , primeIteratorsSelector
   , discoverEntitiesSelector
@@ -34,6 +36,8 @@ module ObjC.AudioVideoBridging.AVB17221EntityDiscovery
   , interfaceNameSelector
   , setInterfaceNameSelector
   , interfaceSelector
+  , discoveryDelegateSelector
+  , setDiscoveryDelegateSelector
 
 
   ) where
@@ -181,6 +185,24 @@ interface :: IsAVB17221EntityDiscovery avB17221EntityDiscovery => avB17221Entity
 interface avB17221EntityDiscovery  =
     sendMsg avB17221EntityDiscovery (mkSelector "interface") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | discoveryDelegate
+--
+-- The delegate, implementing the AVB17221EntityDiscoveryDelegate protocol, which will handle entities arriving, departing and changing properties.
+--
+-- ObjC selector: @- discoveryDelegate@
+discoveryDelegate :: IsAVB17221EntityDiscovery avB17221EntityDiscovery => avB17221EntityDiscovery -> IO RawId
+discoveryDelegate avB17221EntityDiscovery  =
+    fmap (RawId . castPtr) $ sendMsg avB17221EntityDiscovery (mkSelector "discoveryDelegate") (retPtr retVoid) []
+
+-- | discoveryDelegate
+--
+-- The delegate, implementing the AVB17221EntityDiscoveryDelegate protocol, which will handle entities arriving, departing and changing properties.
+--
+-- ObjC selector: @- setDiscoveryDelegate:@
+setDiscoveryDelegate :: IsAVB17221EntityDiscovery avB17221EntityDiscovery => avB17221EntityDiscovery -> RawId -> IO ()
+setDiscoveryDelegate avB17221EntityDiscovery  value =
+    sendMsg avB17221EntityDiscovery (mkSelector "setDiscoveryDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -224,4 +246,12 @@ setInterfaceNameSelector = mkSelector "setInterfaceName:"
 -- | @Selector@ for @interface@
 interfaceSelector :: Selector
 interfaceSelector = mkSelector "interface"
+
+-- | @Selector@ for @discoveryDelegate@
+discoveryDelegateSelector :: Selector
+discoveryDelegateSelector = mkSelector "discoveryDelegate"
+
+-- | @Selector@ for @setDiscoveryDelegate:@
+setDiscoveryDelegateSelector :: Selector
+setDiscoveryDelegateSelector = mkSelector "setDiscoveryDelegate:"
 

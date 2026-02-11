@@ -12,6 +12,7 @@ build-type:     Simple
 
 library
   exposed-modules:
+      ObjC.ScriptingBridge.Delegate.SBApplicationDelegate
       ObjC.ScriptingBridge.Internal.Classes
       ObjC.ScriptingBridge.SBApplication
       ObjC.ScriptingBridge.SBElementArray

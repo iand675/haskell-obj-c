@@ -18,6 +18,7 @@ module ObjC.CloudKit.CKShareParticipant
   , acceptanceStatus
   , permission
   , setPermission
+  , participantID
   , isApprovedRequester
   , dateAddedToShare
   , initSelector
@@ -31,6 +32,7 @@ module ObjC.CloudKit.CKShareParticipant
   , acceptanceStatusSelector
   , permissionSelector
   , setPermissionSelector
+  , participantIDSelector
   , isApprovedRequesterSelector
   , dateAddedToShareSelector
 
@@ -154,6 +156,13 @@ setPermission :: IsCKShareParticipant ckShareParticipant => ckShareParticipant -
 setPermission ckShareParticipant  value =
     sendMsg ckShareParticipant (mkSelector "setPermission:") retVoid [argCLong (coerce value)]
 
+-- | A unique identifier for this participant.
+--
+-- ObjC selector: @- participantID@
+participantID :: IsCKShareParticipant ckShareParticipant => ckShareParticipant -> IO (Id NSString)
+participantID ckShareParticipant  =
+    sendMsg ckShareParticipant (mkSelector "participantID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Indicates whether the participant was originally a requester who was approved to join the share.
 --
 -- ObjC selector: @- isApprovedRequester@
@@ -217,6 +226,10 @@ permissionSelector = mkSelector "permission"
 -- | @Selector@ for @setPermission:@
 setPermissionSelector :: Selector
 setPermissionSelector = mkSelector "setPermission:"
+
+-- | @Selector@ for @participantID@
+participantIDSelector :: Selector
+participantIDSelector = mkSelector "participantID"
 
 -- | @Selector@ for @isApprovedRequester@
 isApprovedRequesterSelector :: Selector

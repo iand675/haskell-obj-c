@@ -10,16 +10,22 @@ module ObjC.GameKit.GKPlayer
   , scopedIDsArePersistent
   , anonymousGuestPlayerWithIdentifier
   , loadPhotoForSize_withCompletionHandler
+  , gamePlayerID
+  , teamPlayerID
   , displayName
   , alias
+  , guestIdentifier
   , isInvitable
   , isFriend
   , playerID
   , scopedIDsArePersistentSelector
   , anonymousGuestPlayerWithIdentifierSelector
   , loadPhotoForSize_withCompletionHandlerSelector
+  , gamePlayerIDSelector
+  , teamPlayerIDSelector
   , displayNameSelector
   , aliasSelector
+  , guestIdentifierSelector
   , isInvitableSelector
   , isFriendSelector
   , playerIDSelector
@@ -69,6 +75,20 @@ loadPhotoForSize_withCompletionHandler :: IsGKPlayer gkPlayer => gkPlayer -> GKP
 loadPhotoForSize_withCompletionHandler gkPlayer  size completionHandler =
     sendMsg gkPlayer (mkSelector "loadPhotoForSize:withCompletionHandler:") retVoid [argCLong (coerce size), argPtr (castPtr completionHandler :: Ptr ())]
 
+-- | This is the player's unique and persistent ID that is scoped to this application.
+--
+-- ObjC selector: @- gamePlayerID@
+gamePlayerID :: IsGKPlayer gkPlayer => gkPlayer -> IO (Id NSString)
+gamePlayerID gkPlayer  =
+    sendMsg gkPlayer (mkSelector "gamePlayerID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | This is the player's unique and persistent ID that is scoped to the Apple Store Connect Team identifier of this application.
+--
+-- ObjC selector: @- teamPlayerID@
+teamPlayerID :: IsGKPlayer gkPlayer => gkPlayer -> IO (Id NSString)
+teamPlayerID gkPlayer  =
+    sendMsg gkPlayer (mkSelector "teamPlayerID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | This is player's alias to be displayed. The display name may be very long, so be sure to use appropriate string truncation API when drawing.
 --
 -- ObjC selector: @- displayName@
@@ -82,6 +102,11 @@ displayName gkPlayer  =
 alias :: IsGKPlayer gkPlayer => gkPlayer -> IO (Id NSString)
 alias gkPlayer  =
     sendMsg gkPlayer (mkSelector "alias") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- guestIdentifier@
+guestIdentifier :: IsGKPlayer gkPlayer => gkPlayer -> IO (Id NSString)
+guestIdentifier gkPlayer  =
+    sendMsg gkPlayer (mkSelector "guestIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- isInvitable@
 isInvitable :: IsGKPlayer gkPlayer => gkPlayer -> IO Bool
@@ -114,6 +139,14 @@ anonymousGuestPlayerWithIdentifierSelector = mkSelector "anonymousGuestPlayerWit
 loadPhotoForSize_withCompletionHandlerSelector :: Selector
 loadPhotoForSize_withCompletionHandlerSelector = mkSelector "loadPhotoForSize:withCompletionHandler:"
 
+-- | @Selector@ for @gamePlayerID@
+gamePlayerIDSelector :: Selector
+gamePlayerIDSelector = mkSelector "gamePlayerID"
+
+-- | @Selector@ for @teamPlayerID@
+teamPlayerIDSelector :: Selector
+teamPlayerIDSelector = mkSelector "teamPlayerID"
+
 -- | @Selector@ for @displayName@
 displayNameSelector :: Selector
 displayNameSelector = mkSelector "displayName"
@@ -121,6 +154,10 @@ displayNameSelector = mkSelector "displayName"
 -- | @Selector@ for @alias@
 aliasSelector :: Selector
 aliasSelector = mkSelector "alias"
+
+-- | @Selector@ for @guestIdentifier@
+guestIdentifierSelector :: Selector
+guestIdentifierSelector = mkSelector "guestIdentifier"
 
 -- | @Selector@ for @isInvitable@
 isInvitableSelector :: Selector

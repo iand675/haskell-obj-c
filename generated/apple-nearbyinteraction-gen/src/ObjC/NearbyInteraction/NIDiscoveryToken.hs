@@ -10,8 +10,10 @@ module ObjC.NearbyInteraction.NIDiscoveryToken
   , IsNIDiscoveryToken(..)
   , init_
   , new
+  , deviceCapabilities
   , initSelector
   , newSelector
+  , deviceCapabilitiesSelector
 
 
   ) where
@@ -45,6 +47,15 @@ new  =
     cls' <- getRequiredClass "NIDiscoveryToken"
     sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | Get the protocol that describes nearby interaction capabilities of the device that generated this token.
+--
+-- Detailed description on the capability protocol is in NIDeviceCapability.h.
+--
+-- ObjC selector: @- deviceCapabilities@
+deviceCapabilities :: IsNIDiscoveryToken niDiscoveryToken => niDiscoveryToken -> IO RawId
+deviceCapabilities niDiscoveryToken  =
+    fmap (RawId . castPtr) $ sendMsg niDiscoveryToken (mkSelector "deviceCapabilities") (retPtr retVoid) []
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -56,4 +67,8 @@ initSelector = mkSelector "init"
 -- | @Selector@ for @new@
 newSelector :: Selector
 newSelector = mkSelector "new"
+
+-- | @Selector@ for @deviceCapabilities@
+deviceCapabilitiesSelector :: Selector
+deviceCapabilitiesSelector = mkSelector "deviceCapabilities"
 

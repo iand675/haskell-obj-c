@@ -49,12 +49,15 @@ module ObjC.MetalPerformanceShaders.MPSImage
   , initWithParentImage_sliceRange_featureChannels
   , initWithTexture_featureChannels
   , init_
+  , batchRepresentationWithSubRange
+  , batchRepresentation
   , subImageWithFeatureChannelRange
   , resourceSize
   , setPurgeableState
   , readBytes_dataLayout_imageIndex
   , writeBytes_dataLayout_imageIndex
   , synchronizeOnCommandBuffer
+  , device
   , width
   , height
   , featureChannels
@@ -65,6 +68,7 @@ module ObjC.MetalPerformanceShaders.MPSImage
   , usage
   , featureChannelFormat
   , pixelSize
+  , texture
   , label
   , setLabel
   , parent
@@ -73,12 +77,15 @@ module ObjC.MetalPerformanceShaders.MPSImage
   , initWithParentImage_sliceRange_featureChannelsSelector
   , initWithTexture_featureChannelsSelector
   , initSelector
+  , batchRepresentationWithSubRangeSelector
+  , batchRepresentationSelector
   , subImageWithFeatureChannelRangeSelector
   , resourceSizeSelector
   , setPurgeableStateSelector
   , readBytes_dataLayout_imageIndexSelector
   , writeBytes_dataLayout_imageIndexSelector
   , synchronizeOnCommandBufferSelector
+  , deviceSelector
   , widthSelector
   , heightSelector
   , featureChannelsSelector
@@ -89,6 +96,7 @@ module ObjC.MetalPerformanceShaders.MPSImage
   , usageSelector
   , featureChannelFormatSelector
   , pixelSizeSelector
+  , textureSelector
   , labelSelector
   , setLabelSelector
   , parentSelector
@@ -358,6 +366,38 @@ init_ :: IsMPSImage mpsImage => mpsImage -> IO (Id MPSImage)
 init_ mpsImage  =
     sendMsg mpsImage (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
 
+-- | Make a representation of a MPSImage (batch) as a MPSImageBatch
+--
+-- Before the MPSImageBatch was introduced, several images could be concatenated                  into a MPSImage as multiple image slices in a MTLTexture2DArray to make                  a image batch. If the image contained more than 4 feature channels, then each                  image would have round_up( feature channels / 4) slices and the total number                  of slices in the MPSImage would be slices * number of images.
+--
+-- Because many devices can operate on texture arrays of no more than 2048 slices,                  storage in this format is limited. For example in InceptionV3, 2048 feature                  channels at its widest point, the largest batch size that can be processed in                  this way is 4, well under commonly accepted practice for training. Consequently,                  the older batching style is deprecated and the MPSImageBatch is introduced.                  It is also easier to manage sub-batches and to concatenate sub-batches for                  memory management with the MPSImageBatch, so this format is favored going forward.
+--
+-- To facilitate forward migration, this method will prepare an array of MPSImages that                  each point to the appropriate set of slices in storage for the original image.                  Since they share storage, writes to the parent will alter the content of the                  children, and vice versa.
+--
+-- If the original is a temporary image, the result will be a temporary image.                  It will hold 1 readCount on the original. When the readCount drops to 0, it                  will decrement the appropriate counter on the parent.
+--
+-- This is a much cheaper form of the slice operator, and should be used instead                  when the slice operator does not need to operate out of place.
+--
+-- @subRange@ — The range of images in the original image from which the batch will be derived.
+--
+-- Returns: A MPSImageBatch referencing a subregion of the original batch image.
+--
+-- ObjC selector: @- batchRepresentationWithSubRange:@
+batchRepresentationWithSubRange :: IsMPSImage mpsImage => mpsImage -> NSRange -> IO RawId
+batchRepresentationWithSubRange mpsImage  subRange =
+    fmap (RawId . castPtr) $ sendMsg mpsImage (mkSelector "batchRepresentationWithSubRange:") (retPtr retVoid) [argNSRange subRange]
+
+-- | Make a MPSImageBatch that points to the individual images in the MPSImage
+--
+-- If the original is a temporary image, the result will be a temporary image.               It will hold 1 readCount on the original. When the readCount drops to 0, it               will decrement the appropriate counter on the parent.
+--
+-- Returns: A MPSImageBatch aliasing the texel storage in the original batch image
+--
+-- ObjC selector: @- batchRepresentation@
+batchRepresentation :: IsMPSImage mpsImage => mpsImage -> IO RawId
+batchRepresentation mpsImage  =
+    fmap (RawId . castPtr) $ sendMsg mpsImage (mkSelector "batchRepresentation") (retPtr retVoid) []
+
 -- | @- subImageWithFeatureChannelRange:@
 subImageWithFeatureChannelRange :: IsMPSImage mpsImage => mpsImage -> NSRange -> IO (Id MPSImage)
 subImageWithFeatureChannelRange mpsImage  range =
@@ -429,6 +469,15 @@ writeBytes_dataLayout_imageIndex mpsImage  dataBytes dataLayout imageIndex =
 synchronizeOnCommandBuffer :: IsMPSImage mpsImage => mpsImage -> RawId -> IO ()
 synchronizeOnCommandBuffer mpsImage  commandBuffer =
     sendMsg mpsImage (mkSelector "synchronizeOnCommandBuffer:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ())]
+
+-- | device
+--
+-- The device on which the MPSImage will be used
+--
+-- ObjC selector: @- device@
+device :: IsMPSImage mpsImage => mpsImage -> IO RawId
+device mpsImage  =
+    fmap (RawId . castPtr) $ sendMsg mpsImage (mkSelector "device") (retPtr retVoid) []
 
 -- | width
 --
@@ -524,6 +573,17 @@ pixelSize :: IsMPSImage mpsImage => mpsImage -> IO CULong
 pixelSize mpsImage  =
     sendMsg mpsImage (mkSelector "pixelSize") retCULong []
 
+-- | texture
+--
+-- The associated MTLTexture object.              This is a 2D texture if numberOfImages is 1 and number of feature channels <= 4.              It is a 2D texture array otherwise.
+--
+-- To avoid the high cost of premature allocation of the underlying texture, avoid calling this              property except when strictly necessary. [MPSCNNKernel encode...] calls typically cause              their arguments to become allocated. Likewise, MPSImages initialized with -initWithTexture:              featureChannels: have already been allocated.
+--
+-- ObjC selector: @- texture@
+texture :: IsMPSImage mpsImage => mpsImage -> IO RawId
+texture mpsImage  =
+    fmap (RawId . castPtr) $ sendMsg mpsImage (mkSelector "texture") (retPtr retVoid) []
+
 -- | label
 --
 -- A string to help identify this object.
@@ -576,6 +636,14 @@ initWithTexture_featureChannelsSelector = mkSelector "initWithTexture:featureCha
 initSelector :: Selector
 initSelector = mkSelector "init"
 
+-- | @Selector@ for @batchRepresentationWithSubRange:@
+batchRepresentationWithSubRangeSelector :: Selector
+batchRepresentationWithSubRangeSelector = mkSelector "batchRepresentationWithSubRange:"
+
+-- | @Selector@ for @batchRepresentation@
+batchRepresentationSelector :: Selector
+batchRepresentationSelector = mkSelector "batchRepresentation"
+
 -- | @Selector@ for @subImageWithFeatureChannelRange:@
 subImageWithFeatureChannelRangeSelector :: Selector
 subImageWithFeatureChannelRangeSelector = mkSelector "subImageWithFeatureChannelRange:"
@@ -599,6 +667,10 @@ writeBytes_dataLayout_imageIndexSelector = mkSelector "writeBytes:dataLayout:ima
 -- | @Selector@ for @synchronizeOnCommandBuffer:@
 synchronizeOnCommandBufferSelector :: Selector
 synchronizeOnCommandBufferSelector = mkSelector "synchronizeOnCommandBuffer:"
+
+-- | @Selector@ for @device@
+deviceSelector :: Selector
+deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @width@
 widthSelector :: Selector
@@ -639,6 +711,10 @@ featureChannelFormatSelector = mkSelector "featureChannelFormat"
 -- | @Selector@ for @pixelSize@
 pixelSizeSelector :: Selector
 pixelSizeSelector = mkSelector "pixelSize"
+
+-- | @Selector@ for @texture@
+textureSelector :: Selector
+textureSelector = mkSelector "texture"
 
 -- | @Selector@ for @label@
 labelSelector :: Selector

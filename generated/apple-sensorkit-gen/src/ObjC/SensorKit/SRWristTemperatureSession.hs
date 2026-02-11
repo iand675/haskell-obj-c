@@ -11,11 +11,13 @@ module ObjC.SensorKit.SRWristTemperatureSession
   , startDate
   , duration
   , version
+  , temperatures
   , initSelector
   , newSelector
   , startDateSelector
   , durationSelector
   , versionSelector
+  , temperaturesSelector
 
 
   ) where
@@ -74,6 +76,15 @@ version :: IsSRWristTemperatureSession srWristTemperatureSession => srWristTempe
 version srWristTemperatureSession  =
     sendMsg srWristTemperatureSession (mkSelector "version") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | temperatures
+--
+-- Enumerator which could be used to view calculated wrist temperatures, along with their reading accuracy.
+--
+-- ObjC selector: @- temperatures@
+temperatures :: IsSRWristTemperatureSession srWristTemperatureSession => srWristTemperatureSession -> IO (Id NSEnumerator)
+temperatures srWristTemperatureSession  =
+    sendMsg srWristTemperatureSession (mkSelector "temperatures") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -97,4 +108,8 @@ durationSelector = mkSelector "duration"
 -- | @Selector@ for @version@
 versionSelector :: Selector
 versionSelector = mkSelector "version"
+
+-- | @Selector@ for @temperatures@
+temperaturesSelector :: Selector
+temperaturesSelector = mkSelector "temperatures"
 

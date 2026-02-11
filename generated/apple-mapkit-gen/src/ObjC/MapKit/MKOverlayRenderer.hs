@@ -8,6 +8,7 @@ module ObjC.MapKit.MKOverlayRenderer
   , IsMKOverlayRenderer(..)
   , initWithOverlay
   , setNeedsDisplay
+  , overlay
   , alpha
   , setAlpha
   , contentScaleFactor
@@ -15,6 +16,7 @@ module ObjC.MapKit.MKOverlayRenderer
   , setBlendMode
   , initWithOverlaySelector
   , setNeedsDisplaySelector
+  , overlaySelector
   , alphaSelector
   , setAlphaSelector
   , contentScaleFactorSelector
@@ -48,6 +50,11 @@ initWithOverlay mkOverlayRenderer  overlay =
 setNeedsDisplay :: IsMKOverlayRenderer mkOverlayRenderer => mkOverlayRenderer -> IO ()
 setNeedsDisplay mkOverlayRenderer  =
     sendMsg mkOverlayRenderer (mkSelector "setNeedsDisplay") retVoid []
+
+-- | @- overlay@
+overlay :: IsMKOverlayRenderer mkOverlayRenderer => mkOverlayRenderer -> IO RawId
+overlay mkOverlayRenderer  =
+    fmap (RawId . castPtr) $ sendMsg mkOverlayRenderer (mkSelector "overlay") (retPtr retVoid) []
 
 -- | @- alpha@
 alpha :: IsMKOverlayRenderer mkOverlayRenderer => mkOverlayRenderer -> IO CDouble
@@ -85,6 +92,10 @@ initWithOverlaySelector = mkSelector "initWithOverlay:"
 -- | @Selector@ for @setNeedsDisplay@
 setNeedsDisplaySelector :: Selector
 setNeedsDisplaySelector = mkSelector "setNeedsDisplay"
+
+-- | @Selector@ for @overlay@
+overlaySelector :: Selector
+overlaySelector = mkSelector "overlay"
 
 -- | @Selector@ for @alpha@
 alphaSelector :: Selector

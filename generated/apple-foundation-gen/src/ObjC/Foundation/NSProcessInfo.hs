@@ -37,6 +37,8 @@ module ObjC.Foundation.NSProcessInfo
   , iOSAppOnVision
   , lowPowerModeEnabled
   , thermalState
+  , userName
+  , fullUserName
   , operatingSystemSelector
   , operatingSystemNameSelector
   , disableSuddenTerminationSelector
@@ -67,6 +69,8 @@ module ObjC.Foundation.NSProcessInfo
   , iOSAppOnVisionSelector
   , lowPowerModeEnabledSelector
   , thermalStateSelector
+  , userNameSelector
+  , fullUserNameSelector
 
   -- * Enum types
   , NSActivityOptions(NSActivityOptions)
@@ -262,6 +266,16 @@ thermalState :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO NSProcessIn
 thermalState nsProcessInfo  =
     fmap (coerce :: CLong -> NSProcessInfoThermalState) $ sendMsg nsProcessInfo (mkSelector "thermalState") retCLong []
 
+-- | @- userName@
+userName :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO (Id NSString)
+userName nsProcessInfo  =
+    sendMsg nsProcessInfo (mkSelector "userName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- fullUserName@
+fullUserName :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO (Id NSString)
+fullUserName nsProcessInfo  =
+    sendMsg nsProcessInfo (mkSelector "fullUserName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
@@ -385,4 +399,12 @@ lowPowerModeEnabledSelector = mkSelector "lowPowerModeEnabled"
 -- | @Selector@ for @thermalState@
 thermalStateSelector :: Selector
 thermalStateSelector = mkSelector "thermalState"
+
+-- | @Selector@ for @userName@
+userNameSelector :: Selector
+userNameSelector = mkSelector "userName"
+
+-- | @Selector@ for @fullUserName@
+fullUserNameSelector :: Selector
+fullUserNameSelector = mkSelector "fullUserName"
 

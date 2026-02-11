@@ -49,10 +49,18 @@ module ObjC.Foundation.NSProgress
   , userInfo
   , kind
   , setKind
+  , estimatedTimeRemaining
+  , setEstimatedTimeRemaining
+  , throughput
+  , setThroughput
   , fileOperationKind
   , setFileOperationKind
   , fileURL
   , setFileURL
+  , fileTotalCount
+  , setFileTotalCount
+  , fileCompletedCount
+  , setFileCompletedCount
   , old
   , currentProgressSelector
   , progressWithTotalUnitCountSelector
@@ -97,10 +105,18 @@ module ObjC.Foundation.NSProgress
   , userInfoSelector
   , kindSelector
   , setKindSelector
+  , estimatedTimeRemainingSelector
+  , setEstimatedTimeRemainingSelector
+  , throughputSelector
+  , setThroughputSelector
   , fileOperationKindSelector
   , setFileOperationKindSelector
   , fileURLSelector
   , setFileURLSelector
+  , fileTotalCountSelector
+  , setFileTotalCountSelector
+  , fileCompletedCountSelector
+  , setFileCompletedCountSelector
   , oldSelector
 
 
@@ -356,6 +372,28 @@ setKind nsProgress  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsProgress (mkSelector "setKind:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | @- estimatedTimeRemaining@
+estimatedTimeRemaining :: IsNSProgress nsProgress => nsProgress -> IO (Id NSNumber)
+estimatedTimeRemaining nsProgress  =
+    sendMsg nsProgress (mkSelector "estimatedTimeRemaining") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setEstimatedTimeRemaining:@
+setEstimatedTimeRemaining :: (IsNSProgress nsProgress, IsNSNumber value) => nsProgress -> value -> IO ()
+setEstimatedTimeRemaining nsProgress  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsProgress (mkSelector "setEstimatedTimeRemaining:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- throughput@
+throughput :: IsNSProgress nsProgress => nsProgress -> IO (Id NSNumber)
+throughput nsProgress  =
+    sendMsg nsProgress (mkSelector "throughput") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setThroughput:@
+setThroughput :: (IsNSProgress nsProgress, IsNSNumber value) => nsProgress -> value -> IO ()
+setThroughput nsProgress  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsProgress (mkSelector "setThroughput:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | @- fileOperationKind@
 fileOperationKind :: IsNSProgress nsProgress => nsProgress -> IO (Id NSString)
 fileOperationKind nsProgress  =
@@ -377,6 +415,28 @@ setFileURL :: (IsNSProgress nsProgress, IsNSURL value) => nsProgress -> value ->
 setFileURL nsProgress  value =
   withObjCPtr value $ \raw_value ->
       sendMsg nsProgress (mkSelector "setFileURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- fileTotalCount@
+fileTotalCount :: IsNSProgress nsProgress => nsProgress -> IO (Id NSNumber)
+fileTotalCount nsProgress  =
+    sendMsg nsProgress (mkSelector "fileTotalCount") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setFileTotalCount:@
+setFileTotalCount :: (IsNSProgress nsProgress, IsNSNumber value) => nsProgress -> value -> IO ()
+setFileTotalCount nsProgress  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsProgress (mkSelector "setFileTotalCount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | @- fileCompletedCount@
+fileCompletedCount :: IsNSProgress nsProgress => nsProgress -> IO (Id NSNumber)
+fileCompletedCount nsProgress  =
+    sendMsg nsProgress (mkSelector "fileCompletedCount") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | @- setFileCompletedCount:@
+setFileCompletedCount :: (IsNSProgress nsProgress, IsNSNumber value) => nsProgress -> value -> IO ()
+setFileCompletedCount nsProgress  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nsProgress (mkSelector "setFileCompletedCount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | @- old@
 old :: IsNSProgress nsProgress => nsProgress -> IO Bool
@@ -559,6 +619,22 @@ kindSelector = mkSelector "kind"
 setKindSelector :: Selector
 setKindSelector = mkSelector "setKind:"
 
+-- | @Selector@ for @estimatedTimeRemaining@
+estimatedTimeRemainingSelector :: Selector
+estimatedTimeRemainingSelector = mkSelector "estimatedTimeRemaining"
+
+-- | @Selector@ for @setEstimatedTimeRemaining:@
+setEstimatedTimeRemainingSelector :: Selector
+setEstimatedTimeRemainingSelector = mkSelector "setEstimatedTimeRemaining:"
+
+-- | @Selector@ for @throughput@
+throughputSelector :: Selector
+throughputSelector = mkSelector "throughput"
+
+-- | @Selector@ for @setThroughput:@
+setThroughputSelector :: Selector
+setThroughputSelector = mkSelector "setThroughput:"
+
 -- | @Selector@ for @fileOperationKind@
 fileOperationKindSelector :: Selector
 fileOperationKindSelector = mkSelector "fileOperationKind"
@@ -574,6 +650,22 @@ fileURLSelector = mkSelector "fileURL"
 -- | @Selector@ for @setFileURL:@
 setFileURLSelector :: Selector
 setFileURLSelector = mkSelector "setFileURL:"
+
+-- | @Selector@ for @fileTotalCount@
+fileTotalCountSelector :: Selector
+fileTotalCountSelector = mkSelector "fileTotalCount"
+
+-- | @Selector@ for @setFileTotalCount:@
+setFileTotalCountSelector :: Selector
+setFileTotalCountSelector = mkSelector "setFileTotalCount:"
+
+-- | @Selector@ for @fileCompletedCount@
+fileCompletedCountSelector :: Selector
+fileCompletedCountSelector = mkSelector "fileCompletedCount"
+
+-- | @Selector@ for @setFileCompletedCount:@
+setFileCompletedCountSelector :: Selector
+setFileCompletedCountSelector = mkSelector "setFileCompletedCount:"
 
 -- | @Selector@ for @old@
 oldSelector :: Selector

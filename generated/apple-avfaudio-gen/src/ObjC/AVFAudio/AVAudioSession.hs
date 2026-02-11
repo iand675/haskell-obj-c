@@ -38,9 +38,11 @@ module ObjC.AVFAudio.AVAudioSession
   , setActive_error
   , setActive_withOptions_error
   , activateWithOptions_completionHandler
+  , availableCategories
   , category
   , categoryOptions
   , routeSharingPolicy
+  , availableModes
   , mode
   , allowHapticsAndSystemSoundsDuringRecording
   , recordPermission
@@ -51,6 +53,8 @@ module ObjC.AVFAudio.AVAudioSession
   , isEchoCancelledInputEnabled
   , isEchoCancelledInputAvailable
   , outputMuted
+  , delegate
+  , setDelegate
   , inputIsAvailable
   , currentHardwareSampleRate
   , currentHardwareInputNumberOfChannels
@@ -58,6 +62,8 @@ module ObjC.AVFAudio.AVAudioSession
   , preferredHardwareSampleRate
   , preferredMicrophoneInjectionMode
   , isMicrophoneInjectionAvailable
+  , availableInputs
+  , currentRoute
   , supportsMultichannelContent
   , prefersInterruptionOnRouteDisconnect
   , otherAudioPlaying
@@ -75,6 +81,10 @@ module ObjC.AVFAudio.AVAudioSession
   , inputGain
   , inputGainSettable
   , inputAvailable
+  , inputDataSources
+  , inputDataSource
+  , outputDataSources
+  , outputDataSource
   , sampleRate
   , inputNumberOfChannels
   , outputNumberOfChannels
@@ -113,9 +123,11 @@ module ObjC.AVFAudio.AVAudioSession
   , setActive_errorSelector
   , setActive_withOptions_errorSelector
   , activateWithOptions_completionHandlerSelector
+  , availableCategoriesSelector
   , categorySelector
   , categoryOptionsSelector
   , routeSharingPolicySelector
+  , availableModesSelector
   , modeSelector
   , allowHapticsAndSystemSoundsDuringRecordingSelector
   , recordPermissionSelector
@@ -126,6 +138,8 @@ module ObjC.AVFAudio.AVAudioSession
   , isEchoCancelledInputEnabledSelector
   , isEchoCancelledInputAvailableSelector
   , outputMutedSelector
+  , delegateSelector
+  , setDelegateSelector
   , inputIsAvailableSelector
   , currentHardwareSampleRateSelector
   , currentHardwareInputNumberOfChannelsSelector
@@ -133,6 +147,8 @@ module ObjC.AVFAudio.AVAudioSession
   , preferredHardwareSampleRateSelector
   , preferredMicrophoneInjectionModeSelector
   , isMicrophoneInjectionAvailableSelector
+  , availableInputsSelector
+  , currentRouteSelector
   , supportsMultichannelContentSelector
   , prefersInterruptionOnRouteDisconnectSelector
   , otherAudioPlayingSelector
@@ -150,6 +166,10 @@ module ObjC.AVFAudio.AVAudioSession
   , inputGainSelector
   , inputGainSettableSelector
   , inputAvailableSelector
+  , inputDataSourcesSelector
+  , inputDataSourceSelector
+  , outputDataSourcesSelector
+  , outputDataSourceSelector
   , sampleRateSelector
   , inputNumberOfChannelsSelector
   , outputNumberOfChannelsSelector
@@ -524,6 +544,13 @@ activateWithOptions_completionHandler :: IsAVAudioSession avAudioSession => avAu
 activateWithOptions_completionHandler avAudioSession  options handler =
     sendMsg avAudioSession (mkSelector "activateWithOptions:completionHandler:") retVoid [argCULong (coerce options), argPtr (castPtr handler :: Ptr ())]
 
+-- | Get the list of categories available on the device.  Certain categories may be unavailable on particular devices.  For example, AVAudioSessionCategoryRecord will not be available on devices that have no support for audio input.
+--
+-- ObjC selector: @- availableCategories@
+availableCategories :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id NSArray)
+availableCategories avAudioSession  =
+    sendMsg avAudioSession (mkSelector "availableCategories") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Get session category. Examples: AVAudioSessionCategoryRecord, AVAudioSessionCategoryPlayAndRecord, etc.
 --
 -- ObjC selector: @- category@
@@ -546,6 +573,13 @@ categoryOptions avAudioSession  =
 routeSharingPolicy :: IsAVAudioSession avAudioSession => avAudioSession -> IO AVAudioSessionRouteSharingPolicy
 routeSharingPolicy avAudioSession  =
     fmap (coerce :: CULong -> AVAudioSessionRouteSharingPolicy) $ sendMsg avAudioSession (mkSelector "routeSharingPolicy") retCULong []
+
+-- | Get the list of modes available on the device.  Certain modes may be unavailable on particular devices.  For example, AVAudioSessionModeVideoRecording will not be available on devices that have no support for recording video.
+--
+-- ObjC selector: @- availableModes@
+availableModes :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id NSArray)
+availableModes avAudioSession  =
+    sendMsg avAudioSession (mkSelector "availableModes") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | Get the session's mode.
 --
@@ -615,6 +649,16 @@ outputMuted :: IsAVAudioSession avAudioSession => avAudioSession -> IO Bool
 outputMuted avAudioSession  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "outputMuted") retCULong []
 
+-- | @- delegate@
+delegate :: IsAVAudioSession avAudioSession => avAudioSession -> IO RawId
+delegate avAudioSession  =
+    fmap (RawId . castPtr) $ sendMsg avAudioSession (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsAVAudioSession avAudioSession => avAudioSession -> RawId -> IO ()
+setDelegate avAudioSession  value =
+    sendMsg avAudioSession (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- inputIsAvailable@
 inputIsAvailable :: IsAVAudioSession avAudioSession => avAudioSession -> IO Bool
 inputIsAvailable avAudioSession  =
@@ -651,6 +695,24 @@ preferredMicrophoneInjectionMode avAudioSession  =
 isMicrophoneInjectionAvailable :: IsAVAudioSession avAudioSession => avAudioSession -> IO Bool
 isMicrophoneInjectionAvailable avAudioSession  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "isMicrophoneInjectionAvailable") retCULong []
+
+-- | Get the set of input ports that are available for routing.
+--
+-- Note that this property only applies to the session's current category and mode. For    example, if the session's current category is AVAudioSessionCategoryPlayback, there will be    no available inputs.
+--
+-- On iOS, clients can listen to AVAudioSessionAvailableInputsChangeNotification to	be notified when this changes.
+--
+-- ObjC selector: @- availableInputs@
+availableInputs :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id NSArray)
+availableInputs avAudioSession  =
+    sendMsg avAudioSession (mkSelector "availableInputs") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | A description of the current route, consisting of zero or more input ports and zero or more output ports
+--
+-- ObjC selector: @- currentRoute@
+currentRoute :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id AVAudioSessionRouteDescription)
+currentRoute avAudioSession  =
+    sendMsg avAudioSession (mkSelector "currentRoute") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | @- supportsMultichannelContent@
 supportsMultichannelContent :: IsAVAudioSession avAudioSession => avAudioSession -> IO Bool
@@ -762,6 +824,38 @@ inputGainSettable avAudioSession  =
 inputAvailable :: IsAVAudioSession avAudioSession => avAudioSession -> IO Bool
 inputAvailable avAudioSession  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "inputAvailable") retCULong []
+
+-- | DataSource methods are for use with routes that support input or output data source	selection.
+--
+-- If the attached accessory supports data source selection, the data source properties/methods	provide for discovery and selection of input and/or output data sources. Note that the	properties and methods for data source selection below are equivalent to the properties and	methods on AVAudioSessionPortDescription. The methods below only apply to the currently routed	ports.
+--
+-- Key-value observable.
+--
+-- ObjC selector: @- inputDataSources@
+inputDataSources :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id NSArray)
+inputDataSources avAudioSession  =
+    sendMsg avAudioSession (mkSelector "inputDataSources") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Obtain the currently selected input data source.  Will be nil if no data sources are available.
+--
+-- ObjC selector: @- inputDataSource@
+inputDataSource :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id AVAudioSessionDataSourceDescription)
+inputDataSource avAudioSession  =
+    sendMsg avAudioSession (mkSelector "inputDataSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | See inputDataSources for background. Key-value observable.
+--
+-- ObjC selector: @- outputDataSources@
+outputDataSources :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id NSArray)
+outputDataSources avAudioSession  =
+    sendMsg avAudioSession (mkSelector "outputDataSources") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Obtain the currently selected output data source.  Will be nil if no data sources are available.
+--
+-- ObjC selector: @- outputDataSource@
+outputDataSource :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id AVAudioSessionDataSourceDescription)
+outputDataSource avAudioSession  =
+    sendMsg avAudioSession (mkSelector "outputDataSource") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | The current hardware sample rate. Is key-value observable (starting iOS 18.0).
 --
@@ -940,6 +1034,10 @@ setActive_withOptions_errorSelector = mkSelector "setActive:withOptions:error:"
 activateWithOptions_completionHandlerSelector :: Selector
 activateWithOptions_completionHandlerSelector = mkSelector "activateWithOptions:completionHandler:"
 
+-- | @Selector@ for @availableCategories@
+availableCategoriesSelector :: Selector
+availableCategoriesSelector = mkSelector "availableCategories"
+
 -- | @Selector@ for @category@
 categorySelector :: Selector
 categorySelector = mkSelector "category"
@@ -951,6 +1049,10 @@ categoryOptionsSelector = mkSelector "categoryOptions"
 -- | @Selector@ for @routeSharingPolicy@
 routeSharingPolicySelector :: Selector
 routeSharingPolicySelector = mkSelector "routeSharingPolicy"
+
+-- | @Selector@ for @availableModes@
+availableModesSelector :: Selector
+availableModesSelector = mkSelector "availableModes"
 
 -- | @Selector@ for @mode@
 modeSelector :: Selector
@@ -992,6 +1094,14 @@ isEchoCancelledInputAvailableSelector = mkSelector "isEchoCancelledInputAvailabl
 outputMutedSelector :: Selector
 outputMutedSelector = mkSelector "outputMuted"
 
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
+
 -- | @Selector@ for @inputIsAvailable@
 inputIsAvailableSelector :: Selector
 inputIsAvailableSelector = mkSelector "inputIsAvailable"
@@ -1019,6 +1129,14 @@ preferredMicrophoneInjectionModeSelector = mkSelector "preferredMicrophoneInject
 -- | @Selector@ for @isMicrophoneInjectionAvailable@
 isMicrophoneInjectionAvailableSelector :: Selector
 isMicrophoneInjectionAvailableSelector = mkSelector "isMicrophoneInjectionAvailable"
+
+-- | @Selector@ for @availableInputs@
+availableInputsSelector :: Selector
+availableInputsSelector = mkSelector "availableInputs"
+
+-- | @Selector@ for @currentRoute@
+currentRouteSelector :: Selector
+currentRouteSelector = mkSelector "currentRoute"
 
 -- | @Selector@ for @supportsMultichannelContent@
 supportsMultichannelContentSelector :: Selector
@@ -1087,6 +1205,22 @@ inputGainSettableSelector = mkSelector "inputGainSettable"
 -- | @Selector@ for @inputAvailable@
 inputAvailableSelector :: Selector
 inputAvailableSelector = mkSelector "inputAvailable"
+
+-- | @Selector@ for @inputDataSources@
+inputDataSourcesSelector :: Selector
+inputDataSourcesSelector = mkSelector "inputDataSources"
+
+-- | @Selector@ for @inputDataSource@
+inputDataSourceSelector :: Selector
+inputDataSourceSelector = mkSelector "inputDataSource"
+
+-- | @Selector@ for @outputDataSources@
+outputDataSourcesSelector :: Selector
+outputDataSourcesSelector = mkSelector "outputDataSources"
+
+-- | @Selector@ for @outputDataSource@
+outputDataSourceSelector :: Selector
+outputDataSourceSelector = mkSelector "outputDataSource"
 
 -- | @Selector@ for @sampleRate@
 sampleRateSelector :: Selector

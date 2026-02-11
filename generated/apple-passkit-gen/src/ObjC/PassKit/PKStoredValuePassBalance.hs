@@ -9,12 +9,14 @@ module ObjC.PassKit.PKStoredValuePassBalance
   , init_
   , new
   , isEqualToBalance
+  , amount
   , currencyCode
   , balanceType
   , expiryDate
   , initSelector
   , newSelector
   , isEqualToBalanceSelector
+  , amountSelector
   , currencyCodeSelector
   , balanceTypeSelector
   , expiryDateSelector
@@ -55,6 +57,11 @@ isEqualToBalance pkStoredValuePassBalance  balance =
   withObjCPtr balance $ \raw_balance ->
       fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkStoredValuePassBalance (mkSelector "isEqualToBalance:") retCULong [argPtr (castPtr raw_balance :: Ptr ())]
 
+-- | @- amount@
+amount :: IsPKStoredValuePassBalance pkStoredValuePassBalance => pkStoredValuePassBalance -> IO (Id NSDecimalNumber)
+amount pkStoredValuePassBalance  =
+    sendMsg pkStoredValuePassBalance (mkSelector "amount") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | @- currencyCode@
 currencyCode :: IsPKStoredValuePassBalance pkStoredValuePassBalance => pkStoredValuePassBalance -> IO (Id NSString)
 currencyCode pkStoredValuePassBalance  =
@@ -85,6 +92,10 @@ newSelector = mkSelector "new"
 -- | @Selector@ for @isEqualToBalance:@
 isEqualToBalanceSelector :: Selector
 isEqualToBalanceSelector = mkSelector "isEqualToBalance:"
+
+-- | @Selector@ for @amount@
+amountSelector :: Selector
+amountSelector = mkSelector "amount"
 
 -- | @Selector@ for @currencyCode@
 currencyCodeSelector :: Selector

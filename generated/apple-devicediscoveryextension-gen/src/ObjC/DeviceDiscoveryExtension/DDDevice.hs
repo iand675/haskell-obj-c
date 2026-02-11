@@ -17,6 +17,8 @@ module ObjC.DeviceDiscoveryExtension.DDDevice
   , setBluetoothIdentifier
   , category
   , setCategory
+  , displayImageName
+  , setDisplayImageName
   , displayName
   , setDisplayName
   , identifier
@@ -35,12 +37,22 @@ module ObjC.DeviceDiscoveryExtension.DDDevice
   , setProtocolType
   , state
   , setState
+  , ssid
+  , setSSID
   , supportsGrouping
   , setSupportsGrouping
+  , txtRecordData
+  , setTxtRecordData
   , url
   , setUrl
+  , wifiAwareServiceName
+  , setWifiAwareServiceName
   , wifiAwareServiceRole
   , setWifiAwareServiceRole
+  , wifiAwareModelName
+  , setWifiAwareModelName
+  , wifiAwareVendorName
+  , setWifiAwareVendorName
   , initSelector
   , initWithDisplayName_category_protocolType_identifierSelector
   , deviceSupportsSelector
@@ -49,6 +61,8 @@ module ObjC.DeviceDiscoveryExtension.DDDevice
   , setBluetoothIdentifierSelector
   , categorySelector
   , setCategorySelector
+  , displayImageNameSelector
+  , setDisplayImageNameSelector
   , displayNameSelector
   , setDisplayNameSelector
   , identifierSelector
@@ -67,12 +81,22 @@ module ObjC.DeviceDiscoveryExtension.DDDevice
   , setProtocolTypeSelector
   , stateSelector
   , setStateSelector
+  , ssidSelector
+  , setSSIDSelector
   , supportsGroupingSelector
   , setSupportsGroupingSelector
+  , txtRecordDataSelector
+  , setTxtRecordDataSelector
   , urlSelector
   , setUrlSelector
+  , wifiAwareServiceNameSelector
+  , setWifiAwareServiceNameSelector
   , wifiAwareServiceRoleSelector
   , setWifiAwareServiceRoleSelector
+  , wifiAwareModelNameSelector
+  , setWifiAwareModelNameSelector
+  , wifiAwareVendorNameSelector
+  , setWifiAwareVendorNameSelector
 
   -- * Enum types
   , DDDeviceCategory(DDDeviceCategory)
@@ -180,6 +204,21 @@ category ddDevice  =
 setCategory :: IsDDDevice ddDevice => ddDevice -> DDDeviceCategory -> IO ()
 setCategory ddDevice  value =
     sendMsg ddDevice (mkSelector "setCategory:") retVoid [argCLong (coerce value)]
+
+-- | Device's custom asset for product image name in the main App bundle.
+--
+-- ObjC selector: @- displayImageName@
+displayImageName :: IsDDDevice ddDevice => ddDevice -> IO (Id NSString)
+displayImageName ddDevice  =
+    sendMsg ddDevice (mkSelector "displayImageName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Device's custom asset for product image name in the main App bundle.
+--
+-- ObjC selector: @- setDisplayImageName:@
+setDisplayImageName :: (IsDDDevice ddDevice, IsNSString value) => ddDevice -> value -> IO ()
+setDisplayImageName ddDevice  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg ddDevice (mkSelector "setDisplayImageName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | Name of the device. Should be suitable for displaying to a user.
 --
@@ -313,6 +352,21 @@ setState :: IsDDDevice ddDevice => ddDevice -> DDDeviceState -> IO ()
 setState ddDevice  value =
     sendMsg ddDevice (mkSelector "setState:") retVoid [argCLong (coerce value)]
 
+-- | Device's WiFi Hotspot SSID.
+--
+-- ObjC selector: @- SSID@
+ssid :: IsDDDevice ddDevice => ddDevice -> IO (Id NSString)
+ssid ddDevice  =
+    sendMsg ddDevice (mkSelector "SSID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Device's WiFi Hotspot SSID.
+--
+-- ObjC selector: @- setSSID:@
+setSSID :: (IsDDDevice ddDevice, IsNSString value) => ddDevice -> value -> IO ()
+setSSID ddDevice  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg ddDevice (mkSelector "setSSID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | Whether the device supports grouping with other devices with the same protocol.
 --
 -- ObjC selector: @- supportsGrouping@
@@ -326,6 +380,21 @@ supportsGrouping ddDevice  =
 setSupportsGrouping :: IsDDDevice ddDevice => ddDevice -> Bool -> IO ()
 setSupportsGrouping ddDevice  value =
     sendMsg ddDevice (mkSelector "setSupportsGrouping:") retVoid [argCULong (if value then 1 else 0)]
+
+-- | TXT record of the device.
+--
+-- ObjC selector: @- txtRecordData@
+txtRecordData :: IsDDDevice ddDevice => ddDevice -> IO (Id NSData)
+txtRecordData ddDevice  =
+    sendMsg ddDevice (mkSelector "txtRecordData") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | TXT record of the device.
+--
+-- ObjC selector: @- setTxtRecordData:@
+setTxtRecordData :: (IsDDDevice ddDevice, IsNSData value) => ddDevice -> value -> IO ()
+setTxtRecordData ddDevice  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg ddDevice (mkSelector "setTxtRecordData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- | URL used for SSDP connection. The URL must have a valid hostname, no query parameters, and a maximum size of 100 bytes.
 --
@@ -342,6 +411,21 @@ setUrl ddDevice  value =
   withObjCPtr value $ \raw_value ->
       sendMsg ddDevice (mkSelector "setUrl:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
+-- | Device's Wi-Fi Aware's service name.
+--
+-- ObjC selector: @- wifiAwareServiceName@
+wifiAwareServiceName :: IsDDDevice ddDevice => ddDevice -> IO (Id NSString)
+wifiAwareServiceName ddDevice  =
+    sendMsg ddDevice (mkSelector "wifiAwareServiceName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Device's Wi-Fi Aware's service name.
+--
+-- ObjC selector: @- setWifiAwareServiceName:@
+setWifiAwareServiceName :: (IsDDDevice ddDevice, IsNSString value) => ddDevice -> value -> IO ()
+setWifiAwareServiceName ddDevice  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg ddDevice (mkSelector "setWifiAwareServiceName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | Device's Wi-Fi Aware's service. Default is @DDDeviceWiFiAwareServiceRoleSubscriber@
 --
 -- ObjC selector: @- wifiAwareServiceRole@
@@ -355,6 +439,36 @@ wifiAwareServiceRole ddDevice  =
 setWifiAwareServiceRole :: IsDDDevice ddDevice => ddDevice -> DDDeviceWiFiAwareServiceRole -> IO ()
 setWifiAwareServiceRole ddDevice  value =
     sendMsg ddDevice (mkSelector "setWifiAwareServiceRole:") retVoid [argCLong (coerce value)]
+
+-- | Device's Wi-Fi Aware model name.
+--
+-- ObjC selector: @- wifiAwareModelName@
+wifiAwareModelName :: IsDDDevice ddDevice => ddDevice -> IO (Id NSString)
+wifiAwareModelName ddDevice  =
+    sendMsg ddDevice (mkSelector "wifiAwareModelName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Device's Wi-Fi Aware model name.
+--
+-- ObjC selector: @- setWifiAwareModelName:@
+setWifiAwareModelName :: (IsDDDevice ddDevice, IsNSString value) => ddDevice -> value -> IO ()
+setWifiAwareModelName ddDevice  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg ddDevice (mkSelector "setWifiAwareModelName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | Device's Wi-Fi Aware vendor name.
+--
+-- ObjC selector: @- wifiAwareVendorName@
+wifiAwareVendorName :: IsDDDevice ddDevice => ddDevice -> IO (Id NSString)
+wifiAwareVendorName ddDevice  =
+    sendMsg ddDevice (mkSelector "wifiAwareVendorName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | Device's Wi-Fi Aware vendor name.
+--
+-- ObjC selector: @- setWifiAwareVendorName:@
+setWifiAwareVendorName :: (IsDDDevice ddDevice, IsNSString value) => ddDevice -> value -> IO ()
+setWifiAwareVendorName ddDevice  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg ddDevice (mkSelector "setWifiAwareVendorName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
 
 -- ---------------------------------------------------------------------------
 -- Selectors
@@ -391,6 +505,14 @@ categorySelector = mkSelector "category"
 -- | @Selector@ for @setCategory:@
 setCategorySelector :: Selector
 setCategorySelector = mkSelector "setCategory:"
+
+-- | @Selector@ for @displayImageName@
+displayImageNameSelector :: Selector
+displayImageNameSelector = mkSelector "displayImageName"
+
+-- | @Selector@ for @setDisplayImageName:@
+setDisplayImageNameSelector :: Selector
+setDisplayImageNameSelector = mkSelector "setDisplayImageName:"
 
 -- | @Selector@ for @displayName@
 displayNameSelector :: Selector
@@ -464,6 +586,14 @@ stateSelector = mkSelector "state"
 setStateSelector :: Selector
 setStateSelector = mkSelector "setState:"
 
+-- | @Selector@ for @SSID@
+ssidSelector :: Selector
+ssidSelector = mkSelector "SSID"
+
+-- | @Selector@ for @setSSID:@
+setSSIDSelector :: Selector
+setSSIDSelector = mkSelector "setSSID:"
+
 -- | @Selector@ for @supportsGrouping@
 supportsGroupingSelector :: Selector
 supportsGroupingSelector = mkSelector "supportsGrouping"
@@ -471,6 +601,14 @@ supportsGroupingSelector = mkSelector "supportsGrouping"
 -- | @Selector@ for @setSupportsGrouping:@
 setSupportsGroupingSelector :: Selector
 setSupportsGroupingSelector = mkSelector "setSupportsGrouping:"
+
+-- | @Selector@ for @txtRecordData@
+txtRecordDataSelector :: Selector
+txtRecordDataSelector = mkSelector "txtRecordData"
+
+-- | @Selector@ for @setTxtRecordData:@
+setTxtRecordDataSelector :: Selector
+setTxtRecordDataSelector = mkSelector "setTxtRecordData:"
 
 -- | @Selector@ for @url@
 urlSelector :: Selector
@@ -480,6 +618,14 @@ urlSelector = mkSelector "url"
 setUrlSelector :: Selector
 setUrlSelector = mkSelector "setUrl:"
 
+-- | @Selector@ for @wifiAwareServiceName@
+wifiAwareServiceNameSelector :: Selector
+wifiAwareServiceNameSelector = mkSelector "wifiAwareServiceName"
+
+-- | @Selector@ for @setWifiAwareServiceName:@
+setWifiAwareServiceNameSelector :: Selector
+setWifiAwareServiceNameSelector = mkSelector "setWifiAwareServiceName:"
+
 -- | @Selector@ for @wifiAwareServiceRole@
 wifiAwareServiceRoleSelector :: Selector
 wifiAwareServiceRoleSelector = mkSelector "wifiAwareServiceRole"
@@ -487,4 +633,20 @@ wifiAwareServiceRoleSelector = mkSelector "wifiAwareServiceRole"
 -- | @Selector@ for @setWifiAwareServiceRole:@
 setWifiAwareServiceRoleSelector :: Selector
 setWifiAwareServiceRoleSelector = mkSelector "setWifiAwareServiceRole:"
+
+-- | @Selector@ for @wifiAwareModelName@
+wifiAwareModelNameSelector :: Selector
+wifiAwareModelNameSelector = mkSelector "wifiAwareModelName"
+
+-- | @Selector@ for @setWifiAwareModelName:@
+setWifiAwareModelNameSelector :: Selector
+setWifiAwareModelNameSelector = mkSelector "setWifiAwareModelName:"
+
+-- | @Selector@ for @wifiAwareVendorName@
+wifiAwareVendorNameSelector :: Selector
+wifiAwareVendorNameSelector = mkSelector "wifiAwareVendorName"
+
+-- | @Selector@ for @setWifiAwareVendorName:@
+setWifiAwareVendorNameSelector :: Selector
+setWifiAwareVendorNameSelector = mkSelector "setWifiAwareVendorName:"
 

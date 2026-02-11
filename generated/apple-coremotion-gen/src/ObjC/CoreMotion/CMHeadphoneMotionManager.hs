@@ -13,6 +13,8 @@ module ObjC.CoreMotion.CMHeadphoneMotionManager
   , stopDeviceMotionUpdates
   , startConnectionStatusUpdates
   , stopConnectionStatusUpdates
+  , delegate
+  , setDelegate
   , connectionStatusActive
   , deviceMotionAvailable
   , deviceMotionActive
@@ -23,6 +25,8 @@ module ObjC.CoreMotion.CMHeadphoneMotionManager
   , stopDeviceMotionUpdatesSelector
   , startConnectionStatusUpdatesSelector
   , stopConnectionStatusUpdatesSelector
+  , delegateSelector
+  , setDelegateSelector
   , connectionStatusActiveSelector
   , deviceMotionAvailableSelector
   , deviceMotionActiveSelector
@@ -86,6 +90,16 @@ stopConnectionStatusUpdates :: IsCMHeadphoneMotionManager cmHeadphoneMotionManag
 stopConnectionStatusUpdates cmHeadphoneMotionManager  =
     sendMsg cmHeadphoneMotionManager (mkSelector "stopConnectionStatusUpdates") retVoid []
 
+-- | @- delegate@
+delegate :: IsCMHeadphoneMotionManager cmHeadphoneMotionManager => cmHeadphoneMotionManager -> IO RawId
+delegate cmHeadphoneMotionManager  =
+    fmap (RawId . castPtr) $ sendMsg cmHeadphoneMotionManager (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsCMHeadphoneMotionManager cmHeadphoneMotionManager => cmHeadphoneMotionManager -> RawId -> IO ()
+setDelegate cmHeadphoneMotionManager  value =
+    sendMsg cmHeadphoneMotionManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- connectionStatusActive@
 connectionStatusActive :: IsCMHeadphoneMotionManager cmHeadphoneMotionManager => cmHeadphoneMotionManager -> IO Bool
 connectionStatusActive cmHeadphoneMotionManager  =
@@ -133,6 +147,14 @@ startConnectionStatusUpdatesSelector = mkSelector "startConnectionStatusUpdates"
 -- | @Selector@ for @stopConnectionStatusUpdates@
 stopConnectionStatusUpdatesSelector :: Selector
 stopConnectionStatusUpdatesSelector = mkSelector "stopConnectionStatusUpdates"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @connectionStatusActive@
 connectionStatusActiveSelector :: Selector

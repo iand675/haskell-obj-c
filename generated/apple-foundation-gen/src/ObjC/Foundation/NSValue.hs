@@ -20,6 +20,7 @@ module ObjC.Foundation.NSValue
   , isEqualToValue
   , valueWithBytes_objCType
   , value_withObjCType
+  , objCType
   , pointValue
   , sizeValue
   , rectValue
@@ -41,6 +42,7 @@ module ObjC.Foundation.NSValue
   , isEqualToValueSelector
   , valueWithBytes_objCTypeSelector
   , value_withObjCTypeSelector
+  , objCTypeSelector
   , pointValueSelector
   , sizeValueSelector
   , rectValueSelector
@@ -157,6 +159,11 @@ value_withObjCType value type_ =
     cls' <- getRequiredClass "NSValue"
     sendClassMsg cls' (mkSelector "value:withObjCType:") (retPtr retVoid) [argPtr (unConst value), argPtr (unConst type_)] >>= retainedObject . castPtr
 
+-- | @- objCType@
+objCType :: IsNSValue nsValue => nsValue -> IO (Ptr CChar)
+objCType nsValue  =
+    fmap castPtr $ sendMsg nsValue (mkSelector "objCType") (retPtr retVoid) []
+
 -- | @- pointValue@
 pointValue :: IsNSValue nsValue => nsValue -> IO NSPoint
 pointValue nsValue  =
@@ -251,6 +258,10 @@ valueWithBytes_objCTypeSelector = mkSelector "valueWithBytes:objCType:"
 -- | @Selector@ for @value:withObjCType:@
 value_withObjCTypeSelector :: Selector
 value_withObjCTypeSelector = mkSelector "value:withObjCType:"
+
+-- | @Selector@ for @objCType@
+objCTypeSelector :: Selector
+objCTypeSelector = mkSelector "objCType"
 
 -- | @Selector@ for @pointValue@
 pointValueSelector :: Selector

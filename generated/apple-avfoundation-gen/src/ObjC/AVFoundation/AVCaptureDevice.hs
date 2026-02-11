@@ -46,7 +46,9 @@ module ObjC.AVFoundation.AVCaptureDevice
   , setPrimaryConstituentDeviceSwitchingBehavior_restrictedSwitchingBehaviorConditions
   , defaultDeviceWithDeviceType_mediaType_position
   , uniqueID
+  , modelID
   , localizedName
+  , manufacturer
   , transportType
   , connected
   , inUseByAnotherApplication
@@ -72,14 +74,18 @@ module ObjC.AVFoundation.AVCaptureDevice
   , smartFramingMonitor
   , dynamicAspectRatio
   , cinematicVideoCaptureSceneMonitoringStatuses
+  , spatialCaptureDiscomfortReasons
   , preferredMicrophoneMode
   , activeMicrophoneMode
+  , companionDeskViewCamera
   , continuityCamera
   , backgroundReplacementEnabled
   , backgroundReplacementActive
   , reactionEffectsEnabled
   , reactionEffectGesturesEnabled
   , canPerformReactionEffects
+  , availableReactionTypes
+  , reactionEffectsInProgress
   , portraitEffectEnabled
   , portraitEffectActive
   , centerStageControlMode
@@ -167,10 +173,20 @@ module ObjC.AVFoundation.AVCaptureDevice
   , flashMode
   , setFlashMode
   , virtualDevice
+  , constituentDevices
+  , virtualDeviceSwitchOverVideoZoomFactors
   , primaryConstituentDeviceSwitchingBehavior
   , primaryConstituentDeviceRestrictedSwitchingBehaviorConditions
   , activePrimaryConstituentDeviceSwitchingBehavior
   , activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions
+  , activePrimaryConstituentDevice
+  , supportedFallbackPrimaryConstituentDevices
+  , fallbackPrimaryConstituentDevices
+  , setFallbackPrimaryConstituentDevices
+  , systemPressureState
+  , userPreferredCamera
+  , setUserPreferredCamera
+  , systemPreferredCamera
   , deviceType
   , position
   , initSelector
@@ -204,7 +220,9 @@ module ObjC.AVFoundation.AVCaptureDevice
   , setPrimaryConstituentDeviceSwitchingBehavior_restrictedSwitchingBehaviorConditionsSelector
   , defaultDeviceWithDeviceType_mediaType_positionSelector
   , uniqueIDSelector
+  , modelIDSelector
   , localizedNameSelector
+  , manufacturerSelector
   , transportTypeSelector
   , connectedSelector
   , inUseByAnotherApplicationSelector
@@ -230,14 +248,18 @@ module ObjC.AVFoundation.AVCaptureDevice
   , smartFramingMonitorSelector
   , dynamicAspectRatioSelector
   , cinematicVideoCaptureSceneMonitoringStatusesSelector
+  , spatialCaptureDiscomfortReasonsSelector
   , preferredMicrophoneModeSelector
   , activeMicrophoneModeSelector
+  , companionDeskViewCameraSelector
   , continuityCameraSelector
   , backgroundReplacementEnabledSelector
   , backgroundReplacementActiveSelector
   , reactionEffectsEnabledSelector
   , reactionEffectGesturesEnabledSelector
   , canPerformReactionEffectsSelector
+  , availableReactionTypesSelector
+  , reactionEffectsInProgressSelector
   , portraitEffectEnabledSelector
   , portraitEffectActiveSelector
   , centerStageControlModeSelector
@@ -325,10 +347,20 @@ module ObjC.AVFoundation.AVCaptureDevice
   , flashModeSelector
   , setFlashModeSelector
   , virtualDeviceSelector
+  , constituentDevicesSelector
+  , virtualDeviceSwitchOverVideoZoomFactorsSelector
   , primaryConstituentDeviceSwitchingBehaviorSelector
   , primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsSelector
   , activePrimaryConstituentDeviceSwitchingBehaviorSelector
   , activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditionsSelector
+  , activePrimaryConstituentDeviceSelector
+  , supportedFallbackPrimaryConstituentDevicesSelector
+  , fallbackPrimaryConstituentDevicesSelector
+  , setFallbackPrimaryConstituentDevicesSelector
+  , systemPressureStateSelector
+  , userPreferredCameraSelector
+  , setUserPreferredCameraSelector
+  , systemPreferredCameraSelector
   , deviceTypeSelector
   , positionSelector
 
@@ -895,6 +927,17 @@ uniqueID :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSStr
 uniqueID avCaptureDevice  =
     sendMsg avCaptureDevice (mkSelector "uniqueID") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | modelID
+--
+-- The model ID of the receiver.
+--
+-- The value of this property is an identifier unique to all devices of the same model. The value is persistent across device connections and disconnections, and across different systems. For example, the model ID of the camera built in to two identical iPhone models will be the same even though they are different physical devices.
+--
+-- ObjC selector: @- modelID@
+modelID :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSString)
+modelID avCaptureDevice  =
+    sendMsg avCaptureDevice (mkSelector "modelID") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | localizedName
 --
 -- A localized human-readable name for the receiver.
@@ -905,6 +948,17 @@ uniqueID avCaptureDevice  =
 localizedName :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSString)
 localizedName avCaptureDevice  =
     sendMsg avCaptureDevice (mkSelector "localizedName") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | manufacturer
+--
+-- The human-readable manufacturer name for the receiver.
+--
+-- This property can be used to identify capture devices from a particular manufacturer. All Apple devices return "Apple Inc.". Devices from third party manufacturers may return an empty string.
+--
+-- ObjC selector: @- manufacturer@
+manufacturer :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSString)
+manufacturer avCaptureDevice  =
+    sendMsg avCaptureDevice (mkSelector "manufacturer") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | transportType
 --
@@ -1207,6 +1261,17 @@ cinematicVideoCaptureSceneMonitoringStatuses :: IsAVCaptureDevice avCaptureDevic
 cinematicVideoCaptureSceneMonitoringStatuses avCaptureDevice  =
     sendMsg avCaptureDevice (mkSelector "cinematicVideoCaptureSceneMonitoringStatuses") (retPtr retVoid) [] >>= retainedObject . castPtr
 
+-- | spatialCaptureDiscomfortReasons
+--
+-- Indicates whether or not the current environmental conditions are amenable to a spatial capture that is comfortable to view.
+--
+-- This property can be monitored in order to determine the presentation of UI elements to inform the user that they should reframe their scene for a more pleasing spatial capture ("subject is too close", "scene is too dark").
+--
+-- ObjC selector: @- spatialCaptureDiscomfortReasons@
+spatialCaptureDiscomfortReasons :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSSet)
+spatialCaptureDiscomfortReasons avCaptureDevice  =
+    sendMsg avCaptureDevice (mkSelector "spatialCaptureDiscomfortReasons") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | preferredMicrophoneMode
 --
 -- Indicates the microphone mode that has been selected by the user in Control Center.
@@ -1232,6 +1297,17 @@ activeMicrophoneMode  =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
     fmap (coerce :: CLong -> AVCaptureMicrophoneMode) $ sendClassMsg cls' (mkSelector "activeMicrophoneMode") retCLong []
+
+-- | companionDeskViewCamera
+--
+-- A reference to the Desk View Camera that is associated with and derived from this camera.
+--
+-- The companionDeskViewCamera property allows you to discover if the receiver has a paired Desk View Camera which derives its desk framing from the receiver's ultra wide frame. In the presence of multiple Continuity Cameras, this property allows you to pair a particular Continuity Camera with its associated Desk View Camera.
+--
+-- ObjC selector: @- companionDeskViewCamera@
+companionDeskViewCamera :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id AVCaptureDevice)
+companionDeskViewCamera avCaptureDevice  =
+    sendMsg avCaptureDevice (mkSelector "companionDeskViewCamera") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | continuityCamera
 --
@@ -1302,6 +1378,28 @@ reactionEffectGesturesEnabled  =
 canPerformReactionEffects :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
 canPerformReactionEffects avCaptureDevice  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "canPerformReactionEffects") retCULong []
+
+-- | availableReactionTypes
+--
+-- Returns a list of reaction types which can be passed to performEffectForReaction.
+--
+-- The list may differ between devices, or be affected by changes to active format, and can be key-value observed.
+--
+-- ObjC selector: @- availableReactionTypes@
+availableReactionTypes :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSSet)
+availableReactionTypes avCaptureDevice  =
+    sendMsg avCaptureDevice (mkSelector "availableReactionTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | reactionEffectsInProgress
+--
+-- Contains an array of reaction effects that are currently being performed by the device, sorted by timestamp. If observing old and new values in the KVO callback, the reaction effects which are still running in the new array will have kCMTimeInvalid as their endTime property. Reaction effects which have ended will only be in the old array, and will have their endTime property set to the presentation time of the first frame where the reaction effect was no longer present.
+--
+-- Reaction effects which are triggered by either a call to performEffectForReaction: or by the automatic gesture detection will be reflected in this array. It is key-value observable to be notified when reaction effects begin or end.
+--
+-- ObjC selector: @- reactionEffectsInProgress@
+reactionEffectsInProgress :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSArray)
+reactionEffectsInProgress avCaptureDevice  =
+    sendMsg avCaptureDevice (mkSelector "reactionEffectsInProgress") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | portraitEffectEnabled
 --
@@ -2323,6 +2421,28 @@ virtualDevice :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
 virtualDevice avCaptureDevice  =
     fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "virtualDevice") retCULong []
 
+-- | constituentDevices
+--
+-- An array of constituent physical devices comprising a virtual device.
+--
+-- When called on a device for which virtualDevice == NO, an empty array is returned.
+--
+-- ObjC selector: @- constituentDevices@
+constituentDevices :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSArray)
+constituentDevices avCaptureDevice  =
+    sendMsg avCaptureDevice (mkSelector "constituentDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | virtualDeviceSwitchOverVideoZoomFactors
+--
+-- An array of video zoom factors at or above which a virtual device (such as the Dual Camera) may switch to its next constituent device.
+--
+-- This array contains zoom factors at which one of the constituent device's field of view matches the next constituent device's full field of view. The number of switch over video zoom factors is always one less than the count of the constituentDevices property, and the factors progress in the same order as the devices listed in that property. On non-virtual devices this property returns an empty array.
+--
+-- ObjC selector: @- virtualDeviceSwitchOverVideoZoomFactors@
+virtualDeviceSwitchOverVideoZoomFactors :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSArray)
+virtualDeviceSwitchOverVideoZoomFactors avCaptureDevice  =
+    sendMsg avCaptureDevice (mkSelector "virtualDeviceSwitchOverVideoZoomFactors") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | primaryConstituentDeviceSwitchingBehavior
 --
 -- The primaryConstituentDeviceSwitchingBehavior as set by -[AVCaptureDevice setPrimaryConstituentDeviceSwitchingBehavior:restrictedSwitchingBehaviorConditions:].
@@ -2366,6 +2486,106 @@ activePrimaryConstituentDeviceSwitchingBehavior avCaptureDevice  =
 activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions
 activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions avCaptureDevice  =
     fmap (coerce :: CULong -> AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions) $ sendMsg avCaptureDevice (mkSelector "activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions") retCULong []
+
+-- | activePrimaryConstituentDevice
+--
+-- For virtual devices, this property indicates which constituent device is currently the primary constituent device. The primary constituent device may change when zoom, exposure, or focus changes.
+--
+-- This property returns nil for non-virtual devices. On virtual devices this property returns nil until the device is used in a running AVCaptureSession. This property is key-value observable.
+--
+-- ObjC selector: @- activePrimaryConstituentDevice@
+activePrimaryConstituentDevice :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id AVCaptureDevice)
+activePrimaryConstituentDevice avCaptureDevice  =
+    sendMsg avCaptureDevice (mkSelector "activePrimaryConstituentDevice") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | supportedFallbackPrimaryConstituentDevices
+--
+-- The constituent devices that may be selected as a fallback for a longer focal length primary constituent device.
+--
+-- This property returns an empty array for non-virtual devices. This property never changes for a given virtual device.
+--
+-- ObjC selector: @- supportedFallbackPrimaryConstituentDevices@
+supportedFallbackPrimaryConstituentDevices :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSArray)
+supportedFallbackPrimaryConstituentDevices avCaptureDevice  =
+    sendMsg avCaptureDevice (mkSelector "supportedFallbackPrimaryConstituentDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | fallbackPrimaryConstituentDevices
+--
+-- The constituent devices that may be used as a fallback device when a constituent device with a longer focal length becomes limited by its light sensitivity or minimum focus distance.
+--
+-- This may only be set to the supportedFallbackPrimaryConstituentDevices or a subset thereof. By default this is set to all supportedFallbackPrimaryConstituentDevices. This property will throw an NSInvalidArgumentException if the array includes any device not reported in supportedFallbackPrimaryConstituentDevices. This property is key-value observable.
+--
+-- ObjC selector: @- fallbackPrimaryConstituentDevices@
+fallbackPrimaryConstituentDevices :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSArray)
+fallbackPrimaryConstituentDevices avCaptureDevice  =
+    sendMsg avCaptureDevice (mkSelector "fallbackPrimaryConstituentDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | fallbackPrimaryConstituentDevices
+--
+-- The constituent devices that may be used as a fallback device when a constituent device with a longer focal length becomes limited by its light sensitivity or minimum focus distance.
+--
+-- This may only be set to the supportedFallbackPrimaryConstituentDevices or a subset thereof. By default this is set to all supportedFallbackPrimaryConstituentDevices. This property will throw an NSInvalidArgumentException if the array includes any device not reported in supportedFallbackPrimaryConstituentDevices. This property is key-value observable.
+--
+-- ObjC selector: @- setFallbackPrimaryConstituentDevices:@
+setFallbackPrimaryConstituentDevices :: (IsAVCaptureDevice avCaptureDevice, IsNSArray value) => avCaptureDevice -> value -> IO ()
+setFallbackPrimaryConstituentDevices avCaptureDevice  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg avCaptureDevice (mkSelector "setFallbackPrimaryConstituentDevices:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | systemPressureState
+--
+-- A key-value observable property indicating the capture device's current system pressure state.
+--
+-- This property indicates whether the capture device is currently subject to an elevated system pressure condition. When system pressure reaches AVCaptureSystemPressureLevelShutdown, the capture device cannot continue to provide input, so the AVCaptureSession becomes interrupted until the pressured state abates. System pressure can be effectively mitigated by lowering the device's activeVideoMinFrameDuration in response to changes in the systemPressureState. Clients are encouraged to implement frame rate throttling to bring system pressure down if their capture use case can tolerate a reduced frame rate.
+--
+-- ObjC selector: @- systemPressureState@
+systemPressureState :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id AVCaptureSystemPressureState)
+systemPressureState avCaptureDevice  =
+    sendMsg avCaptureDevice (mkSelector "systemPressureState") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | userPreferredCamera
+--
+-- Settable property that specifies a user preferred camera.
+--
+-- Setting this property allows an application to persist its user’s preferred camera across app launches and reboots. The property internally maintains a short history, so if your user’s most recent preferred camera is not currently connected, it still reports the next best choice. This property always returns a device that is present. If no camera is available nil is returned. Setting the property to nil has no effect.
+--
+-- ObjC selector: @+ userPreferredCamera@
+userPreferredCamera :: IO (Id AVCaptureDevice)
+userPreferredCamera  =
+  do
+    cls' <- getRequiredClass "AVCaptureDevice"
+    sendClassMsg cls' (mkSelector "userPreferredCamera") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | userPreferredCamera
+--
+-- Settable property that specifies a user preferred camera.
+--
+-- Setting this property allows an application to persist its user’s preferred camera across app launches and reboots. The property internally maintains a short history, so if your user’s most recent preferred camera is not currently connected, it still reports the next best choice. This property always returns a device that is present. If no camera is available nil is returned. Setting the property to nil has no effect.
+--
+-- ObjC selector: @+ setUserPreferredCamera:@
+setUserPreferredCamera :: IsAVCaptureDevice value => value -> IO ()
+setUserPreferredCamera value =
+  do
+    cls' <- getRequiredClass "AVCaptureDevice"
+    withObjCPtr value $ \raw_value ->
+      sendClassMsg cls' (mkSelector "setUserPreferredCamera:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
+-- | systemPreferredCamera
+--
+-- Specifies the best camera to use as determined by the system.
+--
+-- Apple chooses the default value. This property incorporates userPreferredCamera as well as other factors, such as camera suspension and Apple cameras appearing that should be automatically chosen. The property may change spontaneously, such as when the preferred camera goes away. This property always returns a device that is present. If no camera is available nil is returned.
+--
+-- Applications that adopt this API should always key-value observe this property and update their AVCaptureSession’s input device to reflect changes to the systemPreferredCamera. The application can still offer users the ability to pick a camera by setting userPreferredCamera, which will cause the systemPreferredCamera API to put the user’s choice first until either another Apple-preferred device becomes available or the machine is rebooted (after which it reverts to its original behavior of returning the internally determined best camera to use).
+--
+-- If the application wishes to offer users a fully manual camera selection mode in addition to automatic camera selection, it is recommended to call setUserPreferredCamera: each time the user makes a camera selection, but ignore key-value observer updates to systemPreferredCamera while in manual selection mode.
+--
+-- ObjC selector: @+ systemPreferredCamera@
+systemPreferredCamera :: IO (Id AVCaptureDevice)
+systemPreferredCamera  =
+  do
+    cls' <- getRequiredClass "AVCaptureDevice"
+    sendClassMsg cls' (mkSelector "systemPreferredCamera") (retPtr retVoid) [] >>= retainedObject . castPtr
 
 -- | deviceType
 --
@@ -2517,9 +2737,17 @@ defaultDeviceWithDeviceType_mediaType_positionSelector = mkSelector "defaultDevi
 uniqueIDSelector :: Selector
 uniqueIDSelector = mkSelector "uniqueID"
 
+-- | @Selector@ for @modelID@
+modelIDSelector :: Selector
+modelIDSelector = mkSelector "modelID"
+
 -- | @Selector@ for @localizedName@
 localizedNameSelector :: Selector
 localizedNameSelector = mkSelector "localizedName"
+
+-- | @Selector@ for @manufacturer@
+manufacturerSelector :: Selector
+manufacturerSelector = mkSelector "manufacturer"
 
 -- | @Selector@ for @transportType@
 transportTypeSelector :: Selector
@@ -2621,6 +2849,10 @@ dynamicAspectRatioSelector = mkSelector "dynamicAspectRatio"
 cinematicVideoCaptureSceneMonitoringStatusesSelector :: Selector
 cinematicVideoCaptureSceneMonitoringStatusesSelector = mkSelector "cinematicVideoCaptureSceneMonitoringStatuses"
 
+-- | @Selector@ for @spatialCaptureDiscomfortReasons@
+spatialCaptureDiscomfortReasonsSelector :: Selector
+spatialCaptureDiscomfortReasonsSelector = mkSelector "spatialCaptureDiscomfortReasons"
+
 -- | @Selector@ for @preferredMicrophoneMode@
 preferredMicrophoneModeSelector :: Selector
 preferredMicrophoneModeSelector = mkSelector "preferredMicrophoneMode"
@@ -2628,6 +2860,10 @@ preferredMicrophoneModeSelector = mkSelector "preferredMicrophoneMode"
 -- | @Selector@ for @activeMicrophoneMode@
 activeMicrophoneModeSelector :: Selector
 activeMicrophoneModeSelector = mkSelector "activeMicrophoneMode"
+
+-- | @Selector@ for @companionDeskViewCamera@
+companionDeskViewCameraSelector :: Selector
+companionDeskViewCameraSelector = mkSelector "companionDeskViewCamera"
 
 -- | @Selector@ for @continuityCamera@
 continuityCameraSelector :: Selector
@@ -2652,6 +2888,14 @@ reactionEffectGesturesEnabledSelector = mkSelector "reactionEffectGesturesEnable
 -- | @Selector@ for @canPerformReactionEffects@
 canPerformReactionEffectsSelector :: Selector
 canPerformReactionEffectsSelector = mkSelector "canPerformReactionEffects"
+
+-- | @Selector@ for @availableReactionTypes@
+availableReactionTypesSelector :: Selector
+availableReactionTypesSelector = mkSelector "availableReactionTypes"
+
+-- | @Selector@ for @reactionEffectsInProgress@
+reactionEffectsInProgressSelector :: Selector
+reactionEffectsInProgressSelector = mkSelector "reactionEffectsInProgress"
 
 -- | @Selector@ for @portraitEffectEnabled@
 portraitEffectEnabledSelector :: Selector
@@ -3001,6 +3245,14 @@ setFlashModeSelector = mkSelector "setFlashMode:"
 virtualDeviceSelector :: Selector
 virtualDeviceSelector = mkSelector "virtualDevice"
 
+-- | @Selector@ for @constituentDevices@
+constituentDevicesSelector :: Selector
+constituentDevicesSelector = mkSelector "constituentDevices"
+
+-- | @Selector@ for @virtualDeviceSwitchOverVideoZoomFactors@
+virtualDeviceSwitchOverVideoZoomFactorsSelector :: Selector
+virtualDeviceSwitchOverVideoZoomFactorsSelector = mkSelector "virtualDeviceSwitchOverVideoZoomFactors"
+
 -- | @Selector@ for @primaryConstituentDeviceSwitchingBehavior@
 primaryConstituentDeviceSwitchingBehaviorSelector :: Selector
 primaryConstituentDeviceSwitchingBehaviorSelector = mkSelector "primaryConstituentDeviceSwitchingBehavior"
@@ -3016,6 +3268,38 @@ activePrimaryConstituentDeviceSwitchingBehaviorSelector = mkSelector "activePrim
 -- | @Selector@ for @activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions@
 activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditionsSelector :: Selector
 activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditionsSelector = mkSelector "activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions"
+
+-- | @Selector@ for @activePrimaryConstituentDevice@
+activePrimaryConstituentDeviceSelector :: Selector
+activePrimaryConstituentDeviceSelector = mkSelector "activePrimaryConstituentDevice"
+
+-- | @Selector@ for @supportedFallbackPrimaryConstituentDevices@
+supportedFallbackPrimaryConstituentDevicesSelector :: Selector
+supportedFallbackPrimaryConstituentDevicesSelector = mkSelector "supportedFallbackPrimaryConstituentDevices"
+
+-- | @Selector@ for @fallbackPrimaryConstituentDevices@
+fallbackPrimaryConstituentDevicesSelector :: Selector
+fallbackPrimaryConstituentDevicesSelector = mkSelector "fallbackPrimaryConstituentDevices"
+
+-- | @Selector@ for @setFallbackPrimaryConstituentDevices:@
+setFallbackPrimaryConstituentDevicesSelector :: Selector
+setFallbackPrimaryConstituentDevicesSelector = mkSelector "setFallbackPrimaryConstituentDevices:"
+
+-- | @Selector@ for @systemPressureState@
+systemPressureStateSelector :: Selector
+systemPressureStateSelector = mkSelector "systemPressureState"
+
+-- | @Selector@ for @userPreferredCamera@
+userPreferredCameraSelector :: Selector
+userPreferredCameraSelector = mkSelector "userPreferredCamera"
+
+-- | @Selector@ for @setUserPreferredCamera:@
+setUserPreferredCameraSelector :: Selector
+setUserPreferredCameraSelector = mkSelector "setUserPreferredCamera:"
+
+-- | @Selector@ for @systemPreferredCamera@
+systemPreferredCameraSelector :: Selector
+systemPreferredCameraSelector = mkSelector "systemPreferredCamera"
 
 -- | @Selector@ for @deviceType@
 deviceTypeSelector :: Selector

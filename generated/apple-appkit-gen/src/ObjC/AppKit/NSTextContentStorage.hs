@@ -11,6 +11,8 @@ module ObjC.AppKit.NSTextContentStorage
   , locationFromLocation_withOffset
   , offsetFromLocation_toLocation
   , adjustedRangeFromRange_forEditingTextSelection
+  , delegate
+  , setDelegate
   , includesTextListMarkers
   , setIncludesTextListMarkers
   , attributedString
@@ -20,6 +22,8 @@ module ObjC.AppKit.NSTextContentStorage
   , locationFromLocation_withOffsetSelector
   , offsetFromLocation_toLocationSelector
   , adjustedRangeFromRange_forEditingTextSelectionSelector
+  , delegateSelector
+  , setDelegateSelector
   , includesTextListMarkersSelector
   , setIncludesTextListMarkersSelector
   , attributedStringSelector
@@ -71,6 +75,16 @@ adjustedRangeFromRange_forEditingTextSelection nsTextContentStorage  textRange f
   withObjCPtr textRange $ \raw_textRange ->
       sendMsg nsTextContentStorage (mkSelector "adjustedRangeFromRange:forEditingTextSelection:") (retPtr retVoid) [argPtr (castPtr raw_textRange :: Ptr ()), argCULong (if forEditingTextSelection then 1 else 0)] >>= retainedObject . castPtr
 
+-- | @- delegate@
+delegate :: IsNSTextContentStorage nsTextContentStorage => nsTextContentStorage -> IO RawId
+delegate nsTextContentStorage  =
+    fmap (RawId . castPtr) $ sendMsg nsTextContentStorage (mkSelector "delegate") (retPtr retVoid) []
+
+-- | @- setDelegate:@
+setDelegate :: IsNSTextContentStorage nsTextContentStorage => nsTextContentStorage -> RawId -> IO ()
+setDelegate nsTextContentStorage  value =
+    sendMsg nsTextContentStorage (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+
 -- | @- includesTextListMarkers@
 includesTextListMarkers :: IsNSTextContentStorage nsTextContentStorage => nsTextContentStorage -> IO Bool
 includesTextListMarkers nsTextContentStorage  =
@@ -115,6 +129,14 @@ offsetFromLocation_toLocationSelector = mkSelector "offsetFromLocation:toLocatio
 -- | @Selector@ for @adjustedRangeFromRange:forEditingTextSelection:@
 adjustedRangeFromRange_forEditingTextSelectionSelector :: Selector
 adjustedRangeFromRange_forEditingTextSelectionSelector = mkSelector "adjustedRangeFromRange:forEditingTextSelection:"
+
+-- | @Selector@ for @delegate@
+delegateSelector :: Selector
+delegateSelector = mkSelector "delegate"
+
+-- | @Selector@ for @setDelegate:@
+setDelegateSelector :: Selector
+setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @includesTextListMarkers@
 includesTextListMarkersSelector :: Selector

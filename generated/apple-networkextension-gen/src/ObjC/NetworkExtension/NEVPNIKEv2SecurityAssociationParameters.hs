@@ -19,6 +19,8 @@ module ObjC.NetworkExtension.NEVPNIKEv2SecurityAssociationParameters
   , setIntegrityAlgorithm
   , diffieHellmanGroup
   , setDiffieHellmanGroup
+  , postQuantumKeyExchangeMethods
+  , setPostQuantumKeyExchangeMethods
   , lifetimeMinutes
   , setLifetimeMinutes
   , encryptionAlgorithmSelector
@@ -27,6 +29,8 @@ module ObjC.NetworkExtension.NEVPNIKEv2SecurityAssociationParameters
   , setIntegrityAlgorithmSelector
   , diffieHellmanGroupSelector
   , setDiffieHellmanGroupSelector
+  , postQuantumKeyExchangeMethodsSelector
+  , setPostQuantumKeyExchangeMethodsSelector
   , lifetimeMinutesSelector
   , setLifetimeMinutesSelector
 
@@ -133,6 +137,25 @@ setDiffieHellmanGroup :: IsNEVPNIKEv2SecurityAssociationParameters nevpnikEv2Sec
 setDiffieHellmanGroup nevpnikEv2SecurityAssociationParameters  value =
     sendMsg nevpnikEv2SecurityAssociationParameters (mkSelector "setDiffieHellmanGroup:") retVoid [argCLong (coerce value)]
 
+-- | postQuantumKeyExchangeMethods
+--
+-- The post-quantum key exchange method(s) used by the Security Association, if any. Values are taken from NEVPNIKEv2PostQuantumKeyExchangeMethod. Up to 7 methods may be specified, mapping to ADDKE1 - ADDKE7 from RFC 9370.
+--
+-- ObjC selector: @- postQuantumKeyExchangeMethods@
+postQuantumKeyExchangeMethods :: IsNEVPNIKEv2SecurityAssociationParameters nevpnikEv2SecurityAssociationParameters => nevpnikEv2SecurityAssociationParameters -> IO (Id NSArray)
+postQuantumKeyExchangeMethods nevpnikEv2SecurityAssociationParameters  =
+    sendMsg nevpnikEv2SecurityAssociationParameters (mkSelector "postQuantumKeyExchangeMethods") (retPtr retVoid) [] >>= retainedObject . castPtr
+
+-- | postQuantumKeyExchangeMethods
+--
+-- The post-quantum key exchange method(s) used by the Security Association, if any. Values are taken from NEVPNIKEv2PostQuantumKeyExchangeMethod. Up to 7 methods may be specified, mapping to ADDKE1 - ADDKE7 from RFC 9370.
+--
+-- ObjC selector: @- setPostQuantumKeyExchangeMethods:@
+setPostQuantumKeyExchangeMethods :: (IsNEVPNIKEv2SecurityAssociationParameters nevpnikEv2SecurityAssociationParameters, IsNSArray value) => nevpnikEv2SecurityAssociationParameters -> value -> IO ()
+setPostQuantumKeyExchangeMethods nevpnikEv2SecurityAssociationParameters  value =
+  withObjCPtr value $ \raw_value ->
+      sendMsg nevpnikEv2SecurityAssociationParameters (mkSelector "setPostQuantumKeyExchangeMethods:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+
 -- | lifetimeMinutes
 --
 -- The life time of the Security Association, in minutes. Default is 60 for IKE Security Associations, and 30 for Child Security Associations. Before the lifetime is reached, IKEv2 will attempt to rekey the Security Association to maintain the connection.
@@ -178,6 +201,14 @@ diffieHellmanGroupSelector = mkSelector "diffieHellmanGroup"
 -- | @Selector@ for @setDiffieHellmanGroup:@
 setDiffieHellmanGroupSelector :: Selector
 setDiffieHellmanGroupSelector = mkSelector "setDiffieHellmanGroup:"
+
+-- | @Selector@ for @postQuantumKeyExchangeMethods@
+postQuantumKeyExchangeMethodsSelector :: Selector
+postQuantumKeyExchangeMethodsSelector = mkSelector "postQuantumKeyExchangeMethods"
+
+-- | @Selector@ for @setPostQuantumKeyExchangeMethods:@
+setPostQuantumKeyExchangeMethodsSelector :: Selector
+setPostQuantumKeyExchangeMethodsSelector = mkSelector "setPostQuantumKeyExchangeMethods:"
 
 -- | @Selector@ for @lifetimeMinutes@
 lifetimeMinutesSelector :: Selector

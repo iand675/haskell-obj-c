@@ -14,6 +14,7 @@ module ObjC.PencilKit.PKToolPickerInkingItem
   , initWithInkType_color_width
   , initWithInkType_color_width_identifier
   , initWithInkType_color_width_azimuth_identifier
+  , inkingTool
   , allowsColorSelection
   , setAllowsColorSelection
   , initWithInkTypeSelector
@@ -22,6 +23,7 @@ module ObjC.PencilKit.PKToolPickerInkingItem
   , initWithInkType_color_widthSelector
   , initWithInkType_color_width_identifierSelector
   , initWithInkType_color_width_azimuth_identifierSelector
+  , inkingToolSelector
   , allowsColorSelectionSelector
   , setAllowsColorSelectionSelector
 
@@ -96,6 +98,13 @@ initWithInkType_color_width_azimuth_identifier pkToolPickerInkingItem  inkType c
       withObjCPtr identifier $ \raw_identifier ->
           sendMsg pkToolPickerInkingItem (mkSelector "initWithInkType:color:width:azimuth:identifier:") (retPtr retVoid) [argPtr (castPtr raw_inkType :: Ptr ()), argPtr (castPtr raw_color :: Ptr ()), argCDouble width, argCDouble azimuth, argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
 
+-- | A tool for drawing on a @PKCanvasView@.
+--
+-- ObjC selector: @- inkingTool@
+inkingTool :: IsPKToolPickerInkingItem pkToolPickerInkingItem => pkToolPickerInkingItem -> IO (Id PKInkingTool)
+inkingTool pkToolPickerInkingItem  =
+    sendMsg pkToolPickerInkingItem (mkSelector "inkingTool") (retPtr retVoid) [] >>= retainedObject . castPtr
+
 -- | Present color selection UI to the user. Default value is YES.
 --
 -- ObjC selector: @- allowsColorSelection@
@@ -137,6 +146,10 @@ initWithInkType_color_width_identifierSelector = mkSelector "initWithInkType:col
 -- | @Selector@ for @initWithInkType:color:width:azimuth:identifier:@
 initWithInkType_color_width_azimuth_identifierSelector :: Selector
 initWithInkType_color_width_azimuth_identifierSelector = mkSelector "initWithInkType:color:width:azimuth:identifier:"
+
+-- | @Selector@ for @inkingTool@
+inkingToolSelector :: Selector
+inkingToolSelector = mkSelector "inkingTool"
 
 -- | @Selector@ for @allowsColorSelection@
 allowsColorSelectionSelector :: Selector
