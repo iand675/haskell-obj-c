@@ -39,6 +39,11 @@ import qualified ObjC.AppKit.NSMenu as Menu
 import qualified ObjC.AppKit.NSMenuItem as MI
 import qualified ObjC.AppKit.NSControl as Ctrl
 import qualified ObjC.AppKit.NSFont as Font
+import ObjC.AppKit.Delegate.NSApplicationDelegate
+  ( NSApplicationDelegateOverrides(..)
+  , defaultNSApplicationDelegateOverrides
+  , newNSApplicationDelegate
+  )
 
 
 main :: IO ()
@@ -61,6 +66,7 @@ main = withAutoreleasePool $ do
   window <- (alloc @NSWindow >>=
     \w -> Win.initWithContentRect_styleMask_backing_defer w rect styleMask backing False)
   Win.center window
+  Win.setReleasedWhenClosed window False
 
   Win.setTitle window ("Hello Haskell" :: Id NSString)
 
@@ -80,6 +86,14 @@ main = withAutoreleasePool $ do
   -- Add the label to the window's content view
   cv <- Win.contentView window
   View.addSubview cv (toNSView label)
+
+  appDelegate <- newNSApplicationDelegate defaultNSApplicationDelegateOverrides
+    { _applicationShouldTerminateAfterLastWindowClosed = Just (const (pure False))
+    , _applicationShouldHandleReopen_hasVisibleWindows = Just $ \_ hasVisible ->
+        if hasVisible then pure True
+        else Win.makeKeyAndOrderFront window (RawId nullPtr) >> pure True
+    }
+  App.setDelegate app appDelegate
 
   Win.makeKeyAndOrderFront window (RawId nullPtr)
   App.activateIgnoringOtherApps app True

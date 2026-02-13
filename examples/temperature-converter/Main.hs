@@ -46,6 +46,11 @@ import qualified ObjC.AppKit.NSMenuItem as MI
 import qualified ObjC.AppKit.NSControl as Ctrl
 import qualified ObjC.AppKit.NSFont as Font
 import qualified ObjC.AppKit.NSButton as Btn
+import ObjC.AppKit.Delegate.NSApplicationDelegate
+  ( NSApplicationDelegateOverrides(..)
+  , defaultNSApplicationDelegateOverrides
+  , newNSApplicationDelegate
+  )
 
 -- ---------------------------------------------------------------------------
 -- Converter target class
@@ -78,6 +83,7 @@ main = withAutoreleasePool $ do
   window <- alloc @NSWindow >>=
     \w -> Win.initWithContentRect_styleMask_backing_defer w rect styleMask backing False
   Win.center window
+  Win.setReleasedWhenClosed window False
   Win.setTitle window ("Temperature Converter" :: Id NSString)
 
   cv <- Win.contentView window
@@ -123,6 +129,14 @@ main = withAutoreleasePool $ do
     ("→ °F" :: Id NSString) target (mkSelector "convertToF:")
   View.setFrame toFBtn (NSRect (NSPoint 250 88) (NSSize 80 28))
   View.addSubview cv (toNSView toFBtn)
+
+  appDelegate <- newNSApplicationDelegate defaultNSApplicationDelegateOverrides
+    { _applicationShouldTerminateAfterLastWindowClosed = Just (const (pure False))
+    , _applicationShouldHandleReopen_hasVisibleWindows = Just $ \_ hasVisible ->
+        if hasVisible then pure True
+        else Win.makeKeyAndOrderFront window (RawId nullPtr) >> pure True
+    }
+  App.setDelegate app appDelegate
 
   Win.makeKeyAndOrderFront window (RawId nullPtr)
   App.activateIgnoringOtherApps app True

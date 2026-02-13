@@ -90,6 +90,11 @@ import ObjC.AppKit.Delegate.NSTableViewDelegate
   , defaultNSTableViewDelegateOverrides
   , newNSTableViewDelegate
   )
+import ObjC.AppKit.Delegate.NSApplicationDelegate
+  ( NSApplicationDelegateOverrides(..)
+  , defaultNSApplicationDelegateOverrides
+  , newNSApplicationDelegate
+  )
 
 import qualified ObjC.AppKit.NSApplication as App
 import qualified ObjC.AppKit.NSWindow as Win
@@ -174,6 +179,7 @@ main = withAutoreleasePool $ do
   Win.setTitlebarAppearsTransparent window True
   Color.clearColor >>= Win.setBackgroundColor window
   Win.center window
+  Win.setReleasedWhenClosed window False
 
   cv <- Win.contentView window
 
@@ -409,6 +415,14 @@ main = withAutoreleasePool $ do
   Ctrl.setAction inputField (asSel addItemSel)
 
   -- Show window ------------------------------------------------------------
+  appDelegate <- newNSApplicationDelegate defaultNSApplicationDelegateOverrides
+    { _applicationShouldTerminateAfterLastWindowClosed = Just (const (pure False))
+    , _applicationShouldHandleReopen_hasVisibleWindows = Just $ \_ hasVisible ->
+        if hasVisible then pure True
+        else Win.makeKeyAndOrderFront window (RawId nullPtr) >> pure True
+    }
+  App.setDelegate app appDelegate
+
   Win.makeKeyAndOrderFront window (RawId nullPtr)
   App.activateIgnoringOtherApps app True
   App.run app

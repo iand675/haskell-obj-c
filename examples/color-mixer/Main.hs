@@ -51,6 +51,11 @@ import qualified ObjC.AppKit.NSControl as Ctrl
 import qualified ObjC.AppKit.NSFont as Font
 import qualified ObjC.AppKit.NSSlider as Slider
 import qualified ObjC.AppKit.NSColor as Color
+import ObjC.AppKit.Delegate.NSApplicationDelegate
+  ( NSApplicationDelegateOverrides(..)
+  , defaultNSApplicationDelegateOverrides
+  , newNSApplicationDelegate
+  )
 
 -- ---------------------------------------------------------------------------
 -- Slider target class
@@ -96,6 +101,7 @@ main = withAutoreleasePool $ do
   window <- alloc @NSWindow >>=
     \w -> Win.initWithContentRect_styleMask_backing_defer w rect styleMask backing False
   Win.center window
+  Win.setReleasedWhenClosed window False
   Win.setTitle window ("Color Mixer" :: Id NSString)
 
   cv <- Win.contentView window
@@ -178,6 +184,14 @@ main = withAutoreleasePool $ do
   bVal <- TF.labelWithString ("128" :: Id NSString) :: IO (Id NSTextField)
   View.setFrame bVal (NSRect (NSPoint 355 60) (NSSize 35 20))
   View.addSubview cv (toNSView bVal)
+
+  appDelegate <- newNSApplicationDelegate defaultNSApplicationDelegateOverrides
+    { _applicationShouldTerminateAfterLastWindowClosed = Just (const (pure False))
+    , _applicationShouldHandleReopen_hasVisibleWindows = Just $ \_ hasVisible ->
+        if hasVisible then pure True
+        else Win.makeKeyAndOrderFront window (RawId nullPtr) >> pure True
+    }
+  App.setDelegate app appDelegate
 
   Win.makeKeyAndOrderFront window (RawId nullPtr)
   App.activateIgnoringOtherApps app True

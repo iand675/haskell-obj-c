@@ -68,6 +68,11 @@ import ObjC.AppKit.Delegate.NSTextFieldDelegate
   , defaultNSTextFieldDelegateOverrides
   , newNSTextFieldDelegate
   )
+import ObjC.AppKit.Delegate.NSApplicationDelegate
+  ( NSApplicationDelegateOverrides(..)
+  , defaultNSApplicationDelegateOverrides
+  , newNSApplicationDelegate
+  )
 
 import qualified ObjC.AppKit.NSApplication as App
 import qualified ObjC.AppKit.NSWindow as Win
@@ -129,6 +134,7 @@ main = withAutoreleasePool $ do
       styleMask NSBackingStoreBuffered False
   Win.setTitle window ("Delegate Demo — Event Logger" :: Id NSString)
   Win.center window
+  Win.setReleasedWhenClosed window False
 
   cv <- Win.contentView window
 
@@ -310,6 +316,14 @@ main = withAutoreleasePool $ do
   appendLog ""
 
   -- Show window ------------------------------------------------------------
+  appDelegate <- newNSApplicationDelegate defaultNSApplicationDelegateOverrides
+    { _applicationShouldTerminateAfterLastWindowClosed = Just (const (pure False))
+    , _applicationShouldHandleReopen_hasVisibleWindows = Just $ \_ hasVisible ->
+        if hasVisible then pure True
+        else Win.makeKeyAndOrderFront window (RawId nullPtr) >> pure True
+    }
+  App.setDelegate app appDelegate
+
   Win.makeKeyAndOrderFront window (RawId nullPtr)
   App.activateIgnoringOtherApps app True
   App.run app

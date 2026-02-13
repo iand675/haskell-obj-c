@@ -62,6 +62,11 @@ import qualified ObjC.AppKit.NSProgressIndicator as PI
 import qualified ObjC.AppKit.NSDatePicker as DP
 import qualified ObjC.AppKit.NSColorWell as CW
 import qualified ObjC.AppKit.NSButton as Btn
+import ObjC.AppKit.Delegate.NSApplicationDelegate
+  ( NSApplicationDelegateOverrides(..)
+  , defaultNSApplicationDelegateOverrides
+  , newNSApplicationDelegate
+  )
 
 -- ---------------------------------------------------------------------------
 -- Helpers
@@ -95,6 +100,7 @@ main = withAutoreleasePool $ do
   window <- alloc @NSWindow >>=
     \w -> Win.initWithContentRect_styleMask_backing_defer w rect styleMask backing False
   Win.center window
+  Win.setReleasedWhenClosed window False
   Win.setTitle window ("Controls Gallery" :: Id NSString)
 
   cv <- Win.contentView window
@@ -197,6 +203,14 @@ main = withAutoreleasePool $ do
   tf <- unsafeCastId <$> (alloc @NSTextField >>= \t -> View.initWithFrame t (NSRect (NSPoint 0 0) (NSSize 250 24))) :: IO (Id NSTextField)
   Ctrl.setStringValue tf ("Editable text" :: Id NSString)
   addControl cv tf (NSRect (NSPoint 180 (y11 - 2)) (NSSize 250 24))
+
+  appDelegate <- newNSApplicationDelegate defaultNSApplicationDelegateOverrides
+    { _applicationShouldTerminateAfterLastWindowClosed = Just (const (pure False))
+    , _applicationShouldHandleReopen_hasVisibleWindows = Just $ \_ hasVisible ->
+        if hasVisible then pure True
+        else Win.makeKeyAndOrderFront window (RawId nullPtr) >> pure True
+    }
+  App.setDelegate app appDelegate
 
   Win.makeKeyAndOrderFront window (RawId nullPtr)
   App.activateIgnoringOtherApps app True

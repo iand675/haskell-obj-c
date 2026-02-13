@@ -550,6 +550,7 @@ generatePackageYaml pkgName framework deps modules = T.unlines $
   , "ghc-options:"
   , "- -Wall"
   , "- -Wno-orphans"
+  , "- -Wno-unused-imports"
   , ""
   , "library:"
   , "  source-dirs: src"

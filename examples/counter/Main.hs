@@ -44,6 +44,11 @@ import qualified ObjC.AppKit.NSMenuItem as MI
 import qualified ObjC.AppKit.NSControl as Ctrl
 import qualified ObjC.AppKit.NSFont as Font
 import qualified ObjC.AppKit.NSButton as Btn
+import ObjC.AppKit.Delegate.NSApplicationDelegate
+  ( NSApplicationDelegateOverrides(..)
+  , defaultNSApplicationDelegateOverrides
+  , newNSApplicationDelegate
+  )
 
 -- ---------------------------------------------------------------------------
 -- Helpers
@@ -84,6 +89,7 @@ main = withAutoreleasePool $ do
   window <- alloc @NSWindow >>=
     \w -> Win.initWithContentRect_styleMask_backing_defer w rect styleMask backing False
   Win.center window
+  Win.setReleasedWhenClosed window False
   Win.setTitle window ("Counter" :: Id NSString)
 
   cv <- Win.contentView window
@@ -117,6 +123,14 @@ main = withAutoreleasePool $ do
     ("-" :: Id NSString) target (asSel decrementSel)
   View.setFrame minusBtn (NSRect (NSPoint 70 20) (NSSize 60 40))
   View.addSubview cv (toNSView minusBtn)
+
+  appDelegate <- newNSApplicationDelegate defaultNSApplicationDelegateOverrides
+    { _applicationShouldTerminateAfterLastWindowClosed = Just (const (pure False))
+    , _applicationShouldHandleReopen_hasVisibleWindows = Just $ \_ hasVisible ->
+        if hasVisible then pure True
+        else Win.makeKeyAndOrderFront window (RawId nullPtr) >> pure True
+    }
+  App.setDelegate app appDelegate
 
   Win.makeKeyAndOrderFront window (RawId nullPtr)
   App.activateIgnoringOtherApps app True
